@@ -119,10 +119,17 @@ module.exports = async function handler(req, res) {
     };
   });
 
+  // Manter apenas as últimas 8 mensagens para evitar payload gigante
+  // O PDF já foi analisado — não precisamos do histórico completo para CONTINUE
+  const MAX_HISTORY = 8;
+  const trimmedContents = safeContents.length > MAX_HISTORY
+    ? safeContents.slice(-MAX_HISTORY)
+    : safeContents;
+
   const contents = [
     { role: 'user',  parts: [{ text: SYSTEM_PROMPT }] },
     { role: 'model', parts: [{ text: '🎯 Olá! Seja bem-vindo(a) à PersistIA! Estou aqui para transformar seu edital em aprovação. 💪 Informe: cargo, banca, data da prova e conteúdo programático — ou anexe o PDF do edital.' }] },
-    ...safeContents,
+    ...trimmedContents,
   ];
 
   const endpoint = `${GEMINI_URL}?key=${apiKey}`;
@@ -135,7 +142,7 @@ module.exports = async function handler(req, res) {
         contents,
         generationConfig: {
           temperature: 0.4,
-          maxOutputTokens: 1500,
+          maxOutputTokens: 1200,
           topP: 0.95,
         },
       }),
