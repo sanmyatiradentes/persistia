@@ -310,6 +310,10 @@ footer a:hover{text-decoration:underline;}
 .msg-wrapper .msg { max-width: 100%; }
 /* copy button removed - using Markdown output */
 
+/* Copy button for study content */
+.copy-study-btn { transition: background 0.15s, transform 0.1s; }
+.copy-study-btn:hover { transform: translateY(-1px); }
+
 /* eixo-mini (sidebar collapsible) */
 .eixo-mini{margin-bottom:.4rem;}
 .eixo-mini-header{display:flex;align-items:center;gap:.4rem;cursor:pointer;padding:.3rem .45rem;border-radius:5px;transition:background .15s;user-select:none;}
@@ -896,6 +900,29 @@ function renderMarkdown(text) {
   try { return marked.parse(text, { gfm: true, async: false }); } catch (e) { return text.replace(/\n/g, '<br>'); }
 }
 
+function extractStudyContent(html) {
+  // Splits a message into greeting part and study content part
+  // Study content starts at known keywords
+  const studyMarkers = [
+    'PERSISTIA', 'CRONOGRAMA', 'RAIO-X', 'BLOCO', 'SIMULADO',
+    'GABARITO', 'ESTEIRA', 'ETAPA', 'DADOS DO CERTAME', 'ARMADILHA',
+    'METODOLOGIA', 'SALVE AGORA'
+  ];
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const fullText = div.textContent || '';
+  // Find where study content begins
+  let splitIdx = -1;
+  for (const marker of studyMarkers) {
+    const idx = fullText.indexOf(marker);
+    if (idx !== -1 && (splitIdx === -1 || idx < splitIdx)) splitIdx = idx;
+  }
+  if (splitIdx === -1) return { greeting: html, study: '' };
+  // Find the corresponding position in the HTML
+  // Walk through text nodes to find the split point
+  return { greeting: '', study: html, splitIdx };
+}
+
 function addMessage(role, content) {
   const msgs = document.getElementById('messages');
   const welcome = msgs.querySelector('.welcome-chat');
@@ -919,17 +946,74 @@ function addMessage(role, content) {
   div.appendChild(bubble);
   wrapper.appendChild(div);
 
-  // Lembrete de salvar após resposta da IA que contém conteúdo de estudo
+  // For AI responses: detect study content and add copy button
   if (role === 'assistant') {
-    const text = bubble.textContent || '';
-    const hasStudyContent = text.includes('Cronograma') || text.includes('Esteira') ||
-      text.includes('Raio-X') || text.includes('CONTINUE') || text.includes('Simulado') ||
-      text.includes('Gabarito') || text.includes('Bloco');
-    if (hasStudyContent) {
-      const reminder = document.createElement('p');
-      reminder.style.cssText = 'font-size:0.71rem;color:var(--orange);font-weight:600;margin:0.35rem 0 0.5rem 2.4rem;';
-      reminder.innerHTML = '💾 <strong>Salve agora</strong> — copie o conteúdo acima e cole em um documento. Este chat não armazena dados.';
-      wrapper.appendChild(reminder);
+    const fullText = bubble.innerText || bubble.textContent || '';
+    const studyMarkers = ['PERSISTIA', 'CRONOGRAMA', 'RAIO-X', 'BLOCO', 'SIMULADO',
+      'GABARITO', 'ESTEIRA', 'ETAPA', 'DADOS DO CERTAME', 'ARMADILHA', 'METODOLOGIA'];
+    const hasStudy = studyMarkers.some(m => fullText.toUpperCase().includes(m));
+
+    if (hasStudy) {
+      // Find where greeting ends and study content begins
+      // Split at the first paragraph/element that contains study keywords
+      const paras = bubble.querySelectorAll('p, h1, h2, h3, h4, li');
+      let studyStartEl = null;
+      for (const el of paras) {
+        const t = (el.innerText || el.textContent || '').toUpperCase();
+        if (studyMarkers.some(m => t.includes(m))) {
+          studyStartEl = el;
+          break;
+        }
+      }
+
+      // Build study content string from studyStartEl onwards
+      let studyText = '';
+      if (studyStartEl) {
+        // Collect all text from that element to end
+        let el = studyStartEl;
+        const parts = [];
+        while (el) {
+          parts.push(el.innerText || el.textContent || '');
+          el = el.nextElementSibling;
+        }
+        studyText = parts.join('
+').trim();
+      } else {
+        studyText = fullText.trim();
+      }
+
+      // Add copy button + save reminder below the bubble
+      const actionBar = document.createElement('div');
+      actionBar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin:0.4rem 0 0.6rem 2.4rem;flex-wrap:wrap;';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:7px;padding:5px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:background 0.15s;';
+      copyBtn.innerHTML = '📋 Copiar conteúdo';
+      copyBtn.onclick = () => {
+        const textToCopy = studyText || fullText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          copyBtn.innerHTML = '✅ Copiado!';
+          copyBtn.style.background = '#16a34a';
+          setTimeout(() => { copyBtn.innerHTML = '📋 Copiar conteúdo'; copyBtn.style.background = 'var(--orange)'; }, 2500);
+        }).catch(() => {
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = textToCopy;
+          ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); copyBtn.innerHTML = '✅ Copiado!'; copyBtn.style.background = '#16a34a'; setTimeout(() => { copyBtn.innerHTML = '📋 Copiar conteúdo'; copyBtn.style.background = 'var(--orange)'; }, 2500); } catch(e){}
+          document.body.removeChild(ta);
+        });
+      };
+
+      const reminder = document.createElement('span');
+      reminder.style.cssText = 'font-size:0.69rem;color:rgba(13,17,23,0.45);';
+      reminder.textContent = '💾 Cole num documento — este chat não armazena dados.';
+
+      actionBar.appendChild(copyBtn);
+      actionBar.appendChild(reminder);
+      wrapper.appendChild(actionBar);
     }
   }
 
