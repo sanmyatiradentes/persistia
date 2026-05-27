@@ -821,9 +821,11 @@ footer a:hover{text-decoration:underline;}
 
 <script>
 const API_URL = '/api/chat';
+const GEMINI_DIRECT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+let geminiKey = null; // fetched from backend once
 let appMode = 'cronograma'; // 'cronograma' or 'esteira'
-let cronogramaData = null;  // stores parsed JSON from AI
-let cronogramaItems = [];   // accumulates all items
+let cronogramaData = null;
+let cronogramaItems = [];
 let conversationHistory = [];
 let isLoading = false;
 let pdfBase64 = null;
@@ -1255,6 +1257,20 @@ function limpar() {
 }
 
 // ── Main send ────────────────────────────────────────────────────────────────
+async function getGeminiKey() {
+  if (geminiKey) return geminiKey;
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ getKey: true })
+    });
+    const d = await r.json();
+    if (d.key) { geminiKey = d.key; return geminiKey; }
+  } catch(e) {}
+  return null;
+}
+
 async function enviar() {
   if (isLoading) return;
   const input = document.getElementById('user-input');
@@ -1308,25 +1324,30 @@ async function enviar() {
   });
 
   try {
-    const res = await fetch(API_URL, {
+    // Chamada direta ao Gemini (sem passar pelo Vercel — sem timeout)
+    const key = await getGeminiKey();
+    if (!key) {
+      removeTyping();
+      addMessage('assistant', '⚠️ Chave da API não encontrada. Verifique a configuração no Vercel.');
+      setStatus('err', 'Erro de configuração.');
+      isLoading = false; document.getElementById('btn-send').disabled = false; return;
+    }
+    const res = await fetch(GEMINI_DIRECT + '?key=' + key, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents, mode: appMode }),
-      signal: AbortSignal.timeout(90000)
+      body: JSON.stringify({ contents, generationConfig: { temperature: 0.3, maxOutputTokens: 8192, topP: 0.95 } }),
+      signal: AbortSignal.timeout(120000)
     });
 
     removeTyping();
 
     if (!res.ok) {
-      const err = await res.text();
-      const errMsg = err && err.message ? err.message : String(err);
-    let userMsg = '⚠️ Não foi possível conectar. Verifique sua internet e tente novamente.';
-    if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
-      userMsg = '⚠️ Limite diário da API atingido. O plano gratuito permite 20 requisições por dia. Aguarde o reset (meia-noite horário EUA) ou ative um plano pago no Google AI Studio (aistudio.google.com).';
-    } else if (errMsg.includes('timeout') || errMsg.includes('TIMEOUT') || errMsg.includes('FUNCTION_INVOCATION')) {
-      userMsg = '⚠️ Resposta demorou demais. Tente uma pergunta mais curta ou clique em Limpar e tente novamente.';
-    }
-    addMessage('assistant', userMsg);
+      const errText = await res.text();
+      let userMsg = '⚠️ Erro na API (status ' + res.status + ').';
+      if (errText.includes('429') || errText.includes('RESOURCE_EXHAUSTED')) {
+        userMsg = '⚠️ Limite diário atingido (20 req/dia no plano gratuito). Aguarde o reset ou ative plano pago em aistudio.google.com.';
+      } else { userMsg += ' ' + errText.slice(0, 200); }
+      addMessage('assistant', userMsg);
       setStatus('err', 'Erro na API.');
       isLoading = false;
       document.getElementById('btn-send').disabled = false;
