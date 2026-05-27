@@ -261,7 +261,7 @@ footer a:hover{text-decoration:underline;}
 
 /* CONSENT */
 #consent-banner{position:fixed;bottom:0;left:0;right:0;z-index:400;background:rgba(26,31,46,.98);backdrop-filter:blur(10px);padding:1.1rem clamp(1rem,4vw,2rem);box-shadow:0 -4px 24px rgba(0,0,0,.3);display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;transition:transform .3s;}
-#consent-banner.hidden{transform:translateY(110%)}
+#consent-banner.hidden{display:none !important;}
 #consent-banner p{font-size:.8rem;color:rgba(255,255,255,.72);line-height:1.6;flex:1;min-width:220px}
 #consent-banner a{color:var(--orange);font-weight:600}
 .consent-btns{display:flex;gap:.6rem;flex-shrink:0}
@@ -976,8 +976,7 @@ function addMessage(role, content) {
           parts.push(el.innerText || el.textContent || '');
           el = el.nextElementSibling;
         }
-        studyText = parts.join('
-').trim();
+        studyText = parts.join('\n').trim();
       } else {
         studyText = fullText.trim();
       }
@@ -1154,7 +1153,10 @@ async function enviar() {
 // ── LGPD consent ─────────────────────────────────────────────────────────────
 function aceitarConsent() {
   const banner = document.getElementById('consent-banner');
-  if (banner) banner.classList.add('hidden');
+  if (banner) {
+    banner.classList.add('hidden');
+    banner.style.display = 'none';
+  }
   try { localStorage.setItem('persist_consent', '1'); } catch(e) {}
   const statusEl = document.getElementById('chat-status');
   if (statusEl) setStatus('ok', 'PersistIA pronta — informe seu edital ou cargo para começar.');
@@ -1165,7 +1167,7 @@ window.addEventListener('load', () => {
   try {
     if (localStorage.getItem('persist_consent') === '1') {
       const banner = document.getElementById('consent-banner');
-      if (banner) banner.classList.add('hidden');
+      if (banner) { banner.classList.add('hidden'); banner.style.display = 'none'; }
     }
   } catch(e) {}
 });
