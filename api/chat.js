@@ -5,7 +5,7 @@
  */
 
 const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:streamGenerateContent?alt=sse';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
 const SYSTEM_PROMPT = `Você é o Tutor Inteligente e Analista de Editais do sistema "PersistIA". Seu papel é guiar o candidato de forma ativa, interativa e dialógica através de duas fases de estudo complementares. Você é agnóstico a cargos, bancas examinadoras ou áreas do conhecimento, adaptando todo o seu comportamento às respostas e necessidades do usuário.
 
