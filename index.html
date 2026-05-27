@@ -760,8 +760,15 @@ footer a:hover{text-decoration:underline;}
 
       <!-- ── MOBILE BAR ─────────────────────────────────────────────── -->
       <div class="chat-mobile-bar" id="mobile-bar">
-        <button class="chat-mobile-btn" onclick="toggleDrawer('drawer-doc')" id="btn-doc">📄 Documento</button>
         <button class="chat-mobile-btn" onclick="toggleDrawer('drawer-sugg')" id="btn-sugg">💡 Atalhos</button>
+        <button class="chat-mobile-btn" onclick="toggleDrawer('drawer-doc')" id="btn-doc">📄 Documento</button>
+      </div>
+
+      <div class="mobile-drawer" id="drawer-sugg">
+        <div onclick="usarSugg(this)" class="sugg">Quero montar meu cronograma de estudos</div>
+        <div onclick="usarSugg(this)" class="sugg">Fase 2: Direito Administrativo — Ato Administrativo — Conceito</div>
+        <div onclick="usarSugg(this)" class="sugg">Quero mais 10 questões inéditas sobre o mesmo assunto</div>
+        <div onclick="usarSugg(this)" class="sugg">Quais as 3 armadilhas do CESPE para Direito Constitucional?</div>
       </div>
 
       <div class="mobile-drawer" id="drawer-doc">
@@ -770,13 +777,6 @@ footer a:hover{text-decoration:underline;}
         </div>
         <input type="file" id="pdf-edital-m" accept="application/pdf" style="display:none" onchange="handlePdfM(this)">
         <p style="font-size:.7rem;color:rgba(13,17,23,.38);margin-top:.35rem">Ou cole o conteúdo programático direto no chat.</p>
-      </div>
-
-      <div class="mobile-drawer" id="drawer-sugg">
-        <div onclick="usarSugg(this)" class="sugg">Quero montar meu cronograma de estudos</div>
-        <div onclick="usarSugg(this)" class="sugg">Fase 2: Direito Administrativo — Ato Administrativo — Conceito</div>
-        <div onclick="usarSugg(this)" class="sugg">Quero mais 10 questões inéditas sobre o mesmo assunto</div>
-        <div onclick="usarSugg(this)" class="sugg">Quais as 3 armadilhas do CESPE para Direito Constitucional?</div>
       </div>
 
       <!-- ── MAIN CHAT ───────────────────────────────────────────────── -->
@@ -1014,7 +1014,17 @@ async function enviar() {
   addTyping();
   setStatus('', 'Analisando...');
 
-  const contents = [...conversationHistory];
+  // Strip PDF data from older messages to avoid token bloat on subsequent calls
+  const contents = conversationHistory.map((msg, i) => {
+    const isLast = i === conversationHistory.length - 1;
+    if (!isLast && msg.parts) {
+      return {
+        ...msg,
+        parts: msg.parts.map(p => p.inline_data ? { text: '[PDF do edital anexado anteriormente]' } : p)
+      };
+    }
+    return msg;
+  });
 
   try {
     const res = await fetch(API_URL, {
