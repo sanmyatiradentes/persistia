@@ -3,7 +3,7 @@
  * Gemini 2.5 Flash-Lite para cronograma, Flash para esteira
  */
 
-const GEMINI_LITE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse';
+const GEMINI_LITE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:streamGenerateContent?alt=sse';
 const GEMINI_FLASH = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
 const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
@@ -30,7 +30,7 @@ SE ESCOLHER 1 — colete dados em ordem:
 2. Data da prova (calcule dias a partir de hoje)
 3. Horas disponíveis por dia para estudo
 
-Após coletar tudo, responda EXATAMENTE neste JSON (sem texto fora do JSON):
+Após coletar tudo e ter TODOS os dados (edital + data + horas/dia), responda EXATAMENTE neste JSON (sem texto fora do JSON, sem markdown, sem \`\`\`):
 {
   "tipo": "cronograma",
   "certame": {
@@ -87,7 +87,11 @@ FCC: Letra da lei, todos os itens do edital pesam igual
 FGV: Constitucional, Administrativo, Civil pesam mais; segue STF/STJ
 VUNESP: Jurisprudência sumulada, Administrativo, Constitucional
 
-IMPORTANTE: Gere TODOS os itens do edital no JSON. Não limite por blocos.`;
+IMPORTANTE: 
+- Gere TODOS os itens do edital no JSON. Não limite por blocos.
+- Enquanto estiver coletando dados (antes de ter tudo), responda em texto simples, nunca em JSON.
+- Só responda em JSON quando tiver: edital + data da prova + horas por dia.
+- Se faltar algum dado, pergunte em texto simples com opções numeradas.`;
 
 const PROMPT_ESTEIRA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
 
