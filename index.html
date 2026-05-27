@@ -833,7 +833,16 @@ function handlePdf(input) {
   pdfFilename = file.name;
   document.getElementById('pdf-label').textContent = '✅ ' + file.name;
   const reader = new FileReader();
-  reader.onload = (e) => { pdfBase64 = e.target.result.split(',')[1]; };
+  reader.onload = (e) => {
+    const fullData = e.target.result.split(',')[1];
+    // Limit PDF to ~400KB base64 (~300KB file) to avoid Vercel timeout
+    // Gemini can still read truncated PDFs for text extraction
+    const MAX_B64 = 400000;
+    pdfBase64 = fullData.length > MAX_B64 ? fullData.substring(0, MAX_B64) : fullData;
+    if (fullData.length > MAX_B64) {
+      console.warn('PDF truncado para', MAX_B64, 'chars base64');
+    }
+  };
   reader.readAsDataURL(file);
 }
 
