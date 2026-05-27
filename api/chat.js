@@ -148,6 +148,9 @@ module.exports = async function handler(req, res) {
   }
 
   const userContents = Array.isArray(body.contents) ? body.contents : [];
+  // Debug: check if PDF is present
+  const hasPdfInRequest = userContents.some(m => m && m.parts && m.parts.some(p => p && p.inline_data));
+  console.log('[PersistIA] messages:', userContents.length, '| has PDF:', hasPdfInRequest, '| mode:', mode);
   const mode = body.mode || 'cronograma'; // 'cronograma' or 'esteira'
   const systemPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
   const geminiUrl = mode === 'esteira' ? GEMINI_FLASH : GEMINI_LITE;
@@ -155,12 +158,23 @@ module.exports = async function handler(req, res) {
   // Keep last 10 messages, strip old PDFs
   const MAX_HIST = 10;
   const trimmed = userContents.length > MAX_HIST ? userContents.slice(-MAX_HIST) : userContents;
+  // Keep PDF intact in first occurrence, replace in subsequent messages
   let pdfSeen = false;
   const safeContents = trimmed.map(msg => {
-    if (!msg.parts) return msg;
-    const hasPdf = msg.parts.some(p => p.inline_data);
-    if (hasPdf && !pdfSeen) { pdfSeen = true; return msg; }
-    return { ...msg, parts: msg.parts.map(p => p.inline_data ? { text: '[PDF já analisado]' } : p) };
+    if (!msg || !msg.parts) return msg;
+    const hasPdf = msg.parts.some(p => p && p.inline_data);
+    if (hasPdf && !pdfSeen) {
+      pdfSeen = true;
+      return msg; // keep original message with PDF intact
+    }
+    if (hasPdf && pdfSeen) {
+      // Replace PDF with text placeholder
+      return {
+        role: msg.role,
+        parts: msg.parts.map(p => (p && p.inline_data) ? { text: '[PDF do edital já analisado anteriormente]' } : p)
+      };
+    }
+    return msg;
   });
 
   const contents = [
