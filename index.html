@@ -1339,14 +1339,29 @@ async function enviar() {
     const bubble = addMessage('assistant', fullReply);
     conversationHistory.push({ role: 'model', parts: [{ text: fullReply }] });
     setStatus('ok', '✓ Resposta gerada — lembre-se de salvar o material!');
-    // Try to detect JSON cronograma response
+    // Try to detect JSON response
     try {
-      const jsonMatch = resposta.match(/[{][\s\S]*"tipo"\s*:\s*"cronograma"[\s\S]*[}]/);
+      // Clean response - extract JSON if present
+      const jsonMatch = resposta.match(/\{[\s\S]*"tipo"[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        cronogramaData = parsed;
-        cronogramaItems = parsed.itens || [];
-        mostrarBotaoDocx(parsed);
+        if (parsed.tipo === 'cronograma') {
+          cronogramaData = parsed;
+          cronogramaItems = parsed.itens || [];
+          // Replace the raw JSON display with a friendly message
+          resposta = '✅ Cronograma gerado com ' + (parsed.itens || []).length + ' itens!\n\n' +
+            'Cargo: ' + (parsed.certame?.cargo || '') + '\n' +
+            'Banca: ' + (parsed.certame?.banca || '') + '\n' +
+            'Data da prova: ' + (parsed.certame?.dataProva || '') + '\n' +
+            'Dias disponíveis: ' + (parsed.certame?.diasDisponiveis || '') + '\n' +
+            'Horas/dia: ' + (parsed.certame?.horasPorDia || '') + 'h\n' +
+            'Cobertura: ' + (parsed.analise?.coberturaPercent || 100) + '% do edital\n' +
+            (parsed.analise?.mensagemCorte ? '\n⚠️ ' + parsed.analise.mensagemCorte + '\n' : '') +
+            '\nClique no botão abaixo para baixar o cronograma completo em .docx';
+          mostrarBotaoDocx(parsed);
+        } else if (parsed.tipo === 'erro') {
+          resposta = '⚠️ ' + (parsed.mensagem || 'Erro desconhecido. Tente novamente.');
+        }
       }
     } catch(e) {}
 
