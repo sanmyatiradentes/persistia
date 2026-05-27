@@ -804,7 +804,7 @@ footer a:hover{text-decoration:underline;}
           </div>
         </div>
         <div class="chat-input-wrap">
-          <p class="disclaimer-sm">⚠️ Este sistema NÃO armazena dados. Salve o cronograma gerado no seu computador imediatamente. · <a href="mailto:persistiamentoria@gmail.com" style="color:var(--orange)">Contato</a></p>
+          <p class="disclaimer-sm">💾 <strong>Salve tudo!</strong> Este chat NÃO armazena dados — copie cada bloco gerado para o Word ou Google Docs imediatamente. · <a href="mailto:persistiamentoria@gmail.com" style="color:var(--orange)">Contato</a></p>
           <div class="input-row">
             <textarea id="user-input" placeholder="Cole o edital, o cronograma ou descreva o assunto que quer estudar..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
             <button class="btn-clr" onclick="limpar()" title="Limpar conversa">🗑</button>
@@ -950,6 +950,15 @@ function addMessage(role, content) {
   wrapper.appendChild(div);
 
   // sem botão global — copiar só nos blocos de código
+
+  // Se a resposta contém bloco de código (material de estudo), 
+  // adiciona lembrete de salvar logo abaixo
+  if (role === 'assistant' && bubble.querySelector('pre')) {
+    const reminder = document.createElement('div');
+    reminder.style.cssText = 'font-size:0.72rem;color:var(--orange);font-weight:600;margin:0.3rem 0 0.6rem 2.5rem;display:flex;align-items:center;gap:0.35rem;';
+    reminder.innerHTML = '💾 Salve este conteúdo — copie o bloco acima para o Word ou Google Docs. O chat não armazena dados.';
+    wrapper.appendChild(reminder);
+  }
 
   msgs.appendChild(wrapper);
   msgs.scrollTop = msgs.scrollHeight;
