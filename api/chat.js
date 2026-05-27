@@ -147,6 +147,11 @@ module.exports = async function handler(req, res) {
     try { body = JSON.parse(body); } catch(e) { return res.status(400).json({ error: 'Body inválido' }); }
   }
 
+  // Key endpoint — frontend fetches key once for direct Gemini calls (bypasses Vercel timeout)
+  if (body.getKey === true) {
+    return res.status(200).json({ key: apiKey });
+  }
+
   const userContents = Array.isArray(body.contents) ? body.contents : [];
   // Debug: check if PDF is present
   const hasPdfInRequest = userContents.some(m => m && m.parts && m.parts.some(p => p && p.inline_data));
