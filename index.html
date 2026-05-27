@@ -900,29 +900,6 @@ function renderMarkdown(text) {
   try { return marked.parse(text, { gfm: true, async: false }); } catch (e) { return text.replace(/\n/g, '<br>'); }
 }
 
-function extractStudyContent(html) {
-  // Splits a message into greeting part and study content part
-  // Study content starts at known keywords
-  const studyMarkers = [
-    'PERSISTIA', 'CRONOGRAMA', 'RAIO-X', 'BLOCO', 'SIMULADO',
-    'GABARITO', 'ESTEIRA', 'ETAPA', 'DADOS DO CERTAME', 'ARMADILHA',
-    'METODOLOGIA', 'SALVE AGORA'
-  ];
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  const fullText = div.textContent || '';
-  // Find where study content begins
-  let splitIdx = -1;
-  for (const marker of studyMarkers) {
-    const idx = fullText.indexOf(marker);
-    if (idx !== -1 && (splitIdx === -1 || idx < splitIdx)) splitIdx = idx;
-  }
-  if (splitIdx === -1) return { greeting: html, study: '' };
-  // Find the corresponding position in the HTML
-  // Walk through text nodes to find the split point
-  return { greeting: '', study: html, splitIdx };
-}
-
 function addMessage(role, content) {
   const msgs = document.getElementById('messages');
   const welcome = msgs.querySelector('.welcome-chat');
@@ -940,73 +917,99 @@ function addMessage(role, content) {
 
   const bubble = document.createElement('div');
   bubble.className = 'mbubble';
-  bubble.innerHTML = renderMarkdown(content);
 
-  div.appendChild(av);
-  div.appendChild(bubble);
-  wrapper.appendChild(div);
-
-  // For AI responses: detect study content and add copy button
   if (role === 'assistant') {
-    const fullText = bubble.innerText || bubble.textContent || '';
     const studyMarkers = ['PERSISTIA', 'CRONOGRAMA', 'RAIO-X', 'BLOCO', 'SIMULADO',
-      'GABARITO', 'ESTEIRA', 'ETAPA', 'DADOS DO CERTAME', 'ARMADILHA', 'METODOLOGIA'];
-    const hasStudy = studyMarkers.some(m => fullText.toUpperCase().includes(m));
+      'GABARITO', 'ESTEIRA', 'ETAPA', 'DADOS DO CERTAME', 'ARMADILHA', 'METODOLOGIA', 'SALVE'];
+    const lines = content.split('\n');
+    let splitIdx = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const t = lines[i].toUpperCase();
+      if (studyMarkers.some(m => t.includes(m))) { splitIdx = i; break; }
+    }
 
-    if (hasStudy) {
-      // Find where study content begins — look for first line containing a study marker
-      // Walk ALL text nodes in the bubble to find the split point
-      const allText = bubble.innerText || bubble.textContent || '';
-      const allLines = allText.split('\n');
-      let studyStartLine = -1;
-      for (let li = 0; li < allLines.length; li++) {
-        const t = allLines[li].toUpperCase();
-        if (studyMarkers.some(m => t.includes(m))) {
-          studyStartLine = li;
-          break;
-        }
-      }
-      // Copy only from the first study line onwards
-      let studyText = '';
-      if (studyStartLine > 0) {
-        studyText = allLines.slice(studyStartLine).join('\n').trim();
-      } else {
-        studyText = allText.trim();
+    if (splitIdx > 0) {
+      // Has greeting + study content — split them
+      const greetingText = lines.slice(0, splitIdx).join('\n').trim();
+      const studyText = lines.slice(splitIdx).join('\n').trim();
+
+      if (greetingText) {
+        const greetDiv = document.createElement('div');
+        greetDiv.style.cssText = 'margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(0,0,0,0.08);';
+        greetDiv.innerHTML = renderMarkdown(greetingText);
+        bubble.appendChild(greetDiv);
       }
 
-      // Add copy button + save reminder below the bubble
+      const studyDiv = document.createElement('div');
+      studyDiv.innerHTML = renderMarkdown(studyText);
+      bubble.appendChild(studyDiv);
+
+      div.appendChild(av);
+      div.appendChild(bubble);
+      wrapper.appendChild(div);
+
+      // Copy button copies ONLY the study content
       const actionBar = document.createElement('div');
       actionBar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin:0.4rem 0 0.6rem 2.4rem;flex-wrap:wrap;';
-
       const copyBtn = document.createElement('button');
-      copyBtn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:7px;padding:5px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:background 0.15s;';
+      copyBtn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:7px;padding:5px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;';
       copyBtn.innerHTML = '📋 Copiar conteúdo';
       copyBtn.onclick = () => {
-        const textToCopy = studyText || fullText;
-        navigator.clipboard.writeText(textToCopy).then(() => {
+        navigator.clipboard.writeText(studyText).then(() => {
           copyBtn.innerHTML = '✅ Copiado!';
           copyBtn.style.background = '#16a34a';
           setTimeout(() => { copyBtn.innerHTML = '📋 Copiar conteúdo'; copyBtn.style.background = 'var(--orange)'; }, 2500);
         }).catch(() => {
-          // fallback
           const ta = document.createElement('textarea');
-          ta.value = textToCopy;
-          ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
-          document.body.appendChild(ta);
-          ta.select();
+          ta.value = studyText;
+          ta.style.cssText = 'position:fixed;top:-9999px';
+          document.body.appendChild(ta); ta.select();
           try { document.execCommand('copy'); copyBtn.innerHTML = '✅ Copiado!'; copyBtn.style.background = '#16a34a'; setTimeout(() => { copyBtn.innerHTML = '📋 Copiar conteúdo'; copyBtn.style.background = 'var(--orange)'; }, 2500); } catch(e){}
           document.body.removeChild(ta);
         });
       };
-
       const reminder = document.createElement('span');
       reminder.style.cssText = 'font-size:0.69rem;color:rgba(13,17,23,0.45);';
       reminder.textContent = '💾 Cole num documento — este chat não armazena dados.';
-
       actionBar.appendChild(copyBtn);
       actionBar.appendChild(reminder);
       wrapper.appendChild(actionBar);
+
+    } else if (splitIdx === 0) {
+      // All study content, no greeting
+      const studyText = content.trim();
+      bubble.innerHTML = renderMarkdown(studyText);
+      div.appendChild(av); div.appendChild(bubble); wrapper.appendChild(div);
+      const actionBar = document.createElement('div');
+      actionBar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin:0.4rem 0 0.6rem 2.4rem;';
+      const copyBtn = document.createElement('button');
+      copyBtn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:7px;padding:5px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;';
+      copyBtn.innerHTML = '📋 Copiar conteúdo';
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(studyText).then(() => {
+          copyBtn.innerHTML = '✅ Copiado!'; copyBtn.style.background = '#16a34a';
+          setTimeout(() => { copyBtn.innerHTML = '📋 Copiar conteúdo'; copyBtn.style.background = 'var(--orange)'; }, 2500);
+        }).catch(() => {
+          const ta = document.createElement('textarea'); ta.value = studyText;
+          ta.style.cssText = 'position:fixed;top:-9999px'; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); } catch(e){}
+          document.body.removeChild(ta);
+        });
+      };
+      const reminder = document.createElement('span');
+      reminder.style.cssText = 'font-size:0.69rem;color:rgba(13,17,23,0.45);';
+      reminder.textContent = '💾 Cole num documento — este chat não armazena dados.';
+      actionBar.appendChild(copyBtn); actionBar.appendChild(reminder);
+      wrapper.appendChild(actionBar);
+
+    } else {
+      // No study content — just greeting, no copy button
+      bubble.innerHTML = renderMarkdown(content);
+      div.appendChild(av); div.appendChild(bubble); wrapper.appendChild(div);
     }
+  } else {
+    bubble.innerHTML = renderMarkdown(content);
+    div.appendChild(av); div.appendChild(bubble); wrapper.appendChild(div);
   }
 
   msgs.appendChild(wrapper);
