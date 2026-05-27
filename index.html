@@ -1289,13 +1289,19 @@ async function enviar() {
   addTyping();
   setStatus('', 'Analisando...');
 
-  // Strip PDF data from older messages to avoid token bloat on subsequent calls
-  const contents = conversationHistory.map((msg, i) => {
-    const isLast = i === conversationHistory.length - 1;
-    if (!isLast && msg.parts) {
+  // Keep PDF only in the first message that contains it; replace in all others
+  let _pdfKept = false;
+  const contents = conversationHistory.map((msg) => {
+    if (!msg.parts) return msg;
+    const hasPdf = msg.parts.some(p => p && p.inline_data);
+    if (hasPdf && !_pdfKept) {
+      _pdfKept = true;
+      return msg; // keep PDF intact in first occurrence
+    }
+    if (hasPdf && _pdfKept) {
       return {
         ...msg,
-        parts: msg.parts.map(p => p.inline_data ? { text: '[PDF do edital anexado anteriormente]' } : p)
+        parts: msg.parts.map(p => p.inline_data ? { text: '[PDF do edital já enviado anteriormente]' } : p)
       };
     }
     return msg;
