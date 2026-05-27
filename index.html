@@ -327,6 +327,7 @@ footer a:hover{text-decoration:underline;}
 .lei-mini{font-size:.69rem;color:rgba(13,17,23,.55);padding-left:.45rem;border-left:2px solid var(--navy-light);line-height:1.45;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/9.5.0/docx.umd.min.js"></script>
 </head>
 <body>
 
@@ -820,6 +821,9 @@ footer a:hover{text-decoration:underline;}
 
 <script>
 const API_URL = '/api/chat';
+let appMode = 'cronograma'; // 'cronograma' or 'esteira'
+let cronogramaData = null;  // stores parsed JSON from AI
+let cronogramaItems = [];   // accumulates all items
 let conversationHistory = [];
 let isLoading = false;
 let pdfBase64 = null;
@@ -880,6 +884,196 @@ function toggleEM(id) {
 }
 
 var openDrawer = null;
+function mostrarBotaoDocx(data) {
+  // Show DOCX download button in the chat area
+  const existing = document.getElementById('docx-btn-bar');
+  if (existing) existing.remove();
+  const bar = document.createElement('div');
+  bar.id = 'docx-btn-bar';
+  bar.style.cssText = 'display:flex;align-items:center;gap:1rem;padding:0.75rem 1rem;background:linear-gradient(135deg,rgba(230,81,0,0.08),rgba(230,81,0,0.03));border:1.5px solid var(--orange);border-radius:10px;margin:0.75rem 0;flex-wrap:wrap;';
+  const info = document.createElement('div');
+  info.style.cssText = 'flex:1;min-width:200px;';
+  const pct = data.analise?.coberturaPercent || 100;
+  const msg = data.analise?.mensagemCorte || '';
+  info.innerHTML = '<strong style="color:var(--orange)">📅 Cronograma pronto!</strong><br><span style="font-size:0.78rem;color:rgba(13,17,23,0.6)">' + 
+    (pct < 100 ? '⚠️ Cobertura: ' + pct + '% do edital. ' + msg : '✅ Cobre 100% do edital. ') +
+    data.certame?.diasDisponiveis + ' dias | ' + data.certame?.horasPorDia + 'h/dia</span>';
+  const btn = document.createElement('button');
+  btn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;';
+  btn.innerHTML = '⬇️ Baixar Cronograma (.docx)';
+  btn.onclick = () => gerarDocx(data);
+  bar.appendChild(info);
+  bar.appendChild(btn);
+  const msgs = document.getElementById('messages');
+  if (msgs) msgs.appendChild(bar);
+}
+
+async function gerarDocx(data) {
+  if (!window.docx) { alert('Biblioteca DOCX não carregada. Recarregue a página.'); return; }
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          AlignmentType, WidthType, BorderStyle, ShadingType, VerticalAlign,
+          HeadingLevel, PageOrientation } = window.docx;
+
+  const certame = data.certame || {};
+  const analise = data.analise || {};
+  const itens = data.itens || [];
+  const orange = 'E65100';
+  const lightOrange = 'FFF3E0';
+  const headerBg = 'BF360C';
+  const border = { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' };
+  const borders = { top: border, bottom: border, left: border, right: border };
+  const cellMargins = { top: 60, bottom: 60, left: 100, right: 100 };
+
+  function cell(text, opts = {}) {
+    return new TableCell({
+      borders,
+      margins: cellMargins,
+      verticalAlign: VerticalAlign.CENTER,
+      width: opts.width ? { size: opts.width, type: WidthType.DXA } : undefined,
+      shading: opts.bg ? { fill: opts.bg, type: ShadingType.CLEAR } : undefined,
+      children: [new Paragraph({
+        alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+        children: [new TextRun({
+          text: String(text),
+          bold: opts.bold || false,
+          size: opts.size || 18,
+          color: opts.color || '000000',
+          font: 'Arial'
+        })]
+      })]
+    });
+  }
+
+  // Column widths (landscape A4: ~13320 DXA content)
+  const colWidths = [600, 900, 3200, 2000, 1300, 800, 1000, 1000, 1000, 1520];
+  const tableWidth = colWidths.reduce((a,b) => a+b, 0);
+
+  // Header row
+  const headers = ['Dia', 'Data', 'Disciplina > Seção > Subseção', 'Horas', 'Prioridade',
+    'Tipo', 'Feito', 'Rev.24h', 'Rev.7d', 'Rev.30d'];
+  const headerRow = new TableRow({
+    tableHeader: true,
+    children: headers.map((h, i) => new TableCell({
+      borders,
+      margins: cellMargins,
+      width: { size: colWidths[i], type: WidthType.DXA },
+      shading: { fill: orange, type: ShadingType.CLEAR },
+      children: [new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: h, bold: true, size: 18, color: 'FFFFFF', font: 'Arial' })]
+      })]
+    }))
+  });
+
+  // Data rows
+  const dataRows = itens.map((item, idx) => {
+    const bg = idx % 2 === 0 ? 'FFFFFF' : 'FFF8F5';
+    const prioColor = item.prioridade === 'ALTA' ? 'B71C1C' : item.prioridade === 'MÉDIA' ? 'E65100' : '2E7D32';
+    const assunto = [item.disciplina, item.secao, item.subsecao].filter(Boolean).join(' > ');
+    return new TableRow({
+      children: [
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[0], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: String(item.dia || ''), size: 18, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[1], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item.data || '', size: 16, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[2], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ children: [new TextRun({ text: assunto, size: 18, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[3], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: (item.horas || '') + 'h', size: 18, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[4], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item.prioridade || '', bold: true, size: 18, color: prioColor, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[5], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item.tipo || 'ESTUDO', size: 16, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[6], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '( )', size: 18, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[7], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item.rev24h ? '( ) ' + item.rev24h : '( )', size: 16, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[8], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item.rev7d ? '( ) ' + item.rev7d : '( )', size: 16, font: 'Arial' })] })] }),
+        new TableCell({ borders, margins: cellMargins, width: { size: colWidths[9], type: WidthType.DXA }, shading: { fill: bg, type: ShadingType.CLEAR }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item.rev30d ? '( ) ' + item.rev30d : (analise.incluiRev30d ? '( )' : '-'), size: 16, font: 'Arial' })] })] }),
+      ]
+    });
+  });
+
+  const doc = new Document({
+    sections: [{
+      properties: {
+        page: {
+          size: { width: 15840, height: 12240, orientation: PageOrientation.LANDSCAPE },
+          margin: { top: 720, right: 720, bottom: 720, left: 720 }
+        }
+      },
+      children: [
+        // Title
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+          children: [new TextRun({ text: 'PersistIA — Cronograma de Estudos', bold: true, size: 36, color: orange, font: 'Arial' })]
+        }),
+        // Certame info
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 80 },
+          children: [new TextRun({ text: certame.cargo + ' | ' + certame.orgao + ' | Banca: ' + certame.banca, size: 22, font: 'Arial' })]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 80 },
+          children: [new TextRun({ text: 'Data da Prova: ' + certame.dataProva + ' | ' + certame.diasDisponiveis + ' dias | ' + certame.horasPorDia + 'h/dia | Total: ' + certame.totalHorasDisponiveis + 'h disponíveis', size: 20, font: 'Arial' })]
+        }),
+        // Coverage info
+        ...(analise.coberturaPercent < 100 ? [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 80 },
+            children: [new TextRun({ text: '⚠ Cobertura: ' + analise.coberturaPercent + '% do edital. ' + (analise.mensagemCorte || ''), size: 18, color: 'B71C1C', font: 'Arial' })]
+          })
+        ] : [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 80 },
+            children: [new TextRun({ text: '✓ Cobertura: 100% do edital', size: 18, color: '2E7D32', font: 'Arial' })]
+          })
+        ]),
+        // Revision info
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+          children: [new TextRun({
+            text: 'Revisões: 24h (' + (analise.incluiRev24h ? '✓' : '✗') + ')  7 dias (' + (analise.incluiRev7d ? '✓' : '✗') + ')  30 dias (' + (analise.incluiRev30d ? '✓' : '✗') + ')  |  Como usar: marque (X) ao concluir',
+            size: 18, font: 'Arial', italics: true
+          })]
+        }),
+        // Table
+        new Table({
+          width: { size: tableWidth, type: WidthType.DXA },
+          columnWidths: colWidths,
+          rows: [headerRow, ...dataRows]
+        }),
+        // Footer note
+        new Paragraph({
+          spacing: { before: 200 },
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text: 'Gerado por PersistIA — persistia-delta.vercel.app | persistiamentoria@gmail.com', size: 16, color: '999999', font: 'Arial', italics: true })]
+        })
+      ]
+    }]
+  });
+
+  const btn = document.querySelector('#docx-btn-bar button');
+  if (btn) { btn.innerHTML = '⏳ Gerando...'; btn.disabled = true; }
+
+  try {
+    const buffer = await Packer.toBuffer(doc);
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const cargo = (certame.cargo || 'cronograma').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+    a.download = 'PersistIA_Cronograma_' + cargo + '.docx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (btn) { btn.innerHTML = '✅ Baixado!'; setTimeout(() => { btn.innerHTML = '⬇️ Baixar Cronograma (.docx)'; btn.disabled = false; }, 3000); }
+  } catch(e) {
+    console.error('Erro ao gerar DOCX:', e);
+    if (btn) { btn.innerHTML = '❌ Erro. Tente novamente.'; btn.disabled = false; }
+    alert('Erro ao gerar o arquivo: ' + e.message);
+  }
+}
+
 function toggleDrawer(id) {
   const drawers = ['drawer-doc', 'drawer-sugg'];
   const btns = { 'drawer-doc': 'btn-doc', 'drawer-sugg': 'btn-sugg' };
@@ -1118,7 +1312,7 @@ async function enviar() {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents }),
+      body: JSON.stringify({ contents, mode: appMode }),
       signal: AbortSignal.timeout(90000)
     });
 
@@ -1145,6 +1339,16 @@ async function enviar() {
     const bubble = addMessage('assistant', fullReply);
     conversationHistory.push({ role: 'model', parts: [{ text: fullReply }] });
     setStatus('ok', '✓ Resposta gerada — lembre-se de salvar o material!');
+    // Try to detect JSON cronograma response
+    try {
+      const jsonMatch = resposta.match(/[{][\s\S]*"tipo"\s*:\s*"cronograma"[\s\S]*[}]/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        cronogramaData = parsed;
+        cronogramaItems = parsed.itens || [];
+        mostrarBotaoDocx(parsed);
+      }
+    } catch(e) {}
 
   } catch (e) {
     removeTyping();
