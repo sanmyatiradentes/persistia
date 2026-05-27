@@ -15,7 +15,7 @@ REGRAS DE FORMATO — OBRIGATÓRIAS
 1. Texto simples com listas numeradas ou com hífen. NUNCA tabelas markdown, blocos de código ou linhas decorativas.
 2. Respostas CURTAS e objetivas. Máximo 300 palavras por resposta.
 3. NUNCA gere cronograma automaticamente. Sempre pergunte antes.
-4. Cronograma: máximo 15 itens por resposta. Ao atingir 15, escreva: "Digite CONTINUE para os próximos itens."
+4. Cronograma: máximo 10 itens por resposta. PARE obrigatoriamente ao atingir 10. Escreva: "Digite CONTINUE para os próximos."
 5. Após material de estudo: "SALVE AGORA: copie este conteúdo e cole num documento."
 6. NUNCA invente leis, artigos ou autores.
 
@@ -55,7 +55,7 @@ CRONOGRAMA — BLOCO [N]
 Como usar: marque (X) em Feito, Rev.24h e Rev.7d.
 
 1. [Disciplina] - [Seção] - [Subseção] | [Xh] | [ALTA/MÉDIA/BAIXA] | Feito: ( ) | Rev.24h: ( ) | Rev.7d: ( )
-[até 15 itens — PARE e escreva: "Digite CONTINUE para os próximos itens."]
+[PARE obrigatoriamente em 10 itens. Escreva: "Digite CONTINUE para os próximos."]
 
 SALVE AGORA.
 
@@ -103,16 +103,20 @@ module.exports = async function handler(req, res) {
 
   const userContents = Array.isArray(body.contents) ? body.contents : [];
 
-  // Strip PDF de mensagens antigas para reduzir tokens
-  const safeContents = userContents.map((msg, i) => {
-    const isLast = i === userContents.length - 1;
-    if (!isLast && msg.parts) {
-      return {
-        ...msg,
-        parts: msg.parts.map(p => p.inline_data ? { text: '[PDF do edital anexado anteriormente]' } : p)
-      };
+  // Strip PDF de TODAS as mensagens exceto a primeira que contém PDF
+  // Isso reduz drasticamente o tamanho do payload nas mensagens seguintes
+  let pdfSeen = false;
+  const safeContents = userContents.map((msg) => {
+    if (!msg.parts) return msg;
+    const hasPdf = msg.parts.some(p => p.inline_data);
+    if (hasPdf && !pdfSeen) {
+      pdfSeen = true;
+      return msg; // Mantém o PDF na primeira ocorrência
     }
-    return msg;
+    return {
+      ...msg,
+      parts: msg.parts.map(p => p.inline_data ? { text: '[PDF do edital enviado anteriormente — conteúdo já analisado]' } : p)
+    };
   });
 
   const contents = [
@@ -131,7 +135,7 @@ module.exports = async function handler(req, res) {
         contents,
         generationConfig: {
           temperature: 0.4,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 1500,
           topP: 0.95,
         },
       }),
