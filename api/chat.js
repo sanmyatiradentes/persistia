@@ -3,7 +3,7 @@
  * Gemini 2.5 Flash-Lite para cronograma, Flash para esteira
  */
 
-const GEMINI_LITE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:streamGenerateContent?alt=sse';
+const GEMINI_LITE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 const GEMINI_FLASH = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
 const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
@@ -181,9 +181,15 @@ module.exports = async function handler(req, res) {
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
-      let msg = '⚠️ Erro na API. Tente novamente.';
+      let msg = '⚠️ Erro na API (status ' + geminiRes.status + '). ';
       if (errText.includes('429') || errText.includes('RESOURCE_EXHAUSTED'))
         msg = '⚠️ Limite diário atingido (20 req/dia no plano gratuito). Aguarde o reset ou ative plano pago em aistudio.google.com.';
+      else if (errText.includes('404'))
+        msg = '⚠️ Modelo não encontrado. Verifique a configuração da API.';
+      else if (errText.includes('400'))
+        msg = '⚠️ Requisição inválida: ' + errText.slice(0, 200);
+      else
+        msg += errText.slice(0, 300);
       return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
     }
 
@@ -214,8 +220,7 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (err) {
-    let msg = '⚠️ Erro de conexão. Tente novamente.';
-    if (err.message?.includes('quota')) msg = '⚠️ Limite atingido. Tente mais tarde.';
+    const msg = '⚠️ Erro de conexão: ' + (err.message || 'desconhecido') + '. Tente novamente.';
     return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
   }
 };
