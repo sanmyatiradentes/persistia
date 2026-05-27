@@ -912,20 +912,21 @@ function addMessage(role, content) {
   const welcome = msgs.querySelector('.welcome-chat');
   if (welcome) welcome.remove();
 
-  // wrapper holds msg + copy button
   const wrapper = document.createElement('div');
   wrapper.className = 'msg-wrapper' + (role === 'user' ? ' user' : '');
 
   const div = document.createElement('div');
   div.className = 'msg ' + role;
+
   const av = document.createElement('div');
   av.className = 'mavatar';
   av.textContent = role === 'user' ? '👤' : '🎯';
+
   const bubble = document.createElement('div');
   bubble.className = 'mbubble';
   bubble.innerHTML = renderMarkdown(content);
 
-  // post-process: add copy buttons to code blocks
+  // Botão COPIAR apenas dentro de blocos pre (material de estudo)
   bubble.querySelectorAll('pre').forEach(pre => {
     const wrap = document.createElement('div');
     wrap.className = 'code-block-wrap';
@@ -939,25 +940,25 @@ function addMessage(role, content) {
       navigator.clipboard.writeText(text).then(() => {
         btn.innerHTML = '✅ Copiado!';
         btn.classList.add('copied');
-        setTimeout(() => { btn.innerHTML = '📋 Copiar'; btn.classList.remove('copied'); }, 2000);
+        setTimeout(() => { btn.innerHTML = '📋 Copiar'; btn.classList.remove('copied'); }, 2500);
       }).catch(() => fallbackCopy(text, btn));
     };
     wrap.appendChild(btn);
   });
 
-  div.appendChild(av);
-  div.appendChild(bubble);
-  wrapper.appendChild(div);
-
-  // sem botão global — copiar só nos blocos de código
-
-  // Se a resposta contém bloco de código (material de estudo), 
-  // adiciona lembrete de salvar logo abaixo
+  // Lembrete de salvar abaixo de cada bloco de material
   if (role === 'assistant' && bubble.querySelector('pre')) {
-    const reminder = document.createElement('div');
-    reminder.style.cssText = 'font-size:0.72rem;color:var(--orange);font-weight:600;margin:0.3rem 0 0.6rem 2.5rem;display:flex;align-items:center;gap:0.35rem;';
-    reminder.innerHTML = '💾 Salve este conteúdo — copie o bloco acima para o Word ou Google Docs. O chat não armazena dados.';
+    const reminder = document.createElement('p');
+    reminder.style.cssText = 'font-size:0.71rem;color:var(--orange);font-weight:600;margin:0.4rem 0 0.6rem 2.4rem;';
+    reminder.textContent = '💾 Salve agora — copie o bloco acima e cole em um documento. Este chat não armazena dados.';
+    wrapper.appendChild(div);
+    div.appendChild(av);
+    div.appendChild(bubble);
     wrapper.appendChild(reminder);
+  } else {
+    div.appendChild(av);
+    div.appendChild(bubble);
+    wrapper.appendChild(div);
   }
 
   msgs.appendChild(wrapper);
