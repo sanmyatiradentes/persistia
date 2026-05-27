@@ -1153,17 +1153,21 @@ async function enviar() {
 
 // ── LGPD consent ─────────────────────────────────────────────────────────────
 function aceitarConsent() {
-  document.getElementById('consent-banner').classList.add('hidden');
-  localStorage.setItem('persist_consent', '1');
-  setStatus('ok', 'PersistIA pronta — informe seu edital ou cargo para começar.');
+  const banner = document.getElementById('consent-banner');
+  if (banner) banner.classList.add('hidden');
+  try { localStorage.setItem('persist_consent', '1'); } catch(e) {}
+  const statusEl = document.getElementById('chat-status');
+  if (statusEl) setStatus('ok', 'PersistIA pronta — informe seu edital ou cargo para começar.');
 }
 function recusarConsent() { window.location.href = 'about:blank'; }
 
 window.addEventListener('load', () => {
-  if (localStorage.getItem('persist_consent') === '1') {
-    document.getElementById('consent-banner').classList.add('hidden');
-    setStatus('ok', 'PersistIA pronta — informe seu edital ou cargo para começar.');
-  }
+  try {
+    if (localStorage.getItem('persist_consent') === '1') {
+      const banner = document.getElementById('consent-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+  } catch(e) {}
 });
 </script>
 </body>
