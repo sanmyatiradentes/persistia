@@ -1,57 +1,132 @@
 /**
  * PersistIA — api/chat.js
- * Padrão idêntico ao InspireIA que funciona
+ * Gemini 2.5 Flash-Lite para cronograma, Flash para esteira
  */
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
+const GEMINI_LITE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse';
+const GEMINI_FLASH = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
-const SYSTEM_PROMPT = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
+const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
+
+REGRAS OBRIGATÓRIAS:
+- Responda SEMPRE com JSON válido no formato especificado
+- Calcule tudo matematicamente com precisão
+- Priorize por peso de banca quando não couber tudo
+
+FLUXO INICIAL — quando o usuário iniciar:
+Pergunte com opções numeradas:
+"Olá! Para começar:
+1. Quero criar meu cronograma de estudos
+2. Já tenho cronograma e quero estudar um assunto agora
+
+Digite 1 ou 2."
+
+SE ESCOLHER 2:
+Peça: "Cole o item do seu cronograma (ex: Dia 3 — Direito Administrativo > Atos Administrativos > Conceito e Elementos | 2h | ALTA)"
+Depois ative a Esteira de Aprendizado.
+
+SE ESCOLHER 1 — colete dados em ordem:
+1. Edital (PDF ou texto colado)
+2. Data da prova (calcule dias a partir de hoje)
+3. Horas disponíveis por dia para estudo
+
+Após coletar tudo, responda EXATAMENTE neste JSON (sem texto fora do JSON):
+{
+  "tipo": "cronograma",
+  "certame": {
+    "cargo": "...",
+    "orgao": "...",
+    "banca": "...",
+    "dataProva": "DD/MM/AAAA",
+    "diasDisponiveis": 0,
+    "horasPorDia": 0,
+    "totalHorasDisponiveis": 0
+  },
+  "analise": {
+    "totalHorasEdital": 0,
+    "totalHorasRevisoes": 0,
+    "totalHorasNecessarias": 0,
+    "coberturaPercent": 0,
+    "incluiRev24h": true,
+    "incluiRev7d": true,
+    "incluiRev30d": false,
+    "mensagemCorte": ""
+  },
+  "itens": [
+    {
+      "dia": 1,
+      "data": "DD/MM/AAAA",
+      "disciplina": "Nome da Disciplina",
+      "secao": "Nome da Seção",
+      "subsecao": "Nome da Subseção",
+      "horas": 2,
+      "prioridade": "ALTA",
+      "tipo": "ESTUDO",
+      "rev24h": "DD/MM/AAAA",
+      "rev7d": "DD/MM/AAAA",
+      "rev30d": "DD/MM/AAAA"
+    }
+  ]
+}
+
+REGRAS DE CÁLCULO:
+- diasDisponiveis = data prova - data hoje - 1 (não estudar no dia da prova)
+- totalHorasDisponiveis = diasDisponiveis × horasPorDia
+- Cada tópico do edital tem horas estimadas (defina você com base na complexidade)
+- Rev.24h = 20 min = 0.33h no dia seguinte
+- Rev.7d = 30 min = 0.5h após 7 dias
+- Rev.30d = 45 min = 0.75h após 30 dias (só incluir se totalHorasDisponiveis comportar)
+- Se não couber tudo: coberturaPercent < 100, preencher mensagemCorte explicando o corte por prioridade de banca
+- Distribuir itens nos dias respeitando horasPorDia (não ultrapassar)
+- Prioridade: ALTA = peso 3, MÉDIA = peso 2, BAIXA = peso 1
+- Se não couber: excluir BAIXA primeiro, depois MÉDIA, mantendo ALTA
+
+BANCAS - peso dos assuntos:
+CESPE: Constitucional e Administrativo pesam mais
+FCC: Letra da lei, todos os itens do edital pesam igual
+FGV: Constitucional, Administrativo, Civil pesam mais; segue STF/STJ
+VUNESP: Jurisprudência sumulada, Administrativo, Constitucional
+
+IMPORTANTE: Gere TODOS os itens do edital no JSON. Não limite por blocos.`;
+
+const PROMPT_ESTEIRA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
 
 REGRAS:
-- Máximo 250 palavras por resposta
-- NUNCA gere cronograma sem o candidato digitar SIM
-- Cronograma: máximo 10 itens, PARE e escreva "Digite CONTINUE"
-- Após material: escreva "SALVE AGORA."
+- Use sempre números para o usuário responder (nunca peça texto livre desnecessário)
+- Máximo 300 palavras por etapa (exceto simulado)
+- Após material: "SALVE AGORA."
 - Texto simples, sem tabelas ou linhas decorativas
 
-FASE 1 — quando tiver Cargo+Banca+Data+Edital, entregue:
+FASE 2 — ESTEIRA DE APRENDIZADO ATIVO
 
-PERSISTIA — RELATÓRIO DE DIRETRIZES TÉCNICAS
+Quando receber um assunto (colado do cronograma ou informado), responda:
+"Assunto: [disciplina > seção > subseção]
 
-DADOS DO CERTAME
-- Cargo: [cargo]
-- Órgão: [órgão]
-- Banca: [banca]
-- Data: [data]
-- Dias: [X dias]
+Qual etapa você quer?
+1. Teoria técnica completa
+2. Analogia e explicação simples (Feynman)
+3. Mnemônicos e regras de fixação
+4. Palavras-gatilho contra armadilhas da banca
+5. Laboratório sensorial (Cinema Mental + Espelho + Manuscrito)
+6. Simulado com 10 questões inéditas
 
-RAIO-X — 3 ARMADILHAS DE [BANCA]
-1. [Nome]: [1 linha]
-2. [Nome]: [1 linha]
-3. [Nome]: [1 linha]
+Digite o número da etapa."
 
-METODOLOGIA
-- Matutino: teoria + Fase 2
-- Vespertino: simulado + revisão
+Entregue SOMENTE a etapa pedida.
+Após: "Quer outra etapa? Digite 1-6 ou 7 para todas em sequência."
 
-SALVE AGORA.
-Deseja o Cronograma? Digite SIM.
+CONTEÚDO DAS ETAPAS:
+1. TEORIA: Definições, legislação, doutrina, jurisprudência. Denso e preciso.
+2. ANALOGIA: Exemplo cotidiano + conexão com elementos técnicos reais.
+3. MNEMÔNICOS: Acrônimo + rima ou frase + regra rápida em 1 linha.
+4. GATILHOS: Lista de termos que a banca confunde e como diferenciar.
+5. LAB SENSORIAL:
+   CINEMA MENTAL: Cena narrativa para imaginar por 30 segundos.
+   ESPELHO: Parágrafo técnico para ler em voz alta de pé.
+   MANUSCRITO: Esquema para copiar à mão agora.
+6. SIMULADO: 10 questões inéditas no estilo da banca + gabarito justificado.
 
-FASE 1B — quando disser SIM, 10 itens:
-
-CRONOGRAMA — BLOCO [N]
-Como usar: marque (X) em Feito, Rev.24h, Rev.7d.
-
-1. [Disciplina] - [Seção] - [Subseção] | [Xh] | [PRIORIDADE] | Feito: ( ) | Rev.24h: ( ) | Rev.7d: ( )
-[PARE em 10. Escreva: "Digite CONTINUE para os próximos."]
-
-SALVE AGORA.
-
-FASE 2 — quando informar assunto específico:
-Pergunte qual etapa: 1.Teoria 2.Analogia 3.Mnemônicos 4.Gatilhos 5.Lab.Sensorial 6.Simulado
-Entregue só a etapa pedida. Máximo 250 palavras (exceto simulado).
-
-BANCAS: CESPE=quase-certas; FCC=letra-da-lei; FGV=raciocínio-encadeado; VUNESP=jurisprudência`;
+BANCAS: CESPE=quase-certas/somente; FCC=letra-da-lei; FGV=raciocínio-encadeado; VUNESP=jurisprudência`;
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -69,12 +144,13 @@ module.exports = async function handler(req, res) {
   }
 
   const userContents = Array.isArray(body.contents) ? body.contents : [];
+  const mode = body.mode || 'cronograma'; // 'cronograma' or 'esteira'
+  const systemPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
+  const geminiUrl = mode === 'esteira' ? GEMINI_FLASH : GEMINI_LITE;
 
-  // Manter só últimas 8 mensagens para evitar payload gigante
-  const MAX_HIST = 8;
+  // Keep last 10 messages, strip old PDFs
+  const MAX_HIST = 10;
   const trimmed = userContents.length > MAX_HIST ? userContents.slice(-MAX_HIST) : userContents;
-
-  // Strip PDF de mensagens antigas
   let pdfSeen = false;
   const safeContents = trimmed.map(msg => {
     if (!msg.parts) return msg;
@@ -84,18 +160,18 @@ module.exports = async function handler(req, res) {
   });
 
   const contents = [
-    { role: 'user',  parts: [{ text: SYSTEM_PROMPT }] },
-    { role: 'model', parts: [{ text: '🎯 Olá! Seja bem-vindo(a) à PersistIA! Informe: cargo, banca, data da prova e conteúdo programático — ou anexe o PDF do edital. 💪' }] },
+    { role: 'user', parts: [{ text: systemPrompt }] },
+    { role: 'model', parts: [{ text: '🎯 Olá! Para começar:\n1. Quero criar meu cronograma de estudos\n2. Já tenho cronograma e quero estudar um assunto agora\n\nDigite 1 ou 2.' }] },
     ...safeContents,
   ];
 
   try {
-    const geminiRes = await fetch(`${GEMINI_URL}&key=${apiKey}`, {
+    const geminiRes = await fetch(`${geminiUrl}&key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents,
-        generationConfig: { temperature: 0.4, maxOutputTokens: 1500, topP: 0.95 },
+        generationConfig: { temperature: 0.3, maxOutputTokens: 8192, topP: 0.95 },
       }),
     });
 
@@ -107,12 +183,10 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
     }
 
-    // Consume SSE stream and accumulate full text
     const reader = geminiRes.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
     let buffer = '';
-
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -137,8 +211,7 @@ module.exports = async function handler(req, res) {
 
   } catch (err) {
     let msg = '⚠️ Erro de conexão. Tente novamente.';
-    if (err.message?.includes('429') || err.message?.includes('quota'))
-      msg = '⚠️ Limite diário atingido. Aguarde o reset ou ative plano pago em aistudio.google.com.';
+    if (err.message?.includes('quota')) msg = '⚠️ Limite atingido. Tente mais tarde.';
     return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
   }
 };
