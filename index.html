@@ -308,18 +308,7 @@ footer a:hover{text-decoration:underline;}
 .msg-wrapper { max-width: 780px; }
 .msg-wrapper.user { align-self: flex-end; }
 .msg-wrapper .msg { max-width: 100%; }
-/* code block copy */
-.code-block-wrap { position: relative; margin: .75rem 0; }
-.code-copy-btn {
-  position: absolute; top: 8px; right: 10px;
-  background: var(--orange); color: #fff;
-  border: none; border-radius: 6px;
-  padding: 4px 12px; font-size: 0.72rem; font-weight: 700;
-  cursor: pointer; transition: all 0.15s; font-family: inherit;
-  display: flex; align-items: center; gap: 5px; letter-spacing: 0.01em;
-}
-.code-copy-btn:hover { background: var(--orange-hover); transform: translateY(-1px); }
-.code-copy-btn.copied { background: #16a34a; }
+/* copy button removed - using Markdown output */
 
 /* eixo-mini (sidebar collapsible) */
 .eixo-mini{margin-bottom:.4rem;}
@@ -926,39 +915,22 @@ function addMessage(role, content) {
   bubble.className = 'mbubble';
   bubble.innerHTML = renderMarkdown(content);
 
-  // Botão COPIAR apenas dentro de blocos pre (material de estudo)
-  bubble.querySelectorAll('pre').forEach(pre => {
-    const wrap = document.createElement('div');
-    wrap.className = 'code-block-wrap';
-    pre.parentNode.insertBefore(wrap, pre);
-    wrap.appendChild(pre);
-    const btn = document.createElement('button');
-    btn.className = 'code-copy-btn';
-    btn.innerHTML = '📋 Copiar';
-    btn.onclick = () => {
-      const text = pre.innerText || pre.textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        btn.innerHTML = '✅ Copiado!';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.innerHTML = '📋 Copiar'; btn.classList.remove('copied'); }, 2500);
-      }).catch(() => fallbackCopy(text, btn));
-    };
-    wrap.appendChild(btn);
-  });
+  div.appendChild(av);
+  div.appendChild(bubble);
+  wrapper.appendChild(div);
 
-  // Lembrete de salvar abaixo de cada bloco de material
-  if (role === 'assistant' && bubble.querySelector('pre')) {
-    const reminder = document.createElement('p');
-    reminder.style.cssText = 'font-size:0.71rem;color:var(--orange);font-weight:600;margin:0.4rem 0 0.6rem 2.4rem;';
-    reminder.textContent = '💾 Salve agora — copie o bloco acima e cole em um documento. Este chat não armazena dados.';
-    wrapper.appendChild(div);
-    div.appendChild(av);
-    div.appendChild(bubble);
-    wrapper.appendChild(reminder);
-  } else {
-    div.appendChild(av);
-    div.appendChild(bubble);
-    wrapper.appendChild(div);
+  // Lembrete de salvar após resposta da IA que contém conteúdo de estudo
+  if (role === 'assistant') {
+    const text = bubble.textContent || '';
+    const hasStudyContent = text.includes('Cronograma') || text.includes('Esteira') ||
+      text.includes('Raio-X') || text.includes('CONTINUE') || text.includes('Simulado') ||
+      text.includes('Gabarito') || text.includes('Bloco');
+    if (hasStudyContent) {
+      const reminder = document.createElement('p');
+      reminder.style.cssText = 'font-size:0.71rem;color:var(--orange);font-weight:600;margin:0.35rem 0 0.5rem 2.4rem;';
+      reminder.innerHTML = '💾 <strong>Salve agora</strong> — copie o conteúdo acima e cole em um documento. Este chat não armazena dados.';
+      wrapper.appendChild(reminder);
+    }
   }
 
   msgs.appendChild(wrapper);
