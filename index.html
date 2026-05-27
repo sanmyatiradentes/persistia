@@ -1118,7 +1118,8 @@ async function enviar() {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents })
+      body: JSON.stringify({ contents }),
+      signal: AbortSignal.timeout(90000)
     });
 
     removeTyping();
