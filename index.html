@@ -708,6 +708,16 @@ footer a:hover{text-decoration:underline;}
       <div class="chat-sidebar">
 
         <div class="cs-section">
+          <div class="cs-label">Atalhos Rápidos</div>
+          <div onclick="usarSugg(this)" class="sugg">Quero montar meu cronograma de estudos</div>
+          <div onclick="usarSugg(this)" class="sugg">Fase 2: Direito Administrativo — Ato Administrativo — Conceito e Elementos</div>
+          <div onclick="usarSugg(this)" class="sugg">Fase 2: Português — Concordância Verbal — Regras Gerais</div>
+          <div onclick="usarSugg(this)" class="sugg">Quero mais 10 questões inéditas sobre o mesmo assunto</div>
+          <div onclick="usarSugg(this)" class="sugg">Quais as 3 armadilhas do CESPE para Direito Constitucional?</div>
+          <div onclick="usarSugg(this)" class="sugg">Como estudar em blocos de 3h sem perder o foco?</div>
+        </div>
+
+        <div class="cs-section">
           <div class="cs-label">📋 Cargo pretendido</div>
           <div style="margin-bottom:.35rem">
             <label style="font-size:.65rem;font-weight:600;color:rgba(13,17,23,.45);display:block;margin-bottom:.22rem">Cargo (opcional — a IA pergunta se faltar)</label>
@@ -723,16 +733,6 @@ footer a:hover{text-decoration:underline;}
           </div>
           <input type="file" id="pdf-edital" accept="application/pdf" style="display:none" onchange="handlePdf(this)">
           <p style="font-size:.64rem;color:rgba(13,17,23,.38);margin-top:.4rem;line-height:1.4">Ou cole o conteúdo programático diretamente no chat.</p>
-        </div>
-
-        <div class="cs-section">
-          <div class="cs-label">Atalhos Rápidos</div>
-          <div onclick="usarSugg(this)" class="sugg">Quero montar meu cronograma de estudos</div>
-          <div onclick="usarSugg(this)" class="sugg">Fase 2: Direito Administrativo — Ato Administrativo — Conceito e Elementos</div>
-          <div onclick="usarSugg(this)" class="sugg">Fase 2: Português — Concordância Verbal — Regras Gerais</div>
-          <div onclick="usarSugg(this)" class="sugg">Quero mais 10 questões inéditas sobre o mesmo assunto</div>
-          <div onclick="usarSugg(this)" class="sugg">Quais as 3 armadilhas do CESPE para Direito Constitucional?</div>
-          <div onclick="usarSugg(this)" class="sugg">Como estudar em blocos de 3h sem perder o foco?</div>
         </div>
 
         <div class="cs-section">
@@ -1055,7 +1055,14 @@ async function enviar() {
 
     if (!res.ok) {
       const err = await res.text();
-      addMessage('assistant', 'Erro ao conectar: ' + err);
+      const errMsg = err && err.message ? err.message : String(err);
+    let userMsg = '⚠️ Não foi possível conectar. Verifique sua internet e tente novamente.';
+    if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
+      userMsg = '⚠️ Limite diário da API atingido. O plano gratuito permite 20 requisições por dia. Aguarde o reset (meia-noite horário EUA) ou ative um plano pago no Google AI Studio (aistudio.google.com).';
+    } else if (errMsg.includes('timeout') || errMsg.includes('TIMEOUT') || errMsg.includes('FUNCTION_INVOCATION')) {
+      userMsg = '⚠️ Resposta demorou demais. Tente uma pergunta mais curta ou clique em Limpar e tente novamente.';
+    }
+    addMessage('assistant', userMsg);
       setStatus('err', 'Erro na API.');
       isLoading = false;
       document.getElementById('btn-send').disabled = false;
