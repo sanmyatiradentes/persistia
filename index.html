@@ -1030,6 +1030,9 @@ async function enviar() {
 
   // Build context prefix from sidebar fields
   const cargo = document.getElementById('cfg-cargo').value.trim();
+  const welcomeMsg = '🎯 Olá! Seja bem-vindo(a) à PersistIA — sua parceira de aprovação! ' +
+    'Estou aqui para transformar seu edital em um cronograma certeiro e te guiar por cada assunto com método, ciência e motivação. 💪 ' +
+    'Para começar, anexe o PDF do edital ou informe: cargo, banca, data da prova e o conteúdo programático. Vamos juntos nessa!';
   let prefix = '';
   if (cargo) prefix += `[CARGO: ${cargo}] `;
   if (pdfFilename) prefix += `[EDITAL ANEXADO: ${pdfFilename}] `;
@@ -1053,7 +1056,11 @@ async function enviar() {
   addTyping();
   setStatus('', 'Analisando...');
 
-  const contents = [...conversationHistory];
+  const contents = [
+    { role: 'user', parts: [{ text: '[SISTEMA: Você é a PersistIA. Siga as instruções do servidor.]' }] },
+    { role: 'model', parts: [{ text: welcomeMsg }] },
+    ...conversationHistory
+  ];
 
   try {
     const res = await fetch(API_URL, {
