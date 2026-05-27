@@ -954,31 +954,24 @@ function addMessage(role, content) {
     const hasStudy = studyMarkers.some(m => fullText.toUpperCase().includes(m));
 
     if (hasStudy) {
-      // Find where greeting ends and study content begins
-      // Split at the first paragraph/element that contains study keywords
-      const paras = bubble.querySelectorAll('p, h1, h2, h3, h4, li');
-      let studyStartEl = null;
-      for (const el of paras) {
-        const t = (el.innerText || el.textContent || '').toUpperCase();
+      // Find where study content begins — look for first line containing a study marker
+      // Walk ALL text nodes in the bubble to find the split point
+      const allText = bubble.innerText || bubble.textContent || '';
+      const allLines = allText.split('\n');
+      let studyStartLine = -1;
+      for (let li = 0; li < allLines.length; li++) {
+        const t = allLines[li].toUpperCase();
         if (studyMarkers.some(m => t.includes(m))) {
-          studyStartEl = el;
+          studyStartLine = li;
           break;
         }
       }
-
-      // Build study content string from studyStartEl onwards
+      // Copy only from the first study line onwards
       let studyText = '';
-      if (studyStartEl) {
-        // Collect all text from that element to end
-        let el = studyStartEl;
-        const parts = [];
-        while (el) {
-          parts.push(el.innerText || el.textContent || '');
-          el = el.nextElementSibling;
-        }
-        studyText = parts.join('\n').trim();
+      if (studyStartLine > 0) {
+        studyText = allLines.slice(studyStartLine).join('\n').trim();
       } else {
-        studyText = fullText.trim();
+        studyText = allText.trim();
       }
 
       // Add copy button + save reminder below the bubble
