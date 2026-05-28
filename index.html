@@ -822,10 +822,12 @@ footer a:hover{text-decoration:underline;}
 <script>
 const API_URL = '/api/chat';
 const GEMINI_DIRECT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-let geminiKey = null; // fetched from backend once
-let appMode = 'cronograma'; // 'cronograma' or 'esteira'
+let geminiKey = null;
+let appMode = 'cronograma';
 let cronogramaData = null;
 let cronogramaItems = [];
+
+;
 let conversationHistory = [];
 let isLoading = false;
 let pdfBase64 = null;
@@ -1257,18 +1259,26 @@ function limpar() {
 }
 
 // ── Main send ────────────────────────────────────────────────────────────────
-async function getGeminiKey() {
-  if (geminiKey) return geminiKey;
+async function getConfig() {
+  if (geminiKey && window._persistiaConfig?.cronograma) return true;
   try {
     const r = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ getKey: true })
+      body: JSON.stringify({ getConfig: true })
     });
     const d = await r.json();
-    if (d.key) { geminiKey = d.key; return geminiKey; }
+    if (d.key) {
+      geminiKey = d.key;
+      window._persistiaConfig = {
+        cronograma: d.promptCronograma || '',
+        esteira: d.promptEsteira || '',
+        welcome: d.welcomeMsg || ''
+      };
+      return true;
+    }
   } catch(e) {}
-  return null;
+  return false;
 }
 
 async function enviar() {
@@ -1279,7 +1289,7 @@ async function enviar() {
 
   // Build context prefix from sidebar fields
   const cargo = document.getElementById('cfg-cargo').value.trim();
-  const welcomeMsg = '🎯 Olá! Seja bem-vindo(a) à PersistIA — sua parceira de aprovação! ' +
+  const welcomeMsg = window._persistiaConfig?.welcome || '🎯 Olá! Seja bem-vindo(a) à PersistIA — sua parceira de aprovação! ' +
     'Estou aqui para transformar seu edital em um cronograma certeiro e te guiar por cada assunto com método, ciência e motivação. 💪 ' +
     'Para começar, anexe o PDF do edital ou informe: cargo, banca, data da prova e o conteúdo programático. Vamos juntos nessa!';
   let prefix = '';
@@ -1305,9 +1315,15 @@ async function enviar() {
   addTyping();
   setStatus('', 'Analisando...');
 
+  // System prompt comes from backend config (kept secret)
+  if (!window._persistiaConfig) {
+    window._persistiaConfig = {};
+  }
+  const sysPrompt = window._persistiaConfig[appMode] || '';
+
   // Keep PDF only in the first message that contains it; replace in all others
   let _pdfKept = false;
-  const contents = conversationHistory.map((msg) => {
+  const histContents = conversationHistory.map((msg) => {
     if (!msg.parts) return msg;
     const hasPdf = msg.parts.some(p => p && p.inline_data);
     if (hasPdf && !_pdfKept) {
@@ -1323,10 +1339,18 @@ async function enviar() {
     return msg;
   });
 
+  // Inject system prompt + welcome before history
+  const contents = [
+    { role: 'user', parts: [{ text: sysPrompt }] },
+    { role: 'model', parts: [{ text: WELCOME_MSG }] },
+    ...histContents,
+  ];
+
   try {
     // Chamada direta ao Gemini (sem passar pelo Vercel — sem timeout)
-    const key = await getGeminiKey();
-    if (!key) {
+    const ok = await getConfig();
+    const key = geminiKey;
+    if (!ok || !key) {
       removeTyping();
       addMessage('assistant', '⚠️ Chave da API não encontrada. Verifique a configuração no Vercel.');
       setStatus('err', 'Erro de configuração.');
