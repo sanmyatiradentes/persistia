@@ -1263,10 +1263,13 @@ async function getConfig() {
   if (geminiKey && window._persistiaConfig?.cronograma) return true;
   try {
     const r = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ getConfig: true })
+      method: 'GET',
+      signal: AbortSignal.timeout(15000)
     });
+    if (!r.ok) {
+      console.error('[PersistIA] getConfig HTTP error:', r.status, await r.text());
+      return false;
+    }
     const d = await r.json();
     if (d.key) {
       geminiKey = d.key;
@@ -1277,7 +1280,10 @@ async function getConfig() {
       };
       return true;
     }
-  } catch(e) {}
+    console.error('[PersistIA] getConfig: no key in response', d);
+  } catch(e) {
+    console.error('[PersistIA] getConfig error:', e.message);
+  }
   return false;
 }
 
@@ -1352,9 +1358,11 @@ async function enviar() {
     const key = geminiKey;
     if (!ok || !key) {
       removeTyping();
-      addMessage('assistant', '⚠️ Chave da API não encontrada. Verifique a configuração no Vercel.');
+      addMessage('assistant', '⚠️ Não foi possível conectar ao servidor. Verifique se a GEMINI_API_KEY está configurada no Vercel e tente novamente.');
       setStatus('err', 'Erro de configuração.');
-      isLoading = false; document.getElementById('btn-send').disabled = false; return;
+      isLoading = false;
+      document.getElementById('btn-send').disabled = false;
+      return;
     }
     const res = await fetch(GEMINI_DIRECT + '?key=' + key, {
       method: 'POST',
