@@ -1,10 +1,9 @@
 /**
  * PersistIA — api/chat.js
- * Gemini 2.5 Flash-Lite para cronograma, Flash para esteira
+ * Padrão InspireIA que funciona
  */
 
-const GEMINI_LITE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
-const GEMINI_FLASH = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
 const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
 
@@ -134,34 +133,16 @@ BANCAS: CESPE=quase-certas/somente; FCC=letra-da-lei; FGV=raciocínio-encadeado;
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  
-  // Allow GET for config (faster, no body parsing needed)
-  if (req.method === 'GET') {
-    const apiKey2 = process.env.GEMINI_API_KEY;
-    if (!apiKey2) return res.status(500).json({ error: 'API key não configurada' });
-    return res.status(200).json({
-      key: apiKey2,
-      promptCronograma: PROMPT_CRONOGRAMA,
-      promptEsteira: PROMPT_ESTEIRA,
-      welcomeMsg: '🎯 Olá! Para começar:\n1. Quero criar meu cronograma de estudos\n2. Já tenho cronograma e quero estudar um assunto agora\n\nDigite 1 ou 2.'
-    });
-  }
 
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY não configurada.' });
 
-  let body = req.body || {};
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch(e) { return res.status(400).json({ error: 'Body inválido' }); }
-  }
-
-  // Config endpoint — returns key + prompts (prompts stay hidden from HTML source)
-  if (body.getConfig === true) {
+  // GET: return config (key + prompts) for direct frontend calls
+  if (req.method === 'GET') {
     return res.status(200).json({
       key: apiKey,
       promptCronograma: PROMPT_CRONOGRAMA,
@@ -170,44 +151,40 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const userContents = Array.isArray(body.contents) ? body.contents : [];
-  // Debug: check if PDF is present
-  const hasPdfInRequest = userContents.some(m => m && m.parts && m.parts.some(p => p && p.inline_data));
-  console.log('[PersistIA] messages:', userContents.length, '| has PDF:', hasPdfInRequest, '| mode:', mode);
-  const mode = body.mode || 'cronograma'; // 'cronograma' or 'esteira'
-  const systemPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
-  const geminiUrl = mode === 'esteira' ? GEMINI_FLASH : GEMINI_LITE;
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
-  // Keep last 10 messages, strip old PDFs
-  const MAX_HIST = 10;
+  let body = req.body || {};
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch(e) {
+      return res.status(400).json({ error: 'Body inválido' });
+    }
+  }
+
+  const userContents = Array.isArray(body.contents) ? body.contents : [];
+  const mode = body.mode || 'cronograma';
+  const sysPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
+  const welcomeMsg = '🎯 Olá! Para começar:\n1. Quero criar meu cronograma de estudos\n2. Já tenho cronograma e quero estudar um assunto agora\n\nDigite 1 ou 2.';
+
+  // Keep last 8 messages, strip old PDFs
+  const MAX_HIST = 8;
   const trimmed = userContents.length > MAX_HIST ? userContents.slice(-MAX_HIST) : userContents;
-  // Keep PDF intact in first occurrence, replace in subsequent messages
   let pdfSeen = false;
   const safeContents = trimmed.map(msg => {
     if (!msg || !msg.parts) return msg;
     const hasPdf = msg.parts.some(p => p && p.inline_data);
-    if (hasPdf && !pdfSeen) {
-      pdfSeen = true;
-      return msg; // keep original message with PDF intact
-    }
-    if (hasPdf && pdfSeen) {
-      // Replace PDF with text placeholder
-      return {
-        role: msg.role,
-        parts: msg.parts.map(p => (p && p.inline_data) ? { text: '[PDF do edital já analisado anteriormente]' } : p)
-      };
-    }
+    if (hasPdf && !pdfSeen) { pdfSeen = true; return msg; }
+    if (hasPdf) return { ...msg, parts: msg.parts.map(p => p.inline_data ? { text: '[PDF já analisado]' } : p) };
     return msg;
   });
 
   const contents = [
-    { role: 'user', parts: [{ text: systemPrompt }] },
-    { role: 'model', parts: [{ text: '🎯 Olá! Para começar:\n1. Quero criar meu cronograma de estudos\n2. Já tenho cronograma e quero estudar um assunto agora\n\nDigite 1 ou 2.' }] },
+    { role: 'user', parts: [{ text: sysPrompt }] },
+    { role: 'model', parts: [{ text: welcomeMsg }] },
     ...safeContents,
   ];
 
   try {
-    const geminiRes = await fetch(`${geminiUrl}&key=${apiKey}`, {
+    const geminiRes = await fetch(`${GEMINI_URL}&key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -218,15 +195,9 @@ module.exports = async function handler(req, res) {
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
-      let msg = '⚠️ Erro na API (status ' + geminiRes.status + '). ';
+      let msg = '⚠️ Erro na API.';
       if (errText.includes('429') || errText.includes('RESOURCE_EXHAUSTED'))
-        msg = '⚠️ Limite diário atingido (20 req/dia no plano gratuito). Aguarde o reset ou ative plano pago em aistudio.google.com.';
-      else if (errText.includes('404'))
-        msg = '⚠️ Modelo não encontrado. Verifique a configuração da API.';
-      else if (errText.includes('400'))
-        msg = '⚠️ Requisição inválida: ' + errText.slice(0, 200);
-      else
-        msg += errText.slice(0, 300);
+        msg = '⚠️ Limite diário atingido (20 req/dia). Aguarde o reset ou ative plano pago em aistudio.google.com.';
       return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
     }
 
@@ -234,6 +205,7 @@ module.exports = async function handler(req, res) {
     const decoder = new TextDecoder();
     let fullText = '';
     let buffer = '';
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -253,11 +225,10 @@ module.exports = async function handler(req, res) {
     }
 
     return res.status(200).json({
-      candidates: [{ content: { parts: [{ text: fullText || '⚠️ Sem resposta. Tente novamente.' }], role: 'model' }, finishReason: 'STOP' }]
+      candidates: [{ content: { parts: [{ text: fullText || '⚠️ Sem resposta.' }], role: 'model' }, finishReason: 'STOP' }]
     });
 
   } catch (err) {
-    const msg = '⚠️ Erro de conexão: ' + (err.message || 'desconhecido') + '. Tente novamente.';
-    return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
+    return res.status(200).json({ candidates: [{ content: { parts: [{ text: '⚠️ Erro: ' + err.message }] } }] });
   }
 };
