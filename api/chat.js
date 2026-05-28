@@ -137,6 +137,19 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  
+  // Allow GET for config (faster, no body parsing needed)
+  if (req.method === 'GET') {
+    const apiKey2 = process.env.GEMINI_API_KEY;
+    if (!apiKey2) return res.status(500).json({ error: 'API key não configurada' });
+    return res.status(200).json({
+      key: apiKey2,
+      promptCronograma: PROMPT_CRONOGRAMA,
+      promptEsteira: PROMPT_ESTEIRA,
+      welcomeMsg: '🎯 Olá! Para começar:\n1. Quero criar meu cronograma de estudos\n2. Já tenho cronograma e quero estudar um assunto agora\n\nDigite 1 ou 2.'
+    });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
   const apiKey = process.env.GEMINI_API_KEY;
