@@ -147,9 +147,14 @@ module.exports = async function handler(req, res) {
     try { body = JSON.parse(body); } catch(e) { return res.status(400).json({ error: 'Body inválido' }); }
   }
 
-  // Key endpoint — frontend fetches key once for direct Gemini calls (bypasses Vercel timeout)
-  if (body.getKey === true) {
-    return res.status(200).json({ key: apiKey });
+  // Config endpoint — returns key + prompts (prompts stay hidden from HTML source)
+  if (body.getConfig === true) {
+    return res.status(200).json({
+      key: apiKey,
+      promptCronograma: PROMPT_CRONOGRAMA,
+      promptEsteira: PROMPT_ESTEIRA,
+      welcomeMsg: '🎯 Olá! Para começar:\n1. Quero criar meu cronograma de estudos\n2. Já tenho cronograma e quero estudar um assunto agora\n\nDigite 1 ou 2.'
+    });
   }
 
   const userContents = Array.isArray(body.contents) ? body.contents : [];
