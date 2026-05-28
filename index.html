@@ -821,8 +821,6 @@ footer a:hover{text-decoration:underline;}
 
 <script>
 const API_URL = '/api/chat';
-const GEMINI_DIRECT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-let geminiKey = null;
 let appMode = 'cronograma';
 let cronogramaData = null;
 let cronogramaItems = [];
@@ -1259,33 +1257,7 @@ function limpar() {
 }
 
 // ── Main send ────────────────────────────────────────────────────────────────
-async function getConfig() {
-  if (geminiKey && window._persistiaConfig?.cronograma) return true;
-  try {
-    const r = await fetch('/api/chat', {
-      method: 'GET',
-      signal: AbortSignal.timeout(15000)
-    });
-    if (!r.ok) {
-      console.error('[PersistIA] getConfig HTTP error:', r.status, await r.text());
-      return false;
-    }
-    const d = await r.json();
-    if (d.key) {
-      geminiKey = d.key;
-      window._persistiaConfig = {
-        cronograma: d.promptCronograma || '',
-        esteira: d.promptEsteira || '',
-        welcome: d.welcomeMsg || ''
-      };
-      return true;
-    }
-    console.error('[PersistIA] getConfig: no key in response', d);
-  } catch(e) {
-    console.error('[PersistIA] getConfig error:', e.message);
-  }
-  return false;
-}
+
 
 async function enviar() {
   if (isLoading) return;
@@ -1345,7 +1317,7 @@ async function enviar() {
   const contents = [...histContents];
 
   try {
-    // Chamada via backend Vercel (padrão InspireIA)
+    // Chama backend Vercel (padrão InspireIA)
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
