@@ -1321,11 +1321,7 @@ async function enviar() {
   addTyping();
   setStatus('', 'Analisando...');
 
-  // System prompt comes from backend config (kept secret)
-  if (!window._persistiaConfig) {
-    window._persistiaConfig = {};
-  }
-  const sysPrompt = window._persistiaConfig[appMode] || '';
+  // System prompt is injected by backend (kept secret server-side)
 
   // Keep PDF only in the first message that contains it; replace in all others
   let _pdfKept = false;
@@ -1345,30 +1341,16 @@ async function enviar() {
     return msg;
   });
 
-  // Inject system prompt + welcome before history
-  const contents = [
-    { role: 'user', parts: [{ text: sysPrompt }] },
-    { role: 'model', parts: [{ text: WELCOME_MSG }] },
-    ...histContents,
-  ];
+  // Backend injects system prompt - just send history
+  const contents = [...histContents];
 
   try {
-    // Chamada direta ao Gemini (sem passar pelo Vercel — sem timeout)
-    const ok = await getConfig();
-    const key = geminiKey;
-    if (!ok || !key) {
-      removeTyping();
-      addMessage('assistant', '⚠️ Não foi possível conectar ao servidor. Verifique se a GEMINI_API_KEY está configurada no Vercel e tente novamente.');
-      setStatus('err', 'Erro de configuração.');
-      isLoading = false;
-      document.getElementById('btn-send').disabled = false;
-      return;
-    }
-    const res = await fetch(GEMINI_DIRECT + '?key=' + key, {
+    // Chamada via backend Vercel (padrão InspireIA)
+    const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents, generationConfig: { temperature: 0.3, maxOutputTokens: 8192, topP: 0.95 } }),
-      signal: AbortSignal.timeout(120000)
+      body: JSON.stringify({ contents, mode: appMode }),
+      signal: AbortSignal.timeout(90000)
     });
 
     removeTyping();
@@ -1378,7 +1360,7 @@ async function enviar() {
       let userMsg = '⚠️ Erro na API (status ' + res.status + ').';
       if (errText.includes('429') || errText.includes('RESOURCE_EXHAUSTED')) {
         userMsg = '⚠️ Limite diário atingido (20 req/dia no plano gratuito). Aguarde o reset ou ative plano pago em aistudio.google.com.';
-      } else { userMsg += ' ' + errText.slice(0, 200); }
+      }
       addMessage('assistant', userMsg);
       setStatus('err', 'Erro na API.');
       isLoading = false;
