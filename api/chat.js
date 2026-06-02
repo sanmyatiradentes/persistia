@@ -223,11 +223,21 @@ Formato exato:
       const data = await geminiRes.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
-      // Clean JSON response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) return res.status(200).json({ error: 'Resposta inválida da IA.' });
+      // Extract JSON from response (handle markdown fences)
+      let cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const jsonStart = cleanText.indexOf('{');
+      const jsonEnd = cleanText.lastIndexOf('}');
+      if (jsonStart === -1 || jsonEnd === -1) {
+        return res.status(200).json({ error: 'IA não retornou JSON válido. Tente novamente.' });
+      }
+      cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
       
-      const cronograma = JSON.parse(jsonMatch[0]);
+      let cronograma;
+      try {
+        cronograma = JSON.parse(cleanText);
+      } catch(parseErr) {
+        return res.status(200).json({ error: 'JSON inválido: ' + parseErr.message.slice(0, 100) });
+      }
       return res.status(200).json({ cronograma });
 
     } catch(err) {
