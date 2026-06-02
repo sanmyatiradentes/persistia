@@ -803,7 +803,12 @@ footer a:hover{text-decoration:underline;}
           </div>
         </div>
         <div class="chat-input-wrap">
-          <p class="disclaimer-sm">💾 <strong>Salve tudo!</strong> Este chat NÃO armazena dados — copie cada bloco gerado para o Word ou Google Docs imediatamente. · <a href="mailto:persistiamentoria@gmail.com" style="color:var(--orange)">Contato</a></p>
+          <p class="disclaimer-sm">💾 <strong>Salve tudo!</strong> Este chat NÃO armazena dados. · <a href="mailto:persistiamentoria@gmail.com" style="color:var(--orange)">Contato</a></p>
+          <div id="docx-gerador" style="display:none;margin:0.4rem 0 0.5rem;padding:0.6rem 0.9rem;background:linear-gradient(135deg,rgba(201,169,110,0.12),rgba(184,132,90,0.06));border:1.5px solid var(--gold);border-radius:10px;">
+            <div style="font-size:0.75rem;font-weight:700;color:var(--gold);margin-bottom:0.35rem;">📅 Cronograma completo pronto para gerar</div>
+            <div style="font-size:0.7rem;color:rgba(15,15,15,0.55);margin-bottom:0.5rem;">Gera o DOCX completo de uma vez, sem interrupções, com todas as revisões calculadas.</div>
+            <button id="btn-gerar-docx" onclick="gerarCronogramaCompleto()" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;">⬇️ Gerar Cronograma Completo (.docx)</button>
+          </div>
           <div class="input-row">
             <textarea id="user-input" placeholder="Cole o edital, o cronograma ou descreva o assunto que quer estudar..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
             <button class="btn-clr" onclick="limpar()" title="Limpar conversa">🗑</button>
@@ -1220,6 +1225,80 @@ function addMessage(role, content) {
   return bubble;
 }
 
+
+// ── Dados coletados para gerar DOCX ─────────────────────────────────────────
+let dadosCertame = { cargo: '', banca: '', dataProva: '', horasPorDia: 0 };
+
+function verificarDadosCompletos() {
+  // Show DOCX button when we have enough info in conversation
+  const hist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ').toLowerCase();
+  const temData = /\d{2}\/\d{2}\/\d{4}/.test(hist);
+  const temHoras = /hora|h\/dia|horas por dia/i.test(hist);
+  const temPdf = conversationHistory.some(m => m.parts?.some(p => p.inline_data));
+  if (temData && temHoras && temPdf) {
+    document.getElementById('docx-gerador').style.display = 'block';
+    // Extract data from sidebar fields
+    dadosCertame.cargo = document.getElementById('cfg-cargo')?.value || '';
+  }
+}
+
+async function gerarCronogramaCompleto() {
+  const btn = document.getElementById('btn-gerar-docx');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Gerando cronograma... pode demorar 30-60s';
+
+  // Get PDF from history
+  let pdfBase64 = null;
+  for (const msg of conversationHistory) {
+    const pdfPart = msg.parts?.find(p => p.inline_data?.mime_type === 'application/pdf');
+    if (pdfPart) { pdfBase64 = pdfPart.inline_data.data; break; }
+  }
+
+  // Extract info from conversation
+  const histText = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
+  const dataMatch = histText.match(/\d{2}\/\d{2}\/\d{4}/);
+  const horasMatch = histText.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?(?:\/dia| por dia)/i);
+  const bancaMatch = histText.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
+
+  const cargo = document.getElementById('cfg-cargo')?.value || dadosCertame.cargo || 'Não informado';
+  const banca = bancaMatch?.[1]?.toUpperCase() || dadosCertame.banca || 'Não informada';
+  const dataProva = dataMatch?.[0] || dadosCertame.dataProva || '';
+  const horasPorDia = parseFloat(horasMatch?.[1] || dadosCertame.horasPorDia || 4);
+
+  if (!pdfBase64) {
+    btn.disabled = false;
+    btn.innerHTML = '⬇️ Gerar Cronograma Completo (.docx)';
+    alert('PDF do edital não encontrado. Anexe o edital e tente novamente.');
+    return;
+  }
+  if (!dataProva) {
+    btn.disabled = false;
+    btn.innerHTML = '⬇️ Gerar Cronograma Completo (.docx)';
+    alert('Data da prova não identificada na conversa. Informe a data no chat e tente novamente.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'gerar_docx', pdfBase64, cargo, banca, dataProva, horasPorDia }),
+      signal: AbortSignal.timeout(90000)
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.cronograma) throw new Error('Cronograma não gerado.');
+    await gerarDocx(data.cronograma);
+    btn.disabled = false;
+    btn.innerHTML = '✅ Baixado! Gerar novamente';
+  } catch(err) {
+    btn.disabled = false;
+    btn.innerHTML = '❌ Erro. Tente novamente';
+    console.error('Erro DOCX:', err);
+    addMessage('assistant', '⚠️ Erro ao gerar o cronograma: ' + err.message + '. Tente novamente.');
+  }
+}
+
 function fallbackCopy(text, btn) {
   const ta = document.createElement('textarea');
   ta.value = text;
@@ -1350,6 +1429,7 @@ async function enviar() {
     const bubble = addMessage('assistant', fullReply);
     conversationHistory.push({ role: 'model', parts: [{ text: fullReply }] });
     setStatus('ok', '✓ Resposta gerada — lembre-se de salvar o material!');
+    verificarDadosCompletos();
     // Try to detect JSON response
     try {
       // Clean response - extract JSON if present
