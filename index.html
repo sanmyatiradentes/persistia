@@ -1329,56 +1329,53 @@ function addMessage(role, content) {
 let dadosCertame = { cargo: '', banca: '', dataProva: '', horasPorDia: 0 };
 
 function verificarDadosCompletos() {
-  // Show DOCX button when we have enough info in conversation
-  const hist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ').toLowerCase();
+  const hist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
   const temData = /\d{2}\/\d{2}\/\d{4}/.test(hist);
-  const temHoras = /hora|h\/dia|horas por dia/i.test(hist);
-  const temPdf = !!(window._pdfForDocx) || conversationHistory.some(m => m.parts?.some(p => p.inline_data));
-  if (temData && temHoras && temPdf) {
+  const temHoras = /\b([2-9]|1\d)\s*h(?:oras?)?(?:\/dia| por dia)/i.test(hist);
+  const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(hist);
+  const temPdf = !!(window._pdfForDocx);
+  // Only show button when ALL data is collected
+  if (temData && temHoras && temBanca && temPdf) {
     document.getElementById('docx-gerador').style.display = 'block';
-    // Extract data from sidebar fields
     dadosCertame.cargo = document.getElementById('cfg-cargo')?.value || '';
   }
 }
 
 async function gerarCronogramaCompleto() {
   const btn = document.getElementById('btn-gerar-docx');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Gerando cronograma... pode demorar 30-60s';
 
-  // Get PDF stored separately (not in chat history)
-  let pdfBase64 = window._pdfForDocx || null;
-  // Fallback: try history just in case
-  if (!pdfBase64) {
-    for (const msg of conversationHistory) {
-      const pdfPart = msg.parts?.find(p => p.inline_data?.mime_type === 'application/pdf');
-      if (pdfPart) { pdfBase64 = pdfPart.inline_data.data; break; }
-    }
-  }
-
-  // Extract info from conversation
   const histText = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
   const dataMatch = histText.match(/\d{2}\/\d{2}\/\d{4}/);
   const horasMatch = histText.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?(?:\/dia| por dia)/i);
   const bancaMatch = histText.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
+  const cargo = document.getElementById('cfg-cargo')?.value || 'Não informado';
+  const banca = bancaMatch?.[1]?.toUpperCase() || 'Não informada';
+  const dataProva = dataMatch?.[0] || '';
+  const horasPorDia = parseFloat(horasMatch?.[1] || 4);
+  const pdfBase64 = window._pdfForDocx || null;
 
-  const cargo = document.getElementById('cfg-cargo')?.value || dadosCertame.cargo || 'Não informado';
-  const banca = bancaMatch?.[1]?.toUpperCase() || dadosCertame.banca || 'Não informada';
-  const dataProva = dataMatch?.[0] || dadosCertame.dataProva || '';
-  const horasPorDia = parseFloat(horasMatch?.[1] || dadosCertame.horasPorDia || 4);
+  if (!pdfBase64) { alert('PDF do edital não encontrado. Anexe o edital.'); return; }
+  if (!dataProva) { alert('Data da prova não identificada. Informe no chat.'); return; }
+  if (!horasMatch) { alert('Horas de estudo não identificadas. Informe no chat (ex: "4 horas por dia").'); return; }
 
-  if (!pdfBase64) {
-    btn.disabled = false;
-    btn.innerHTML = '⬇️ Gerar Cronograma Completo (.docx)';
-    alert('PDF do edital não encontrado. Anexe o edital e tente novamente.');
-    return;
-  }
-  if (!dataProva) {
-    btn.disabled = false;
-    btn.innerHTML = '⬇️ Gerar Cronograma Completo (.docx)';
-    alert('Data da prova não identificada na conversa. Informe a data no chat e tente novamente.');
-    return;
-  }
+  const [d,m,a] = dataProva.split('/');
+  const prova = new Date(parseInt(a), parseInt(m)-1, parseInt(d));
+  const dias = Math.max(0, Math.floor((prova - new Date()) / 86400000) - 1);
+  const totalH = dias * horasPorDia;
+
+  const resumo = '📋 Resumo do seu cronograma:\n\n' +
+    '• Cargo: ' + cargo + '\n' +
+    '• Banca: ' + banca + '\n' +
+    '• Data da prova: ' + dataProva + ' (' + dias + ' dias)\n' +
+    '• Horas por dia: ' + horasPorDia + 'h\n' +
+    '• Total disponível: ' + totalH + 'h\n\n' +
+    'O sistema irá processar o edital e gerar o cronograma dia a dia com todas as revisões calculadas.\n\nDeseja alterar algo antes de gerar?';
+
+  const confirmado = await mostrarConfirmacao(resumo);
+  if (!confirmado) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Processando edital... aguarde 30-60s';
 
   try {
     const res = await fetch('/api/chat', {
@@ -1395,11 +1392,37 @@ async function gerarCronogramaCompleto() {
     btn.innerHTML = '✅ Baixado! Gerar novamente';
   } catch(err) {
     btn.disabled = false;
-    btn.innerHTML = '❌ Erro. Tente novamente';
-    console.error('Erro DOCX:', err);
-    addMessage('assistant', '⚠️ Erro ao gerar o cronograma: ' + err.message + '. Tente novamente.');
+    btn.innerHTML = '⬇️ Gerar Cronograma Completo (.docx)';
+    addMessage('assistant', '⚠️ Erro ao gerar: ' + err.message);
   }
 }
+
+async function mostrarConfirmacao(texto) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:14px;padding:2rem;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+    const p = document.createElement('p');
+    p.style.cssText = 'white-space:pre-line;font-size:0.88rem;line-height:1.75;color:#1a1a1a;margin:0 0 1.5rem;';
+    p.textContent = texto;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;';
+    const bAlt = document.createElement('button');
+    bAlt.textContent = 'Alterar dados no chat';
+    bAlt.style.cssText = 'padding:9px 18px;border:1.5px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-size:0.83rem;font-family:inherit;';
+    const bOk = document.createElement('button');
+    bOk.textContent = '✅ Gerar cronograma';
+    bOk.style.cssText = 'padding:9px 18px;border:none;border-radius:8px;background:linear-gradient(135deg,#c9a96e,#b8845a);color:#fff;cursor:pointer;font-size:0.83rem;font-weight:700;font-family:inherit;';
+    bAlt.onclick = () => { document.body.removeChild(overlay); resolve(false); };
+    bOk.onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    row.appendChild(bAlt); row.appendChild(bOk);
+    modal.appendChild(p); modal.appendChild(row);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  });
+}
+
 
 function fallbackCopy(text, btn) {
   const ta = document.createElement('textarea');
