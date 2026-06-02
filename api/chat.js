@@ -1,12 +1,12 @@
 /**
- * PersistIA — api/chat.js
+ * PersisteIA — api/chat.js
  * Prompts no backend (ocultos). Padrão InspireIA com SSE.
  * Sanmya Beatriz Tiradentes Leite & Jane De Maria Alves Sousa
  */
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
-const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
+const PROMPT_CRONOGRAMA = `Você é PersisteIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
 
 CAPACIDADES: Você consegue ler PDFs anexados. Quando receber um edital em PDF, leia-o para identificar cargo, órgão, banca, data da prova e conteúdo programático.
 
@@ -43,7 +43,7 @@ NÃO gere listas de disciplinas nem cronograma no chat.
 
 BANCAS: CESPE=quase-certas; FCC=letra-da-lei; FGV=STF/STJ; VUNESP=jurisprudência`;
 
-const PROMPT_ESTEIRA = `Você é PersistIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
+const PROMPT_ESTEIRA = `Você é PersisteIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
 
 Use sempre números para o usuário responder. Máximo 300 palavras por etapa (exceto simulado).
 Após material: "SALVE AGORA: copie e cole num documento." Texto simples, sem tabelas ou linhas decorativas.
