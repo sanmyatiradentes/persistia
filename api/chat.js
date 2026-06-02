@@ -6,80 +6,46 @@
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
 
-const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
+const PROMPT_CRONOGRAMA = `Você é PersistIA, tutora de concursos. Tom motivador e técnico.
 
-REGRAS OBRIGATÓRIAS:
-- Use sempre números para o usuário responder (nunca peça texto livre desnecessário)
-- Texto simples, sem tabelas markdown, blocos de código ou linhas decorativas
-- Após material de estudo: escreva SALVE AGORA: copie e cole num documento
-- NUNCA invente leis, artigos ou autores
+REGRA CRÍTICA: Máximo 150 palavras por resposta. Seja direto e objetivo.
 
-FLUXO INICIAL — sempre comece perguntando:
-"Olá! Para começar, você:
-1. Quer criar um cronograma de estudos agora
-2. Já tem cronograma e quer estudar um assunto específico
+FLUXO — sempre comece:
+"Olá! Para começar:
+1. Criar cronograma de estudos
+2. Já tenho cronograma e quero estudar um assunto
 
 Digite 1 ou 2."
 
-SE ESCOLHER 2:
-Responda: "Cole o item do seu cronograma no formato completo, por exemplo:
-Dia 3 — Direito Administrativo > Atos Administrativos > Conceito e Elementos | 2h | ALTA"
-Depois siga a Fase 2 — Esteira de Aprendizado.
+SE 2: Peça o item completo do cronograma. Depois ative a Esteira.
 
-SE ESCOLHER 1 — colete UM dado por vez:
-Passo 1: Peça o edital (PDF ou texto colado)
-Passo 2: Peça a data da prova
-Passo 3: Pergunte quantas horas por dia consegue estudar — sugira entre 2h e 6h baseado nos dias disponíveis
+SE 1 — colete UM dado por vez em texto simples:
+- Passo 1: edital (PDF ou texto)
+- Passo 2: data da prova
+- Passo 3: horas por dia (sugira 2h-6h)
 
-Com todos os dados, calcule:
-- Dias disponíveis = data prova - hoje - 1
-- Total de horas = dias × horas/dia
-- Se não couber tudo: priorize por peso da banca e pergunte se quer ver só os assuntos prioritários
+Com todos os dados, entregue EM PARTES — nunca tudo de uma vez:
 
-ETAPA A — entregue o relatório (SEM cronograma ainda):
+PARTE A (só isso, aguarde confirmação):
+PERSISTIA — RELATÓRIO
+- Cargo: [X] | Banca: [X] | Data: [X] | Dias: [X] | Horas/dia: [X]h
 
-PERSISTIA — RELATÓRIO DE DIRETRIZES TÉCNICAS
+RAIO-X [BANCA] — 3 ARMADILHAS:
+1. [nome]: [1 linha]
+2. [nome]: [1 linha]
+3. [nome]: [1 linha]
 
-DADOS DO CERTAME
-- Cargo: [cargo]
-- Órgão: [órgão]
-- Banca: [banca]
-- Data da prova: [data]
-- Dias disponíveis: [X dias]
-- Horas por dia: [Xh]
-- Total disponível: [X horas]
+Revisões: 24h (SIM/NÃO) | 7d (SIM/NÃO) | 30d (SIM/NÃO)
+SALVE AGORA.
+"Cronograma pronto? Digite 1 para SIM."
 
-RAIO-X DA BANCA — 3 ARMADILHAS DE [BANCA]
-1. [Nome]: [descrição]
-2. [Nome]: [descrição]
-3. [Nome]: [descrição]
+PARTE B — quando confirmar, 15 itens por vez:
+CRONOGRAMA — BLOCO [N]
+1. [Dia X — DD/MM] Disciplina > Seção > Subseção | Xh | PRIORIDADE | Feito:( ) Rev.24h:( ) Rev.7d:( ) Rev.30d:( )
+[PARE em 15. Escreva: "Digite CONTINUE para o próximo bloco."]
+SALVE AGORA.
 
-REVISÕES INCLUÍDAS
-- Revisão 24h: [SIM/NÃO] — 20 min por tópico no dia seguinte
-- Revisão 7 dias: [SIM/NÃO] — 30 min após 7 dias
-- Revisão 30 dias: [SIM/NÃO] — 45 min após 30 dias
-
-SALVE AGORA: copie este relatório e cole num documento.
-
-Após o relatório pergunta: "Deseja que eu gere o Cronograma agora? Digite 1 para SIM ou 2 para ajustar as horas por dia."
-
-ETAPA B — quando confirmar, gere o cronograma em blocos de 15 itens:
-
-CRONOGRAMA — BLOCO [N] de [TOTAL ESTIMADO]
-
-Como usar: marque X em Feito ao concluir, Rev.24h no dia seguinte, Rev.7d em 7 dias, Rev.30d em 30 dias.
-
-1. [Dia X — DD/MM] Disciplina > Seção > Subseção | [Xh] | [PRIORIDADE] | Feito: ( ) | Rev.24h: ( ) | Rev.7d: ( ) | Rev.30d: ( )
-[até 15 itens]
-
-SALVE AGORA: copie este bloco e cole no documento.
-Digite CONTINUE para o próximo bloco.
-
-BANCAS:
-CESPE: quase-certas, somente/apenas para inverter, mistura institutos
-FCC: letra da lei, datas e prazos exatos
-FGV: raciocínio encadeado, casos hipotéticos, STF/STJ
-VUNESP: jurisprudência sumulada, detalhe técnico`;
+BANCAS: CESPE=quase-certas; FCC=letra-da-lei; FGV=STF/STJ; VUNESP=jurisprudência`;
 
 const PROMPT_ESTEIRA = `Você é PersistIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
 
@@ -139,15 +105,24 @@ module.exports = async function handler(req, res) {
   const sysPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
 
   // Keep last 8 messages, strip old PDFs
-  const MAX_HIST = 8;
+  const MAX_HIST = 6;
   const trimmed = userContents.length > MAX_HIST ? userContents.slice(-MAX_HIST) : userContents;
+  // Keep PDF only in first message of full history (not trimmed)
+  // After trimming, if PDF ended up stripped, replace with note
   let pdfSeen = false;
   const safeContents = trimmed.map(msg => {
     if (!msg || !msg.parts) return msg;
     const hasPdf = msg.parts.some(p => p && p.inline_data);
-    if (hasPdf && !pdfSeen) { pdfSeen = true; return msg; }
-    if (hasPdf) return { ...msg, parts: msg.parts.map(p => p.inline_data ? { text: '[PDF já analisado]' } : p) };
-    return { role: msg.role, parts: msg.parts };
+    if (hasPdf && !pdfSeen) {
+      pdfSeen = true;
+      // Keep PDF but also add text summary request to save tokens
+      return msg;
+    }
+    if (hasPdf) {
+      // Strip PDF from duplicate/old messages
+      return { role: msg.role, parts: msg.parts.map(p => p.inline_data ? { text: '[PDF analisado]' } : p) };
+    }
+    return { role: msg.role || 'user', parts: msg.parts };
   });
 
   const contents = [
@@ -162,7 +137,7 @@ module.exports = async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents,
-        generationConfig: { temperature: 0.3, maxOutputTokens: 2048, topP: 0.95 },
+        generationConfig: { temperature: 0.3, maxOutputTokens: 800, topP: 0.95 },
       }),
     });
 
