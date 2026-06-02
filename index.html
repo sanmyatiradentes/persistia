@@ -332,7 +332,33 @@ footer a:hover{text-decoration:underline;}
 .lei-mini{font-size:.69rem;color:rgba(15,15,15,.55);padding-left:.45rem;border-left:2px solid var(--navy-light);line-height:1.45;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/9.5.0/docx.umd.min.js"></script>
+  <script>
+  // Load docx.js with fallback CDNs
+  (function() {
+    function loadScript(src, cb) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = cb;
+      s.onerror = function() {
+        console.warn('CDN failed:', src);
+        if (cb._fallback) cb._fallback();
+      };
+      document.head.appendChild(s);
+    }
+    function tryJsdelivr() {
+      loadScript('https://cdn.jsdelivr.net/npm/docx@9.5.0/build/index.umd.js', function() {
+        window.docx = window.docx || (typeof docx !== 'undefined' ? docx : null);
+        console.log('docx loaded via jsdelivr');
+      });
+    }
+    var cb = function() {
+      window.docx = window.docx || (typeof docx !== 'undefined' ? docx : null);
+      console.log('docx loaded via unpkg');
+    };
+    cb._fallback = tryJsdelivr;
+    loadScript('https://unpkg.com/docx@9.5.0/build/index.umd.js', cb);
+  })();
+  </script>
 </head>
 <body>
 
@@ -914,10 +940,23 @@ function mostrarBotaoDocx(data) {
 }
 
 async function gerarDocx(data) {
-  if (!window.docx) { alert('Biblioteca DOCX não carregada. Recarregue a página.'); return; }
+  // Try to get docx from different possible globals
+  const docxLib = window.docx || (typeof docx !== 'undefined' ? docx : null);
+  if (!docxLib) {
+    // Try loading on demand
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/docx@9.5.0/build/index.umd.js';
+      s.onload = () => { window.docx = window.docx || (typeof docx !== 'undefined' ? docx : null); resolve(); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    }).catch(() => {});
+  }
+  const docxLib2 = window.docx || (typeof docx !== 'undefined' ? docx : null);
+  if (!docxLib2) { alert('Biblioteca DOCX não carregada. Verifique sua conexão e recarregue a página.'); return; }
   const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
           AlignmentType, WidthType, BorderStyle, ShadingType, VerticalAlign,
-          HeadingLevel, PageOrientation } = window.docx;
+          HeadingLevel, PageOrientation } = docxLib2;
 
   const certame = data.certame || {};
   const analise = data.analise || {};
