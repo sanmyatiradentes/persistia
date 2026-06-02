@@ -332,6 +332,16 @@ footer a:hover{text-decoration:underline;}
 .lei-mini{font-size:.69rem;color:rgba(15,15,15,.55);padding-left:.45rem;border-left:2px solid var(--navy-light);line-height:1.45;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <!-- PDF.js for text extraction (avoids sending huge binary PDF to backend) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <script>
+  // Load PDF.js worker
+  window.pdfjsLib = null;
+  import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs').then(mod => {
+    window.pdfjsLib = mod;
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+  }).catch(() => {});
+  </script>
   <script>
   // Load docx.js with fallback CDNs
   (function() {
@@ -868,17 +878,55 @@ let pdfBase64 = null;
 let pdfFilename = '';
 
 // ── PDF upload ──────────────────────────────────────────────────────────────
-function handlePdf(input) {
+async function handlePdf(input) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > 20 * 1024 * 1024) { alert('PDF muito grande. Use arquivos menores que 20 MB.'); return; }
-  pdfFilename = file.name;
-  document.getElementById('pdf-label').textContent = '✅ ' + file.name;
+  const label = document.getElementById('pdf-label');
+  const labelM = document.getElementById('pdf-label-m');
+  const name = file.name;
+  if (label) label.textContent = '⏳ Lendo ' + name + '...';
+  if (labelM) labelM.textContent = '⏳ ' + name;
+
+  // Always store raw base64 for DOCX generation
   const reader = new FileReader();
-  reader.onload = (e) => {
-    pdfBase64 = e.target.result.split(',')[1];
-  };
+  reader.onload = (e) => { window._pdfForDocx = e.target.result.split(',')[1]; };
   reader.readAsDataURL(file);
+
+  // Try PDF.js text extraction for chat (much smaller payload = no timeout)
+  try {
+    const lib = window.pdfjsLib;
+    if (lib && lib.getDocument) {
+      const arrayBuf = await file.arrayBuffer();
+      const pdf = await lib.getDocument({ data: arrayBuf }).promise;
+      let fullText = '';
+      for (let i = 1; i <= Math.min(pdf.numPages, 50); i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        fullText += content.items.map(s => s.str).join(' ') + '\n';
+      }
+      window._pdfText = fullText.trim();
+      pdfBase64 = null; // don't send binary in chat
+      pdfFilename = name;
+      if (label) label.textContent = '✅ ' + name + ' (' + pdf.numPages + ' pág.)';
+      if (labelM) labelM.textContent = '✅ ' + name;
+    } else {
+      // PDF.js not ready - fallback to base64
+      throw new Error('PDF.js not loaded');
+    }
+  } catch(e) {
+    console.warn('PDF.js fallback:', e.message);
+    // Fallback: use base64 (may be slow but works)
+    const r2 = new FileReader();
+    r2.onload = (e2) => {
+      pdfBase64 = e2.target.result.split(',')[1];
+      window._pdfForDocx = pdfBase64;
+      pdfFilename = name;
+    };
+    r2.readAsDataURL(file);
+    if (label) label.textContent = '✅ ' + name;
+    if (labelM) labelM.textContent = '✅ ' + name;
+  }
 }
 
 function handlePdfM(input) {
@@ -1273,7 +1321,7 @@ function verificarDadosCompletos() {
   const hist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ').toLowerCase();
   const temData = /\d{2}\/\d{2}\/\d{4}/.test(hist);
   const temHoras = /hora|h\/dia|horas por dia/i.test(hist);
-  const temPdf = conversationHistory.some(m => m.parts?.some(p => p.inline_data));
+  const temPdf = !!(window._pdfForDocx) || conversationHistory.some(m => m.parts?.some(p => p.inline_data));
   if (temData && temHoras && temPdf) {
     document.getElementById('docx-gerador').style.display = 'block';
     // Extract data from sidebar fields
@@ -1286,11 +1334,14 @@ async function gerarCronogramaCompleto() {
   btn.disabled = true;
   btn.innerHTML = '⏳ Gerando cronograma... pode demorar 30-60s';
 
-  // Get PDF from history
-  let pdfBase64 = null;
-  for (const msg of conversationHistory) {
-    const pdfPart = msg.parts?.find(p => p.inline_data?.mime_type === 'application/pdf');
-    if (pdfPart) { pdfBase64 = pdfPart.inline_data.data; break; }
+  // Get PDF stored separately (not in chat history)
+  let pdfBase64 = window._pdfForDocx || null;
+  // Fallback: try history just in case
+  if (!pdfBase64) {
+    for (const msg of conversationHistory) {
+      const pdfPart = msg.parts?.find(p => p.inline_data?.mime_type === 'application/pdf');
+      if (pdfPart) { pdfBase64 = pdfPart.inline_data.data; break; }
+    }
   }
 
   // Extract info from conversation
@@ -1402,9 +1453,18 @@ async function enviar() {
 
   // Build contents
   const userParts = [];
-  if (pdfBase64) {
+  if (window._pdfText) {
+    // Send extracted text (tiny) instead of binary PDF (huge) - prevents timeout
+    const MAX_CHARS = 15000; // ~4000 tokens max
+    const pdfContent = window._pdfText.length > MAX_CHARS
+      ? window._pdfText.substring(0, MAX_CHARS) + '\n[texto truncado para otimizar processamento]'
+      : window._pdfText;
+    userParts.push({ text: 'EDITAL (texto extraído do PDF):\n' + pdfContent });
+    window._pdfText = null; // send only once
+  } else if (pdfBase64) {
+    // Fallback: send as binary if PDF.js failed
+    window._pdfForDocx = window._pdfForDocx || pdfBase64;
     userParts.push({ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } });
-    // only send pdf on first message, clear after
     pdfBase64 = null;
   }
   userParts.push({ text: fullText });
