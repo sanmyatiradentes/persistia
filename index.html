@@ -1338,7 +1338,7 @@ function verificarDadosCompletos() {
   const fullHist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
   
   const temData = /\d{2}\/\d{2}\/\d{4}/.test(userHist);
-  const temHoras = /^\d+\s*h/im.test(userHist) || /\d+\s*horas?\s*(por\s*dia)?/i.test(userHist);
+  const temHoras = /\d+\s*h(?:oras?)?/i.test(userMsgs) || /\b([2-9]|[1-9]\d)\b/.test(userMsgs)
   const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(fullHist);
   const temPdf = !!(window._pdfForDocx);
   
@@ -1353,7 +1353,7 @@ async function gerarCronogramaCompleto() {
 
   const histText = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
   const dataMatch = histText.match(/\d{2}\/\d{2}\/\d{4}/);
-  const horasMatch = histText.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?/i);
+  const horasMatch = histText.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?/i) || histText.match(/\b([2-9]|[1-9]\d)\b/)
   const bancaMatch = histText.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
   const cargo = document.getElementById('cfg-cargo')?.value || 'Não informado';
   const banca = bancaMatch?.[1]?.toUpperCase() || 'Não informada';
@@ -1510,34 +1510,16 @@ async function enviar() {
 
   // System prompt is injected by backend (kept secret server-side)
 
-  // Compact context summary instead of full history — keeps payload tiny
-  const allText = conversationHistory.map(m => m.parts?.map(p => p.text||'').join(' ')||'').join(' ');
-  const userMsgs = conversationHistory.filter(m=>m.role==='user').map(m=>m.parts?.map(p=>p.text||'').join(' ')||'').join(' ');
-
-  const dataMatch2  = userMsgs.match(/\d{2}\/\d{2}\/\d{4}/);
-  const horasMatch2 = userMsgs.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?/i) || userMsgs.match(/^(\d+)$/m);
-  const bancaMatch2 = userMsgs.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
-  const cargoVal    = document.getElementById('cfg-cargo')?.value?.trim() || '';
-
-  const ctxParts = [];
-  if (cargoVal)            ctxParts.push('Cargo: ' + cargoVal);
-  if (bancaMatch2)         ctxParts.push('Banca: ' + bancaMatch2[1].toUpperCase());
-  if (dataMatch2)          ctxParts.push('Data da prova: ' + dataMatch2[0]);
-  if (horasMatch2)         ctxParts.push('Horas/dia: ' + horasMatch2[1] + 'h');
-  if (window._pdfForDocx)  ctxParts.push('PDF do edital: anexado');
-
-  const ctxSummary = ctxParts.length > 0
-    ? '[DADOS COLETADOS ATÉ AGORA: ' + ctxParts.join(' | ') + ']'
-    : '';
-
-  // Only last 2 exchanges (4 messages) for immediate context
-  const recentMsgs = conversationHistory.slice(-4);
-
-  const contents = ctxSummary
-    ? [{ role: 'user', parts: [{ text: ctxSummary }] },
-       { role: 'model', parts: [{ text: 'Certo, continuando.' }] },
-       ...recentMsgs]
-    : [...recentMsgs];
+  // Full history (Pro plan - 60s timeout, no workarounds needed)
+  // Inject today's date dynamically so AI calculates days correctly
+  const _now = new Date();
+  const _dd = String(_now.getDate()).padStart(2,'0');
+  const _mm = String(_now.getMonth()+1).padStart(2,'0');
+  const _yyyy = _now.getFullYear();
+  const todayStr = _dd + '/' + _mm + '/' + _yyyy;
+  const todayCtx = { role: 'user', parts: [{ text: '[DATA DE HOJE: ' + todayStr + '. Use esta data para calcular dias até a prova.]' }] };
+  const todayAck = { role: 'model', parts: [{ text: 'Entendido. Data de hoje: ' + todayStr + '.' }] };
+  const contents = [todayCtx, todayAck, ...conversationHistory];
 
   try {
     // Chama backend Vercel (padrão InspireIA)
