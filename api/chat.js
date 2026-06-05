@@ -247,7 +247,7 @@ Formato exato:
   const sysPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
 
   // Keep last 8 messages, strip old PDFs
-  const MAX_HIST = 6;
+  const MAX_HIST = 10;
   const trimmed = userContents.length > MAX_HIST ? userContents.slice(-MAX_HIST) : userContents;
   // Keep PDF only in first message of full history (not trimmed)
   // After trimming, if PDF ended up stripped, replace with note
@@ -270,6 +270,8 @@ Formato exato:
   const contents = [
     { role: 'user', parts: [{ text: sysPrompt }] },
     { role: 'model', parts: [{ text: WELCOME }] },
+    { role: 'user', parts: [{ text: (() => { const n=new Date(); const d=String(n.getDate()).padStart(2,'0'); const m=String(n.getMonth()+1).padStart(2,'0'); return '[DATA DE HOJE: '+d+'/'+m+'/'+n.getFullYear()+'. Use esta data para calcular dias até a prova.]'; })() }] },
+    { role: 'model', parts: [{ text: 'Entendido.' }] },
     ...safeContents,
   ];
 
@@ -281,7 +283,7 @@ Formato exato:
         contents,
         generationConfig: { 
           temperature: 0.3, 
-          maxOutputTokens: mode === 'esteira' ? 3000 : 500,
+          maxOutputTokens: mode === 'esteira' ? 4096 : 2048,
           topP: 0.95 
         },
       }),
