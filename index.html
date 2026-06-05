@@ -743,7 +743,7 @@ footer a:hover{text-decoration:underline;}
 <section id="ferramenta" style="background:var(--navy);padding:clamp(2.5rem,5vw,4rem) 0 0;">
   <div class="container" style="padding:0 2rem;">
     <div class="section-label" style="color:rgba(255,255,255,0.5)">A Ferramenta</div>
-    <h2 class="section-title" style="color:#fff">PersisteIA</h2>
+    <h2 class="section-title" style="color:#fff">Persiste<span style="color:var(--gold)">IA</span></h2>
     <p class="section-sub">Informe o seu edital para gerar o cronograma. Depois, peça a esteira completa de qualquer assunto — com teoria, mnemônicos, laboratório sensorial e simulado.</p>
 
     <div class="chat-app">
@@ -1329,12 +1329,19 @@ function addMessage(role, content) {
 let dadosCertame = { cargo: '', banca: '', dataProva: '', horasPorDia: 0 };
 
 function verificarDadosCompletos() {
-  const hist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
-  const temData = /\d{2}\/\d{2}\/\d{4}/.test(hist);
-  const temHoras = /\d+\s*h(?:oras?)?/i.test(hist);
-  const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(hist);
+  // Check only USER messages to avoid false positives from AI responses
+  const userHist = conversationHistory
+    .filter(m => m.role === 'user')
+    .map(m => m.parts?.map(p => p.text || '').join(' ') || '')
+    .join(' ');
+  // Check full history for banca (AI may confirm it)
+  const fullHist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
+  
+  const temData = /\d{2}\/\d{2}\/\d{4}/.test(userHist);
+  const temHoras = /^\d+\s*h/im.test(userHist) || /\d+\s*horas?\s*(por\s*dia)?/i.test(userHist);
+  const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(fullHist);
   const temPdf = !!(window._pdfForDocx);
-  // Only show button when ALL data is collected
+  
   if (temData && temHoras && temBanca && temPdf) {
     document.getElementById('docx-gerador').style.display = 'block';
     dadosCertame.cargo = document.getElementById('cfg-cargo')?.value || '';
