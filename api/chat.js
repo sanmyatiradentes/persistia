@@ -27,7 +27,7 @@ SE ESCOLHER 1 — colete UM dado por vez:
 Passo 1: "Qual o cargo que você está estudando?"
 Passo 2: "Qual a banca examinadora?" (CESPE, FCC, FGV, VUNESP, etc.)
 Passo 3: "Qual a data da prova? (DD/MM/AAAA)"
-Passo 4: "Quantas horas por dia você consegue estudar? (Sugiro entre 2h e 6h)"
+Passo 4: "Quantas horas por dia você consegue estudar? Digite apenas o número. (Sugiro entre 2 e 6)"
 
 Quando tiver os 4 dados, responda:
 "✅ Dados completos!
@@ -160,7 +160,9 @@ module.exports = async function handler(req, res) {
 
       userParts.push({ text: `Cargo: ${cargo} | Banca: ${banca} | Data prova: ${dataProva} | Horas/dia: ${horasPorDia}h | Dias: ${diasDisponiveis} | Total horas disponíveis: ${totalHoras}h
 
-Gere o cronograma completo de estudos em JSON válido. Responda SOMENTE com o JSON, sem texto fora dele.
+INSTRUÇÃO CRÍTICA: Responda APENAS com JSON puro. Sem explicações, sem texto antes ou depois, sem markdown, sem \`\`\`. Comece sua resposta diretamente com { e termine com }.
+
+Gere o cronograma completo de estudos em JSON válido.
 
 Calcule:
 - Rev.24h = dia seguinte ao estudo
@@ -223,19 +225,28 @@ Formato exato:
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
       // Extract JSON from response (handle markdown fences)
-      let cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      // Strip any markdown or text around the JSON
+      let cleanText = text
+        .replace(/^[\s\S]*?(?=\{)/,'')  // remove anything before first {
+        .replace(/```json/g,'').replace(/```/g,'').trim();
       const jsonStart = cleanText.indexOf('{');
       const jsonEnd = cleanText.lastIndexOf('}');
       if (jsonStart === -1 || jsonEnd === -1) {
-        return res.status(200).json({ error: 'IA não retornou JSON válido. Tente novamente.' });
+        console.error('[PersisteIA] No JSON found in response:', text.slice(0,200));
+        return res.status(200).json({ error: 'IA não retornou JSON. Tente novamente — o Gemini pode demorar para processar editais grandes.' });
       }
       cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
-      
       let cronograma;
       try {
         cronograma = JSON.parse(cleanText);
       } catch(parseErr) {
-        return res.status(200).json({ error: 'JSON inválido: ' + parseErr.message.slice(0, 100) });
+        // Try to fix common JSON issues
+        try {
+          cleanText = cleanText.replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
+          cronograma = JSON.parse(cleanText);
+        } catch(e2) {
+          return res.status(200).json({ error: 'Erro ao processar JSON: ' + parseErr.message.slice(0,100) + '. Tente novamente.' });
+        }
       }
       return res.status(200).json({ cronograma });
 
