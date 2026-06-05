@@ -1516,7 +1516,7 @@ async function enviar() {
 
   const dataMatch2  = userMsgs.match(/\d{2}\/\d{2}\/\d{4}/);
   const horasMatch2 = userMsgs.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?/i) || userMsgs.match(/^(\d+)$/m);
-  const bancaMatch2 = allText.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
+  const bancaMatch2 = userMsgs.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
   const cargoVal    = document.getElementById('cfg-cargo')?.value?.trim() || '';
 
   const ctxParts = [];
