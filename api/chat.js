@@ -24,12 +24,10 @@ SE 1: Colete em ordem, UM por vez:
 3. Data da prova (DD/MM/AAAA)
 4. Horas por dia — peça: "Quantas horas por dia? Digite só o número (entre 2 e 6)."
 
-Com os 4 dados, confirme:
-"✅ Dados completos!
-- Cargo: [X] | Banca: [X] | Data: [X] ([Y] dias) | Horas/dia: [X]h
-Clique em GERAR CRONOGRAMA DOCX abaixo. 📅"
+Com os 4 dados, responda APENAS (máximo 3 linhas):
+"✅ Dados completos! Cargo: [X] | Banca: [X] | Data: [X] | [Y] dias | [X]h/dia. Clique em GERAR DOCX abaixo. 📅"
 
-BANCAS: CESPE=quase-certas; FCC=lei literal; FGV=STF/STJ; VUNESP=jurisprudência`;
+BANCAS: CESPE=quase-certas; FCC=lei; FGV=STF/STJ; VUNESP=jurisprudência`;
 
 const PROMPT_ESTEIRA = `Você é PersisteIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
 
@@ -283,7 +281,7 @@ Formato exato:
         contents,
         generationConfig: { 
           temperature: 0.3, 
-          maxOutputTokens: mode === 'esteira' ? 3000 : 800,
+          maxOutputTokens: mode === 'esteira' ? 3000 : 500,
           topP: 0.95 
         },
       }),
