@@ -1510,26 +1510,34 @@ async function enviar() {
 
   // System prompt is injected by backend (kept secret server-side)
 
-  // Keep PDF only in the first message that contains it; replace in all others
-  let _pdfKept = false;
-  const histContents = conversationHistory.map((msg) => {
-    if (!msg.parts) return msg;
-    const hasPdf = msg.parts.some(p => p && p.inline_data);
-    if (hasPdf && !_pdfKept) {
-      _pdfKept = true;
-      return msg; // keep PDF intact in first occurrence
-    }
-    if (hasPdf && _pdfKept) {
-      return {
-        ...msg,
-        parts: msg.parts.map(p => p.inline_data ? { text: '[PDF do edital já enviado anteriormente]' } : p)
-      };
-    }
-    return msg;
-  });
+  // Compact context summary instead of full history — keeps payload tiny
+  const allText = conversationHistory.map(m => m.parts?.map(p => p.text||'').join(' ')||'').join(' ');
+  const userMsgs = conversationHistory.filter(m=>m.role==='user').map(m=>m.parts?.map(p=>p.text||'').join(' ')||'').join(' ');
 
-  // Backend injects system prompt - just send history
-  const contents = [...histContents];
+  const dataMatch2  = userMsgs.match(/\d{2}\/\d{2}\/\d{4}/);
+  const horasMatch2 = userMsgs.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?/i) || userMsgs.match(/^(\d+)$/m);
+  const bancaMatch2 = allText.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
+  const cargoVal    = document.getElementById('cfg-cargo')?.value?.trim() || '';
+
+  const ctxParts = [];
+  if (cargoVal)            ctxParts.push('Cargo: ' + cargoVal);
+  if (bancaMatch2)         ctxParts.push('Banca: ' + bancaMatch2[1].toUpperCase());
+  if (dataMatch2)          ctxParts.push('Data da prova: ' + dataMatch2[0]);
+  if (horasMatch2)         ctxParts.push('Horas/dia: ' + horasMatch2[1] + 'h');
+  if (window._pdfForDocx)  ctxParts.push('PDF do edital: anexado');
+
+  const ctxSummary = ctxParts.length > 0
+    ? '[DADOS COLETADOS ATÉ AGORA: ' + ctxParts.join(' | ') + ']'
+    : '';
+
+  // Only last 2 exchanges (4 messages) for immediate context
+  const recentMsgs = conversationHistory.slice(-4);
+
+  const contents = ctxSummary
+    ? [{ role: 'user', parts: [{ text: ctxSummary }] },
+       { role: 'model', parts: [{ text: 'Certo, continuando.' }] },
+       ...recentMsgs]
+    : [...recentMsgs];
 
   try {
     // Chama backend Vercel (padrão InspireIA)
