@@ -1488,20 +1488,10 @@ async function enviar() {
 
   // Build contents
   const userParts = [];
-  if (window._pdfText) {
-    // Send extracted text (tiny) instead of binary PDF (huge) - prevents timeout
-    const MAX_CHARS = 15000; // ~4000 tokens max
-    const pdfContent = window._pdfText.length > MAX_CHARS
-      ? window._pdfText.substring(0, MAX_CHARS) + '\n[texto truncado para otimizar processamento]'
-      : window._pdfText;
-    userParts.push({ text: 'EDITAL (texto extraído do PDF):\n' + pdfContent });
-    window._pdfText = null; // send only once
-  } else if (pdfBase64) {
-    // Fallback: send as binary if PDF.js failed
-    window._pdfForDocx = window._pdfForDocx || pdfBase64;
-    userParts.push({ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } });
-    pdfBase64 = null;
-  }
+  // PDF never sent in chat — stored only for DOCX generation
+  // This prevents ALL timeout issues (same pattern as InspireIA/ExecuteIA)
+  if (window._pdfText) { window._pdfText = null; } // clear, don't send
+  if (pdfBase64) { pdfBase64 = null; } // clear, don't send
   userParts.push({ text: fullText });
   conversationHistory.push({ role: 'user', parts: userParts });
 
