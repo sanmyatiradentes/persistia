@@ -1338,7 +1338,7 @@ function verificarDadosCompletos() {
   const fullHist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
   
   const temData = /\d{2}\/\d{2}\/\d{4}/.test(userHist);
-  const temHoras = /\d+\s*h(?:oras?)?/i.test(userMsgs) || /\b([2-9]|[1-9]\d)\b/.test(userMsgs)
+  const temHoras = /\d+\s*h(?:oras?)?/i.test(userHist) || /\b([2-9]|[1-9]\d)\b/.test(userHist);
   const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(fullHist);
   const temPdf = !!(window._pdfForDocx);
   
