@@ -1338,17 +1338,30 @@ function verificarDadosCompletos() {
   const fullHist = conversationHistory.map(m => m.parts?.map(p => p.text || '').join(' ') || '').join(' ');
   
   const temData = /\d{2}\/\d{2}\/\d{4}/.test(userHist);
-  const temHoras = /\d+\s*h(?:oras?)?/i.test(userHist) || /\b([2-9]|[1-9]\d)\b/.test(userHist);
+  // FIX: regex anterior /\b([2-9]|[1-9]\d)\b/ era muito amplo e capturava o "13" da data "13/08/2026".
+  // Agora exige padrão explícito: número sozinho OU seguido de "h"/"hora(s)".
+  const temHoras = /\b([2-9]|[1-9]\d)\s*(?:h(?:oras?)?)\b/i.test(userHist)   // "4h", "4 horas", "4 hora"
+                || /\bhoras?\s+por\s+dia\b/i.test(userHist)                    // "horas por dia"
+                || /\b(?:estud[ao])\s+\d+\s*h/i.test(userHist);               // "estudo 4h"
   const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(fullHist);
   const temPdf = !!(window._pdfForDocx);
   
+  // Condição principal: IA confirmou EXPLICITAMENTE que todos os 4 dados estão completos.
+  // Isso é o sinal mais confiável — evita falsos positivos por números na data ou no cargo.
   const aiConfirmed = conversationHistory.some(m =>
     m.role === 'model' &&
     m.parts?.some(p => (p.text||'').includes('Dados completos') || (p.text||'').includes('GERAR DOCX'))
   );
-  if ((temData && temBanca && temPdf) && (temHoras || aiConfirmed)) {
-    document.getElementById('docx-gerador').style.display = 'block';
-    dadosCertame.cargo = document.getElementById('cfg-cargo')?.value || '';
+
+  // FIX: o botão só aparece quando a IA confirmou todos os dados (aiConfirmed),
+  // OU quando temos evidência clara de todos os campos incluindo horas explícitas.
+  // Antes, "temHoras || aiConfirmed" permitia que a data sozinha ativasse o botão.
+  if (temPdf && temData && temBanca && (aiConfirmed || temHoras)) {
+    // Segurança extra: só mostrar se a IA confirmou OU as horas foram digitadas explicitamente
+    if (aiConfirmed || temHoras) {
+      document.getElementById('docx-gerador').style.display = 'block';
+      dadosCertame.cargo = document.getElementById('cfg-cargo')?.value || '';
+    }
   }
 }
 
