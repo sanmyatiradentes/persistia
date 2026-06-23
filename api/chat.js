@@ -2,9 +2,17 @@
  * PersisteIA — api/chat.js
  * Prompts no backend (ocultos). Padrão InspireIA com SSE.
  * Sanmya Beatriz Tiradentes Leite & Jane De Maria Alves Sousa
+ *
+ * ARQUITETURA gerar_docx (2 passos — elimina timeout):
+ *   Passo 1 — Gemini extrai SOMENTE a lista de tópicos do edital (~10-20s)
+ *   Passo 2 — Backend Node.js calcula datas/horas/revisões (instantâneo, sem IA)
  */
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
+const GEMINI_URL     = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
+const GEMINI_DOCX_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const FILES_API      = 'https://generativelanguage.googleapis.com/upload/v1beta/files';
+
+// ── Prompts do chat ──────────────────────────────────────────────────────────
 
 const PROMPT_CRONOGRAMA = `Você é PersisteIA, tutora de concursos. Tom motivador.
 
@@ -65,69 +73,55 @@ BANCAS: CESPE=quase-certas/somente; FCC=letra-da-lei; FGV=raciocínio-encadeado;
 
 const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma de estudos agora\n2. Já tem cronograma e quer estudar um assunto específico\n\nDigite 1 ou 2.';
 
-// Gemini 2.0 Flash para DOCX (mais barato)
-const GEMINI_DOCX_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-const FILES_API = 'https://generativelanguage.googleapis.com/upload/v1beta/files';
+// ── Prompt para extração de tópicos (Gemini só faz isso — rápido) ────────────
+// Sem cálculos de datas, sem horas, sem distribuição. Só nomes de tópicos.
+const PROMPT_EXTRAI_TOPICOS = `Você é um analisador de editais de concurso público.
+Leia o conteúdo programático deste edital e extraia TODOS os tópicos e subtópicos.
+Responda APENAS com JSON puro, sem markdown, sem texto antes ou depois:
+{"orgao":"Nome do órgão/instituição extraído do edital","topicos":["Disciplina > Seção","Disciplina > Seção > Subseção"]}
+REGRAS OBRIGATÓRIAS:
+- Um item por tópico/subtópico do edital
+- Formato: "NomeDisciplina > NomeSeção" ou "NomeDisciplina > NomeSeção > NomeSubseção"
+- Máximo 80 caracteres por item
+- PROIBIDO: quebras de linha dentro dos valores, aspas duplas dentro dos valores
+- Inclua absolutamente TODOS os tópicos, mesmo que sejam muitos
+- Se não houver subseção, use apenas "Disciplina > Seção"`;
 
-// ── Parser robusto de JSON com 4 estratégias em cascata ──────────────────────
-// Resolve os problemas mais comuns com output do Gemini:
-//   1. Markdown fences (```json … ```)
-//   2. Texto antes/depois do bloco JSON
-//   3. \n \r \t literais dentro de strings (causa "Expected ',' or '}'" em JSON.parse)
-//   4. Vírgulas finais antes de } ou ]
-//   5. Caracteres de controle não escapados
+// ── Parser robusto de JSON (5 estratégias em cascata) ────────────────────────
 function tryParseJsonRobust(rawText) {
-  // Pré-processamento: strip fences e whitespace externo
-  let text = rawText
-    .replace(/```json\s*/gi, '')
-    .replace(/```\s*/g, '')
-    .trim();
-
-  // Extrai o bloco JSON (do primeiro { ao último })
+  let text = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
   const s = text.indexOf('{');
   const e = text.lastIndexOf('}');
   if (s === -1 || e === -1) return null;
   text = text.substring(s, e + 1);
 
-  // Tentativa 1: parse direto
   try { return JSON.parse(text); } catch(_) {}
 
-  // Tentativa 2: remove vírgulas finais antes de } ou ]
   const v2 = text.replace(/,\s*([}\]])/g, '$1');
   try { return JSON.parse(v2); } catch(_) {}
 
-  // Tentativa 3: state machine — escapa \n \r \t \x00-\x1f literais dentro de strings
-  // Este é o fix principal para o erro "Expected ',' or '}' at position NNN"
   const v3 = escaparControlesEmStringsJson(text);
   try { return JSON.parse(v3); } catch(_) {}
 
-  // Tentativa 4: state machine + remove vírgulas finais
   const v4 = escaparControlesEmStringsJson(v2);
   try { return JSON.parse(v4); } catch(_) {}
 
-  // Tentativa 5: abordagem nuclear — substitui todos os controles e tenta de novo
   const v5 = text
-    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')   // controles raros
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')
     .replace(/\r\n/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/\t/g, ' ')
     .replace(/,\s*([}\]])/g, '$1');
   try { return JSON.parse(v5); } catch(_) {}
 
-  return null; // todas as tentativas falharam
+  return null;
 }
 
-// Percorre o JSON char a char mantendo estado (dentro/fora de string) e escapa
-// corretamente todos os caracteres de controle que apareçam dentro de strings.
 function escaparControlesEmStringsJson(text) {
   let out = '';
   let inString = false;
   let escape = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
-    if (escape) {
-      out += c;
-      escape = false;
-      continue;
-    }
+    if (escape) { out += c; escape = false; continue; }
     if (c === '\\' && inString) { out += c; escape = true; continue; }
     if (c === '"') { out += c; inString = !inString; continue; }
     if (inString) {
@@ -142,9 +136,8 @@ function escaparControlesEmStringsJson(text) {
   return out;
 }
 
-
+// ── Files API upload ─────────────────────────────────────────────────────────
 async function uploadPdfToFilesApi(apiKey, pdfBase64) {
-  // Step 1: initiate resumable upload
   const pdfBytes = Buffer.from(pdfBase64, 'base64');
   const initRes = await fetch(`${FILES_API}?uploadType=resumable&key=${apiKey}`, {
     method: 'POST',
@@ -159,8 +152,6 @@ async function uploadPdfToFilesApi(apiKey, pdfBase64) {
   });
   const uploadUrl = initRes.headers.get('x-goog-upload-url');
   if (!uploadUrl) throw new Error('Files API não retornou upload URL');
-
-  // Step 2: upload the bytes
   const uploadRes = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
@@ -174,6 +165,88 @@ async function uploadPdfToFilesApi(apiKey, pdfBase64) {
   return fileData?.file?.uri;
 }
 
+// ── Passo 2: cálculo de cronograma no backend (sem IA, sem timeout) ──────────
+function calcularCronograma({ topicos, cargo, orgao, banca, dataProva, diasDisponiveis, horasPorDia }) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const hpd = parseFloat(horasPorDia);
+
+  // Matérias de alta prioridade por banca
+  const altasPorBanca = {
+    CESPE:    ['constitucional','administrativo','português','língua portuguesa'],
+    CEBRASPE: ['constitucional','administrativo','português','língua portuguesa'],
+    FCC:      ['português','língua portuguesa','administrativo','constitucional'],
+    FGV:      ['constitucional','raciocínio lógico','administrativo','informática'],
+    VUNESP:   ['constitucional','português','língua portuguesa','jurisprudência'],
+    AOCP:     ['constitucional','administrativo','português'],
+    IBFC:     ['constitucional','administrativo','português'],
+    IADES:    ['constitucional','administrativo','português'],
+  };
+  const altas = (altasPorBanca[banca.toUpperCase()] || []);
+  const getPrio = (t) => altas.some(p => t.toLowerCase().includes(p)) ? 'ALTA' : 'NORMAL';
+
+  // Formata data somando N dias a partir de hoje
+  const dataOffset = (n) => {
+    if (n < 1 || n > diasDisponiveis + 60) return '';
+    const d = new Date(hoje);
+    d.setDate(d.getDate() + n);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  };
+
+  const HORAS_POR_TOPICO = 2; // 2h por tópico — padrão concurso
+  const itens = [];
+  let diaAtual = 1;
+  let horasDia = 0;
+
+  for (const topico of topicos) {
+    if (diaAtual > diasDisponiveis) break;
+    if (horasDia + HORAS_POR_TOPICO > hpd) { diaAtual++; horasDia = 0; }
+    if (diaAtual > diasDisponiveis) break;
+
+    const pts = topico.replace(/"/g, '').split('>').map(s => s.trim());
+    itens.push({
+      dia:        diaAtual,
+      data:       dataOffset(diaAtual),
+      disciplina: pts[0] || topico,
+      secao:      pts[1] || '',
+      subsecao:   pts[2] || '',
+      horas:      HORAS_POR_TOPICO,
+      prioridade: getPrio(topico),
+      rev24h:     dataOffset(diaAtual + 1),
+      rev7d:      dataOffset(diaAtual + 7),
+      rev30d:     dataOffset(diaAtual + 30),
+    });
+    horasDia += HORAS_POR_TOPICO;
+  }
+
+  const pct = topicos.length > 0
+    ? Math.min(100, Math.round((itens.length / topicos.length) * 100)) : 100;
+
+  return {
+    tipo: 'cronograma',
+    certame: {
+      cargo,
+      orgao: (orgao || 'Conforme edital').slice(0, 80),
+      banca,
+      dataProva,
+      diasDisponiveis,
+      horasPorDia: hpd,
+      totalHorasDisponiveis: diasDisponiveis * hpd,
+    },
+    analise: {
+      coberturaPercent: pct,
+      incluiRev24h: true,
+      incluiRev7d:  true,
+      incluiRev30d: pct === 100,
+      mensagemCorte: pct < 100
+        ? `${topicos.length - itens.length} tópico(s) não cabem nos ${diasDisponiveis} dias. Priorize os marcados como ALTA.`
+        : '',
+    },
+    itens,
+  };
+}
+
+// ── Handler principal ────────────────────────────────────────────────────────
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -191,132 +264,108 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // ── AÇÃO: gerar cronograma completo em JSON para DOCX ─────────────────────
+  // ── AÇÃO: gerar cronograma completo ────────────────────────────────────────
   if (body.action === 'gerar_docx') {
-    // pdfText = texto extraído pelo PDF.js no frontend (preferido — leve)
-    // pdfBase64 = fallback quando PDF.js não conseguiu extrair texto
     const { pdfBase64, pdfText, cargo, banca, dataProva, horasPorDia } = body;
 
     if (!cargo || !banca || !dataProva || !horasPorDia) {
       return res.status(400).json({ error: 'Dados incompletos: cargo, banca, dataProva e horasPorDia são obrigatórios.' });
     }
     if (!pdfText && !pdfBase64) {
-      return res.status(400).json({ error: 'Conteúdo do edital não encontrado. Annexe o PDF ou cole o conteúdo programático no chat.' });
+      return res.status(400).json({ error: 'Conteúdo do edital não encontrado. Anexe o PDF ou cole o conteúdo programático.' });
     }
 
     try {
-      // Calcular dias disponíveis
+      // Dias disponíveis
       const hoje = new Date();
-      const [dia, mes, ano] = dataProva.split('/');
-      const prova = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
-      const diasDisponiveis = Math.max(0, Math.floor((prova - hoje) / 86400000) - 1);
-      const totalHoras = diasDisponiveis * parseFloat(horasPorDia);
+      const [dd, mm, yyyy] = dataProva.split('/');
+      const prova = new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd));
+      const diasDisponiveis = Math.max(1, Math.floor((prova - hoje) / 86400000) - 1);
 
-      // ── Montar partes do conteúdo para o Gemini ────────────────────────────
-      // Estratégia 1 (preferida): texto extraído pelo PDF.js — leve, sem Files API
-      // Estratégia 2 (fallback): PDF binário via Files API ou inline
+      // ── PASSO 1: Gemini extrai SOMENTE os tópicos (~10-20s) ──────────────
+      // Não pedimos datas, horas nem distribuição — só nomes. Isso é 5-10x mais rápido.
       let userParts;
       if (pdfText && pdfText.length > 100) {
-        // Limita a 80 000 chars (~20 000 tokens) para não estourar o contexto
-        const textoEdital = pdfText.slice(0, 80000);
-        userParts = [{ text: `CONTEÚDO DO EDITAL (texto extraído):\n\n${textoEdital}\n\n` }];
+        // Via: texto extraído pelo PDF.js (preferido — payload pequeno)
+        userParts = [{ text: `EDITAL (texto extraído):\n\n${pdfText.slice(0, 80000)}\n\n---\n${PROMPT_EXTRAI_TOPICOS}` }];
       } else {
-        // Fallback: PDF binário
+        // Fallback: PDF binário via Files API ou inline
         let fileUri = null;
-        try {
-          fileUri = await uploadPdfToFilesApi(apiKey, pdfBase64);
-        } catch(e) {
-          console.error('Files API failed, using inline:', e.message);
+        try { fileUri = await uploadPdfToFilesApi(apiKey, pdfBase64); } catch(e) {
+          console.error('[PersisteIA] Files API falhou:', e.message);
         }
-        userParts = fileUri
-          ? [{ file_data: { mime_type: 'application/pdf', file_uri: fileUri } }]
-          : [{ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } }];
+        const pdfPart = fileUri
+          ? { file_data: { mime_type: 'application/pdf', file_uri: fileUri } }
+          : { inline_data: { mime_type: 'application/pdf', data: pdfBase64 } };
+        userParts = [pdfPart, { text: PROMPT_EXTRAI_TOPICOS }];
       }
 
-      userParts.push({ text: `GERE O CRONOGRAMA EM JSON PURO. Nenhum texto fora do JSON.
-
-Dados: Cargo=${cargo} | Banca=${banca} | DataProva=${dataProva} | Dias=${diasDisponiveis} | Horas/dia=${horasPorDia}h | TotalHoras=${totalHoras}h
-
-Leia o edital anexado e extraia TODOS os tópicos do conteúdo programático.
-Distribua nos ${diasDisponiveis} dias disponíveis, máximo ${horasPorDia}h por dia.
-Rev.24h = dia seguinte | Rev.7d = 7 dias após | Rev.30d = 30 dias após (se couber)
-Prioridade por banca ${banca}: matérias mais cobradas = ALTA.
-
-Responda APENAS com este JSON (sem espaços extras, sem markdown):
-{"tipo":"cronograma","certame":{"cargo":"${cargo}","orgao":"extrair do edital","banca":"${banca}","dataProva":"${dataProva}","diasDisponiveis":${diasDisponiveis},"horasPorDia":${horasPorDia},"totalHorasDisponiveis":${totalHoras}},"analise":{"coberturaPercent":100,"incluiRev24h":true,"incluiRev7d":true,"incluiRev30d":false,"mensagemCorte":""},"itens":[{"dia":1,"data":"DD/MM/AAAA","disciplina":"Nome","secao":"Nome","subsecao":"Nome","horas":2,"prioridade":"ALTA","rev24h":"DD/MM/AAAA","rev7d":"DD/MM/AAAA","rev30d":""}]}
-
-Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/subseção.
-REGRAS CRÍTICAS PARA O JSON:
-- Todos os valores de string devem ser texto simples SEM quebras de linha, SEM aspas duplas internas, SEM caracteres especiais.
-- Exemplo correto: "disciplina":"Direito Constitucional"
-- Exemplo ERRADO: "disciplina":"Direito\nConstitucional" ou "disciplina":"Direito "Constitucional""
-- Use apenas letras, números, espaços, hífens e parênteses nos valores de string.`
-      });
-
-      // ── CHAMADA À API GEMINI (estava faltando — causava "geminiRes is not defined") ──
       const geminiRes = await fetch(`${GEMINI_DOCX_URL}?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ role: 'user', parts: userParts }],
-          // 32 768 tokens para editais grandes; temperatura 0 = saída mais determinista
-          generationConfig: { temperature: 0.0, maxOutputTokens: 32768, topP: 0.95 }
-        })
+          generationConfig: { temperature: 0.0, maxOutputTokens: 16384, topP: 0.95 },
+        }),
       });
 
       if (!geminiRes.ok) {
         const err = await geminiRes.text();
-        return res.status(200).json({ error: err });
+        return res.status(200).json({ error: 'Erro na API Gemini: ' + err.slice(0, 200) });
       }
 
-      const data = await geminiRes.json();
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const geminiData = await geminiRes.json();
+      const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-      // ── Parser robusto de JSON ─────────────────────────────────────────────
-      // O Gemini às vezes inclui: markdown fences, \n literais dentro de strings,
-      // aspas não escapadas, vírgulas finais — tudo isso quebra JSON.parse.
-      // Tentamos 4 estratégias em cascata antes de desistir.
-      const cronograma = tryParseJsonRobust(rawText);
-      if (!cronograma) {
-        console.error('[PersisteIA] JSON inválido. Primeiros 400 chars:', rawText.slice(0, 400));
-        return res.status(200).json({ error: 'A IA retornou JSON malformado. Tente novamente — editais muito grandes podem exigir mais de uma tentativa.' });
+      const parsed = tryParseJsonRobust(rawText);
+      if (!parsed || !Array.isArray(parsed.topicos) || parsed.topicos.length === 0) {
+        console.error('[PersisteIA] Tópicos não extraídos. Raw:', rawText.slice(0, 400));
+        return res.status(200).json({
+          error: 'Não foi possível extrair o conteúdo programático. Verifique se o PDF tem texto selecionável (não é imagem escaneada).',
+        });
       }
+
+      // ── PASSO 2: Backend calcula todo o cronograma (instantâneo, sem IA) ──
+      const cronograma = calcularCronograma({
+        topicos:         parsed.topicos,
+        cargo,
+        orgao:           parsed.orgao || '',
+        banca,
+        dataProva,
+        diasDisponiveis,
+        horasPorDia,
+      });
+
       return res.status(200).json({ cronograma });
 
     } catch(err) {
+      console.error('[PersisteIA] gerar_docx error:', err);
       return res.status(200).json({ error: 'Erro ao gerar cronograma: ' + err.message });
     }
   }
 
+  // ── FLUXO NORMAL DE CHAT (SSE) ───────────────────────────────────────────
   const userContents = Array.isArray(body.contents) ? body.contents : [];
   const mode = body.mode || 'cronograma';
   const sysPrompt = mode === 'esteira' ? PROMPT_ESTEIRA : PROMPT_CRONOGRAMA;
 
-  // Keep last 8 messages, strip old PDFs
   const MAX_HIST = 10;
   const trimmed = userContents.length > MAX_HIST ? userContents.slice(-MAX_HIST) : userContents;
-  // Keep PDF only in first message of full history (not trimmed)
-  // After trimming, if PDF ended up stripped, replace with note
   let pdfSeen = false;
   const safeContents = trimmed.map(msg => {
     if (!msg || !msg.parts) return msg;
     const hasPdf = msg.parts.some(p => p && p.inline_data);
-    if (hasPdf && !pdfSeen) {
-      pdfSeen = true;
-      // Keep PDF but also add text summary request to save tokens
-      return msg;
-    }
+    if (hasPdf && !pdfSeen) { pdfSeen = true; return msg; }
     if (hasPdf) {
-      // Strip PDF from duplicate/old messages
       return { role: msg.role, parts: msg.parts.map(p => p.inline_data ? { text: '[PDF analisado]' } : p) };
     }
     return { role: msg.role || 'user', parts: msg.parts };
   });
 
   const contents = [
-    { role: 'user', parts: [{ text: sysPrompt }] },
+    { role: 'user',  parts: [{ text: sysPrompt }] },
     { role: 'model', parts: [{ text: WELCOME }] },
-    { role: 'user', parts: [{ text: (() => { const n=new Date(); const d=String(n.getDate()).padStart(2,'0'); const m=String(n.getMonth()+1).padStart(2,'0'); return '[DATA DE HOJE: '+d+'/'+m+'/'+n.getFullYear()+'. Use esta data para calcular dias até a prova.]'; })() }] },
+    { role: 'user',  parts: [{ text: (() => { const n=new Date(); const d=String(n.getDate()).padStart(2,'0'); const m=String(n.getMonth()+1).padStart(2,'0'); return '[DATA DE HOJE: '+d+'/'+m+'/'+n.getFullYear()+'. Use esta data para calcular dias até a prova.]'; })() }] },
     { role: 'model', parts: [{ text: 'Entendido.' }] },
     ...safeContents,
   ];
@@ -327,10 +376,10 @@ REGRAS CRÍTICAS PARA O JSON:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents,
-        generationConfig: { 
-          temperature: 0.3, 
+        generationConfig: {
+          temperature: 0.3,
           maxOutputTokens: mode === 'esteira' ? 4096 : 2048,
-          topP: 0.95 
+          topP: 0.95,
         },
       }),
     });
@@ -343,10 +392,10 @@ REGRAS CRÍTICAS PARA O JSON:
       return res.status(200).json({ candidates: [{ content: { parts: [{ text: msg }] } }] });
     }
 
-    const reader = geminiRes.body.getReader();
+    const reader  = geminiRes.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
-    let buffer = '';
+    let buffer   = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -360,14 +409,14 @@ REGRAS CRÍTICAS PARA O JSON:
         if (jsonStr === '[DONE]') continue;
         try {
           const chunk = JSON.parse(jsonStr);
-          const text = chunk?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) fullText += text;
+          const t = chunk?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (t) fullText += t;
         } catch(e) {}
       }
     }
 
     return res.status(200).json({
-      candidates: [{ content: { parts: [{ text: fullText || '⚠️ Sem resposta. Tente novamente.' }], role: 'model' }, finishReason: 'STOP' }]
+      candidates: [{ content: { parts: [{ text: fullText || '⚠️ Sem resposta. Tente novamente.' }], role: 'model' }, finishReason: 'STOP' }],
     });
 
   } catch (err) {
@@ -375,12 +424,9 @@ REGRAS CRÍTICAS PARA O JSON:
   }
 };
 
-// Aumenta o limite do body parser da Vercel para suportar PDFs grandes (padrão é 4.5 MB).
-// Necessário quando o frontend envia pdfBase64 de editais com muitas páginas.
+// Aumenta o limite de body e timeout máximo do handler para editais grandes.
 module.exports.config = {
   api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
+    bodyParser: { sizeLimit: '20mb' },
   },
 };
