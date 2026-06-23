@@ -158,8 +158,16 @@ Responda APENAS com este JSON (sem espaços extras, sem markdown):
 {"tipo":"cronograma","certame":{"cargo":"${cargo}","orgao":"extrair do edital","banca":"${banca}","dataProva":"${dataProva}","diasDisponiveis":${diasDisponiveis},"horasPorDia":${horasPorDia},"totalHorasDisponiveis":${totalHoras}},"analise":{"coberturaPercent":100,"incluiRev24h":true,"incluiRev7d":true,"incluiRev30d":false,"mensagemCorte":""},"itens":[{"dia":1,"data":"DD/MM/AAAA","disciplina":"Nome","secao":"Nome","subsecao":"Nome","horas":2,"prioridade":"ALTA","rev24h":"DD/MM/AAAA","rev7d":"DD/MM/AAAA","rev30d":""}]}
 
 Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/subseção.`
+      });
 
-
+      // ── CHAMADA À API GEMINI (estava faltando — causava "geminiRes is not defined") ──
+      const geminiRes = await fetch(`${GEMINI_DOCX_URL}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: userParts }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 8192, topP: 0.95 }
+        })
       });
 
       if (!geminiRes.ok) {
