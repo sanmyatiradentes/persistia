@@ -193,9 +193,15 @@ module.exports = async function handler(req, res) {
 
   // ── AÇÃO: gerar cronograma completo em JSON para DOCX ─────────────────────
   if (body.action === 'gerar_docx') {
-    const { pdfBase64, cargo, banca, dataProva, horasPorDia } = body;
-    if (!pdfBase64 || !cargo || !banca || !dataProva || !horasPorDia) {
-      return res.status(400).json({ error: 'Dados incompletos: cargo, banca, dataProva, horasPorDia e pdfBase64 são obrigatórios.' });
+    // pdfText = texto extraído pelo PDF.js no frontend (preferido — leve)
+    // pdfBase64 = fallback quando PDF.js não conseguiu extrair texto
+    const { pdfBase64, pdfText, cargo, banca, dataProva, horasPorDia } = body;
+
+    if (!cargo || !banca || !dataProva || !horasPorDia) {
+      return res.status(400).json({ error: 'Dados incompletos: cargo, banca, dataProva e horasPorDia são obrigatórios.' });
+    }
+    if (!pdfText && !pdfBase64) {
+      return res.status(400).json({ error: 'Conteúdo do edital não encontrado. Annexe o PDF ou cole o conteúdo programático no chat.' });
     }
 
     try {
@@ -206,18 +212,26 @@ module.exports = async function handler(req, res) {
       const diasDisponiveis = Math.max(0, Math.floor((prova - hoje) / 86400000) - 1);
       const totalHoras = diasDisponiveis * parseFloat(horasPorDia);
 
-      // Upload PDF via Files API
-      let fileUri = null;
-      try {
-        fileUri = await uploadPdfToFilesApi(apiKey, pdfBase64);
-      } catch(e) {
-        console.error('Files API failed, using inline:', e.message);
+      // ── Montar partes do conteúdo para o Gemini ────────────────────────────
+      // Estratégia 1 (preferida): texto extraído pelo PDF.js — leve, sem Files API
+      // Estratégia 2 (fallback): PDF binário via Files API ou inline
+      let userParts;
+      if (pdfText && pdfText.length > 100) {
+        // Limita a 80 000 chars (~20 000 tokens) para não estourar o contexto
+        const textoEdital = pdfText.slice(0, 80000);
+        userParts = [{ text: `CONTEÚDO DO EDITAL (texto extraído):\n\n${textoEdital}\n\n` }];
+      } else {
+        // Fallback: PDF binário
+        let fileUri = null;
+        try {
+          fileUri = await uploadPdfToFilesApi(apiKey, pdfBase64);
+        } catch(e) {
+          console.error('Files API failed, using inline:', e.message);
+        }
+        userParts = fileUri
+          ? [{ file_data: { mime_type: 'application/pdf', file_uri: fileUri } }]
+          : [{ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } }];
       }
-
-      // Build Gemini request
-      const userParts = fileUri
-        ? [{ file_data: { mime_type: 'application/pdf', file_uri: fileUri } }]
-        : [{ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } }];
 
       userParts.push({ text: `GERE O CRONOGRAMA EM JSON PURO. Nenhum texto fora do JSON.
 
@@ -359,4 +373,14 @@ REGRAS CRÍTICAS PARA O JSON:
   } catch (err) {
     return res.status(200).json({ candidates: [{ content: { parts: [{ text: '⚠️ Erro: ' + err.message }] } }] });
   }
+};
+
+// Aumenta o limite do body parser da Vercel para suportar PDFs grandes (padrão é 4.5 MB).
+// Necessário quando o frontend envia pdfBase64 de editais com muitas páginas.
+module.exports.config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+  },
 };
