@@ -1376,9 +1376,12 @@ async function gerarCronogramaCompleto() {
   const banca = bancaMatch?.[1]?.toUpperCase() || 'Não informada';
   const dataProva = dataMatch?.[0] || '';
   const horasPorDia = parseFloat(horasMatch?.[1] || 4);
-  const pdfBase64 = window._pdfForDocx || null;
 
-  if (!pdfBase64) { alert('PDF do edital não encontrado. Anexe o edital.'); return; }
+  // Prefere texto extraído pelo PDF.js (leve). Só usa base64 como último recurso.
+  const pdfText = window._pdfText || null;
+  const pdfBase64 = (!pdfText && window._pdfForDocx) ? window._pdfForDocx : null;
+
+  if (!pdfText && !pdfBase64) { alert('PDF do edital não encontrado. Anexe o edital.'); return; }
   if (!dataProva) { alert('Data da prova não identificada. Informe no chat.'); return; }
   if (!horasMatch) { alert('Horas de estudo não identificadas. Informe no chat (ex: "4 horas por dia").'); return; }
 
@@ -1405,10 +1408,26 @@ async function gerarCronogramaCompleto() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'gerar_docx', pdfBase64, cargo, banca, dataProva, horasPorDia }),
-      signal: AbortSignal.timeout(90000)
+      body: JSON.stringify({ action: 'gerar_docx', pdfText, pdfBase64, cargo, banca, dataProva, horasPorDia }),
+      signal: AbortSignal.timeout(120000)
     });
-    const data = await res.json();
+
+    // Lê como texto primeiro — evita erro "Unexpected token" quando o servidor
+    // retorna uma resposta não-JSON (ex: Vercel timeout ou body too large).
+    const rawBody = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawBody);
+    } catch(jsonErr) {
+      // Vercel retornou HTML ou texto puro — provavelmente timeout ou 413
+      const preview = rawBody.replace(/<[^>]+>/g, '').trim().slice(0, 200);
+      if (!res.ok) {
+        throw new Error(`Servidor retornou ${res.status}. ${preview || 'Sem detalhes.'}`);
+      }
+      throw new Error('Servidor não retornou JSON válido. ' +
+        (preview.startsWith('An error') ? 'A função expirou ou o edital é muito grande. Tente novamente.' : preview.slice(0, 120)));
+    }
+
     if (data.error) throw new Error(data.error);
     if (!data.cronograma) throw new Error('Cronograma não gerado.');
     await gerarDocx(data.cronograma);
