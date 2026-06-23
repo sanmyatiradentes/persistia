@@ -1342,7 +1342,11 @@ function verificarDadosCompletos() {
   const temBanca = /\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i.test(fullHist);
   const temPdf = !!(window._pdfForDocx);
   
-  if (temData && temHoras && temBanca && temPdf) {
+  const aiConfirmed = conversationHistory.some(m =>
+    m.role === 'model' &&
+    m.parts?.some(p => (p.text||'').includes('Dados completos') || (p.text||'').includes('GERAR DOCX'))
+  );
+  if ((temData && temBanca && temPdf) && (temHoras || aiConfirmed)) {
     document.getElementById('docx-gerador').style.display = 'block';
     dadosCertame.cargo = document.getElementById('cfg-cargo')?.value || '';
   }
