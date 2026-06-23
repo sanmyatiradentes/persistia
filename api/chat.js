@@ -145,62 +145,21 @@ module.exports = async function handler(req, res) {
         ? [{ file_data: { mime_type: 'application/pdf', file_uri: fileUri } }]
         : [{ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } }];
 
-      userParts.push({ text: `Cargo: ${cargo} | Banca: ${banca} | Data prova: ${dataProva} | Horas/dia: ${horasPorDia}h | Dias: ${diasDisponiveis} | Total horas disponíveis: ${totalHoras}h
+      userParts.push({ text: `GERE O CRONOGRAMA EM JSON PURO. Nenhum texto fora do JSON.
 
-INSTRUÇÃO CRÍTICA: Responda APENAS com JSON puro. Sem explicações, sem texto antes ou depois, sem markdown, sem \`\`\`. Comece sua resposta diretamente com { e termine com }.
+Dados: Cargo=${cargo} | Banca=${banca} | DataProva=${dataProva} | Dias=${diasDisponiveis} | Horas/dia=${horasPorDia}h | TotalHoras=${totalHoras}h
 
-Gere o cronograma completo de estudos em JSON válido.
+Leia o edital anexado e extraia TODOS os tópicos do conteúdo programático.
+Distribua nos ${diasDisponiveis} dias disponíveis, máximo ${horasPorDia}h por dia.
+Rev.24h = dia seguinte | Rev.7d = 7 dias após | Rev.30d = 30 dias após (se couber)
+Prioridade por banca ${banca}: matérias mais cobradas = ALTA.
 
-Calcule:
-- Rev.24h = dia seguinte ao estudo
-- Rev.7d = 7 dias após o estudo  
-- Rev.30d = 30 dias após o estudo (se couber no total de horas)
-- Prioridade por banca: CESPE e FGV = Constitucional e Administrativo primeiro; FCC = todos iguais
-- Se não couber tudo: coberturaPercent < 100 e mensagemCorte explica o corte
+Responda APENAS com este JSON (sem espaços extras, sem markdown):
+{"tipo":"cronograma","certame":{"cargo":"${cargo}","orgao":"extrair do edital","banca":"${banca}","dataProva":"${dataProva}","diasDisponiveis":${diasDisponiveis},"horasPorDia":${horasPorDia},"totalHorasDisponiveis":${totalHoras}},"analise":{"coberturaPercent":100,"incluiRev24h":true,"incluiRev7d":true,"incluiRev30d":false,"mensagemCorte":""},"itens":[{"dia":1,"data":"DD/MM/AAAA","disciplina":"Nome","secao":"Nome","subsecao":"Nome","horas":2,"prioridade":"ALTA","rev24h":"DD/MM/AAAA","rev7d":"DD/MM/AAAA","rev30d":""}]}
 
-Formato exato:
-{
-  "tipo": "cronograma",
-  "certame": {
-    "cargo": "${cargo}",
-    "orgao": "extrair do edital",
-    "banca": "${banca}",
-    "dataProva": "${dataProva}",
-    "diasDisponiveis": ${diasDisponiveis},
-    "horasPorDia": ${horasPorDia},
-    "totalHorasDisponiveis": ${totalHoras}
-  },
-  "analise": {
-    "totalHorasEdital": 0,
-    "coberturaPercent": 100,
-    "incluiRev24h": true,
-    "incluiRev7d": true,
-    "incluiRev30d": false,
-    "mensagemCorte": ""
-  },
-  "itens": [
-    {
-      "dia": 1,
-      "data": "DD/MM/AAAA",
-      "disciplina": "Nome da Disciplina",
-      "secao": "Nome da Seção",
-      "subsecao": "Nome da Subseção",
-      "horas": 2,
-      "prioridade": "ALTA",
-      "rev24h": "DD/MM/AAAA",
-      "rev7d": "DD/MM/AAAA",
-      "rev30d": ""
-    }
-  ]
-}` });
+Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/subseção.`
 
-      const geminiRes = await fetch(`${GEMINI_DOCX_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: userParts }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 8192, topP: 0.95 },
-        }),
+
       });
 
       if (!geminiRes.ok) {
