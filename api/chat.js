@@ -69,6 +69,80 @@ const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma d
 const GEMINI_DOCX_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 const FILES_API = 'https://generativelanguage.googleapis.com/upload/v1beta/files';
 
+// ── Parser robusto de JSON com 4 estratégias em cascata ──────────────────────
+// Resolve os problemas mais comuns com output do Gemini:
+//   1. Markdown fences (```json … ```)
+//   2. Texto antes/depois do bloco JSON
+//   3. \n \r \t literais dentro de strings (causa "Expected ',' or '}'" em JSON.parse)
+//   4. Vírgulas finais antes de } ou ]
+//   5. Caracteres de controle não escapados
+function tryParseJsonRobust(rawText) {
+  // Pré-processamento: strip fences e whitespace externo
+  let text = rawText
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/g, '')
+    .trim();
+
+  // Extrai o bloco JSON (do primeiro { ao último })
+  const s = text.indexOf('{');
+  const e = text.lastIndexOf('}');
+  if (s === -1 || e === -1) return null;
+  text = text.substring(s, e + 1);
+
+  // Tentativa 1: parse direto
+  try { return JSON.parse(text); } catch(_) {}
+
+  // Tentativa 2: remove vírgulas finais antes de } ou ]
+  const v2 = text.replace(/,\s*([}\]])/g, '$1');
+  try { return JSON.parse(v2); } catch(_) {}
+
+  // Tentativa 3: state machine — escapa \n \r \t \x00-\x1f literais dentro de strings
+  // Este é o fix principal para o erro "Expected ',' or '}' at position NNN"
+  const v3 = escaparControlesEmStringsJson(text);
+  try { return JSON.parse(v3); } catch(_) {}
+
+  // Tentativa 4: state machine + remove vírgulas finais
+  const v4 = escaparControlesEmStringsJson(v2);
+  try { return JSON.parse(v4); } catch(_) {}
+
+  // Tentativa 5: abordagem nuclear — substitui todos os controles e tenta de novo
+  const v5 = text
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')   // controles raros
+    .replace(/\r\n/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/\t/g, ' ')
+    .replace(/,\s*([}\]])/g, '$1');
+  try { return JSON.parse(v5); } catch(_) {}
+
+  return null; // todas as tentativas falharam
+}
+
+// Percorre o JSON char a char mantendo estado (dentro/fora de string) e escapa
+// corretamente todos os caracteres de controle que apareçam dentro de strings.
+function escaparControlesEmStringsJson(text) {
+  let out = '';
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (escape) {
+      out += c;
+      escape = false;
+      continue;
+    }
+    if (c === '\\' && inString) { out += c; escape = true; continue; }
+    if (c === '"') { out += c; inString = !inString; continue; }
+    if (inString) {
+      const code = c.charCodeAt(0);
+      if (c === '\n') { out += '\\n'; continue; }
+      if (c === '\r') { out += '\\r'; continue; }
+      if (c === '\t') { out += '\\t'; continue; }
+      if (code < 0x20) { out += '\\u' + code.toString(16).padStart(4, '0'); continue; }
+    }
+    out += c;
+  }
+  return out;
+}
+
+
 async function uploadPdfToFilesApi(apiKey, pdfBase64) {
   // Step 1: initiate resumable upload
   const pdfBytes = Buffer.from(pdfBase64, 'base64');
@@ -157,7 +231,12 @@ Prioridade por banca ${banca}: matérias mais cobradas = ALTA.
 Responda APENAS com este JSON (sem espaços extras, sem markdown):
 {"tipo":"cronograma","certame":{"cargo":"${cargo}","orgao":"extrair do edital","banca":"${banca}","dataProva":"${dataProva}","diasDisponiveis":${diasDisponiveis},"horasPorDia":${horasPorDia},"totalHorasDisponiveis":${totalHoras}},"analise":{"coberturaPercent":100,"incluiRev24h":true,"incluiRev7d":true,"incluiRev30d":false,"mensagemCorte":""},"itens":[{"dia":1,"data":"DD/MM/AAAA","disciplina":"Nome","secao":"Nome","subsecao":"Nome","horas":2,"prioridade":"ALTA","rev24h":"DD/MM/AAAA","rev7d":"DD/MM/AAAA","rev30d":""}]}
 
-Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/subseção.`
+Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/subseção.
+REGRAS CRÍTICAS PARA O JSON:
+- Todos os valores de string devem ser texto simples SEM quebras de linha, SEM aspas duplas internas, SEM caracteres especiais.
+- Exemplo correto: "disciplina":"Direito Constitucional"
+- Exemplo ERRADO: "disciplina":"Direito\nConstitucional" ou "disciplina":"Direito "Constitucional""
+- Use apenas letras, números, espaços, hífens e parênteses nos valores de string.`
       });
 
       // ── CHAMADA À API GEMINI (estava faltando — causava "geminiRes is not defined") ──
@@ -166,7 +245,8 @@ Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ role: 'user', parts: userParts }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 8192, topP: 0.95 }
+          // 32 768 tokens para editais grandes; temperatura 0 = saída mais determinista
+          generationConfig: { temperature: 0.0, maxOutputTokens: 32768, topP: 0.95 }
         })
       });
 
@@ -176,31 +256,16 @@ Substitua o exemplo acima pelos dados reais do edital. Gere um item por tópico/
       }
 
       const data = await geminiRes.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
-      // Extract JSON from response (handle markdown fences)
-      // Strip any markdown or text around the JSON
-      let cleanText = text
-        .replace(/^[\s\S]*?(?=\{)/,'')  // remove anything before first {
-        .replace(/```json/g,'').replace(/```/g,'').trim();
-      const jsonStart = cleanText.indexOf('{');
-      const jsonEnd = cleanText.lastIndexOf('}');
-      if (jsonStart === -1 || jsonEnd === -1) {
-        console.error('[PersisteIA] No JSON found in response:', text.slice(0,200));
-        return res.status(200).json({ error: 'IA não retornou JSON. Tente novamente — o Gemini pode demorar para processar editais grandes.' });
-      }
-      cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
-      let cronograma;
-      try {
-        cronograma = JSON.parse(cleanText);
-      } catch(parseErr) {
-        // Try to fix common JSON issues
-        try {
-          cleanText = cleanText.replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
-          cronograma = JSON.parse(cleanText);
-        } catch(e2) {
-          return res.status(200).json({ error: 'Erro ao processar JSON: ' + parseErr.message.slice(0,100) + '. Tente novamente.' });
-        }
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      // ── Parser robusto de JSON ─────────────────────────────────────────────
+      // O Gemini às vezes inclui: markdown fences, \n literais dentro de strings,
+      // aspas não escapadas, vírgulas finais — tudo isso quebra JSON.parse.
+      // Tentamos 4 estratégias em cascata antes de desistir.
+      const cronograma = tryParseJsonRobust(rawText);
+      if (!cronograma) {
+        console.error('[PersisteIA] JSON inválido. Primeiros 400 chars:', rawText.slice(0, 400));
+        return res.status(200).json({ error: 'A IA retornou JSON malformado. Tente novamente — editais muito grandes podem exigir mais de uma tentativa.' });
       }
       return res.status(200).json({ cronograma });
 
