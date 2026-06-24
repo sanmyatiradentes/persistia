@@ -73,19 +73,24 @@ BANCAS: CESPE=quase-certas/somente; FCC=letra-da-lei; FGV=raciocínio-encadeado;
 
 const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma de estudos agora\n2. Já tem cronograma e quer estudar um assunto específico\n\nDigite 1 ou 2.';
 
-// ── Prompt para extração de tópicos (Gemini só faz isso — rápido) ────────────
-// Sem cálculos de datas, sem horas, sem distribuição. Só nomes de tópicos.
-const PROMPT_EXTRAI_TOPICOS = `Você é um analisador de editais de concurso público.
-Leia o conteúdo programático deste edital e extraia TODOS os tópicos e subtópicos.
-Responda APENAS com JSON puro, sem markdown, sem texto antes ou depois:
-{"orgao":"Nome do órgão/instituição extraído do edital","topicos":["Disciplina > Seção","Disciplina > Seção > Subseção"]}
-REGRAS OBRIGATÓRIAS:
-- Um item por tópico/subtópico do edital
-- Formato: "NomeDisciplina > NomeSeção" ou "NomeDisciplina > NomeSeção > NomeSubseção"
-- Máximo 80 caracteres por item
-- PROIBIDO: quebras de linha dentro dos valores, aspas duplas dentro dos valores
-- Inclua absolutamente TODOS os tópicos, mesmo que sejam muitos
-- Se não houver subseção, use apenas "Disciplina > Seção"`;
+// ── Prompt de extração de tópicos — cargo-específico (gerado dinamicamente) ──
+// Antes era uma constante genérica que pedia TODOS os cargos, gerando listas
+// enormes que excediam os tokens e faziam o Gemini responder em prosa.
+// Agora o cargo é injetado no prompt para que apenas as disciplinas relevantes
+// sejam extraídas, tornando a resposta menor, mais rápida e mais confiável.
+function buildPromptExtrai(cargo) {
+  return `Você é um analisador de editais de concurso público.
+Leia o CONTEÚDO PROGRAMÁTICO (normalmente no Anexo I) deste edital e extraia APENAS os tópicos do cargo: "${cargo}".
+Responda SOMENTE com JSON puro, sem markdown, sem texto antes ou depois:
+{"orgao":"nome do orgao extraído do edital","topicos":["Disciplina > Secao","Disciplina > Secao > Subitem"]}
+REGRAS OBRIGATORIAS:
+- Extraia SOMENTE as disciplinas e tópicos do cargo "${cargo}" (ignore todos os outros cargos)
+- Um item do array por tópico ou subitem do conteúdo programático
+- Formato: "NomeDisciplina > NomeSecao" ou "NomeDisciplina > NomeSecao > NomeSubitem"
+- Maximo 80 caracteres por string — sem quebras de linha, sem aspas nos valores
+- Se um tópico tiver muitos subitens, crie um elemento do array por subitem
+- NUNCA inclua texto fora do JSON`;
+}
 
 // ── Parser robusto de JSON (5 estratégias em cascata) ────────────────────────
 function tryParseJsonRobust(rawText) {
@@ -287,7 +292,9 @@ module.exports = async function handler(req, res) {
       let userParts;
       if (pdfText && pdfText.length > 100) {
         // Via: texto extraído pelo PDF.js (preferido — payload pequeno)
-        userParts = [{ text: `EDITAL (texto extraído):\n\n${pdfText.slice(0, 80000)}\n\n---\n${PROMPT_EXTRAI_TOPICOS}` }];
+        // Prompt cargo-específico inline (usa variável `cargo` do escopo)
+        const promptEspecifico = buildPromptExtrai(cargo);
+        userParts = [{ text: `EDITAL (texto extraído):\n\n${pdfText.slice(0, 80000)}\n\n---\n${promptEspecifico}` }];
       } else {
         // Fallback: PDF binário via Files API ou inline
         let fileUri = null;
@@ -297,7 +304,7 @@ module.exports = async function handler(req, res) {
         const pdfPart = fileUri
           ? { file_data: { mime_type: 'application/pdf', file_uri: fileUri } }
           : { inline_data: { mime_type: 'application/pdf', data: pdfBase64 } };
-        userParts = [pdfPart, { text: PROMPT_EXTRAI_TOPICOS }];
+        userParts = [pdfPart, { text: buildPromptExtrai(cargo) }];
       }
 
       const geminiRes = await fetch(`${GEMINI_DOCX_URL}?key=${apiKey}`, {
@@ -310,18 +317,30 @@ module.exports = async function handler(req, res) {
       });
 
       if (!geminiRes.ok) {
-        const err = await geminiRes.text();
-        return res.status(200).json({ error: 'Erro na API Gemini: ' + err.slice(0, 200) });
+        const errTxt = await geminiRes.text();
+        console.error('[PersisteIA] Gemini HTTP error:', errTxt.slice(0, 300));
+        return res.status(200).json({ error: 'Erro na API Gemini (HTTP ' + geminiRes.status + '): ' + errTxt.slice(0, 200) });
       }
 
       const geminiData = await geminiRes.json();
-      const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const finishReason = geminiData?.candidates?.[0]?.finishReason || 'UNKNOWN';
+      const rawText     = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      // Log diagnóstico — visível nos Logs da Vercel
+      console.log('[PersisteIA] finishReason:', finishReason, '| rawText length:', rawText.length);
+      console.log('[PersisteIA] rawText preview:', rawText.slice(0, 400));
 
       const parsed = tryParseJsonRobust(rawText);
-      if (!parsed || !Array.isArray(parsed.topicos) || parsed.topicos.length === 0) {
-        console.error('[PersisteIA] Tópicos não extraídos. Raw:', rawText.slice(0, 400));
+      if (!parsed) {
         return res.status(200).json({
-          error: 'Não foi possível extrair o conteúdo programático. Verifique se o PDF tem texto selecionável (não é imagem escaneada).',
+          error: `A IA não retornou JSON válido (finishReason=${finishReason}). ` +
+                 `Resposta recebida: "${rawText.slice(0, 150)}..." — Tente novamente.`,
+        });
+      }
+      if (!Array.isArray(parsed.topicos) || parsed.topicos.length === 0) {
+        return res.status(200).json({
+          error: `A IA retornou JSON mas sem tópicos (campos: ${Object.keys(parsed).join(', ')}). ` +
+                 `Verifique se o cargo "${cargo}" está correto no edital, ou cole o conteúdo programático diretamente no chat.`,
         });
       }
 
