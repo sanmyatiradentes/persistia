@@ -349,31 +349,43 @@ footer a:hover{text-decoration:underline;}
   })();
   </script>
   <script>
-  // Load docx.js with fallback CDNs
-  (function() {
-    function loadScript(src, cb) {
+  // ── Loader robusto da biblioteca docx.js ─────────────────────────────────
+  // Promise global que resolve com a lib (ou null se todos os CDNs falharem).
+  // Rastreada globalmente para que gerarDocx() saiba sem tentar de novo.
+  window._docxLoadPromise = new Promise(function(resolve) {
+    // Se já estiver no escopo (carregado por outro meio), resolve imediatamente
+    var existing = window.docx || (typeof docx !== 'undefined' ? docx : null);
+    if (existing) { resolve(existing); return; }
+
+    // 3 CDNs em cascata
+    var cdns = [
+      'https://unpkg.com/docx@9.5.0/build/index.umd.js',
+      'https://cdn.jsdelivr.net/npm/docx@9.5.0/build/index.umd.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/docx/9.5.0/index.umd.min.js',
+    ];
+    var tried = 0;
+
+    function tryNext() {
+      if (tried >= cdns.length) {
+        console.warn('[PersisteIA] Todos os CDNs de docx.js falharam — modo CSV ativado.');
+        resolve(null);
+        return;
+      }
       var s = document.createElement('script');
-      s.src = src;
-      s.onload = cb;
-      s.onerror = function() {
-        console.warn('CDN failed:', src);
-        if (cb._fallback) cb._fallback();
+      s.src = cdns[tried++];
+      s.onload = function() {
+        var lib = window.docx || (typeof docx !== 'undefined' ? docx : null);
+        if (lib) { window.docx = lib; resolve(lib); }
+        else tryNext(); // script carregou mas lib não exposta
       };
+      s.onerror = tryNext;
       document.head.appendChild(s);
     }
-    function tryJsdelivr() {
-      loadScript('https://cdn.jsdelivr.net/npm/docx@9.5.0/build/index.umd.js', function() {
-        window.docx = window.docx || (typeof docx !== 'undefined' ? docx : null);
-        console.log('docx loaded via jsdelivr');
-      });
-    }
-    var cb = function() {
-      window.docx = window.docx || (typeof docx !== 'undefined' ? docx : null);
-      console.log('docx loaded via unpkg');
-    };
-    cb._fallback = tryJsdelivr;
-    loadScript('https://unpkg.com/docx@9.5.0/build/index.umd.js', cb);
-  })();
+    tryNext();
+
+    // Timeout de 12s — se os CDNs demorarem demais, usa CSV
+    setTimeout(function() { resolve(null); }, 12000);
+  });
   </script>
 </head>
 <body>
@@ -999,26 +1011,51 @@ function mostrarBotaoDocx(data) {
   if (msgs) msgs.appendChild(bar);
 }
 
+// ── Fallback CSV quando a biblioteca docx.js não carrega (CDN bloqueado) ──
+// Gera um arquivo .csv com o cronograma completo.
+// O usuário pode abrir no Excel e salvar como .xlsx, ou arrastar para o Word.
+function gerarCSVFallback(data) {
+  const certame = data.certame || {};
+  const itens   = data.itens   || [];
+  const cargo   = certame.cargo || 'Cargo';
+
+  const cabecalho = ['Dia','Data','Disciplina','Secao','Subsecao','Horas','Prioridade','Rev.24h','Rev.7d','Rev.30d'];
+  const linhas = itens.map(item => [
+    item.dia, item.data, item.disciplina, item.secao || '', item.subsecao || '',
+    (item.horas || 2) + 'h', item.prioridade || '',
+    item.rev24h || '', item.rev7d || '', item.rev30d || ''
+  ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
+
+  const csv = '\uFEFF' + cabecalho.join(',') + '\n' + linhas.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'PersisteIA_Cronograma_' + cargo.replace(/\s+/g, '_') + '.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+  addMessage('assistant',
+    '📊 Cronograma baixado em CSV (a biblioteca Word estava bloqueada pela sua rede).\n\n' +
+    '✅ Para abrir como planilha: clique 2× no arquivo → Excel abre automaticamente.\n' +
+    '✅ Para converter para Word: no Excel, selecione tudo → Copie → Cole no Word.\n\n' +
+    '💡 Dica: se quiser o .docx, abra a PersisteIA em outra rede (Wi-Fi pessoal ou celular).');
+}
+
 async function gerarDocx(data) {
-  // Try to get docx from different possible globals
-  const docxLib = window.docx || (typeof docx !== 'undefined' ? docx : null);
+  // Aguarda o loader global (max 12s já configurado no loader)
+  const docxLib = await window._docxLoadPromise;
+
+  // ── FALLBACK CSV: quando os CDNs estão bloqueados pela rede ──────────────
   if (!docxLib) {
-    // Try loading on demand
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://unpkg.com/docx@9.5.0/build/index.umd.js';
-      s.onload = () => { window.docx = window.docx || (typeof docx !== 'undefined' ? docx : null); resolve(); };
-      s.onerror = reject;
-      document.head.appendChild(s);
-    }).catch(() => {});
+    gerarCSVFallback(data);
+    return;
   }
-  const docxLib2 = window.docx || (typeof docx !== 'undefined' ? docx : null);
-  if (!docxLib2) { alert('Biblioteca DOCX não carregada. Verifique sua conexão e recarregue a página.'); return; }
+
+  // ── GERAÇÃO DOCX normal ──────────────────────────────────────────────────
   const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
           AlignmentType, WidthType, BorderStyle, ShadingType, VerticalAlign,
-          HeadingLevel, PageOrientation } = docxLib2;
-
-  const certame = data.certame || {};
+          HeadingLevel, PageOrientation } = docxLib;
   const analise = data.analise || {};
   const itens = data.itens || [];
   const orange = 'E65100';
