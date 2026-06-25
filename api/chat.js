@@ -24,7 +24,10 @@ FLUXO:
 2. Estudar um assunto específico
 Digite 1 ou 2."
 
-SE 2: Peça o item do cronograma. Ative a Esteira.
+SE 2: Responda EXATAMENTE:
+"Perfeito! Cole aqui as 3 células do seu cronograma (Disciplina, Seção e Subseção) referentes ao tópico que quer estudar, seguidas da banca.
+Exemplo: Medicina Legal > Traumatologia Forense > Lesões Contundentes | CESPE
+Basta copiar as células da planilha/documento e colar aqui."
 
 SE 1: Colete em ordem, UM por vez:
 1. Cargo (se não informado na sidebar)
@@ -177,7 +180,15 @@ Encerre com o menu completo.
 
 BANCAS: CESPE/CEBRASPE=assertivas absolutas são armadilha, certo/errado sem alternativas; FCC=letra-da-lei exata, sem interpretação; FGV=raciocínio encadeado + jurisprudência recente; VUNESP=STJ + súmulas vinculantes.`;
 
-const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma de estudos agora\n2. Já tem cronograma e quer estudar um assunto específico\n\nDigite 1 ou 2.';
+const WELCOME = `🎯 Sua aprovação começa aqui — e começa agora.
+
+Cada dia de estudo bem organizado é um passo mais perto da posse. Vamos juntas!
+
+Para começar, o que você precisa hoje?
+1. Criar meu cronograma de estudos (preciso do edital ou do conteúdo programático)
+2. Estudar um tópico específico do meu cronograma (Esteira de Aprendizado Ativo)
+
+Digite 1 ou 2.`;
 const WELCOME_ESTEIRA = `📚 Esteira de Aprendizado Ativo ativada.
 
 Informe o tópico exato do seu cronograma usando o caminho completo:
@@ -207,33 +218,44 @@ A Esteira vai gerar automaticamente para você (escolha por número):
 // Agora o cargo é injetado no prompt para que apenas as disciplinas relevantes
 // sejam extraídas, tornando a resposta menor, mais rápida e mais confiável.
 function buildPromptExtrai(cargo) {
-  const cargoValido = cargo && cargo !== 'Não informado' && cargo !== 'Cargo conforme edital' && cargo.length > 3;
-  if (cargoValido) {
-    return `Você é um analisador de editais de concurso público.
-Leia o CONTEÚDO PROGRAMÁTICO (normalmente no Anexo I) deste edital e extraia APENAS os tópicos do cargo: "${cargo}".
-Responda SOMENTE com JSON puro, sem markdown, sem texto antes ou depois:
-{"orgao":"nome do orgao extraído do edital","topicos":["Disciplina > Secao","Disciplina > Secao > Subitem"]}
-REGRAS OBRIGATORIAS:
-- Extraia SOMENTE as disciplinas e tópicos do cargo "${cargo}" (ignore todos os outros cargos)
+  const regrasComuns = `REGRAS OBRIGATORIAS:
 - Um item do array por tópico ou subitem do conteúdo programático
 - Formato: "NomeDisciplina > NomeSecao" ou "NomeDisciplina > NomeSecao > NomeSubitem"
-- Maximo 80 caracteres por string — sem quebras de linha, sem aspas nos valores
-- Se um tópico tiver muitos subitens, crie um elemento do array por subitem
-- NUNCA inclua texto fora do JSON`;
+- Maximo 90 caracteres por string — sem quebras de linha, sem aspas nos valores
+- NUNCA inclua texto fora do JSON
+
+EXPANSAO OBRIGATORIA — aplique sempre que um tópico for extenso ou listar múltiplas leis/itens:
+- Tópico que menciona múltiplas leis ("Leis X e Y", "legislação relativa a", "leis especiais", "normas pertinentes", "legislação específica"):
+  Crie UM item do array POR LEI identificada, mesmo que o edital não liste cada uma individualmente.
+  Exemplos para "Leis penais especiais":
+  "Dir. Processual Penal > Leis Especiais > Lei 9.099/95 - Juizados Especiais Criminais"
+  "Dir. Processual Penal > Leis Especiais > Lei 8.072/90 - Crimes Hediondos"
+  "Dir. Processual Penal > Leis Especiais > Lei 11.343/06 - Drogas"
+  "Dir. Processual Penal > Leis Especiais > Lei 11.340/06 - Lei Maria da Penha"
+  "Dir. Processual Penal > Leis Especiais > Lei 12.850/13 - Organizações Criminosas"
+- Tópico com conteúdo extenso (constitucional, tributário, processo penal/civil, penal, administrativo):
+  Identifique os principais subtópicos e crie itens separados para cada um.
+- Tópico com "e suas alterações", "legislação correlata", "normas regulamentadoras":
+  Identifique e liste os diplomas normativos mais relevantes como subitens.
+- PREFIRA 5 itens específicos a 1 item genérico — granularidade facilita o estudo e o cronograma.`;
+
+  const cargoValido = cargo && cargo !== 'Não informado' && cargo !== 'Cargo conforme edital' && cargo.length > 3;
+  if (cargoValido) {
+    return `Você é um analisador especialista em editais de concurso público.
+Leia o CONTEUDO PROGRAMÁTICO (normalmente no Anexo I) deste edital e extraia APENAS os tópicos do cargo: "${cargo}".
+Responda SOMENTE com JSON puro, sem markdown, sem texto antes ou depois:
+{"orgao":"nome do orgao extraído do edital","topicos":["Disciplina > Secao","Disciplina > Secao > Subitem"]}
+${regrasComuns}
+- Extraia SOMENTE as disciplinas e tópicos do cargo "${cargo}" (ignore todos os outros cargos)`;
   }
   // Cargo não identificado: extrai o primeiro cargo encontrado no edital
-  return `Você é um analisador de editais de concurso público.
-Leia o CONTEÚDO PROGRAMÁTICO (normalmente no Anexo I) deste edital.
+  return `Você é um analisador especialista em editais de concurso público.
+Leia o CONTEUDO PROGRAMÁTICO (normalmente no Anexo I) deste edital.
 Identifique o PRIMEIRO cargo listado e extraia todos os seus tópicos.
 Responda SOMENTE com JSON puro, sem markdown, sem texto antes ou depois:
 {"orgao":"nome do orgao extraído do edital","topicos":["Disciplina > Secao","Disciplina > Secao > Subitem"]}
-REGRAS OBRIGATORIAS:
-- Extraia SOMENTE o primeiro cargo encontrado no edital
-- Um item do array por tópico ou subitem do conteúdo programático
-- Formato: "NomeDisciplina > NomeSecao" ou "NomeDisciplina > NomeSecao > NomeSubitem"
-- Maximo 80 caracteres por string — sem quebras de linha, sem aspas nos valores
-- Se um tópico tiver muitos subitens, crie um elemento do array por subitem
-- NUNCA inclua texto fora do JSON`;
+${regrasComuns}
+- Extraia SOMENTE o primeiro cargo encontrado no edital`;
 }
 
 // ── Parser robusto de JSON (6 estratégias em cascata) ────────────────────────
