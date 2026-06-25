@@ -128,6 +128,7 @@ Sem perguntas entre as etapas — só "Digite qualquer coisa para continuar."
 BANCAS: CESPE/CEBRASPE=assertivas absolutas são armadilha; FCC=letra-da-lei exata; FGV=raciocínio encadeado + jurisprudência recente; VUNESP=STJ + súmulas.`;
 
 const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma de estudos agora\n2. Já tem cronograma e quer estudar um assunto específico\n\nDigite 1 ou 2.';
+const WELCOME_ESTEIRA = '📚 Esteira de Aprendizado Ativo ativada. Cole o assunto do seu cronograma — disciplina e tópico — e vou ensinar agora.';
 
 // ── Prompt de extração de tópicos — cargo-específico (gerado dinamicamente) ──
 // Antes era uma constante genérica que pedia TODOS os cargos, gerando listas
@@ -510,7 +511,7 @@ module.exports = async function handler(req, res) {
 
   const contents = [
     { role: 'user',  parts: [{ text: sysPrompt }] },
-    { role: 'model', parts: [{ text: WELCOME }] },
+    { role: 'model', parts: [{ text: mode === 'esteira' ? WELCOME_ESTEIRA : WELCOME }] },
     { role: 'user',  parts: [{ text: (() => { const n=new Date(); const d=String(n.getDate()).padStart(2,'0'); const m=String(n.getMonth()+1).padStart(2,'0'); return '[DATA DE HOJE: '+d+'/'+m+'/'+n.getFullYear()+'. Use esta data para calcular dias até a prova.]'; })() }] },
     { role: 'model', parts: [{ text: 'Entendido.' }] },
     ...safeContents,
