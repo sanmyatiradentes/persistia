@@ -242,13 +242,22 @@ section{padding:5rem 2rem;}
 .chat-input-wrap{border-top:1px solid var(--border);background:var(--cream);padding:0.85rem 1.25rem;}
 .disclaimer-sm{font-size:0.67rem;color:rgba(15,15,15,0.38);text-align:center;margin-bottom:0.55rem;line-height:1.4;}
 .input-row{display:flex;gap:0.6rem;align-items:flex-end;}
-#user-input{flex:1;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:0.72rem 0.88rem;font-size:0.87rem;font-family:inherit;color:var(--ink);resize:none;min-height:44px;max-height:120px;line-height:1.5;transition:border-color 0.15s;}
-#user-input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(184,132,90,0.08);}
+.input-box{flex:1;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:0.6rem 0.75rem 0.5rem;display:flex;flex-direction:column;gap:0.3rem;transition:border-color 0.15s;box-shadow:0 1px 4px rgba(15,15,15,0.04);}
+.input-box:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px rgba(184,132,90,0.08);}
+#user-input{border:none;outline:none;background:transparent;resize:none;font-size:0.87rem;font-family:inherit;color:var(--ink);min-height:24px;max-height:120px;line-height:1.5;padding:0;width:100%;}
 #user-input::placeholder{color:rgba(15,15,15,0.3);}
-.btn-send{background:var(--orange);color:#fff;border:none;border-radius:9px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all 0.15s;flex-shrink:0;}
+.input-box-footer{display:flex;align-items:center;justify-content:space-between;gap:0.5rem;min-height:30px;}
+.attach-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:0.7rem;color:rgba(15,15,15,0.42);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.3rem;transition:all 0.15s;white-space:nowrap;}
+.attach-btn:hover{border-color:var(--orange);color:var(--orange);}
+.file-chip{display:none;align-items:center;gap:0.3rem;background:rgba(184,132,90,0.1);border:1px solid rgba(184,132,90,0.3);border-radius:20px;padding:3px 8px 3px 8px;font-size:0.69rem;color:var(--orange);max-width:220px;}
+.file-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;}
+.file-chip-x{cursor:pointer;opacity:0.5;font-size:0.95rem;line-height:1;margin-left:1px;flex-shrink:0;}
+.file-chip-x:hover{opacity:1;}
+.input-actions{display:flex;align-items:center;gap:0.4rem;}
+.btn-send{background:var(--orange);color:#fff;border:none;border-radius:9px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all 0.15s;flex-shrink:0;}
 .btn-send:hover{background:var(--orange-hover);transform:scale(1.04);}
 .btn-send:disabled{background:rgba(15,15,15,0.12);cursor:not-allowed;transform:none;}
-.btn-clr{background:transparent;border:1px solid var(--border);border-radius:9px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .15s;flex-shrink:0;color:rgba(15,15,15,.4);}
+.btn-clr{background:transparent;border:1px solid var(--border);border-radius:9px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .15s;flex-shrink:0;color:rgba(15,15,15,.4);}
 .btn-clr:hover{border-color:var(--orange);color:var(--orange);}
 .btn-clear-sm{background:transparent;border:1px solid var(--border);border-radius:8px;padding:0 0.6rem;height:44px;font-size:0.74rem;color:rgba(15,15,15,0.4);cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap;}
 .btn-clear-sm:hover{border-color:var(--orange);color:var(--orange);}
@@ -292,10 +301,11 @@ footer a:hover{text-decoration:underline;}
   .diag-grid{grid-template-columns:1fr 1fr}
   .steps{grid-template-columns:1fr 1fr}.steps::before{display:none}
   .eixos-grid{grid-template-columns:1fr}
-  .chat-app{grid-template-columns:1fr;height:auto;min-height:560px;border-radius:14px 14px 0 0;}
+  section#ferramenta{padding:0!important;}
+  .chat-app{grid-template-columns:1fr;height:calc(100dvh - 62px);height:calc(100vh - 62px);min-height:0;border-radius:0;box-shadow:none;margin-top:0;position:sticky;top:62px;}
   .chat-sidebar{display:none!important}
-  .chat-main{height:auto;min-height:560px;border-radius:14px 14px 0 0;}
-  .messages{height:320px;flex:none;}
+  .chat-main{height:100%;min-height:0;border-radius:0;}
+  .messages{flex:1;height:auto;min-height:0;}
   .chat-mobile-bar{display:flex!important}
   .sobre-duo,.sobre-bio-grid{grid-template-columns:1fr}
 }
@@ -840,11 +850,12 @@ footer a:hover{text-decoration:underline;}
       </div>
 
       <div class="mobile-drawer" id="drawer-doc">
-        <div class="upload-zone" onclick="document.getElementById('pdf-edital-m').click()">
-          <p id="pdf-label-m">📎 Anexar PDF do edital</p>
-        </div>
-        <input type="file" id="pdf-edital-m" accept="application/pdf" style="display:none" onchange="handlePdfM(this)">
-        <p style="font-size:.7rem;color:rgba(15,15,15,.38);margin-top:.35rem">Ou cole o conteúdo programático direto no chat.</p>
+        <button onclick="document.getElementById('pdf-inline').click(); document.querySelectorAll('.mobile-drawer').forEach(d=>d.classList.remove('open')); document.querySelectorAll('.chat-mobile-btn').forEach(b=>b.classList.remove('active'));"
+          style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:8px;padding:10px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+          📎 Anexar PDF do edital
+        </button>
+        <div id="drawer-file-status" style="font-size:0.72rem;color:rgba(15,15,15,0.5);margin-top:0.4rem;text-align:center;">Nenhum arquivo anexado</div>
+        <p style="font-size:.64rem;color:rgba(15,15,15,.38);margin-top:.35rem;line-height:1.4;text-align:center">Ou cole o conteúdo programático direto no chat.</p>
       </div>
 
       <!-- ── MAIN CHAT ───────────────────────────────────────────────── -->
@@ -869,9 +880,25 @@ footer a:hover{text-decoration:underline;}
             <button id="btn-gerar-docx" onclick="gerarCronogramaCompleto()" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;">⬇️ Gerar Cronograma Completo (.docx)</button>
           </div>
           <div class="input-row">
-            <textarea id="user-input" placeholder="Cole o edital, o cronograma ou descreva o assunto que quer estudar..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
-            <button class="btn-clr" onclick="limpar()" title="Limpar conversa">🗑</button>
-            <button class="btn-send" id="btn-send" onclick="enviar()" title="Enviar">➤</button>
+            <div class="input-box">
+              <textarea id="user-input" placeholder="Cole o edital, o cronograma ou descreva o assunto que quer estudar..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+              <div class="input-box-footer">
+                <div style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:0;">
+                  <button class="attach-btn" type="button" id="attach-btn" onclick="document.getElementById('pdf-inline').click()">
+                    📎 Anexar PDF do edital
+                  </button>
+                  <input type="file" id="pdf-inline" accept="application/pdf" style="display:none" onchange="handlePdfInline(this)">
+                  <div class="file-chip" id="file-chip">
+                    <span class="file-chip-name" id="file-chip-name"></span>
+                    <span class="file-chip-x" onclick="removeAttachment()" title="Remover">×</span>
+                  </div>
+                </div>
+                <div class="input-actions">
+                  <button class="btn-clr" onclick="limpar()" title="Limpar conversa">🗑</button>
+                  <button class="btn-send" id="btn-send" onclick="enviar()" title="Enviar">➤</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div><!-- /chat-main -->
@@ -986,6 +1013,45 @@ function autoResize(el) {
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
+}
+
+// ── Anexo inline (dentro da caixa de input) ──────────────────────────────────
+function handlePdfInline(input) {
+  handlePdf(input); // processa o PDF (extrai texto, guarda base64)
+  const file = input.files[0];
+  if (!file) return;
+  // Mostra chip e esconde botão no input box
+  const chip = document.getElementById('file-chip');
+  const chipName = document.getElementById('file-chip-name');
+  const btn = document.getElementById('attach-btn');
+  chipName.textContent = file.name;
+  chip.style.display = 'inline-flex';
+  btn.style.display = 'none';
+  // Atualiza status no drawer mobile
+  const drawerStatus = document.getElementById('drawer-file-status');
+  if (drawerStatus) drawerStatus.textContent = '✅ ' + file.name;
+  // Sync com inputs ocultos da sidebar para compatibilidade
+  try {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    const desktop = document.getElementById('pdf-edital');
+    if (desktop) desktop.files = dt.files;
+  } catch(e) {}
+}
+
+function removeAttachment() {
+  window._pdfForDocx = null;
+  window._pdfText = null;
+  pdfBase64 = null;
+  pdfFilename = '';
+  const chip = document.getElementById('file-chip');
+  const btn = document.getElementById('attach-btn');
+  const inp = document.getElementById('pdf-inline');
+  chip.style.display = 'none';
+  btn.style.display = 'inline-flex';
+  if (inp) inp.value = '';
+  const label = document.getElementById('pdf-label');
+  if (label) label.textContent = '📎 Clique para anexar o PDF do edital';
 }
 
 function usarSugg(el) {
@@ -1424,7 +1490,12 @@ function addMessage(role, content) {
   }
 
   msgs.appendChild(wrapper);
-  msgs.scrollTop = msgs.scrollHeight;
+  // Usuário → rola para baixo (mostra input). Assistente → rola para o INÍCIO da resposta.
+  if (role === 'assistant') {
+    setTimeout(() => { wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+  } else {
+    msgs.scrollTop = msgs.scrollHeight;
+  }
   return bubble;
 }
 
@@ -1651,7 +1722,8 @@ async function enviar() {
   if (isLoading) return;
   const input = document.getElementById('user-input');
   const text = input.value.trim();
-  if (!text) return;
+  const temAnexo = !!(window._pdfForDocx || window._pdfText);
+  if (!text && !temAnexo) return; // só bloqueia se não tem texto NEM anexo
 
   // ── Auto-switch para modo esteira ──────────────────────────────────────────
   // Dispara quando: a IA (em modo cronograma) já sinalizou "Esteira"
