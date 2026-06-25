@@ -30,7 +30,7 @@ SE 1: Colete em ordem, UM por vez:
 1. Cargo (se não informado na sidebar)
 2. Banca (CESPE, FCC, FGV, VUNESP, etc.)
 3. Data da prova (DD/MM/AAAA)
-4. Horas por dia — peça: "Quantas horas por dia? Digite só o número (entre 2 e 6)."
+4. Horas por dia — peça: "Quantas horas por dia você consegue estudar? Digite só o número (de 1 a 12)."
 
 Com os 4 dados, responda APENAS (máximo 3 linhas):
 "✅ Dados completos! Cargo: [X] | Banca: [X] | Data: [X] | [Y] dias | [X]h/dia. Clique em GERAR DOCX abaixo. 📅"
@@ -180,12 +180,15 @@ REGRAS OBRIGATORIAS:
 - NUNCA inclua texto fora do JSON`;
 }
 
-// ── Parser robusto de JSON (5 estratégias em cascata) ────────────────────────
+// ── Parser robusto de JSON (6 estratégias em cascata) ────────────────────────
 function tryParseJsonRobust(rawText) {
   let text = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
   const s = text.indexOf('{');
   const e = text.lastIndexOf('}');
-  if (s === -1 || e === -1) return null;
+  if (s === -1 || e === -1) {
+    // Sem chaves — tenta extrair array de tópicos direto
+    return tryExtractTopicsArray(text);
+  }
   text = text.substring(s, e + 1);
 
   try { return JSON.parse(text); } catch(_) {}
@@ -205,7 +208,36 @@ function tryParseJsonRobust(rawText) {
     .replace(/,\s*([}\]])/g, '$1');
   try { return JSON.parse(v5); } catch(_) {}
 
-  return null;
+  // 6ª estratégia: extrai tópicos via regex (JSON pode estar truncado)
+  return tryExtractTopicsArray(rawText);
+}
+
+// Extrai array de tópicos mesmo de JSON truncado/malformado
+function tryExtractTopicsArray(rawText) {
+  // Tenta extrair o orgao
+  const orgaoMatch = rawText.match(/"orgao"\s*:\s*"([^"]+)"/);
+  const orgao = orgaoMatch ? orgaoMatch[1] : '';
+
+  // Extrai todos os itens do array topicos (mesmo se o JSON estiver incompleto)
+  const topicosMatch = rawText.match(/"topicos"\s*:\s*\[([^\]]*?)(?:\]|$)/s);
+  if (!topicosMatch) return null;
+
+  const arrayContent = topicosMatch[1];
+  // Extrai strings individuais entre aspas
+  const items = [];
+  const itemRegex = /"([^"\\]|\\[\s\S])*"/g;
+  let m;
+  while ((m = itemRegex.exec(arrayContent)) !== null) {
+    try {
+      const val = JSON.parse(m[0]);
+      if (val && val.trim()) items.push(val);
+    } catch(_) {
+      // descarta item malformado
+    }
+  }
+  if (items.length === 0) return null;
+  console.log('[PersisteIA] tryExtractTopicsArray: recuperados', items.length, 'tópicos via regex');
+  return { orgao, topicos: items };
 }
 
 function escaparControlesEmStringsJson(text) {
@@ -477,7 +509,7 @@ module.exports = async function handler(req, res) {
       if (!parsed) {
         return res.status(200).json({
           error: `A IA não retornou JSON válido (finishReason=${finishReason}). ` +
-                 `Resposta recebida: "${rawText.slice(0, 150)}..." — Tente novamente.`,
+                 `Resposta recebida: "${rawText.slice(0, 300)}..." — Tente novamente.`,
         });
       }
       if (!Array.isArray(parsed.topicos) || parsed.topicos.length === 0) {
