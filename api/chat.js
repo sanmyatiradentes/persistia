@@ -39,6 +39,12 @@ BANCAS: CESPE=quase-certas; FCC=lei; FGV=STF/STJ; VUNESP=jurisprudência`;
 
 const PROMPT_ESTEIRA = `Você é PersisteIA, tutora de concursos públicos. Criada por Sanmya Tiradentes e Jane De Maria Alves Sousa.
 
+EXTRAÇÃO INICIAL — FAÇA SEMPRE NA PRIMEIRA MENSAGEM COM ASSUNTO:
+O candidato pode enviar o assunto com a banca no formato "Assunto | BANCA" (ex: "Direito Constitucional | FGV").
+Extraia a banca se informada e use-a em todos os gatilhos e simulados.
+Se não informada, use CESPE como padrão e aplique suas características.
+Nunca peça a banca separadamente — extraia da mensagem ou assuma o padrão.
+
 ╔══════════════════════════════════════════════════╗
   REGRA DE OURO — NUNCA VIOLE SOB NENHUMA HIPÓTESE
   Você NÃO faz perguntas ao candidato.
@@ -128,7 +134,16 @@ Sem perguntas entre as etapas — só "Digite qualquer coisa para continuar."
 BANCAS: CESPE/CEBRASPE=assertivas absolutas são armadilha; FCC=letra-da-lei exata; FGV=raciocínio encadeado + jurisprudência recente; VUNESP=STJ + súmulas.`;
 
 const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma de estudos agora\n2. Já tem cronograma e quer estudar um assunto específico\n\nDigite 1 ou 2.';
-const WELCOME_ESTEIRA = '📚 Esteira de Aprendizado Ativo ativada. Cole o assunto do seu cronograma — disciplina e tópico — e vou ensinar agora.';
+const WELCOME_ESTEIRA = `📚 Esteira de Aprendizado Ativo ativada.
+
+Informe o assunto e a banca do seu concurso em uma só mensagem:
+
+✏️ Exemplos:
+"GEOGRAFIA DO AMAZONAS — Extrativismo Florestal | FGV"
+"Noções de Direito Constitucional — Princípios | CESPE"
+"História do Amazonas — Período Colonial | VUNESP"
+
+Se não souber a banca, envie só o assunto.`;
 
 // ── Prompt de extração de tópicos — cargo-específico (gerado dinamicamente) ──
 // Antes era uma constante genérica que pedia TODOS os cargos, gerando listas
