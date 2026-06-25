@@ -1012,21 +1012,58 @@ function mostrarBotaoDocx(data) {
 }
 
 // ── Fallback CSV quando a biblioteca docx.js não carrega (CDN bloqueado) ──
-// Gera um arquivo .csv com o cronograma completo.
+// Gera um arquivo .csv com o cronograma completo + cabeçalho do concurso.
 // O usuário pode abrir no Excel e salvar como .xlsx, ou arrastar para o Word.
 function gerarCSVFallback(data) {
   const certame = data.certame || {};
   const itens   = data.itens   || [];
-  const cargo   = certame.cargo || 'Cargo';
+  const analise = data.analise || {};
+  const raioX   = data.raioX  || [];
+  const cargo   = certame.cargo  || 'Cargo';
+  const orgao   = certame.orgao  || 'Conforme edital';
+  const banca   = certame.banca  || '';
+  const dataProva    = certame.dataProva    || '';
+  const diasDisp     = certame.diasDisponiveis || '';
+  const horasDia     = certame.horasPorDia    || '';
+  const totalHoras   = certame.totalHorasDisponiveis || '';
+  const cobertura    = analise.coberturaPercent || 100;
+  const hoje = new Date().toLocaleDateString('pt-BR');
 
-  const cabecalho = ['Dia','Data','Disciplina','Secao','Subsecao','Horas','Prioridade','Rev.24h','Rev.7d','Rev.30d'];
+  const q = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+
+  // Raio-X da banca como linhas do preamble
+  const raioXLinhas = raioX.length > 0
+    ? [
+        q('RAIO-X DA BANCA — ' + banca.toUpperCase()) + ',,,,,,,,,',
+        ...raioX.map((arm, i) => q('Armadilha ' + (i+1) + ':') + ',' + q(arm) + ',,,,,,,,'),
+        ',,,,,,,,,,',
+      ]
+    : [];
+
+  const preamble = [
+    q('CRONOGRAMA DE ESTUDOS — PersisteIA') + ',,,,,,,,,',
+    q('Cargo:')  + ',' + q(cargo)    + ',,,,,,,,',
+    q('Órgão:')  + ',' + q(orgao)   + ',,,,,,,,',
+    q('Banca:')  + ',' + q(banca)   + ',,,,,,,,',
+    q('Data da Prova:') + ',' + q(dataProva) + ',,,,,,,,',
+    q('Dias disponíveis:') + ',' + q(diasDisp + ' dias | ' + horasDia + 'h/dia | Total: ' + totalHoras + 'h') + ',,,,,,,,',
+    q('Cobertura do edital:') + ',' + q(cobertura + '%' + (cobertura < 100 ? ' — ' + (analise.mensagemCorte || 'Priorize os itens ALTA') : ' — 100% coberto')) + ',,,,,,,,',
+    q('Gerado em:') + ',' + q(hoje + ' via persistia-delta.vercel.app') + ',,,,,,,',
+    ',,,,,,,,,,',
+    ...raioXLinhas,
+    q('💡 Cada hora de estudo hoje é uma questão a menos na prova. Você não chegou até aqui para desistir — PERSISTE!') + ',,,,,,,,,',
+    ',,,,,,,,,,',
+  ].join('\n');
+
+  // ── Dados do cronograma ──
+  const cabecalho = ['Dia','Data','Disciplina','Seção','Subseção','Horas','Prioridade','Rev.24h','Rev.7d','Rev.30d'];
   const linhas = itens.map(item => [
     item.dia, item.data, item.disciplina, item.secao || '', item.subsecao || '',
     (item.horas || 2) + 'h', item.prioridade || '',
     item.rev24h || '', item.rev7d || '', item.rev30d || ''
   ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
 
-  const csv = '\uFEFF' + cabecalho.join(',') + '\n' + linhas.join('\n');
+  const csv = '\uFEFF' + preamble + '\n' + cabecalho.join(',') + '\n' + linhas.join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1058,6 +1095,7 @@ async function gerarDocx(data) {
           HeadingLevel, PageOrientation } = docxLib;
   const analise = data.analise || {};
   const itens = data.itens || [];
+  const raioX = data.raioX || [];
   const orange = 'E65100';
   const lightOrange = 'FFF3E0';
   const headerBg = 'BF360C';
@@ -1176,6 +1214,19 @@ async function gerarDocx(data) {
             size: 18, font: 'Arial', italics: true
           })]
         }),
+        // Raio-X da Banca
+        ...(raioX.length > 0 ? [
+          new Paragraph({
+            spacing: { before: 100, after: 80 },
+            children: [new TextRun({ text: '🎯 RAIO-X DA BANCA — ' + (certame.banca || '').toUpperCase(), bold: true, size: 22, color: headerBg, font: 'Arial' })]
+          }),
+          ...raioX.map(arm => new Paragraph({
+            spacing: { after: 60 },
+            indent: { left: 360 },
+            children: [new TextRun({ text: arm, size: 18, font: 'Arial' })]
+          })),
+          new Paragraph({ spacing: { after: 160 }, children: [new TextRun({ text: '' })] }),
+        ] : []),
         // Table
         new Table({
           width: { size: tableWidth, type: WidthType.DXA },
