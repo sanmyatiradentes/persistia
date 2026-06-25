@@ -39,35 +39,47 @@ BANCAS: CESPE=quase-certas; FCC=lei; FGV=STF/STJ; VUNESP=jurisprudência`;
 
 const PROMPT_ESTEIRA = `Você é PersisteIA, tutora de concursos públicos criada por Sanmya Tiradentes e Jane De Maria Alves Sousa. Tom motivador e técnico.
 
-Use sempre números para o usuário responder. Máximo 300 palavras por etapa (exceto simulado).
-Após material: "SALVE AGORA: copie e cole num documento." Texto simples, sem tabelas ou linhas decorativas.
+Máximo 300 palavras por etapa (exceto simulado). Texto simples, sem tabelas ou linhas decorativas.
+Após cada entrega de conteúdo: "SALVE AGORA: copie e cole num documento."
 
-Quando receber um assunto (colado do cronograma ou informado), responda:
-"Assunto: [disciplina > seção > subseção]
+══════════════════════════════════
+REGRA ABSOLUTA — NUNCA DESCUMPRA:
+Quando o usuário informar um assunto, JAMAIS faça perguntas antes de ensinar.
+SEMPRE entregue a Teoria Técnica IMEDIATAMENTE. Só depois exiba o menu numerado de 1 a 6.
+══════════════════════════════════
 
-Qual etapa você quer?
-1. Teoria técnica completa
-2. Analogia e explicação simples (Feynman)
-3. Mnemônicos e regras de fixação
-4. Palavras-gatilho contra armadilhas da banca
-5. Laboratório sensorial (Cinema Mental, Espelho e Manuscrito)
-6. Simulado com 10 questões inéditas
+FLUXO OBRIGATÓRIO ao receber um assunto:
 
-Digite o número da etapa."
+PASSO 1 — Identifique e ensine:
+"📚 Assunto: [disciplina > seção]
 
-Entregue SOMENTE a etapa pedida.
-Após cada etapa: "Quer outra etapa? Digite 1-6 ou 7 para receber todas em sequência."
+TEORIA TÉCNICA
+[Definições, legislação, doutrina e jurisprudência relevantes para o cargo.
+Denso e preciso. Máximo 300 palavras. Contextualize para concurso público.]
 
-CONTEÚDO DAS ETAPAS:
-1. TEORIA: Definições, legislação, doutrina, jurisprudência. Denso e preciso.
-2. ANALOGIA: Exemplo cotidiano + conexão com elementos técnicos reais.
-3. MNEMÔNICOS: Acrônimo + rima ou frase + regra rápida em 1 linha.
-4. GATILHOS: Lista de termos que a banca confunde e como diferenciar.
-5. LAB SENSORIAL:
-   CINEMA MENTAL: Cena narrativa para imaginar por 30 segundos.
-   ESPELHO: Parágrafo técnico para ler em voz alta de pé.
-   MANUSCRITO: Esquema para copiar à mão agora.
-6. SIMULADO: 10 questões inéditas no estilo da banca + gabarito justificado com análise de cada alternativa.
+SALVE AGORA: copie e cole num documento."
+
+PASSO 2 — Exiba o menu de 1 a 6 (após a teoria, NUNCA antes):
+"Quer aprofundar este assunto?
+1. Analogia e explicação simples (Feynman)
+2. Mnemônicos e regras de fixação
+3. Palavras-gatilho contra armadilhas da banca
+4. Laboratório sensorial (Cinema Mental, Oratória Acadêmica e Escrita Cinestésica)
+5. Simulado com 10 questões — gabarito por engenharia reversa
+6. Todas as etapas em sequência
+
+Digite o número ou cole o próximo assunto do cronograma."
+
+CONTEÚDO DAS ETAPAS (entregue somente quando solicitada pelo número):
+1. ANALOGIA: Exemplo cotidiano + conexão direta com elementos técnicos reais do assunto.
+2. MNEMÔNICOS: Acrônimo ou rima + regra rápida em 1 linha para fixar na memória.
+3. GATILHOS: Lista de termos que a banca usa para confundir e como diferenciar cada um.
+4. LABORATÓRIO SENSORIAL (entregue as 3 partes em sequência):
+   CINEMA MENTAL: Cena narrativa vívida para o candidato imaginar com olhos fechados por 30s.
+   ORATÓRIA ACADÊMICA: Parágrafo técnico para ler em voz alta de pé, como ensinando uma plateia.
+   ESCRITA CINESTÉSICA: Esquema enxuto para copiar à mão agora, ativando a memória motora.
+5. SIMULADO: 10 questões inéditas no estilo da banca + gabarito por engenharia reversa: justifique CADA alternativa — inclusive as erradas — explicando exatamente como a banca construiu o distrator e por que engana.
+6. Entregue as etapas 1, 2, 3, 4 e 5 em sequência, uma por vez, aguardando confirmação do candidato entre elas.
 
 BANCAS: CESPE=quase-certas/somente; FCC=letra-da-lei; FGV=raciocínio-encadeado; VUNESP=jurisprudência`;
 
@@ -170,6 +182,60 @@ async function uploadPdfToFilesApi(apiKey, pdfBase64) {
   return fileData?.file?.uri;
 }
 
+// ── Raio-X da Banca — armadilhas hardcoded por banca (sem IA, sem timeout) ──
+const RAIO_X_BANCA = {
+  CESPE: [
+    '🎯 Assertivas com "somente", "apenas", "sempre" ou "nunca" — desconfie, mas não as descarte automaticamente. A CESPE às vezes as torna verdadeiras para pegar quem generalizou.',
+    '🎯 Uma parte verdadeira NÃO salva a assertiva. Se qualquer trecho for falso, a assertiva inteira é ERRADA.',
+    '🎯 Inversão de conceitos: a banca troca "constitucional" por "legal", "administrativo" por "judicial". Leia cada palavra com atenção antes de julgar.',
+  ],
+  CEBRASPE: [
+    '🎯 Assertivas com "somente", "apenas", "sempre" ou "nunca" — desconfie, mas não as descarte automaticamente. A CEBRASPE às vezes as torna verdadeiras para pegar quem generalizou.',
+    '🎯 Uma parte verdadeira NÃO salva a assertiva. Se qualquer trecho for falso, a assertiva inteira é ERRADA.',
+    '🎯 Inversão de conceitos: a banca troca "constitucional" por "legal", "administrativo" por "judicial". Leia cada palavra com atenção antes de julgar.',
+  ],
+  FGV: [
+    '🎯 Atenção a assertivas absolutas ("somente", "apenas", "sempre") — FGV as usa para criar falsas verdades parciais. A lógica encadeada é a armadilha principal.',
+    '🎯 Nas 5 alternativas, não marque a primeira que parece certa. FGV coloca a "quase certa" em B ou C para induzir pressa.',
+    '🎯 Jurisprudência recente STF/STJ: FGV cobra acórdãos e informativos dos últimos 2 anos. Revise os mais recentes antes da prova.',
+  ],
+  FCC: [
+    '🎯 Letra da lei é soberana — qualquer paráfrase imprecisa é considerada errada. Copie mentalmente o texto legal ao ler cada alternativa.',
+    '🎯 Alternativas com a mesma ideia em palavras diferentes: uma é letra da lei, outra é interpretação. Só a literal está correta.',
+    '🎯 A redação importa: FCC cobra "conforme redação dada pela Lei X". Saiba qual lei alterou o dispositivo e quando.',
+  ],
+  VUNESP: [
+    '🎯 STJ além do STF: VUNESP cobra jurisprudência do Superior Tribunal de Justiça com frequência acima da média das bancas.',
+    '🎯 Súmulas vinculantes vs persuasivas — saiba distinguir e o que cada uma obriga ou orienta.',
+    '🎯 Questões com "exceto" ou "não é correto afirmar" — o estresse da prova faz inverter a lógica. Sublinhe mentalmente o "não" antes de analisar.',
+  ],
+  AOCP: [
+    '🎯 Legislação local e estatutos específicos do cargo — AOCP cobra a lei da instituição com profundidade. Leia o edital inteiro para mapear as normas exigidas.',
+    '🎯 Alternativas muito detalhadas com dados numéricos costumam ter um número inventado. Desconfie de especificidades não previstas na lei.',
+    '🎯 Revise a lei específica do cargo (estatuto, regimento, regulamento) — são as mais cobradas nas questões de conhecimentos específicos.',
+  ],
+  IBFC: [
+    '🎯 Legislação local e estatutos específicos do cargo — IBFC cobra a lei da instituição com profundidade. Leia o edital inteiro para mapear as normas exigidas.',
+    '🎯 Alternativas muito detalhadas com dados numéricos costumam ter um número inventado. Desconfie de especificidades não previstas na lei.',
+    '🎯 Revise a lei específica do cargo (estatuto, regimento, regulamento) — são as mais cobradas nas questões de conhecimentos específicos.',
+  ],
+  IADES: [
+    '🎯 Legislação local com foco em saúde e assistência social — IADES cobra normas do SUS, SUAS e estatutos específicos do setor público.',
+    '🎯 Alternativas que misturam conceitos de áreas diferentes (jurídico + técnico) são as mais perigosas.',
+    '🎯 Revise portarias e resoluções recentes — IADES gosta de cobrar normas de publicação recente.',
+  ],
+  DEFAULT: [
+    '🎯 Leia a assertiva inteira antes de marcar — a última palavra pode inverter completamente o sentido.',
+    '🎯 Negativa dupla ("não é incorreto que...") — resolva passo a passo, destrinchando cada negação.',
+    '🎯 As exceções às regras gerais são as mais cobradas. Para cada conceito, aprenda também o que foge à regra.',
+  ],
+};
+
+function getRaioX(banca) {
+  const key = (banca || '').toUpperCase().trim();
+  return RAIO_X_BANCA[key] || RAIO_X_BANCA.DEFAULT;
+}
+
 // ── Passo 2: cálculo de cronograma no backend (sem IA, sem timeout) ──────────
 function calcularCronograma({ topicos, cargo, orgao, banca, dataProva, diasDisponiveis, horasPorDia }) {
   const hoje = new Date();
@@ -247,6 +313,7 @@ function calcularCronograma({ topicos, cargo, orgao, banca, dataProva, diasDispo
         ? `${topicos.length - itens.length} tópico(s) não cabem nos ${diasDisponiveis} dias. Priorize os marcados como ALTA.`
         : '',
     },
+    raioX: getRaioX(banca),
     itens,
   };
 }
