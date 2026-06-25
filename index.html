@@ -1460,7 +1460,39 @@ async function gerarCronogramaCompleto() {
   const dataMatch = histText.match(/\d{2}\/\d{2}\/\d{4}/);
   const horasMatch = histText.match(/(\d+(?:\.\d+)?)\s*h(?:oras?)?/i) || histText.match(/\b([2-9]|[1-9]\d)\b/)
   const bancaMatch = histText.match(/\b(CESPE|CEBRASPE|FCC|FGV|VUNESP|AOCP|IBFC|IADES)\b/i);
-  const cargo = document.getElementById('cfg-cargo')?.value || 'Não informado';
+
+  // ── Extração do cargo: 3 fontes em cascata ──────────────────────────────────
+  // 1ª) Mensagem de confirmação da IA ("✅ Dados completos! Cargo: X | Banca: Y...")
+  // 2ª) Campo da sidebar (cfg-cargo) — preenchido manualmente pelo usuário
+  // 3ª) Fallback genérico para evitar envio de "Não informado" ao Gemini
+  let cargo = '';
+
+  const aiConfirmMsg = conversationHistory.find(m =>
+    m.role === 'model' &&
+    m.parts?.some(p => /Cargo\s*:/i.test(p.text || ''))
+  );
+  if (aiConfirmMsg) {
+    const txt = aiConfirmMsg.parts.map(p => p.text || '').join(' ');
+    const cargoMatch = txt.match(/Cargo\s*:\s*([^|\n✅📅]+)/i);
+    if (cargoMatch) cargo = cargoMatch[1].trim();
+  }
+
+  if (!cargo) cargo = document.getElementById('cfg-cargo')?.value?.trim() || '';
+
+  if (!cargo) {
+    // Tenta extrair do que o usuário digitou no chat
+    const userText = conversationHistory
+      .filter(m => m.role === 'user')
+      .map(m => m.parts?.map(p => p.text || '').join(' ') || '')
+      .join(' ');
+    const cargoFromUser = userText.match(
+      /\b(Perito[a]?\s+\w[\w\s]{2,30}|Analista\s+\w[\w\s]{2,25}|T[eé]cnico[a]?\s+\w[\w\s]{2,25}|Investigador[a]?\s*\w*|Escrivão\s*\w*|Delegado[a]?\s*\w*|Auditor[a]?\s*\w[\w\s]{2,20})\b/i
+    );
+    if (cargoFromUser) cargo = cargoFromUser[0].trim();
+  }
+
+  if (!cargo) cargo = 'Cargo conforme edital';
+
   const banca = bancaMatch?.[1]?.toUpperCase() || 'Não informada';
   const dataProva = dataMatch?.[0] || '';
   const horasPorDia = parseFloat(horasMatch?.[1] || 4);
