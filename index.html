@@ -807,7 +807,7 @@ footer a:hover{text-decoration:underline;}
             </div>
           </div>
           <div class="eixo-mini" id="ef2">
-            <div class="eixo-mini-header" onclick="toggleEM('ef2')">
+            <div class="eixo-mini-header" onclick="toggleEM('ef2')" style="cursor:pointer;">
               <div class="eixo-mini-num">2</div>
               <div class="eixo-mini-title">Esteira de Aprendizado Ativo</div>
               <div class="eixo-mini-arrow">▶</div>
@@ -819,6 +819,7 @@ footer a:hover{text-decoration:underline;}
               <div class="lei-mini">4. Palavras-gatilho contra inversões da banca</div>
               <div class="lei-mini">5. Cinema Mental + Oratória + Manuscrito</div>
               <div class="lei-mini">6. 10 questões inéditas + Gabarito justificado</div>
+              <button onclick="event.stopPropagation(); setAppMode('esteira'); addMessage('assistant','🧠 Esteira de Aprendizado Ativo ativada!\n\nCole o assunto do seu cronograma — disciplina e tópico — e vou ensinar agora.');" style="margin-top:.5rem;width:100%;background:var(--orange);color:#fff;border:none;border-radius:6px;padding:6px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">▶ Ativar Esteira agora</button>
             </div>
           </div>
         </div>
@@ -851,6 +852,7 @@ footer a:hover{text-decoration:underline;}
         <div id="chat-status">
           <div class="sdot"></div>
           <span id="status-txt">PersisteIA pronta — informe seu edital ou cargo para começar.</span>
+          <span id="mode-indicator" style="display:none"></span>
         </div>
         <div class="messages" id="messages">
           <div class="welcome-chat" id="welcome">
@@ -892,6 +894,20 @@ footer a:hover{text-decoration:underline;}
 <script>
 const API_URL = '/api/chat';
 let appMode = 'cronograma';
+let esteiraAtivando = false; // true quando AI sinalizou que vai ativar a Esteira
+
+function setAppMode(mode) {
+  appMode = mode;
+  const ind = document.getElementById('mode-indicator');
+  if (!ind) return;
+  if (mode === 'esteira') {
+    ind.textContent = '🧠 Esteira ativa';
+    ind.style.cssText = 'font-size:.7rem;font-weight:700;color:#fff;background:var(--orange);padding:2px 10px;border-radius:20px;display:inline-block;margin-left:.5rem;';
+  } else {
+    ind.textContent = '';
+    ind.style.cssText = 'display:none';
+  }
+}
 let cronogramaData = null;
 let cronogramaItems = [];
 
@@ -1637,6 +1653,14 @@ async function enviar() {
   const text = input.value.trim();
   if (!text) return;
 
+  // ── Auto-switch para modo esteira ──────────────────────────────────────────
+  // Dispara quando: a IA (em modo cronograma) já sinalizou "Esteira"
+  // E o usuário está enviando um assunto real (não só "1" ou "2")
+  if (esteiraAtivando && appMode === 'cronograma' && text.length > 3 && !/^[12]$/.test(text)) {
+    setAppMode('esteira');
+    esteiraAtivando = false;
+  }
+
   // Build context prefix from sidebar fields
   const cargo = document.getElementById('cfg-cargo').value.trim();
   const welcomeMsg = window._persistiaConfig?.welcome || '🎯 Olá! Seja bem-vindo(a) à PersisteIA — sua parceira de aprovação! ' +
@@ -1706,6 +1730,12 @@ async function enviar() {
     const bubble = addMessage('assistant', fullReply);
     conversationHistory.push({ role: 'model', parts: [{ text: fullReply }] });
     setStatus('ok', '✓ Resposta gerada — lembre-se de salvar o material!');
+
+    // ── Detectar quando a IA sinaliza que vai ativar a Esteira ───────────────
+    // (resposta do PROMPT_CRONOGRAMA quando usuário escolhe "2")
+    if (appMode === 'cronograma' && /esteira|qual.*assunto|qual.*item|qual.*tópico/i.test(fullReply)) {
+      esteiraAtivando = true;
+    }
     verificarDadosCompletos();
     // Try to detect JSON response
     try {
