@@ -302,11 +302,13 @@ footer a:hover{text-decoration:underline;}
   .steps{grid-template-columns:1fr 1fr}.steps::before{display:none}
   .eixos-grid{grid-template-columns:1fr}
   section#ferramenta{padding:0!important;}
-  .chat-app{grid-template-columns:1fr;height:calc(100dvh - 62px);height:calc(100vh - 62px);min-height:0;border-radius:0;box-shadow:none;margin-top:0;position:sticky;top:62px;}
+  .chat-app{display:flex!important;flex-direction:column;height:calc(100dvh - 62px);height:calc(100vh - 62px);min-height:400px;border-radius:0;box-shadow:none;margin-top:0;position:sticky;top:62px;}
   .chat-sidebar{display:none!important}
-  .chat-main{height:100%;min-height:0;border-radius:0;}
+  .chat-mobile-bar{display:flex!important;flex-shrink:0;}
+  .mobile-drawer{flex-shrink:0;}
+  .chat-main{flex:1;min-height:0;border-radius:0;height:auto;}
   .messages{flex:1;height:auto;min-height:0;}
-  .chat-mobile-bar{display:flex!important}
+  footer{display:none!important;}
   .sobre-duo,.sobre-bio-grid{grid-template-columns:1fr}
 }
 @media(max-width:600px){
@@ -877,7 +879,7 @@ footer a:hover{text-decoration:underline;}
           <div id="docx-gerador" style="display:none;margin:0.4rem 0 0.5rem;padding:0.6rem 0.9rem;background:linear-gradient(135deg,rgba(201,169,110,0.12),rgba(184,132,90,0.06));border:1.5px solid var(--gold);border-radius:10px;">
             <div style="font-size:0.75rem;font-weight:700;color:var(--gold);margin-bottom:0.35rem;">📅 Cronograma completo pronto para gerar</div>
             <div style="font-size:0.7rem;color:rgba(15,15,15,0.55);margin-bottom:0.5rem;">Gera o DOCX completo de uma vez, sem interrupções, com todas as revisões calculadas.</div>
-            <button id="btn-gerar-docx" onclick="gerarCronogramaCompleto()" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;">⬇️ Gerar Cronograma Completo (.docx)</button>
+            <button id="btn-gerar-docx" onclick="gerarCronogramaCompleto()" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;">⬇️ Gerar Cronograma Completo</button>
           </div>
           <div class="input-row">
             <div class="input-box">
@@ -1085,7 +1087,7 @@ function mostrarBotaoDocx(data) {
     data.certame?.diasDisponiveis + ' dias | ' + data.certame?.horasPorDia + 'h/dia</span>';
   const btn = document.createElement('button');
   btn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;';
-  btn.innerHTML = '⬇️ Baixar Cronograma (.docx)';
+  btn.innerHTML = '⬇️ Baixar Cronograma';
   btn.onclick = () => gerarDocx(data);
   bar.appendChild(info);
   bar.appendChild(btn);
@@ -1340,7 +1342,7 @@ async function gerarDocx(data) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    if (btn) { btn.innerHTML = '✅ Baixado!'; setTimeout(() => { btn.innerHTML = '⬇️ Baixar Cronograma (.docx)'; btn.disabled = false; }, 3000); }
+    if (btn) { btn.innerHTML = '✅ Baixado!'; setTimeout(() => { btn.innerHTML = '⬇️ Baixar Cronograma'; btn.disabled = false; }, 3000); }
   } catch(e) {
     console.error('Erro ao gerar DOCX:', e);
     if (btn) { btn.innerHTML = '❌ Erro. Tente novamente.'; btn.disabled = false; }
@@ -1642,7 +1644,7 @@ async function gerarCronogramaCompleto() {
     btn.innerHTML = '✅ Baixado! Gerar novamente';
   } catch(err) {
     btn.disabled = false;
-    btn.innerHTML = '⬇️ Gerar Cronograma Completo (.docx)';
+    btn.innerHTML = '⬇️ Gerar Cronograma Completo';
     addMessage('assistant', '⚠️ Erro ao gerar: ' + err.message);
   }
 }
