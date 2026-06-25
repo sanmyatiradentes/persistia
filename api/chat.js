@@ -91,12 +91,28 @@ const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma d
 // Agora o cargo é injetado no prompt para que apenas as disciplinas relevantes
 // sejam extraídas, tornando a resposta menor, mais rápida e mais confiável.
 function buildPromptExtrai(cargo) {
-  return `Você é um analisador de editais de concurso público.
+  const cargoValido = cargo && cargo !== 'Não informado' && cargo !== 'Cargo conforme edital' && cargo.length > 3;
+  if (cargoValido) {
+    return `Você é um analisador de editais de concurso público.
 Leia o CONTEÚDO PROGRAMÁTICO (normalmente no Anexo I) deste edital e extraia APENAS os tópicos do cargo: "${cargo}".
 Responda SOMENTE com JSON puro, sem markdown, sem texto antes ou depois:
 {"orgao":"nome do orgao extraído do edital","topicos":["Disciplina > Secao","Disciplina > Secao > Subitem"]}
 REGRAS OBRIGATORIAS:
 - Extraia SOMENTE as disciplinas e tópicos do cargo "${cargo}" (ignore todos os outros cargos)
+- Um item do array por tópico ou subitem do conteúdo programático
+- Formato: "NomeDisciplina > NomeSecao" ou "NomeDisciplina > NomeSecao > NomeSubitem"
+- Maximo 80 caracteres por string — sem quebras de linha, sem aspas nos valores
+- Se um tópico tiver muitos subitens, crie um elemento do array por subitem
+- NUNCA inclua texto fora do JSON`;
+  }
+  // Cargo não identificado: extrai o primeiro cargo encontrado no edital
+  return `Você é um analisador de editais de concurso público.
+Leia o CONTEÚDO PROGRAMÁTICO (normalmente no Anexo I) deste edital.
+Identifique o PRIMEIRO cargo listado e extraia todos os seus tópicos.
+Responda SOMENTE com JSON puro, sem markdown, sem texto antes ou depois:
+{"orgao":"nome do orgao extraído do edital","topicos":["Disciplina > Secao","Disciplina > Secao > Subitem"]}
+REGRAS OBRIGATORIAS:
+- Extraia SOMENTE o primeiro cargo encontrado no edital
 - Um item do array por tópico ou subitem do conteúdo programático
 - Formato: "NomeDisciplina > NomeSecao" ou "NomeDisciplina > NomeSecao > NomeSubitem"
 - Maximo 80 caracteres por string — sem quebras de linha, sem aspas nos valores
