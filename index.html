@@ -877,7 +877,10 @@ footer a:hover{text-decoration:underline;}
         <div class="chat-input-wrap">
           <p class="disclaimer-sm">💾 <strong>Salve tudo!</strong> Este chat NÃO armazena dados. · <a href="mailto:persistiamentoria@gmail.com" style="color:var(--orange)">Contato</a></p>
           <div id="docx-gerador" style="display:none;margin:0.4rem 0 0.5rem;padding:0.6rem 0.9rem;background:linear-gradient(135deg,rgba(201,169,110,0.12),rgba(184,132,90,0.06));border:1.5px solid var(--gold);border-radius:10px;">
-            <div style="font-size:0.75rem;font-weight:700;color:var(--gold);margin-bottom:0.35rem;">📅 Cronograma completo pronto para gerar</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;">
+              <div style="font-size:0.75rem;font-weight:700;color:var(--gold);">📅 Cronograma completo pronto para gerar</div>
+              <button onclick="document.getElementById('docx-gerador').style.display='none'" title="Fechar" style="background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(15,15,15,0.35);padding:0 0 0 8px;line-height:1;">✕</button>
+            </div>
             <div style="font-size:0.7rem;color:rgba(15,15,15,0.55);margin-bottom:0.5rem;">Gera o DOCX completo de uma vez, sem interrupções, com todas as revisões calculadas.</div>
             <button id="btn-gerar-docx" onclick="gerarCronogramaCompleto()" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;">⬇️ Gerar Cronograma Completo</button>
           </div>
@@ -1077,20 +1080,27 @@ function mostrarBotaoDocx(data) {
   if (existing) existing.remove();
   const bar = document.createElement('div');
   bar.id = 'docx-btn-bar';
-  bar.style.cssText = 'display:flex;align-items:center;gap:1rem;padding:0.75rem 1rem;background:linear-gradient(135deg,rgba(230,81,0,0.08),rgba(230,81,0,0.03));border:1.5px solid var(--orange);border-radius:10px;margin:0.75rem 0;flex-wrap:wrap;';
+  bar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;background:linear-gradient(135deg,rgba(230,81,0,0.08),rgba(230,81,0,0.03));border:1.5px solid var(--orange);border-radius:10px;margin:0.75rem 0;flex-wrap:wrap;position:relative;';
   const info = document.createElement('div');
-  info.style.cssText = 'flex:1;min-width:200px;';
+  info.style.cssText = 'flex:1;min-width:160px;';
   const pct = data.analise?.coberturaPercent || 100;
   const msg = data.analise?.mensagemCorte || '';
-  info.innerHTML = '<strong style="color:var(--orange)">📅 Cronograma pronto!</strong><br><span style="font-size:0.78rem;color:rgba(15,15,15,0.6)">' + 
+  info.innerHTML = '<strong style="color:var(--orange)">📅 Cronograma pronto!</strong><br><span style="font-size:0.75rem;color:rgba(15,15,15,0.6)">' + 
     (pct < 100 ? '⚠️ Cobertura: ' + pct + '% do edital. ' + msg : '✅ Cobre 100% do edital. ') +
     data.certame?.diasDisponiveis + ' dias | ' + data.certame?.horasPorDia + 'h/dia</span>';
   const btn = document.createElement('button');
-  btn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;';
+  btn.style.cssText = 'background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;';
   btn.innerHTML = '⬇️ Baixar Cronograma';
   btn.onclick = () => gerarDocx(data);
+  // Botão fechar
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.title = 'Fechar';
+  closeBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(15,15,15,0.3);padding:0 0 0 4px;align-self:flex-start;line-height:1;';
+  closeBtn.onclick = () => bar.remove();
   bar.appendChild(info);
   bar.appendChild(btn);
+  bar.appendChild(closeBtn);
   const msgs = document.getElementById('messages');
   if (msgs) msgs.appendChild(bar);
 }
