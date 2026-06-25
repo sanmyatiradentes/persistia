@@ -60,13 +60,21 @@ FORMATO DE SAÍDA — SIGA À RISCA
 
 Quando receber qualquer assunto, produza EXATAMENTE nesta estrutura:
 
-📚 [Disciplina > Seção]
+📚 [Disciplina > Seção > Subseção]
 
-TEORIA TÉCNICA
-[Conteúdo denso e preciso: definições, lei, doutrina e jurisprudência aplicados ao concurso.
-Entregue o conteúdo COMPLETO do tópico — não resuma, não corte.
-Tópicos simples: até 300 palavras. Tópicos complexos (ex: Direito, Medicina Legal, Odontologia Legal): até 600 palavras.
-Sem perguntas. Só ensino.]
+TEORIA TÉCNICA COMPLETA
+[Entregue o conteúdo COMPLETO e APROFUNDADO do tópico. Não resuma, não corte, não simplifique.
+Cubra TUDO que o candidato precisa saber para acertar qualquer questão sobre este tema:
+— Definições técnicas precisas (com base legal quando existir)
+— Fundamentos, conceitos e classificações
+— Legislação, normas e dispositivos aplicáveis (cite artigos específicos quando relevante)
+— Doutrina consolidada e autores de referência
+— Jurisprudência e entendimentos aplicados ao concurso (STF, STJ, tribunais pertinentes)
+— Exceções, casos especiais e hipóteses controvertidas
+— Relações e conexões com outros tópicos do edital
+— Aplicação prática e exemplos concretos
+— Pontos mais cobrados em provas (especialmente pela banca identificada)
+Não há limite de extensão — entregue tudo que o tema exige.]
 
 💾 SALVE AGORA: copie e cole num documento.
 
@@ -136,14 +144,18 @@ BANCAS: CESPE/CEBRASPE=assertivas absolutas são armadilha; FCC=letra-da-lei exa
 const WELCOME = '🎯 Olá! Para começar, você:\n1. Quer criar um cronograma de estudos agora\n2. Já tem cronograma e quer estudar um assunto específico\n\nDigite 1 ou 2.';
 const WELCOME_ESTEIRA = `📚 Esteira de Aprendizado Ativo ativada.
 
-Informe o assunto e a banca do seu concurso em uma só mensagem:
+Para gerar conteúdo preciso, informe o caminho completo do tópico e a banca:
 
-✏️ Exemplos:
-"GEOGRAFIA DO AMAZONAS — Extrativismo Florestal | FGV"
-"Noções de Direito Constitucional — Princípios | CESPE"
-"História do Amazonas — Período Colonial | VUNESP"
+✏️ Formato: **Disciplina > Seção > Subseção (se houver) | BANCA**
 
-Se não souber a banca, envie só o assunto.`;
+Exemplos:
+"LÍNGUA PORTUGUESA > Coesão e Coerência textual > Mecanismos de coesão | CESPE"
+"Medicina Legal > Traumatologia Forense > Lesões Contundentes | CESPE"
+"Direito Constitucional > Direitos e Garantias Fundamentais | FGV"
+"Odontologia Legal > Identificação Humana > Métodos de identificação odontológica | CESPE"
+
+💡 Quanto mais detalhado o caminho, mais preciso o conteúdo.
+Se não souber a banca, envie o tópico sem a barra.`;
 
 // ── Prompt de extração de tópicos — cargo-específico (gerado dinamicamente) ──
 // Antes era uma constante genérica que pedia TODOS os cargos, gerando listas
@@ -364,9 +376,9 @@ function calcularCronograma({ topicos, cargo, orgao, banca, dataProva, diasDispo
   const altas = (altasPorBanca[banca.toUpperCase()] || []);
   const getPrio = (t) => altas.some(p => t.toLowerCase().includes(p)) ? 'ALTA' : 'NORMAL';
 
-  // Formata data somando N dias a partir de hoje
+  // Formata data somando N dias a partir de hoje — retorna '' se ultrapassar a data da prova
   const dataOffset = (n) => {
-    if (n < 1 || n > diasDisponiveis + 60) return '';
+    if (n < 1 || n > diasDisponiveis) return ''; // nunca além da prova
     const d = new Date(hoje);
     d.setDate(d.getDate() + n);
     return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
