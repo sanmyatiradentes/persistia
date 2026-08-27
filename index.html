@@ -818,10 +818,11 @@
         </button>
         <div class="task-b"><div class="inner">
           <div class="player">
-            <button class="play" id="playBtn" onclick="togglePlay()" aria-label="Reproduzir podcast"><svg id="playIc" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="play" id="playBtn" onclick="tocarAudio('podcast')" aria-label="Reproduzir podcast"><svg id="playIc" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
             <div class="wave" id="wave" aria-hidden="true"></div>
-            <span class="ptime num" id="ptime">0:00 / 8:12</span>
+            <span class="ptime num" id="ptime">gerar áudio</span>
           </div>
+          <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
           <p class="quote" id="podQuote">"…antes de eu responder, pensa aí: quais são os cinco princípios <b>expressos</b> no caput do art. 37? Pausa de três segundos… anotou? Então vamos conferir…"</p>
         </div></div>
       </div>
@@ -952,12 +953,13 @@
         </button>
         <div class="task-b"><div class="inner">
           <div class="player">
-            <button class="play" style="background:var(--warm)" onclick="toast('No app final, a música toca aqui — gerada por IA e curada pela equipe')" aria-label="Tocar música"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="play" id="musBtn" style="background:var(--warm)" onclick="tocarAudio('musica')" aria-label="Tocar música"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
             <div style="flex:1">
               <b style="font-size:.88rem" id="musTitle">Forró do LIMPE</b>
               <p class="muted" style="font-size:.75rem" id="musSub">PersisteIA Estúdio · Direito Administrativo</p>
             </div>
           </div>
+          <audio id="audMus" preload="none" style="width:100%; margin:10px 0 0; display:none" controls></audio>
           <div class="lyrics" id="musLyr">
             ♪ É <b>L</b> de Legalidade, só faço o que a lei mandar<br>
             <b>I</b> de Impessoal, não é pra se promover<br>
@@ -1478,28 +1480,44 @@
     svg.innerHTML = html;
   }
 
-  /* ---------- podcast fake player ---------- */
-  var playing = false, pTimer = null, pSec = 0, TOTAL = 492;
+  /* ---------- áudio gerado (podcast e música) ---------- */
+  var AUD = { podcast: null, musica: null };
   function drawWave(){
-    var w = $('wave'), html = '';
+    var w = $('wave'); if(!w) return;
+    var html = '';
     for(var i = 0; i < 42; i++){
       var h = 8 + Math.round(24 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * .55)));
       html += '<i style="height:' + h + 'px"></i>';
     }
     w.innerHTML = html;
   }
-  function togglePlay(){
-    playing = !playing;
-    $('playIc').innerHTML = playing ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
-    if(playing){
-      pTimer = setInterval(function(){
-        pSec += 4; if(pSec >= TOTAL){ pSec = TOTAL; togglePlay(); }
-        var m = Math.floor(pSec/60), s = ('0' + pSec%60).slice(-2);
-        $('ptime').textContent = m + ':' + s + ' / 8:12';
-        var bars = document.querySelectorAll('#wave i'), lit = Math.round(bars.length * pSec / TOTAL);
-        bars.forEach(function(b, i){ b.classList.toggle('past', i < lit); });
-      }, 120);
-    } else { clearInterval(pTimer); }
+  function tocarAudio(tipo){
+    var it = itemAtivo();
+    if(!it){ toast('Abra um tópico primeiro'); return; }
+    var el = $(tipo === 'musica' ? 'audMus' : 'audPod');
+    if(AUD[tipo]){ el.style.display = 'block'; el.play(); return; }
+    var alvo = tipo === 'musica' ? 'a música' : 'o podcast';
+    if(tipo === 'podcast'){ $('ptime').textContent = 'gerando…'; }
+    toast('Gerando ' + alvo + ' com a voz da IA… leva alguns segundos');
+    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if(x.s === 200 && x.d.audio_base64){
+          AUD[tipo] = 'data:audio/wav;base64,' + x.d.audio_base64;
+          el.src = AUD[tipo]; el.style.display = 'block';
+          el.play().catch(function(){});
+          if(tipo === 'podcast'){
+            $('ptime').textContent = 'ouvindo';
+            el.addEventListener('ended', function(){ evento('podcast_ouvido', 'ouvir', null, 'concluido'); }, { once: true });
+          } else {
+            el.addEventListener('ended', function(){ evento('musica_ouvida', 'ouvir', null, 'em_andamento'); }, { once: true });
+          }
+        } else {
+          if(tipo === 'podcast'){ $('ptime').textContent = 'falhou'; }
+          toast(x.d.erro || 'Não consegui gerar o áudio agora');
+        }
+      })
+      .catch(function(){ toast('Sem conexão para gerar o áudio'); if(tipo === 'podcast'){ $('ptime').textContent = 'falhou'; } });
   }
 
   /* ---------- expanders ---------- */
@@ -1791,62 +1809,161 @@
     lFs = Math.min(1.45, Math.max(.85, lFs + d*.1));
     $('lBody').style.fontSize = lFs.toFixed(2) + 'rem';
   }
+  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '';
+
   function setLMode(m){
     $('mSil').classList.toggle('sel', m === 'sil');
     $('mTp').classList.toggle('sel', m === 'tp');
     $('mEco').classList.toggle('sel', m === 'eco');
     stopEco();
     if(m === 'eco'){
-      stopTp();
+      pararGravacao(true);
       $('leitor').classList.remove('tpmode'); $('lBody').classList.remove('tp');
       lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
-      buildEco();
-      $('lDone').classList.remove('show');
-      ecoStep();
-      ecoTimer = setInterval(ecoStep, 2400);
-      toast('Modo Eco: ouça a frase e repita — bom para lei seca e literalidade');
+      buildEco(); $('lDone').classList.remove('show');
+      ecoStep(); ecoTimer = setInterval(ecoStep, 2400);
+      toast('Modo Eco: ouça a frase e repita');
       return;
     }
     if(m === 'tp'){
       $('leitor').classList.add('tpmode'); $('lBody').classList.add('tp');
-      $('lHint').textContent = 'lendo no seu ritmo…';
       $('lDone').classList.remove('show');
-      tpIdx = 0;
+      tpIdx = 0; PALAVRAS_OUVIDAS = 0; TRANSCRICAO = '';
       lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
       $('lBody').scrollTop = 0;
-      tpPaused = false;
-      tpTimer = setInterval(tpStep, 320);
-      syncRec();
-      toast('Pode ler em voz alta — estou gravando e acompanhando você');
+      marcarAtual();
+      iniciarGravacao();
     } else {
-      stopTp();
+      pararGravacao(true);
       $('leitor').classList.remove('tpmode'); $('lBody').classList.remove('tp');
       $('lHint').textContent = 'toque numa palavra para marcar';
       lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
     }
   }
-  function tpStep(){
-    if(tpIdx > 0){
-      var prev = lWords[tpIdx-1];
-      prev.classList.remove('cur');
-      prev.classList.add(prev.classList.contains('kw') ? 'kwlit' : 'past');
+
+  function marcarAtual(){
+    lWords.forEach(function(w, i){
+      w.classList.remove('cur');
+      if(i < tpIdx){ w.classList.add(w.classList.contains('kw') ? 'kwlit' : 'past'); }
+      else { w.classList.remove('past','kwlit'); }
+    });
+    if(tpIdx < lWords.length){
+      lWords[tpIdx].classList.add('cur');
+      if(tpIdx % 5 === 0){ lWords[tpIdx].scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     }
-    if(tpIdx >= lWords.length){
-      stopTp();
-      $('leitor').classList.remove('tpmode');
-      $('lDone').classList.add('show');
-      $('lProg').style.width = '100%';
-      $('lHint').textContent = 'gravação salva ✓';
-      evento('voz_alta', 'ler', null, 'concluido');
+    $('lProg').style.width = (43 + 57 * Math.min(tpIdx / Math.max(lWords.length, 1), 1)).toFixed(1) + '%';
+  }
+
+  function avancarComFala(texto){
+    var ditas = norm(texto).replace(/[.,:;!?()"]/g, ' ').split(/\s+/).filter(Boolean);
+    PALAVRAS_OUVIDAS = Math.max(PALAVRAS_OUVIDAS, ditas.length);
+    var i = tpIdx, casadas = 0;
+    for(var k = 0; k < ditas.length && i < lWords.length; k++){
+      var alvo = norm(lWords[i].textContent).replace(/[.,:;!?()"]/g, '');
+      if(!alvo){ i++; continue; }
+      if(alvo === ditas[k] || (alvo.length > 3 && ditas[k].indexOf(alvo.slice(0, 4)) === 0)){ i++; casadas++; }
+    }
+    if(casadas > 0 || ditas.length > tpIdx){
+      tpIdx = Math.max(tpIdx, Math.min(i, lWords.length));
+      marcarAtual();
+    }
+    if(tpIdx >= lWords.length){ pararGravacao(false); }
+  }
+
+  function iniciarGravacao(){
+    RECCHUNKS = []; RECT0 = Date.now();
+    tpPaused = false; syncRec();
+    $('lHint').textContent = 'lendo…';
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      toast('Seu navegador não permite gravar áudio aqui');
       return;
     }
-    var w = lWords[tpIdx];
-    w.classList.add('cur');
-    if(tpIdx % 6 === 0){ w.scrollIntoView({block:'center', behavior:'smooth'}); }
-    $('lProg').style.width = (43 + 57*tpIdx/lWords.length).toFixed(1) + '%';
-    tpIdx++;
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      try {
+        REC = new MediaRecorder(stream);
+        REC.ondataavailable = function(e){ if(e.data && e.data.size) RECCHUNKS.push(e.data); };
+        REC.onstop = function(){ stream.getTracks().forEach(function(t){ t.stop(); }); };
+        REC.start();
+      } catch(e){ REC = null; }
+
+      if(SR){
+        RECON = new SR();
+        RECON.lang = 'pt-BR'; RECON.continuous = true; RECON.interimResults = true;
+        RECON.onresult = function(ev){
+          var txt = '';
+          for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript + ' '; }
+          TRANSCRICAO = txt.trim();
+          if(!tpPaused) avancarComFala(TRANSCRICAO);
+        };
+        RECON.onerror = function(){};
+        RECON.onend = function(){ if(REC && REC.state === 'recording' && !tpPaused){ try { RECON.start(); } catch(e){} } };
+        try { RECON.start(); } catch(e){}
+        toast('Pode ler em voz alta — eu acompanho e gravo');
+      } else {
+        toast('Gravando. Seu navegador não transcreve em tempo real — use o Chrome para o teleprompter seguir sua voz');
+        tpTimer = setInterval(function(){ if(!tpPaused){ tpIdx++; marcarAtual(); if(tpIdx >= lWords.length) pararGravacao(false); } }, 380);
+      }
+    }).catch(function(){
+      toast('Preciso da permissão do microfone para gravar sua leitura');
+      setLMode('sil');
+    });
   }
-  function stopTp(){ if(tpTimer){ clearInterval(tpTimer); tpTimer = null; } tpPaused = false; syncRec(); }
+
+  function pararGravacao(silencioso){
+    if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
+    if(RECON){ try { RECON.onend = null; RECON.stop(); } catch(e){} RECON = null; }
+    var tinhaGravacao = !!REC;
+    if(REC){
+      var r = REC; REC = null;
+      r.onstop = function(){
+        try { r.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
+        if(silencioso || !RECCHUNKS.length) return;
+        finalizarLeitura();
+      };
+      try { r.stop(); } catch(e){ if(!silencioso) finalizarLeitura(); }
+    } else if(!silencioso){
+      finalizarLeitura();
+    }
+    if(!silencioso){
+      $('leitor').classList.remove('tpmode');
+      $('lProg').style.width = '100%';
+      $('lHint').textContent = 'gravação salva ✓';
+    }
+  }
+
+  function finalizarLeitura(){
+    var seg = Math.max(1, Math.round((Date.now() - RECT0) / 1000));
+    var palavras = PALAVRAS_OUVIDAS || tpIdx;
+    var ppm = Math.round(palavras / (seg / 60));
+    var url = RECCHUNKS.length ? URL.createObjectURL(new Blob(RECCHUNKS, { type: 'audio/webm' })) : null;
+    var mm = Math.floor(seg / 60), ss = ('0' + (seg % 60)).slice(-2);
+
+    $('lDone').classList.add('show');
+    $('lDone').innerHTML =
+      '<b>Leitura em voz alta concluída · ' + mm + ':' + ss + ' gravados' + (ppm ? ' · fluência: ' + ppm + ' palavras/min' : '') + '</b><br>' +
+      'Sua gravação ficou salva para reouvir, e a transcrição virou material de revisão.' +
+      (url ? '<audio controls src="' + url + '" style="width:100%; margin-top:10px"></audio>' : '') +
+      (TRANSCRICAO ? '<p class="l-meta" style="margin-top:8px">Transcrição: "' + esc(TRANSCRICAO.slice(0, 220)) + '…"</p>' : '');
+
+    if(url){ minhaVozAdd(($('leitorTitle') || {}).textContent || 'Leitura', url, mm + ':' + ss, ppm); }
+    evento('voz_alta', 'ler', { segundos: seg, ppm: ppm, transcricao: TRANSCRICAO.slice(0, 800) }, 'concluido');
+    toast('Leitura registrada · ' + (ppm ? ppm + ' ppm' : mm + ':' + ss));
+  }
+
+  function minhaVozAdd(titulo, url, dur, ppm){
+    var box = document.querySelector('#scr-hoje .card .mv-row');
+    var pai = box ? box.parentNode : null;
+    if(!pai) return;
+    var div = document.createElement('div');
+    div.className = 'mv-row';
+    div.innerHTML = '<button class="mv-play" onclick="this.parentNode.querySelector(\'audio\').play()" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+      '<span class="mi"><b>' + esc(titulo) + '</b><small class="num">agora · ' + dur + (ppm ? ' · ' + ppm + ' ppm' : '') + '</small></span>' +
+      '<audio src="' + url + '" style="display:none"></audio>';
+    pai.insertBefore(div, pai.querySelector('.mv-row'));
+  }
+
+  function stopTp(){ pararGravacao(true); tpPaused = false; syncRec(); }
 
   /* ---------- externas: confirmar com um toque ---------- */
   function extDone(btn, verbo){
@@ -1911,26 +2028,27 @@
   }
   function tpPause(){
     if(tpPaused){
-      tpPaused = false; tpTimer = setInterval(tpStep, 320);
+      tpPaused = false;
+      if(REC && REC.state === 'paused'){ try { REC.resume(); } catch(e){} }
+      if(RECON){ try { RECON.start(); } catch(e){} }
       toast('Gravação retomada — continue de onde parou');
     } else {
-      if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
       tpPaused = true;
+      if(REC && REC.state === 'recording'){ try { REC.pause(); } catch(e){} }
+      if(RECON){ try { RECON.onend = null; RECON.stop(); } catch(e){} }
       toast('Pausado. Respire — retome quando quiser');
     }
     syncRec();
   }
   function tpRestart(){
-    if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
-    tpPaused = false;
-    tpIdx = 0;
+    pararGravacao(true);
+    tpPaused = false; tpIdx = 0; PALAVRAS_OUVIDAS = 0; TRANSCRICAO = '';
     lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
     $('lDone').classList.remove('show');
     $('leitor').classList.add('tpmode');
     $('lBody').scrollTop = 0;
-    $('lProg').style.width = '43%';
-    tpTimer = setInterval(tpStep, 320);
-    syncRec();
+    marcarAtual();
+    iniciarGravacao();
     toast('Nova gravação iniciada — a anterior foi descartada');
   }
 
