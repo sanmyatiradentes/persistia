@@ -47,19 +47,96 @@ const DDL = [
     data TEXT NOT NULL, ordem INTEGER, status TEXT NOT NULL DEFAULT 'pendente')`,
   `CREATE TABLE IF NOT EXISTS conteudos (
     topico_id TEXT PRIMARY KEY, json TEXT NOT NULL, criado_em TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS assinaturas (
+    aluno_id TEXT PRIMARY KEY, estado TEXT NOT NULL DEFAULT 'teste',
+    inicio_teste TEXT, fim_teste TEXT, preapproval_id TEXT, valor REAL,
+    proxima_cobranca TEXT, cortesia_ate TEXT, atualizado_em TEXT)`,
   `CREATE TABLE IF NOT EXISTS duvidas (
     id TEXT PRIMARY KEY, aluno_id TEXT, assunto TEXT, pergunta TEXT NOT NULL,
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`
+];
+
+const MIGRACOES = [
+  'ALTER TABLE editais ADD COLUMN banca TEXT',
+  'ALTER TABLE config ADD COLUMN estilo_questao TEXT',
+  // peso = horas de estudo que o tópico realmente exige (estimadas na leitura do edital)
+  'ALTER TABLE topicos ADD COLUMN peso REAL',
+  // um tópico grande vira várias sessões: parte 2 de 3, 1,5 h cada
+  'ALTER TABLE cronograma ADD COLUMN parte INTEGER',
+  'ALTER TABLE cronograma ADD COLUMN partes INTEGER',
+  'ALTER TABLE cronograma ADD COLUMN horas REAL'
 ];
 
 async function ensureSchema() {
   if (schemaOk) return;
   const d = getDb();
   for (const sql of DDL) await d.execute(sql);
+  for (const sql of MIGRACOES) { try { await d.execute(sql); } catch (_) { /* já existe */ } }
   schemaOk = true;
 }
 
 function agora() { return new Date().toISOString(); }
+function emDias(n, base) {
+  const d = base ? new Date(base) : new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString();
+}
+
+// ----- assinatura -----
+const TRIAL_DIAS = Number(process.env.TRIAL_DIAS) || 7;
+const PRECO = Number(process.env.PRECO_MENSAL) || 59.9;
+
+function admins() {
+  return String(process.env.ADMIN_EMAILS || '')
+    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+}
+function ehAdmin(email) {
+  const lista = admins();
+  return !!email && lista.includes(String(email).toLowerCase());
+}
+
+// Estado de acesso do aluno. O teste começa no primeiro acesso e dura TRIAL_DIAS.
+// Admin e cortesia nunca são bloqueados.
+async function acessoDoAluno(aluno) {
+  const d = getDb();
+  let r = await d.execute({ sql: 'SELECT * FROM assinaturas WHERE aluno_id = ?', args: [aluno.id] });
+  if (!r.rows.length) {
+    await d.execute({
+      sql: `INSERT INTO assinaturas (aluno_id, estado, inicio_teste, fim_teste, valor, atualizado_em)
+            VALUES (?,?,?,?,?,?)`,
+      args: [aluno.id, 'teste', agora(), emDias(TRIAL_DIAS), PRECO, agora()]
+    });
+    r = await d.execute({ sql: 'SELECT * FROM assinaturas WHERE aluno_id = ?', args: [aluno.id] });
+  }
+  const a = r.rows[0];
+  const hoje = agora();
+  const admin = ehAdmin(aluno.email);
+  const cortesia = a.cortesia_ate && a.cortesia_ate > hoje;
+  const emTeste = a.estado === 'teste' && a.fim_teste && a.fim_teste > hoje;
+  const ativa = a.estado === 'ativa';
+  const bloqueado = a.estado === 'bloqueada';
+
+  let estado = 'expirado';
+  if (bloqueado && !admin) estado = 'bloqueada';
+  else if (admin) estado = 'admin';
+  else if (ativa) estado = 'ativa';
+  else if (cortesia) estado = 'cortesia';
+  else if (emTeste) estado = 'teste';
+
+  const fim = estado === 'cortesia' ? a.cortesia_ate : a.fim_teste;
+  const dias = fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null;
+
+  return {
+    estado,
+    liberado: estado !== 'expirado' && estado !== 'bloqueada',
+    dias_restantes: (estado === 'teste' || estado === 'cortesia') ? dias : null,
+    fim_teste: a.fim_teste || null,
+    proxima_cobranca: a.proxima_cobranca || null,
+    preapproval_id: a.preapproval_id || null,
+    valor: Number(a.valor) || PRECO,
+    admin
+  };
+}
 function id() { return crypto.randomUUID(); }
 
 function hashSenha(senha, sal) {
@@ -84,14 +161,21 @@ function cors(res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 }
 
-async function chamarGemini(systemText, userText, jsonSchema) {
+// Modelos por tarefa:
+//   GEMINI_MODEL       → qualidade (edital e conteúdo, gerados uma vez e cacheados)
+//   GEMINI_MODEL_LEVE  → volume (Persi tira-dúvidas, muitas chamadas por aluno)
+// Para economizar ao máximo, basta apontar os dois para o mesmo modelo lite.
+const MODELO_PADRAO = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODELO_LEVE = process.env.GEMINI_MODEL_LEVE || 'gemini-2.5-flash-lite';
+
+async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY não configurada');
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = modelo || MODELO_PADRAO;
   const body = {
     systemInstruction: { parts: [{ text: systemText }] },
-    contents: [{ role: 'user', parts: [{ text: userText }] }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+    contents: [{ role: 'user', parts: partes }],
+    generationConfig: { temperature: 0.3, maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576 }
   };
   if (jsonSchema) {
     body.generationConfig.responseMimeType = 'application/json';
@@ -108,4 +192,28 @@ async function chamarGemini(systemText, userText, jsonSchema) {
   return text;
 }
 
-module.exports = { getDb, ensureSchema, agora, id, hashSenha, alunoDoToken, cors, chamarGemini };
+async function chamarGemini(systemText, userText, jsonSchema, modelo) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY não configurada');
+  const model = modelo || MODELO_PADRAO;
+  const body = {
+    systemInstruction: { parts: [{ text: systemText }] },
+    contents: [{ role: 'user', parts: [{ text: userText }] }],
+    generationConfig: { temperature: 0.3, maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576 }
+  };
+  if (jsonSchema) {
+    body.generationConfig.responseMimeType = 'application/json';
+    body.generationConfig.responseSchema = jsonSchema;
+  }
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  );
+  if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
+  const data = await r.json();
+  const text = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text).join('') || '';
+  if (!text) throw new Error('Resposta vazia do modelo');
+  return text;
+}
+
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO };

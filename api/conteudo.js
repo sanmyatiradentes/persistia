@@ -1,33 +1,90 @@
-// Pacote didático dos 8 verbos para um tópico. Gerado uma vez pelo Gemini e
-// guardado no Turso (catálogo: o mesmo pacote serve a todos os alunos).
-// GET ?topico_id=...  → {resumo, acronimo, lei_seca, questoes, flashcards, feynman, podcast, musica}
-const { getDb, ensureSchema, agora, alunoDoToken, cors, chamarGemini } = require('./_lib');
+// Pacote didático dos 8 verbos para uma SESSÃO de estudo.
+// O tamanho do pacote acompanha o tamanho real do assunto: um tópico de 30 min
+// recebe menos teoria e menos questões que um de 2 h, e um tópico grande é
+// dividido em partes (parte 2 de 3), cada uma com seu próprio pacote.
+// GET ?topico_id=...&parte=2  → {subtitulo, resumo, acronimo, trecho_chave, questoes, ...}
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini } = require('./_lib');
 
-const SYSTEM = `Você produz material de estudo para concursos públicos brasileiros, em português do Brasil.
+function tamanhos(h) {
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
+  return {
+    paragrafos: clamp(3 + h * 3, 4, 10),
+    questoes: clamp(4 + h * 4, 6, 14),
+    me: clamp(3 + h * 2, 4, 8),
+    flashcards: clamp(5 + h * 4, 6, 14),
+    feynman: h >= 1.5 ? 4 : 3,
+    ramos: clamp(3 + h, 4, 7),
+    palavras: clamp(200 + h * 180, 250, 600)
+  };
+}
+
+function sistema(banca, t, recorte) {
+  const estilo = banca
+    ? `A banca do concurso é ${banca}. Escreva os itens de Certo/Errado no estilo dessa banca e as questões de múltipla escolha também no padrão dela.`
+    : 'A banca ainda não é conhecida. Gere os dois formatos em estilo neutro e clássico de concurso, sem imitar uma banca específica.';
+
+  return `Você produz material de estudo para concursos públicos brasileiros, em português do Brasil.
+
+${recorte}
+
 Regras:
 - Baseie-se no conhecimento consolidado da matéria; quando afirmar regra jurídica, cite o dispositivo (artigo/lei, súmula). Se não tiver certeza da fonte exata, não a invente — omita a citação.
-- "resumo": 2 a 3 parágrafos diretos, com o que mais cai em prova sobre o tópico.
-- "acronimo": um mnemônico ÚTIL para o tópico (sigla + o que cada letra significa). Se não couber mnemônico, crie um macete curto no campo sigla e explique nos itens.
-- "lei_seca": um trecho essencial (lei seca ou definição canônica) com 4 a 6 palavras-chave marcadas entre colchetes duplos, ex.: "obedecerá aos princípios de [[legalidade]], [[impessoalidade]]...".
-- "questoes": 4 itens inéditos no estilo Certo/Errado (banca Cebraspe), atacando armadilhas clássicas; "gabarito" true = Certo; "comentario" explica em até 40 palavras.
-- "flashcards": 5 pares frente/verso curtos.
-- "feynman": 2 perguntas para o aluno explicar em voz alta, cada uma com 3 pontos-chave esperados.
-- "podcast": um roteiro curto (150-200 palavras) em diálogo entre ANA e LÉO com uma pausa de recuperação.
-- "musica": estilo sugerido + letra mnemônica curta (refrão + 1 verso).`;
+- "subtitulo": em até 8 palavras, o recorte exato que este pacote cobre (ex.: "Conceito, fontes e princípios" ou "Modalidades de licitação"). Se o pacote cobre o tópico inteiro, resuma o tópico.
+- "resumo": ${t.paragrafos} parágrafos densos — conceito, fundamentos, classificações, exceções, pegadinhas de prova e exemplos concretos. Escreva como um professor experiente escreveria a teoria: sem encher linguiça e sem deixar buraco. Separe os parágrafos com uma linha em branco. Se o assunto for curto, prefira parágrafos mais enxutos a inventar conteúdo que não existe.
+- "acronimo": um mnemônico ÚTIL (sigla + o que cada letra significa). Se não couber mnemônico, crie um macete curto no campo sigla e explique nos itens.
+- "trecho_chave": o trecho essencial para memorizar — lei seca, definição canônica, súmula, fórmula ou regra central, conforme a natureza do assunto — com 4 a 6 palavras-chave marcadas entre colchetes duplos, ex.: "obedecerá aos princípios de [[legalidade]], [[impessoalidade]]...".
+- "questoes": ${t.questoes} itens inéditos no formato Certo/Errado, atacando armadilhas clássicas e cobrindo pontos diferentes; "gabarito" true = Certo; "comentario" explica em até 45 palavras.
+- "questoes_me": ${t.me} questões inéditas de MÚLTIPLA ESCOLHA, cada uma com "enunciado", 5 "alternativas" (texto puro, sem letras A) B) etc.), "correta" (índice de 0 a 4) e "comentario" de até 45 palavras.
+- "flashcards": ${t.flashcards} pares frente/verso curtos, cobrindo o recorte inteiro.
+- "feynman": ${t.feynman} perguntas para o aluno explicar em voz alta, cada uma com 3 pontos-chave esperados.
+- "mapa": "centro" (2 a 4 palavras) e ${t.ramos} "ramos", cada um com "titulo" (até 3 palavras) e 2 a 4 "itens" curtos (até 5 palavras cada).
+- "podcast": roteiro de cerca de ${t.palavras} palavras em diálogo entre ANA e LÉO, com duas pausas de recuperação ("pensa aí… "), terminando com um resumo relâmpago. Use apenas "ANA:" e "LEO:" como marcadores de fala.
+- "musica": estilo sugerido + letra mnemônica curta (refrão + 1 verso).
+${estilo}`;
+}
 
 const SCHEMA = {
   type: 'object',
   properties: {
+    subtitulo: { type: 'string' },
     resumo: { type: 'string' },
     acronimo: { type: 'object', properties: { sigla: { type: 'string' }, itens: { type: 'array', items: { type: 'string' } } }, required: ['sigla', 'itens'] },
-    lei_seca: { type: 'string' },
+    trecho_chave: { type: 'string' },
     questoes: { type: 'array', items: { type: 'object', properties: { enunciado: { type: 'string' }, gabarito: { type: 'boolean' }, comentario: { type: 'string' } }, required: ['enunciado', 'gabarito', 'comentario'] } },
+    questoes_me: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          enunciado: { type: 'string' },
+          alternativas: { type: 'array', items: { type: 'string' } },
+          correta: { type: 'integer' },
+          comentario: { type: 'string' }
+        },
+        required: ['enunciado', 'alternativas', 'correta', 'comentario']
+      }
+    },
     flashcards: { type: 'array', items: { type: 'object', properties: { frente: { type: 'string' }, verso: { type: 'string' } }, required: ['frente', 'verso'] } },
     feynman: { type: 'array', items: { type: 'object', properties: { pergunta: { type: 'string' }, pontos: { type: 'array', items: { type: 'string' } } }, required: ['pergunta', 'pontos'] } },
+    mapa: {
+      type: 'object',
+      properties: {
+        centro: { type: 'string' },
+        ramos: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { titulo: { type: 'string' }, itens: { type: 'array', items: { type: 'string' } } },
+            required: ['titulo', 'itens']
+          }
+        }
+      },
+      required: ['centro', 'ramos']
+    },
     podcast: { type: 'string' },
     musica: { type: 'object', properties: { estilo: { type: 'string' }, letra: { type: 'string' } }, required: ['estilo', 'letra'] }
   },
-  required: ['resumo', 'acronimo', 'lei_seca', 'questoes', 'flashcards', 'feynman', 'podcast', 'musica']
+  required: ['subtitulo', 'resumo', 'acronimo', 'trecho_chave', 'questoes', 'questoes_me', 'flashcards', 'feynman', 'mapa', 'podcast', 'musica']
 };
 
 module.exports = async (req, res) => {
@@ -38,34 +95,65 @@ module.exports = async (req, res) => {
   const aluno = await alunoDoToken(req);
   if (!aluno) return res.status(401).json({ erro: 'Entre na sua conta' });
 
+  const acesso = await acessoDoAluno(aluno);
+  if (!acesso.liberado) return res.status(402).json({ erro: 'Seu período de teste terminou', assinatura: acesso });
+
   const url = new URL(req.url, 'http://x');
   const topicoId = url.searchParams.get('topico_id');
   if (!topicoId) return res.status(400).json({ erro: 'topico_id é obrigatório' });
 
   const db = getDb();
   try {
-    const cache = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [topicoId] });
-    if (cache.rows.length) return res.status(200).json(JSON.parse(cache.rows[0].json));
-
     const t = await db.execute({
-      sql: `SELECT t.nome AS topico, d.nome AS disciplina FROM topicos t
-            JOIN disciplinas d ON d.id = t.disciplina_id WHERE t.id = ?`,
+      sql: `SELECT t.nome AS topico, t.peso AS peso, d.nome AS disciplina, e.banca AS banca FROM topicos t
+            JOIN disciplinas d ON d.id = t.disciplina_id
+            JOIN editais e ON e.id = d.edital_id WHERE t.id = ?`,
       args: [topicoId]
     });
     if (!t.rows.length) return res.status(404).json({ erro: 'Tópico não encontrado' });
 
+    // Quantas partes tem este tópico e qual delas o aluno está estudando?
+    // A verdade está no cronograma dele; sem cronograma, cai no peso do tópico.
+    const cr = await db.execute({
+      sql: `SELECT parte, partes, horas FROM cronograma
+            WHERE aluno_id = ? AND topico_id = ? ORDER BY parte`,
+      args: [aluno.id, topicoId]
+    });
+    const pedida = Number(url.searchParams.get('parte')) || 0;
+    const linha = cr.rows.find(r => Number(r.parte) === pedida) || cr.rows[0] || null;
+    const partes = Number(linha && linha.partes) || 1;
+    const parte = Number(linha && linha.parte) || 1;
+    const peso = Math.min(12, Math.max(0.5, Number(t.rows[0].peso) || 1.5));
+    const horas = Number(linha && linha.horas) || Math.min(2, peso);
+
+    const chave = partes > 1 ? topicoId + ':' + parte + '/' + partes : topicoId;
+    const cache = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
+    if (cache.rows.length) return res.status(200).json(JSON.parse(cache.rows[0].json));
+
+    const recorte = partes > 1
+      ? `Este tópico é amplo e foi dividido em ${partes} sessões de estudo. Divida o assunto em ${partes} blocos, na ordem didática natural (do fundamento ao detalhe), e desenvolva SOMENTE o bloco ${parte}. Não repita o que pertence aos outros blocos; escreva como quem continua uma aula.`
+      : 'Este tópico cabe em uma única sessão de estudo. Cubra-o por inteiro, sem inflar: se o assunto é curto, o pacote é curto e completo.';
+
+    const alvo = tamanhos(horas);
     const bruto = await chamarGemini(
-      SYSTEM,
-      `Disciplina: ${t.rows[0].disciplina}\nTópico: ${t.rows[0].topico}\n\nGere o pacote didático completo deste tópico.`,
+      sistema(t.rows[0].banca || null, alvo, recorte),
+      `Disciplina: ${t.rows[0].disciplina}\nTópico: ${t.rows[0].topico}\n` +
+      (partes > 1 ? `Sessão: parte ${parte} de ${partes}\n` : '') +
+      `Duração prevista da sessão: ${horas} h\n\nGere o pacote didático desta sessão.`,
       SCHEMA
     );
     const pacote = JSON.parse(bruto);
     pacote.topico = t.rows[0].topico;
     pacote.disciplina = t.rows[0].disciplina;
+    pacote.banca = t.rows[0].banca || null;
+    pacote.parte = parte;
+    pacote.partes = partes;
+    pacote.horas = horas;
+    pacote.lei_seca = pacote.trecho_chave; // compatibilidade com pacotes antigos
 
     await db.execute({
       sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
-      args: [topicoId, JSON.stringify(pacote), agora()]
+      args: [chave, JSON.stringify(pacote), agora()]
     });
     return res.status(200).json(pacote);
   } catch (e) {

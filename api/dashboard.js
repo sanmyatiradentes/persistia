@@ -62,6 +62,37 @@ module.exports = async (req, res) => {
       args: [aluno.id, agora()]
     });
 
+    // série semanal de acerto (8 semanas)
+    const qsem = await db.execute({
+      sql: `SELECT criado_em, detalhe FROM eventos WHERE aluno_id = ? AND tipo = 'questao' ORDER BY criado_em`,
+      args: [aluno.id]
+    });
+    const semanas = [];
+    const hojeMs = Date.now();
+    for (let w = 7; w >= 0; w--) {
+      const ini = hojeMs - (w + 1) * 7 * 86400000, fim = hojeMs - w * 7 * 86400000;
+      let t = 0, c = 0;
+      for (const r of qsem.rows) {
+        const ts = Date.parse(r.criado_em);
+        if (ts > ini && ts <= fim) {
+          try { const d = JSON.parse(r.detalhe || '{}'); if (typeof d.respondeu_certo === 'boolean') { t++; if (d.respondeu_certo) c++; } } catch (_) {}
+        }
+      }
+      semanas.push({ semana: 8 - w, total: t, pct: t ? Math.round(100 * c / t) : null });
+    }
+
+    const primeiro = await db.execute({
+      sql: 'SELECT MIN(criado_em) AS d FROM eventos WHERE aluno_id = ?', args: [aluno.id]
+    });
+    const inicio = primeiro.rows[0].d || agora();
+    const diaJornada = Math.max(1, Math.floor((Date.now() - Date.parse(inicio)) / 86400000) + 1);
+
+    const devidos = await db.execute({
+      sql: `SELECT frente, origem, proxima_revisao FROM flashcards
+            WHERE aluno_id = ? AND proxima_revisao <= ? ORDER BY proxima_revisao LIMIT 6`,
+      args: [aluno.id, agora()]
+    });
+
     return res.status(200).json({
       cobertura: { total, concluidos: concl, pct: total ? Math.round(100 * concl / total) : 0 },
       por_disciplina: Object.keys(porDisc).map(nome => ({
@@ -72,7 +103,10 @@ module.exports = async (req, res) => {
       questoes: { total: qTotal, certas: qCertas, pct: qTotal ? Math.round(100 * qCertas / qTotal) : null },
       constancia_dias: streak,
       flashcards_devidos: Number(fc.rows[0].n),
-      dias_ativos: dias.rows.map(r => r.dia)
+      dias_ativos: dias.rows.map(r => r.dia),
+      semanas,
+      dia_jornada: diaJornada,
+      revisoes: devidos.rows.map(r => ({ frente: r.frente, origem: r.origem }))
     });
   } catch (e) {
     return res.status(500).json({ erro: 'Erro interno', detalhe: String(e).slice(0, 200) });

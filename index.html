@@ -548,7 +548,13 @@
   .lg-alt{background:none; border:none; color:var(--accent); font:600 .85rem "Albert Sans",sans-serif; cursor:pointer; padding:8px}
 
   /* ---------- edital real (modo real) ---------- */
-  #realEdital{display:none; margin-top:14px}
+  #realEdital{display:block; margin-top:14px}
+  #realEdital .drop{margin-top:12px}
+  #realEdital .drop.over{background:var(--accent); color:var(--on-accent)}
+  #realEdital .drop.over span, #realEdital .drop.over svg{color:var(--on-accent) !important; opacity:.9}
+  .oudivisor{display:flex; align-items:center; gap:10px; margin:16px 0 4px; color:var(--muted); font-size:.76rem}
+  .oudivisor::before, .oudivisor::after{content:''; flex:1; height:1px; background:var(--line)}
+  #cargoLista .optchip{text-align:left; padding:12px 16px; font-size:.86rem; line-height:1.35}
   #realEdital textarea{
     width:100%; min-height:120px; border:1.5px solid var(--line); background:var(--card); color:var(--ink);
     border-radius:14px; padding:12px 14px; font:400 .85rem "Albert Sans",sans-serif; resize:vertical;
@@ -559,9 +565,270 @@
   .l-done.show{display:block}
   .l-done b{color:var(--accent)}
   .l-meta{font-size:.7rem; color:var(--muted)}
+
+  /* ================= LAYOUT DE COMPUTADOR ================= */
+  @media (min-width: 900px){
+    body{padding:0}
+    .app{
+      max-width:1280px; width:100%; min-height:100dvh; margin:0 auto;
+      border:none; border-radius:0; box-shadow:none; overflow:visible;
+      display:grid; grid-template-columns:250px minmax(0,1fr);
+    }
+    .app > .screen{grid-column:2; grid-row:1}
+    #ob{grid-column:1 / -1; grid-row:1; display:flex; align-items:center; justify-content:center}
+    .ob-step{width:100%; max-width:660px; margin:0 auto; min-height:auto; padding:48px 32px}
+    .ob-step.active{display:flex}
+    .ob-hero h1{font-size:2.6rem}
+    .ob-stats{grid-template-columns:repeat(4,1fr)}
+    #realEdital textarea{min-height:200px; font-size:.92rem}
+
+    .tabbar{
+      grid-column:1; grid-row:1; position:sticky; top:0; align-self:start;
+      transform:none; left:auto; bottom:auto; width:auto; max-width:none; height:100dvh;
+      flex-direction:column; align-items:stretch; gap:4px;
+      background:var(--card); border:none; border-right:1px solid var(--line); border-radius:0;
+      padding:22px 14px; backdrop-filter:none;
+    }
+    .tabbar::before{
+      content:"PersisteIA"; font-family:"Bricolage Grotesque",sans-serif; font-weight:800;
+      font-size:1.2rem; letter-spacing:-.02em; color:var(--ink); padding:6px 14px 22px;
+    }
+    .tab{
+      flex:none; flex-direction:row; justify-content:flex-start; align-items:center; gap:12px;
+      padding:12px 14px; border-radius:12px; font-size:.92rem; letter-spacing:0;
+    }
+    .tab:hover{background:var(--bg)}
+    .tab.active{background:var(--accent-soft)}
+    .tab svg{width:20px; height:20px}
+
+    .screen{padding:34px 40px 70px; max-width:960px}
+    .top h2{font-size:1.5rem !important}
+
+    /* Hoje: duas colunas */
+    #scr-hoje{display:none}
+    #scr-hoje.active{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(280px,.9fr); gap:0 30px; align-content:start; align-items:start}
+    #scr-hoje > .revchips{margin-bottom:18px}
+    #scr-hoje .rev{align-self:start}
+    #scr-hoje > .top{grid-column:1 / -1}
+    #scr-hoje > .ringwrap{grid-column:2; grid-row:2 / span 2; align-self:start; flex-direction:column; text-align:center}
+    #scr-hoje > .ringwrap .verbs{justify-content:center}
+    #scr-hoje > #revTit{grid-column:1; margin-top:4px}
+    #scr-hoje > .revchips{grid-column:1}
+    #scr-hoje > .nextcard{grid-column:1}
+    #scr-hoje > #btnConcluir{grid-column:1; justify-self:start}
+    #scr-hoje > .sess{grid-column:1}
+    #scr-hoje > p{grid-column:1}
+
+    /* Evolução e Plano: grade */
+    #scr-evolucao{display:none}
+    #scr-evolucao.active{display:grid; grid-template-columns:1fr 1fr; gap:0 18px; align-content:start}
+    #scr-evolucao > .top, #scr-evolucao > .tiles{grid-column:1 / -1}
+    #scr-evolucao > .tiles{grid-template-columns:repeat(4,1fr)}
+    #scr-evolucao > .chart-card:first-of-type{grid-column:1 / -1}
+    .heat{grid-template-columns:repeat(20,1fr)}
+
+    /* Método em duas colunas */
+    #scr-metodo .met{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+
+    /* Overlays centrados */
+    #leitor, #chat, #login{
+      left:50%; transform:translateX(-50%); width:min(780px, 92vw); max-width:none;
+      top:36px; bottom:36px; border-radius:22px; border:1px solid var(--line); overflow:hidden;
+      box-shadow:0 24px 60px rgba(0,0,0,.18);
+    }
+    #login{padding:40px; justify-content:center}
+    #login > *{width:100%; max-width:440px; margin-left:auto; margin-right:auto}
+    .l-body{padding:36px 15% 60px}
+    .recap{padding:40px 12%}
+    .fab{right:40px; bottom:40px; width:58px; height:58px}
+  }
+  @media (min-width: 1180px){
+    .screen{max-width:1040px}
+    .l-body{padding:40px 18% 60px}
+  }
+
+  /* ===== site institucional ===== */
+  #site{display:none; padding:0 0 60px}
+  #site.show{display:block}
+  /* na apresentação o app deixa de ser uma "telinha" e ocupa a tela toda */
+  body.sitemode .app{max-width:none; border:none; border-radius:0; box-shadow:none; min-height:100dvh; display:block; grid-template-columns:none; padding:0}
+  body.sitemode{padding:0}
+  .st-nav{display:flex; align-items:center; gap:12px; padding:16px 20px; position:sticky; top:0; background:var(--bg); z-index:20; border-bottom:1px solid var(--line)}
+  .st-nav .brand{margin:0; font-size:1.15rem}
+  .st-nav .sp{flex:1}
+  .st-hero{padding:44px 20px 34px; text-align:center; max-width:780px; margin:0 auto}
+  .st-hero h1{font-family:"Bricolage Grotesque",sans-serif; font-size:2.1rem; line-height:1.08; letter-spacing:-.03em; margin-bottom:14px}
+  .st-hero h1 em{font-style:normal; color:var(--accent)}
+  .st-hero p.lead{font-size:1rem; color:var(--muted); max-width:560px; margin:0 auto 22px}
+  .st-cta{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+  .st-sec{padding:34px 20px; max-width:1000px; margin:0 auto}
+  .st-sec h2{font-family:"Bricolage Grotesque",sans-serif; font-size:1.4rem; letter-spacing:-.02em; margin-bottom:6px; text-align:center}
+  .st-sec > p.sub{text-align:center; color:var(--muted); font-size:.9rem; max-width:560px; margin:0 auto 22px}
+  .st-grid{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .st-card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:var(--shadow)}
+  .st-card b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1rem; margin-bottom:5px}
+  .st-card p{font-size:.85rem; color:var(--muted); line-height:1.5}
+  .st-verb{display:inline-flex; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 12px; font-size:.78rem; font-weight:700; margin:0 5px 8px 0}
+  .st-preco{background:var(--card); border:2px solid var(--accent); border-radius:20px; padding:26px; max-width:400px; margin:0 auto; text-align:center; box-shadow:var(--shadow)}
+  .st-preco .val{font-family:"Bricolage Grotesque",sans-serif; font-size:2.5rem; letter-spacing:-.03em; color:var(--accent)}
+  .st-preco .val small{font-size:.95rem; color:var(--muted); font-weight:600}
+  .st-preco ul{list-style:none; text-align:left; margin:16px 0; display:grid; gap:8px}
+  .st-preco li{font-size:.87rem; display:flex; gap:8px; align-items:flex-start}
+  .st-preco li:before{content:"✓"; color:var(--accent); font-weight:800}
+  .st-quem{display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .st-pessoa{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; text-align:center; box-shadow:var(--shadow)}
+  .st-foto{width:108px; height:108px; border-radius:50%; object-fit:cover; margin:0 auto 12px; display:block; border:3px solid var(--accent-soft)}
+  .st-ini{width:108px; height:108px; border-radius:50%; margin:0 auto 12px; display:none; align-items:center; justify-content:center;
+          background:var(--accent-soft); color:var(--accent); font-family:"Bricolage Grotesque",sans-serif; font-size:2rem; font-weight:800}
+  .st-pessoa b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.05rem}
+  .st-pessoa .cargo{color:var(--accent); font-size:.8rem; font-weight:700; margin-bottom:8px; display:block}
+  .st-pessoa p{font-size:.85rem; color:var(--muted); line-height:1.55}
+  .st-rod{text-align:center; padding:28px 20px; color:var(--muted); font-size:.78rem; border-top:1px solid var(--line); margin-top:20px}
+  @media(min-width:900px){ .st-hero h1{font-size:2.8rem} .st-hero{padding-top:64px} }
+
+  /* ===== faixa de teste e paywall ===== */
+  .trial{display:none; align-items:center; gap:10px; background:var(--warm-soft); color:var(--warm); border:1px solid var(--warm);
+         border-radius:12px; padding:10px 14px; font-size:.82rem; font-weight:600; margin:0 0 14px}
+  .trial.show{display:flex}
+  .trial button{margin-left:auto; flex:none}
+  #paywall{display:none; position:fixed; inset:0; background:var(--bg); z-index:80; overflow:auto; padding:34px 20px; text-align:center}
+  #paywall.show{display:block}
+
+  /* ===== admin ===== */
+  .adm-m{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-bottom:18px}
+  .adm-m div{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px}
+  .adm-m b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.5rem; color:var(--accent)}
+  .adm-m span{font-size:.72rem; color:var(--muted)}
+  .adm-l{display:grid; gap:8px}
+  .adm-a{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px}
+  .adm-a .lin{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .adm-a b{font-size:.92rem}
+  .adm-a small{color:var(--muted); font-size:.75rem}
+  .sit{font-size:.7rem; font-weight:800; padding:3px 9px; border-radius:999px; text-transform:uppercase; letter-spacing:.04em}
+  .sit.assinante{background:var(--accent-soft); color:var(--accent)}
+  .sit.teste,.sit.novo{background:var(--warm-soft); color:var(--warm)}
+  .sit.cortesia{background:#EDE7FB; color:var(--violet)}
+  .sit.expirado,.sit.bloqueado{background:var(--crit-soft); color:var(--crit)}
+
 </style>
 
 <div class="app">
+
+
+  <!-- ================= SITE (quem somos / apresentação) ================= -->
+  <div id="site">
+    <div class="st-nav">
+      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div class="sp"></div>
+      <button class="lg-alt" style="margin:0" onclick="abrirConta('login')">Entrar</button>
+      <button class="btn small" onclick="abrirConta('cadastro')">Testar grátis</button>
+    </div>
+
+    <div class="st-hero">
+      <p class="eyebrow">7 dias grátis · sem cartão</p>
+      <h1>Envie seu edital.<br><em>O resto é com a gente.</em></h1>
+      <p class="lead">A PersisteIA lê o edital do seu concurso, mede o tamanho real de cada assunto e devolve um plano diário em que você ouve, lê, fala, digita, escreve, raciocina, treina e pergunta — os oito verbos que fazem o conteúdo grudar.</p>
+      <div class="st-cta">
+        <button class="btn" onclick="abrirConta('cadastro')">Começar meus 7 dias grátis</button>
+        <button class="btn ghost" onclick="document.getElementById('stComo').scrollIntoView({behavior:'smooth'})">Ver como funciona</button>
+      </div>
+    </div>
+
+    <div class="st-sec" id="stComo">
+      <h2>A Esteira de Aprendizado Ativo</h2>
+      <p class="sub">Ler e reler é o jeito mais lento de aprender. Cada assunto do seu edital passa por oito formas diferentes de usar o mesmo conteúdo — e é isso que transforma leitura em memória.</p>
+      <div style="text-align:center; margin-bottom:20px">
+        <span class="st-verb">Ouvir</span><span class="st-verb">Ler</span><span class="st-verb">Falar</span><span class="st-verb">Digitar</span>
+        <span class="st-verb">Escrever</span><span class="st-verb">Raciocinar</span><span class="st-verb">Treinar</span><span class="st-verb">Perguntar</span>
+      </div>
+      <div class="st-grid">
+        <div class="st-card"><b>Leitor sem distração</b><p>A teoria completa em tela limpa, com marca-texto. Na leitura em voz alta, o teleprompter acompanha sua fala e destaca as palavras-chave enquanto você lê.</p></div>
+        <div class="st-card"><b>Podcast e música do assunto</b><p>Um diálogo de estudo com pausas de recuperação e uma letra mnemônica para o trajeto, o treino, a fila do banco.</p></div>
+        <div class="st-card"><b>Questões no estilo da sua banca</b><p>Certo/Errado ou múltipla escolha, com comentário em cada item. Você troca o formato quando quiser.</p></div>
+        <div class="st-card"><b>Flashcards que voltam na hora certa</b><p>Repetição espaçada: o que você erra volta amanhã, o que você acerta volta daqui a um mês.</p></div>
+        <div class="st-card"><b>Mapa mental automático</b><p>Cada assunto vira um mapa visual do conceito central e seus ramos — memória visual trabalhando junto com a verbal.</p></div>
+        <div class="st-card"><b>Persi, o tira-dúvidas</b><p>Dúvida no meio do estudo? Pergunte ali mesmo, com a fonte citada, sem sair do assunto e sem perder o ritmo.</p></div>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>Proporcional ao seu edital, não a um modelo pronto</h2>
+      <p class="sub">Na leitura do edital, cada tópico recebe o tempo de estudo que ele realmente exige.</p>
+      <div class="st-grid">
+        <div class="st-card"><b>Assunto curto, sessão curta</b><p>"Conceito de ato administrativo" não ocupa o mesmo dia que "Licitações: modalidades e procedimento". Tópicos pequenos se juntam até fechar as suas horas.</p></div>
+        <div class="st-card"><b>Assunto grande, várias partes</b><p>O que não cabe num dia vira parte 1, 2 e 3 em dias diferentes — com o conteúdo de cada parte escrito para continuar o anterior.</p></div>
+        <div class="st-card"><b>Plano que se replaneja</b><p>Atrasou? O cronograma se reorganiza. Adiantou? É só abrir o próximo. Nenhuma planilha, nenhuma decisão difícil.</p></div>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>Quanto custa</h2>
+      <p class="sub">Sem fidelidade, sem multa, cancela quando quiser.</p>
+      <div class="st-preco">
+        <p class="eyebrow" style="margin-bottom:4px">Assinatura mensal</p>
+        <div class="val">R$ 59,90<small> /mês</small></div>
+        <ul>
+          <li>7 dias grátis, sem pedir cartão</li>
+          <li>Edital inteiro mapeado e cronometrado</li>
+          <li>Os 8 verbos em todos os assuntos</li>
+          <li>Podcast, música, mapa mental e flashcards</li>
+          <li>Persi tira-dúvidas ilimitado</li>
+          <li>Dashboard por disciplina, tema e verbo</li>
+        </ul>
+        <button class="btn" onclick="abrirConta('cadastro')">Começar meus 7 dias grátis</button>
+        <p class="muted" style="font-size:.75rem; margin-top:10px">No 8º dia você decide se continua. Nada é cobrado antes disso.</p>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>Quem somos</h2>
+      <p class="sub">Duas servidoras públicas que passaram por concurso, viram de perto o que trava o candidato — e resolveram construir o sistema que gostariam de ter tido.</p>
+      <div class="st-quem">
+        <div class="st-pessoa">
+          <img class="st-foto" src="foto-sanmya.jpg" alt="Sanmya Beatriz Tiradentes Leite"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="st-ini">SL</div>
+          <b>Sanmya Beatriz Tiradentes Leite</b>
+          <span class="cargo">cofundadora</span>
+          <p>Apaixonada por desburocratizar o serviço público. Une gestão enxuta, tecnologia e neurociência aplicada à aprendizagem — a base do método por trás da Esteira dos 8 verbos.</p>
+        </div>
+        <div class="st-pessoa">
+          <img class="st-foto" src="foto-jane.jpg" alt="Jane De Maria Alves Sousa"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="st-ini">JS</div>
+          <b>Jane De Maria Alves Sousa</b>
+          <span class="cargo">cofundadora</span>
+          <p>Cuida para que cada detalhe do sistema respeite o tempo de quem estuda: menos cliques, menos burocracia, mais estudo de verdade.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="st-sec" style="text-align:center">
+      <h2>Persistir é o método</h2>
+      <p class="sub">O nome não é enfeite: aprovação é o que sobra de quem manteve a constância — e o sistema existe para tornar a constância fácil.</p>
+      <button class="btn" onclick="abrirConta('cadastro')">Enviar meu edital agora</button>
+    </div>
+
+    <div class="st-rod">PersisteIA · persisteia.com.br · feito no Amazonas para concurseiros do Brasil inteiro</div>
+  </div>
+
+  <!-- ================= PAYWALL ================= -->
+  <div id="paywall">
+    <div class="brand" style="justify-content:center; margin-bottom:10px">Persiste<span class="ia">IA</span></div>
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.5rem; letter-spacing:-.02em; margin-bottom:6px">Seus 7 dias de teste terminaram</h2>
+    <p class="muted" style="font-size:.9rem; max-width:420px; margin:0 auto 20px">Seu edital, seu cronograma e todo o seu progresso continuam guardados. Assine para seguir de onde parou.</p>
+    <div class="st-preco">
+      <div class="val">R$ 59,90<small> /mês</small></div>
+      <ul>
+        <li>Tudo o que você já usou nestes 7 dias</li>
+        <li>Sem fidelidade — cancele quando quiser</li>
+        <li>Pagamento pelo Mercado Pago (Pix ou cartão)</li>
+      </ul>
+      <button class="btn" id="pwBtn" onclick="assinar()">Assinar agora</button>
+      <p class="muted" style="font-size:.75rem; margin-top:10px" id="pwMsg"></p>
+    </div>
+    <button class="lg-alt" style="margin:18px auto 0" onclick="sair()">Sair da conta</button>
+  </div>
 
   <!-- ================= ONBOARDING ================= -->
   <div id="ob">
@@ -571,30 +838,38 @@
         <h1>Envie seu edital.<br><em>O resto é com a gente.</em></h1>
         <p>A PersisteIA transforma qualquer edital em um plano diário que faz você ouvir, ler, falar, digitar, escrever, raciocinar, treinar e perguntar — até a aprovação.</p>
         <button class="btn" onclick="obGo(2)">Enviar meu edital</button>
-        <button class="btn ghost" onclick="obGo(2)">Ver com um edital de exemplo</button>
       </div>
-      <p class="demo-note">Protótipo navegável · dados de demonstração</p>
     </div>
 
     <div class="ob-step" id="ob2">
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
-        <div class="drop" id="drop" onclick="startProc()" role="button" tabindex="0" aria-label="Selecionar edital em PDF">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
-          <strong>Toque para selecionar o PDF do edital</strong>
-          <span>Edital de exemplo: Perito Criminal — 80 vagas</span>
-        </div>
+        <p class="eyebrow">Passo 1 de 2</p>
+        <h1 style="font-size:1.5rem">Envie o edital do seu concurso</h1>
+        <p class="muted" style="font-size:.85rem">Mande o PDF inteiro que a IA lê para você — ou cole só a parte do conteúdo programático. Em seguida eu monto seu plano.</p>
         <div id="realEdital">
-          <p class="optlbl">Ou cole o conteúdo programático do seu edital real:</p>
-          <textarea id="edTexto" placeholder="Cole aqui o trecho do edital com as disciplinas e tópicos…" aria-label="Texto do edital"></textarea>
-          <button class="btn small" style="margin-top:8px" onclick="analisarEdital()">Analisar com IA</button>
-          <p class="muted" style="font-size:.72rem; margin-top:6px" id="edStatus"></p>
+          <textarea id="edTexto" placeholder="Ex.: DIREITO CONSTITUCIONAL: 1 Princípios fundamentais. 2 Direitos e garantias… DIREITO ADMINISTRATIVO: 1 Princípios…" aria-label="Texto do edital"></textarea>
+          <p class="oudivisor">ou</p>
+          <div class="drop" id="drop" onclick="document.getElementById('edArquivo').click()" role="button" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('edArquivo').click();}"
+               aria-label="Arraste o PDF do edital aqui ou clique para escolher">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+            <strong id="dropTxt">Enviar o PDF do edital</strong>
+            <span>toque para escolher, ou arraste o arquivo aqui (.pdf ou .txt)</span>
+            <input type="file" id="edArquivo" accept=".pdf,application/pdf,.txt,text/plain" style="display:none" onchange="lerArquivo(this)">
+          </div>
+          <button class="btn" style="margin-top:12px" onclick="analisarEdital()">Analisar meu edital</button>
+          <p class="muted" style="font-size:.75rem; margin-top:8px" id="edStatus"></p>
+          <div id="cargoBox" style="display:none; margin-top:16px">
+            <p class="optlbl" style="margin-top:0">Este edital tem vários cargos. Qual é o seu?</p>
+            <div class="optchips" id="cargoLista" style="flex-direction:column; align-items:stretch"></div>
+          </div>
         </div>
         <ul class="proc" id="proc">
-          <li><span class="spin"></span>Lendo o edital e o conteúdo programático</li>
-          <li><span class="spin"></span>Mapeando 214 tópicos em 8 disciplinas</li>
-          <li><span class="spin"></span>Cruzando com 9.412 questões da banca</li>
-          <li><span class="spin"></span>Montando seu plano dos 8 verbos</li>
+          <li><span class="spin"></span>Lendo o conteúdo programático</li>
+          <li><span class="spin"></span>Mapeando disciplinas e tópicos</li>
+          <li><span class="spin"></span>Priorizando por peso e incidência</li>
+          <li><span class="spin"></span>Preparando a esteira dos 8 verbos</li>
         </ul>
       </div>
     </div>
@@ -603,12 +878,12 @@
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
         <p class="eyebrow">Edital mapeado</p>
-        <h1><span id="edTitulo">Perito Criminal</span><br><span class="muted" id="edSub" style="font-size:1.1rem; font-weight:600">edital de exemplo · prova em 94 dias</span></h1>
+        <h1><span id="edTitulo">Seu edital</span><br><span class="muted" id="edSub" style="font-size:1.1rem; font-weight:600">mapeado com sucesso</span></h1>
         <div class="ob-stats">
-          <div class="ob-stat"><b class="num" id="stD">8</b><span>disciplinas</span></div>
-          <div class="ob-stat"><b class="num" id="stT">214</b><span>tópicos priorizados por peso e incidência</span></div>
-          <div class="ob-stat"><b class="num">2h/dia</b><span>seu tempo disponível</span></div>
+          <div class="ob-stat"><b class="num" id="stD">—</b><span>disciplinas</span></div>
+          <div class="ob-stat"><b class="num" id="stT">—</b><span>tópicos priorizados por peso e incidência</span></div>
           <div class="ob-stat"><b class="num">8</b><span>verbos por assunto: a Esteira de Aprendizado Ativo</span></div>
+          <div class="ob-stat"><b class="num">1</b><span>plano vivo que se replaneja sozinho</span></div>
         </div>
         <p>Seu plano replaneja sozinho toda noite. Nenhuma planilha, nenhuma decisão difícil: é só abrir e estudar.</p>
         <button class="btn" onclick="obGo(4)">Continuar</button>
@@ -618,13 +893,17 @@
     <div class="ob-step" id="ob4">
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
-        <p class="eyebrow">Última etapa · seu ritmo</p>
+        <p class="eyebrow">Passo 2 de 2 · seu ritmo</p>
         <div class="datecard">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-          <div style="flex:1"><b id="dtProva">Prova: 29/11/2026</b><small id="dtSub">Encontrei a data no edital — confirme ou ajuste</small></div>
+          <div style="flex:1">
+            <b id="dtProva">Data da prova</b>
+            <input type="date" id="dtInput" onchange="setDataManual(this.value)" aria-label="Data da prova"
+                   style="margin:6px 0 4px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:8px 10px; font:600 .9rem 'Albert Sans',sans-serif; width:100%; max-width:220px">
+            <small id="dtSub">ajuste se a data estiver errada ou em branco</small>
+          </div>
         </div>
         <div class="optchips">
-          <button class="optchip sel" id="dtOk" onclick="setData(true)">Confirmar data</button>
           <button class="optchip" id="dtNo" onclick="setData(false)">Ainda não há concurso previsto</button>
         </div>
 
@@ -652,29 +931,39 @@
   <section class="screen" id="scr-hoje">
     <div class="top">
       <div>
-        <p class="eyebrow">Quinta, 27 de agosto</p>
-        <h2 style="font-size:1.25rem">Olá! Dia 12 da jornada</h2>
+        <p class="eyebrow" id="hdrData">—</p>
+        <h2 style="font-size:1.25rem" id="hdrOla">Olá!</h2>
       </div>
       <span class="streak" title="12 dias seguidos de estudo">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 1s.75 2.5-1 5c-1.5 2.14-3.4 3.4-3.4 6a4.9 4.9 0 009.8 0c0-1.2-.4-2.3-.9-3.2 0 0-.5 1.7-2 2.2.6-1.6 1-4.6-2.5-10zM8 9.5S5.1 11.9 5.1 15a6.9 6.9 0 0013.8 0"/></svg>
-        <span class="num">12 dias</span>
+        <span class="num" id="streakN">0 dias</span>
       </span>
     </div>
 
     <div class="card ringwrap">
-      <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia: 2 de 8 verbos concluídos e 1 em andamento"></svg>
+      <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia"></svg>
       <div class="ringlbl">
-        <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">2 de 8 verbos · 1 em andamento</b>
+        <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">0 de 8 verbos hoje</b>
         <p class="muted" style="font-size:.8rem">Assunto do dia: <b style="color:var(--accent)" id="hdrAssunto">Princípios da Administração Pública</b><span id="hdrAssuntoSub"> (art. 37, CF)</span></p>
         <div class="verbs">
-          <span class="chip now">Ler</span><span class="chip done">Ouvir</span><span class="chip done">Treinar</span>
+          <span class="chip now">Ler</span><span class="chip">Ouvir</span><span class="chip">Treinar</span>
           <span class="chip">Falar</span><span class="chip">Digitar</span><span class="chip">Escrever</span><span class="chip">Raciocinar</span><span class="chip">Perguntar</span>
         </div>
       </div>
     </div>
 
-    <p class="eyebrow" style="margin-bottom:6px">Revisões no ponto certo de hoje</p>
-    <div class="revchips">
+    <div class="trial" id="faixaTeste">
+      <span id="faixaTxt">—</span>
+      <button class="btn small" onclick="assinar()">Assinar</button>
+    </div>
+
+    <div id="sessoesDia" style="display:none; margin:0 0 14px">
+      <p class="eyebrow" style="margin-bottom:6px">Suas sessões de hoje</p>
+      <div id="sessoesLista" style="display:flex; flex-wrap:wrap; gap:8px"></div>
+    </div>
+
+    <p class="eyebrow" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
+    <div class="revchips" id="revChips">
       <div class="rev"><span>24 h</span><b>Atos administrativos</b>5 flashcards · 4 min</div>
       <div class="rev"><span>7 dias</span><b>Crase</b>ditado relâmpago · 3 min</div>
       <div class="rev"><span>30 dias</span><b>Cadeia de custódia</b>3 questões · 5 min</div>
@@ -693,7 +982,7 @@
         <button class="task-h" onclick="tg('t-ler')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg></span>
           <span><b>Ler · Teoria completa no Leitor</b><small>Todo assunto começa aqui — silenciosa ou em voz alta</small></span>
-          <span class="stbadge now num">43% · agora</span>
+          <span class="stbadge now num" id="sbLer">agora</span>
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem" id="lerIntro">Os cinco princípios expressos do art. 37 formam o acrônimo <b>LIMPE</b> — toque em cada letra:</p>
@@ -715,14 +1004,16 @@
         <button class="task-h" onclick="tg('t-ouvir')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12v3a2 2 0 002 2h1v-7H5a2 2 0 00-2 2zm18 0v3a2 2 0 01-2 2h-1v-7h1a2 2 0 012 2zM6 10a6 6 0 0112 0"/></svg></span>
           <span><b>Ouvir · Podcast do dia</b><small>Externo: ouviu no trajeto? Um toque e pronto</small></span>
-          <span class="stbadge auto num">✓ 07:02 · você confirmou</span>
+          <button class="btn-feito" id="bOuvir" onclick="event.stopPropagation(); extDone(this, 'ouvir')">Ouvi ✓</button>
         </button>
         <div class="task-b"><div class="inner">
           <div class="player">
-            <button class="play" id="playBtn" onclick="togglePlay()" aria-label="Reproduzir podcast"><svg id="playIc" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="play" id="playBtn" onclick="tocarAudio('podcast')" aria-label="Reproduzir podcast"><svg id="playIc" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
             <div class="wave" id="wave" aria-hidden="true"></div>
-            <span class="ptime num" id="ptime">0:00 / 8:12</span>
+            <span class="ptime num" id="ptime">gerar áudio</span>
           </div>
+          <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">Toca com a voz do seu aparelho (grátis, funciona sem internet). <a href="#" onclick="return estudio('podcast')" style="color:var(--brand)">Ouvir com voz de estúdio</a></p>
           <p class="quote" id="podQuote">"…antes de eu responder, pensa aí: quais são os cinco princípios <b>expressos</b> no caput do art. 37? Pausa de três segundos… anotou? Então vamos conferir…"</p>
         </div></div>
       </div>
@@ -732,7 +1023,7 @@
         <button class="task-h" onclick="tg('t-falar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span>
           <span><b>Falar · Explique como se ensinasse</b><small>A IA ouve, transcreve e aponta o que faltou</small></span>
-          <span class="stbadge wait num">4 min · a fazer</span>
+          <span class="stbadge wait num" id="sbFalar">4 min · a fazer</span>
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem; text-align:center" id="feynQ">Explique em voz alta: <b>por que o concurso público concretiza a impessoalidade?</b></p>
@@ -745,8 +1036,8 @@
       <div class="card task" id="t-digitar">
         <button class="task-h" onclick="tg('t-digitar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
-          <span><b>Digitar · Lei seca ativa</b><small>Complete o caput do art. 37 de memória</small></span>
-          <span class="stbadge wait num">3 min · a fazer</span>
+          <span><b>Digitar · Trecho-chave</b><small>Complete de memória o trecho que a prova cobra</small></span>
+          <span class="stbadge wait num" id="sbDigitar">3 min · a fazer</span>
         </button>
         <div class="task-b"><div class="inner">
           <p class="lei" id="leiBox">"A administração pública direta e indireta de qualquer dos Poderes […] obedecerá aos princípios de
@@ -764,29 +1055,11 @@
       <div class="card task" id="t-escrever">
         <button class="task-h" onclick="tg('t-escrever')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-          <span><b>Escrever · Mapa mental à mão <span class="latetag">· de ontem</span></b><small>Externo: fez no caderno? Confirme com um toque</small></span>
-          <button class="btn-feito" onclick="event.stopPropagation(); extDone(this)">Feito ✓</button>
+          <span><b>Escrever · Mapa mental à mão</b><small>Externo: fez no caderno? Confirme com um toque</small></span>
+          <button class="btn-feito" onclick="event.stopPropagation(); extDone(this, 'escrever')">Feito ✓</button>
         </button>
         <div class="task-b"><div class="inner">
-          <svg class="mm" viewBox="0 0 340 190" role="img" aria-label="Mapa mental do artigo 37: LIMPE e desdobramentos">
-            <line x1="170" y1="95" x2="60" y2="35" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="60" y2="155" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="280" y2="35" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="280" y2="155" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="170" y2="22" stroke="var(--line)" stroke-width="1.5"/>
-            <rect x="128" y="78" width="84" height="34" rx="10" fill="var(--accent)"/>
-            <text x="170" y="99" text-anchor="middle" fill="var(--on-accent)" font-size="13" font-weight="700">Art. 37 CF</text>
-            <rect x="132" y="8" width="76" height="26" rx="8" fill="var(--accent-soft)"/>
-            <text x="170" y="25" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="700">LIMPE</text>
-            <rect x="14" y="22" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="60" y="39" text-anchor="middle" fill="var(--ink)" font-size="10">expressos ×5</text>
-            <rect x="14" y="142" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="60" y="159" text-anchor="middle" fill="var(--ink)" font-size="10">implícitos ∞</text>
-            <rect x="234" y="22" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="280" y="39" text-anchor="middle" fill="var(--ink)" font-size="10">§1º vedações</text>
-            <rect x="234" y="142" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="280" y="159" text-anchor="middle" fill="var(--ink)" font-size="10">EC 19/98</text>
-          </svg>
+          <div id="mapaBox"></div>
           <p class="muted" style="font-size:.75rem; margin-top:8px">Escrever à mão engaja áreas motoras que reforçam a memória — capriche no traço.</p>
         </div></div>
       </div>
@@ -796,9 +1069,15 @@
         <button class="task-h" onclick="tg('t-raciocinar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2a4.5 4.5 0 00-4.4 5.5A4.5 4.5 0 006 16v1a3 3 0 003 3h1V2h-.5zM14.5 2a4.5 4.5 0 014.4 5.5A4.5 4.5 0 0118 16v1a3 3 0 01-3 3h-1V2h.5z"/></svg></span>
           <span><b>Raciocinar · Questões da banca</b><small>Diga sua confiança antes de responder</small></span>
-          <span class="stbadge wait num">6 min · a fazer</span>
+          <span class="stbadge wait num" id="sbRaciocinar">6 min · a fazer</span>
         </button>
-        <div class="task-b"><div class="inner" id="quizBox">
+        <div class="task-b"><div class="inner">
+          <div class="lmode" id="qFmt" style="margin-bottom:12px; width:fit-content">
+            <button id="fmtCE" class="sel" onclick="setFormato('ce')">Certo/Errado</button>
+            <button id="fmtME" onclick="setFormato('me')">Múltipla escolha</button>
+          </div>
+          <p class="muted" style="font-size:.72rem; margin:-6px 0 10px" id="qBanca"></p>
+          <div id="quizBox">
           <div id="q1">
             <p class="q-src">Questão 1 · estilo certo/errado</p>
             <p class="q-enun">O princípio da publicidade impede, em qualquer hipótese, a restrição de acesso a informações produzidas pela Administração Pública.</p>
@@ -819,6 +1098,7 @@
             </div>
             <div class="fb" id="fb2"></div>
           </div>
+          </div>
         </div></div>
       </div>
 
@@ -826,10 +1106,14 @@
       <div class="card task" id="t-treinar">
         <button class="task-h" onclick="tg('t-treinar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="15" rx="2"/><path d="M8 3h13v15"/></svg></span>
-          <span><b>Treinar · Flashcards</b><small>Revisão espaçada no ritmo do seu esquecimento</small></span>
-          <span class="stbadge auto num">✓ 12:31 · automático</span>
+          <span><b>Treinar · Flashcards</b><small id="fcSub">Revisão espaçada no ritmo do seu esquecimento</small></span>
+          <span class="stbadge wait num" id="sbTreinar">a fazer</span>
         </button>
         <div class="task-b"><div class="inner" id="fcWrap">
+          <div class="lmode" style="margin-bottom:12px; width:fit-content">
+            <button id="fcModoHoje" class="sel" onclick="fcModo('hoje')">Assunto de hoje</button>
+            <button id="fcModoRev" onclick="fcModo('revisao')">Revisões pendentes</button>
+          </div>
           <div class="fc" id="fc" onclick="this.classList.toggle('flip')" role="button" tabindex="0" aria-label="Virar flashcard">
             <div class="fc-in">
               <div class="fc-f" id="fcF">O que o §1º do art. 37 veda na publicidade dos órgãos públicos?</div>
@@ -848,17 +1132,19 @@
       <div class="card task warm" id="t-musica">
         <button class="task-h" onclick="tg('t-musica')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V6l11-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="15" r="2.5"/></svg></span>
-          <span><b>Bônus · Forró do LIMPE</b><small>O refrão que não sai mais da sua cabeça</small></span>
-          <span class="stbadge wait num">2:40</span>
+          <span><b id="musCard">Bônus · Música do assunto</b><small>O refrão que não sai mais da sua cabeça</small></span>
+          <span class="stbadge wait num" id="musDur">ouvir</span>
         </button>
         <div class="task-b"><div class="inner">
           <div class="player">
-            <button class="play" style="background:var(--warm)" onclick="toast('No app final, a música toca aqui — gerada por IA e curada pela equipe')" aria-label="Tocar música"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="play" id="musBtn" style="background:var(--warm)" onclick="tocarAudio('musica')" aria-label="Tocar música"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
             <div style="flex:1">
               <b style="font-size:.88rem" id="musTitle">Forró do LIMPE</b>
               <p class="muted" style="font-size:.75rem" id="musSub">PersisteIA Estúdio · Direito Administrativo</p>
             </div>
           </div>
+          <audio id="audMus" preload="none" style="width:100%; margin:10px 0 0; display:none" controls></audio>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">Voz do seu aparelho. <a href="#" onclick="return estudio('musica')" style="color:var(--warm)">Ouvir com voz de estúdio</a></p>
           <div class="lyrics" id="musLyr">
             ♪ É <b>L</b> de Legalidade, só faço o que a lei mandar<br>
             <b>I</b> de Impessoal, não é pra se promover<br>
@@ -875,7 +1161,7 @@
         <button class="task-h" onclick="tg('t-perguntar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 01-8 8H4l2.2-2.6A8 8 0 1121 12z"/><path d="M9.6 9.2a2.6 2.6 0 115 1c-.6 1-1.6 1.2-1.6 2.3M13 15.8h.01"/></svg></span>
           <span><b>Perguntar · Interrogue o assunto</b><small>Formule 2 perguntas suas e tire com o Persi</small></span>
-          <span class="stbadge wait num">0/2 · a fazer</span>
+          <span class="stbadge wait num" id="sbPerguntar">0/2 · a fazer</span>
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem">Perguntar é aprender duas vezes: formular a própria dúvida expõe lacunas que você não sabia que tinha. Pergunte qualquer coisa do assunto — o Persi responde com a fonte citada, e a dúvida vira flashcard.</p>
@@ -888,15 +1174,12 @@
       <div class="card">
         <h2 style="font-size:.98rem">Minha Voz · sua playlist de revisão</h2>
         <p class="muted" style="font-size:.74rem; margin-bottom:6px">As leituras que você gravou, prontas para o trajeto — eu intercalo perguntas entre as faixas.</p>
-        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Princípios da Adm. Pública</b><small class="num">hoje · 2:41 · fluência 142 ppm</small></span></div>
-        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Atos administrativos</b><small class="num">ontem · 3:05 · fluência 136 ppm</small></span></div>
-        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Crase</b><small class="num">segunda · 1:58 · fluência 128 ppm</small></span></div>
+        <div id="mvLista"><p class="muted" style="font-size:.8rem">Nenhuma gravação ainda. Leia a teoria em voz alta no Leitor e sua faixa aparece aqui.</p></div>
         <p class="muted" style="font-size:.7rem; margin-top:8px">Ouvir a matéria na própria voz é um dos reforços de memória mais fortes que existem.</p>
       </div>
 
     </div>
     <p class="muted" style="font-size:.74rem; margin-top:14px">A ordem é sugestão: adiante o que quiser ou deixe para depois — eu recalculo e nada se perde. O que você faz aqui dentro eu marco sozinho; só o que é externo (ouvir fora do app, escrever no caderno) pede um toque seu no "Feito".</p>
-    <p class="demo-note">Conteúdos de demonstração gerados para o edital de exemplo</p>
   </section>
 
   <!-- ================= PLANO ================= -->
@@ -904,101 +1187,30 @@
     <div class="top">
       <div>
         <p class="eyebrow">Cronograma vivo</p>
-        <h2 style="font-size:1.25rem">Sua semana</h2>
+        <h2 style="font-size:1.25rem" id="planoTit">Seu plano</h2>
       </div>
-      <span class="chip done num">prova em 94 dias</span>
+      <span class="chip done num" id="planoCount">—</span>
     </div>
 
-    <div class="week" role="tablist" aria-label="Dias da semana">
-      <div class="day done">seg<b class="num">24</b></div>
-      <div class="day done">ter<b class="num">25</b></div>
-      <div class="day done">qua<b class="num">26</b></div>
-      <div class="day today">qui<b class="num">27</b></div>
-      <div class="day">sex<b class="num">28</b></div>
-      <div class="day">sáb<b class="num">29</b></div>
-      <div class="day">dom<b class="num">30</b></div>
-    </div>
-
-    <div class="blocks">
-      <div class="block"><span class="hr num">06:40</span>
-        <div class="card"><b>Podcast no trajeto</b><small>Princípios da Adm. Pública · 8 min</small>
-          <div class="vtags"><span class="vtag">ouvir</span></div>
-        </div>
-      </div>
-      <div class="block"><span class="hr num">12:30</span>
-        <div class="card"><b>Revisões do ponto certo</b><small>Atos adm. (24h) · Crase (7d) · Cadeia de custódia (30d) · 12 min</small>
-          <div class="vtags"><span class="vtag">treinar</span><span class="vtag">digitar</span><span class="vtag">raciocinar</span></div>
-        </div>
-      </div>
-      <div class="block"><span class="hr num">19:00</span>
-        <div class="card"><b>Bloco principal · 50 min</b><small>Resumo, lei seca de memória e explicação falada — com intercalação de RLM no fim</small>
-          <div class="vtags"><span class="vtag">ler</span><span class="vtag">digitar</span><span class="vtag">falar</span><span class="vtag">escrever</span><span class="vtag">raciocinar</span></div>
-        </div>
-      </div>
-      <div class="block"><span class="hr num">21:30</span>
-        <div class="card"><b>Fechamento leve</b><small>Flashcards do dia + Forró do LIMPE · 10 min</small>
-          <div class="vtags"><span class="vtag">treinar</span><span class="vtag w">bônus</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h2>Cobertura do edital</h2>
-      <p class="muted" style="font-size:.76rem">Ponderada por peso da disciplina e incidência da banca</p>
-      <div class="cover">
-        <div class="cov"><div class="lbl"><span>Direito Constitucional</span><b class="num">62%</b></div><div class="bar"><i style="width:62%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Português</span><b class="num">55%</b></div><div class="bar"><i style="width:55%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Direito Administrativo</span><b class="num">41%</b></div><div class="bar"><i style="width:41%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Criminalística</span><b class="num">33%</b></div><div class="bar"><i style="width:33%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Raciocínio Lógico</span><b class="num">28%</b></div><div class="bar"><i style="width:28%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Medicina Legal</span><b class="num">18%</b></div><div class="bar"><i style="width:18%"></i></div></div>
-      </div>
-    </div>
+    <div class="week" id="planoSemana" role="tablist" aria-label="Dias da semana"></div>
+    <div class="blocks" id="planoDia"></div>
 
     <div class="card" style="margin-top:16px">
       <h2>Cronograma completo do edital</h2>
-      <p class="muted" style="font-size:.76rem" id="planoHead">150h estimadas · <b class="num" style="color:var(--accent)">62h concluídas</b> · seu ritmo: 12h/semana</p>
-      <div class="calc" style="margin:10px 0 14px" id="planoProj">
-        <b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>18/11</b> — 11 dias antes da prova, com a última semana reservada ao modo véspera. Cada assunto abaixo tem hora estimada e data prevista; toque para abrir.
-      </div>
-
-      <div id="planoLista">
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Direito Constitucional</span><span class="hrs num">24h/38h</span><span class="mini"><i style="width:62%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Português</span><span class="hrs num">17h/30h</span><span class="mini"><i style="width:55%"></i></span></button>
-      </div>
-      <div class="disc open" id="discAdm">
-        <button class="disc-h" onclick="event.stopPropagation(); discAdm.classList.toggle('open')"><span class="nm">Direito Administrativo</span><span class="hrs num">14h/34h</span><span class="mini"><i style="width:41%"></i></span></button>
-        <div class="assuntos">
-          <div class="a-row"><span class="st done"></span><span class="an">Atos administrativos</span><span class="ah num">5h · ✓ 24–26/08</span></div>
-          <div class="a-row"><span class="st now"></span><span class="an"><b>Princípios da Adm. Pública</b> (hoje)</span><span class="ah num">4h · 27–29/08</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Poderes administrativos</span><span class="ah num">4h · 01/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Licitações — Lei 14.133</span><span class="ah num">8h · 03–08/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Serviços públicos</span><span class="ah num">4h · 10/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Improbidade administrativa</span><span class="ah num">5h · 12/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Processo administrativo</span><span class="ah num">4h · 15/09</span></div>
-        </div>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Criminalística</span><span class="hrs num">9h/26h</span><span class="mini"><i style="width:33%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Raciocínio Lógico</span><span class="hrs num">6h/20h</span><span class="mini"><i style="width:28%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Medicina Legal</span><span class="hrs num">3h/18h</span><span class="mini"><i style="width:18%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Informática</span><span class="hrs num">1h/12h</span><span class="mini"><i style="width:10%"></i></span></button>
-      </div>
-      </div>
-      <p class="muted" style="font-size:.7rem; margin-top:10px">Cada assunto começa pela teoria no Leitor e depois entra na esteira dos 8 verbos. As horas estimadas vêm do tamanho do tópico e da incidência da banca; as datas se recalculam toda noite.</p>
+      <p class="muted" style="font-size:.76rem" id="planoHead">—</p>
+      <div class="calc" style="margin:10px 0 14px" id="planoProj"></div>
+      <div id="planoLista"></div>
+      <p class="muted" style="font-size:.7rem; margin-top:10px">Toque numa disciplina para abrir os tópicos. Toque num tópico para estudá-lo agora.</p>
     </div>
 
-    <div class="card" style="margin-top:12px; background:var(--accent-soft); border-color:transparent">
-      <p style="font-size:.84rem"><b>Replanejado hoje às 03:12.</b> Você rendeu menos em RLM ontem — o plano puxou uma dose extra de questões fáceis para reconstruir a base antes de avançar. Nada ficou para trás: só mudou de lugar.</p>
+    <div class="card" style="margin-top:16px">
+      <h2>Meu edital</h2>
+      <p class="muted" style="font-size:.8rem" id="planoEdital">—</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
+        <button class="btn ghost small" onclick="refazerCronograma()">Refazer cronograma</button>
+        <button class="btn ghost small" onclick="trocarEdital()">Trocar de edital</button>
+      </div>
+      <p class="muted" style="font-size:.7rem; margin-top:10px">Mudou de concurso, saiu edital novo ou você quer estudar outro cargo? Trocar o edital monta um plano do zero — seu histórico de estudo continua guardado.</p>
     </div>
   </section>
 
@@ -1039,17 +1251,7 @@
       </div>
 
       <div class="dv" id="dv-tema">
-        <p style="font-size:.82rem; margin-bottom:4px"><span class="dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--d3); margin-right:6px"></span><b>Direito Administrativo</b> <span class="muted" style="font-size:.72rem">· cada quadradinho é um verbo</span></p>
-        <div class="trow"><div class="tn"><b>Atos administrativos</b><span class="num">8/8 · concluído</span></div>
-          <div class="vmx"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
-        <div class="trow"><div class="tn"><b>Princípios da Adm. Pública</b><span class="num">3/8 · hoje</span></div>
-          <div class="vmx"><i class="now" title="Ler: em andamento"></i><i class="on" title="Ouvir: você confirmou"></i><i title="Falar"></i><i title="Digitar"></i><i class="ext" title="Escrever: aguarda sua confirmação"></i><i title="Raciocinar"></i><i class="on" title="Treinar: automático"></i><i title="Perguntar"></i></div></div>
-        <div class="trow"><div class="tn"><b>Poderes administrativos</b><span class="num">0/8 · 01/09</span></div>
-          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-        <div class="trow"><div class="tn"><b>Licitações — Lei 14.133</b><span class="num">0/8 · 03/09</span></div>
-          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-        <div class="trow"><div class="tn"><b>Improbidade administrativa</b><span class="num">0/8 · 12/09</span></div>
-          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div id="dvTemaList"></div>
         <div class="vleg"><span><i class="on"></i>concluído</span><span><i class="now"></i>em andamento</span><span><i class="ext"></i>externo — aguarda seu "Feito"</span><span><i></i>a fazer</span></div>
         <p class="muted" style="font-size:.7rem; margin-top:8px">Ordem dos quadradinhos: Ler · Ouvir · Falar · Digitar · Escrever · Raciocinar · Treinar · Perguntar.</p>
       </div>
@@ -1076,14 +1278,6 @@
     </div>
 
     <div class="card chart-card">
-      <h2>Confiança × acerto</h2>
-      <p class="sub">Onde você acha que sabe vs. onde acerta de verdade</p>
-      <div class="legend"><span><i style="background:var(--c2)"></i>Confiança declarada</span><span><i style="background:var(--c1)"></i>Acerto real</span></div>
-      <div id="chCal"></div>
-      <p style="font-size:.8rem; margin-top:8px; color:var(--warn)"><b>Atenção:</b> em Criminalística você confia 19 pontos acima do que acerta — o plano de amanhã já reforçou o assunto.</p>
-    </div>
-
-    <div class="card chart-card">
       <h2>Constância</h2>
       <p class="sub">Últimos 60 dias · quanto mais escuro, mais verbos concluídos</p>
       <div class="heat" id="heat" role="img" aria-label="Mapa de constância dos últimos 60 dias"></div>
@@ -1103,7 +1297,7 @@
       <div class="card"><span class="vnum">01 · OUVIR</span><b> — codificação dupla</b><p>O mesmo conteúdo entra pelo canal auditivo em momentos mortos do dia (trajeto, fila), criando uma segunda via de memória.</p></div>
       <div class="card"><span class="vnum">02 · LER</span><b> — carga certa, sem excesso</b><p>Resumos enxutos com o que a banca de fato cobra. Reler pouco: a leitura aqui prepara a recuperação, não a substitui.</p></div>
       <div class="card"><span class="vnum">03 · FALAR</span><b> — efeito de produção + Feynman</b><p>Explicar em voz alta expõe lacunas invisíveis. A IA transcreve e devolve o que você omitiu.</p></div>
-      <div class="card"><span class="vnum">04 · DIGITAR</span><b> — efeito de geração</b><p>Completar a lei seca de memória fixa mais do que qualquer releitura — o cérebro guarda o que produz.</p></div>
+      <div class="card"><span class="vnum">04 · DIGITAR</span><b> — efeito de geração</b><p>Completar de memória o trecho-chave — lei, definição ou regra central — fixa mais do que qualquer releitura: o cérebro guarda o que produz.</p></div>
       <div class="card"><span class="vnum">05 · ESCREVER</span><b> — memória motora</b><p>Esquemas copiados à mão engajam circuitos motores e espaciais que a tela não alcança.</p></div>
       <div class="card"><span class="vnum">06 · RACIOCINAR</span><b> — prática de recuperação + calibração</b><p>Questões no estilo exato da banca, com sua confiança declarada antes — para treinar também o seu "sei que sei".</p></div>
       <div class="card"><span class="vnum">07 · TREINAR</span><b> — repetição espaçada (FSRS)</b><p>Cada item volta no momento ótimo do seu esquecimento, calculado individualmente. Revisar cedo desperdiça; tarde, perde.</p></div>
@@ -1137,27 +1331,19 @@
       </div>
     </div>
     <div class="recap" id="recap">
-      <h3>Antes de sair: 30 segundos de memória</h3>
-      <p class="muted" style="font-size:.8rem">Recuperar agora o que você acabou de ler multiplica a retenção. Três toques e pronto.</p>
-      <div class="rq" id="rq1">
-        <p>Quantos princípios <b>expressos</b> há no caput do art. 37?</p>
-        <div class="q-btns"><button class="btn ghost small" onclick="rqA(1,true,this)">Cinco</button><button class="btn ghost small" onclick="rqA(1,false,this)">Sete</button></div>
-        <p class="fbm"></p>
+      <div style="display:flex; align-items:flex-start; gap:12px">
+        <div style="flex:1">
+          <h3>Antes de sair: 30 segundos de memória</h3>
+          <p class="muted" style="font-size:.8rem">Recuperar agora o que você acabou de ler multiplica a retenção.</p>
+        </div>
+        <button class="iconbtn" onclick="reallyClose()" aria-label="Fechar sem responder">✕</button>
       </div>
-      <div class="rq" id="rq2">
-        <p>Quem só pode fazer o que a lei <b>autoriza</b>?</p>
-        <div class="q-btns"><button class="btn ghost small" onclick="rqA(2,true,this)">A Administração</button><button class="btn ghost small" onclick="rqA(2,false,this)">O particular</button></div>
-        <p class="fbm"></p>
-      </div>
-      <div class="rq" id="rq3">
-        <p>A eficiência entrou no caput por qual emenda?</p>
-        <div class="q-btns"><button class="btn ghost small" onclick="rqA(3,true,this)">EC 19/98</button><button class="btn ghost small" onclick="rqA(3,false,this)">EC 45/04</button></div>
-        <p class="fbm"></p>
-      </div>
+      <div id="recapQs"></div>
       <div class="recap-fim" id="recapFim">
-        <b>Sessão registrada ✓</b> Suas <b class="num" id="rMarks">5</b> marcações viraram flashcards e entraram no <b>Meu Resumo</b> do assunto. Modo foco desligado — suas notificações voltaram. Amanhã eu retomo exatamente de onde você parou.
+        <b>Sessão registrada ✓</b> Suas <b class="num" id="rMarks">0</b> marcações viraram flashcards e entraram no <b>Meu Resumo</b> do assunto. Amanhã eu retomo exatamente de onde você parou.
         <div style="margin-top:12px"><button class="btn small" onclick="reallyClose()">Concluir leitura</button></div>
       </div>
+      <button class="lg-alt" style="align-self:flex-start" onclick="reallyClose()">Sair sem responder</button>
     </div>
     <div class="l-bar">
       <div class="lmode" role="tablist" aria-label="Modo de leitura">
@@ -1200,6 +1386,22 @@
   </div>
 
   <!-- ================= TABBAR ================= -->
+
+  <!-- ================= ADMIN ================= -->
+  <section class="screen" id="scr-admin">
+    <div class="top"><div>
+      <p class="eyebrow">Painel da gestora</p>
+      <h2 style="font-size:1.25rem">Alunos e assinaturas</h2>
+    </div></div>
+    <div class="adm-m" id="admMetricas"></div>
+    <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap">
+      <input id="admBusca" type="search" placeholder="Buscar por nome ou e-mail" oninput="admFiltrar()"
+             style="flex:1; min-width:180px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:9px 12px; font:500 .88rem 'Albert Sans',sans-serif">
+      <button class="btn ghost small" onclick="admCarregar()">Atualizar</button>
+    </div>
+    <div class="adm-l" id="admLista"></div>
+  </section>
+
   <nav class="tabbar" id="tabbar" aria-label="Navegação principal">
     <button class="tab active" data-scr="hoje" onclick="nav('hoje',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
@@ -1213,6 +1415,9 @@
     <button class="tab" data-scr="metodo" onclick="nav('metodo',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a4.5 4.5 0 00-4.4 5.5A4.2 4.2 0 006 16.2V17a3 3 0 003 3h6a3 3 0 003-3v-.8a4.2 4.2 0 00-1.6-7.7A4.5 4.5 0 0012 3z"/><path d="M12 10v10"/></svg>
       Método</button>
+    <button class="tab" data-scr="admin" id="tabAdmin" style="display:none" onclick="nav('admin',this); admCarregar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13h8V3H3v10zm10 8h8V11h-8v10zM3 21h8v-6H3v6zm10-12h8V3h-8v6z"/></svg>
+      Painel</button>
   </nav>
 
   <!-- ================= LOGIN (modo real) ================= -->
@@ -1226,7 +1431,7 @@
     <p class="err" id="lgErr"></p>
     <button class="btn" id="lgBtn" onclick="lgEnviar()">Começar</button>
     <button class="lg-alt" id="lgAlt" onclick="lgToggle()">Já tenho conta — entrar</button>
-    <button class="lg-alt" style="color:var(--muted)" onclick="document.getElementById('login').classList.remove('show'); toast('Explorando sem conta — nada será salvo')">Só dar uma olhada — criar conta depois</button>
+    <button class="lg-alt" style="opacity:.7" onclick="voltarAoSite()">← Conhecer o PersisteIA antes</button>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
@@ -1243,8 +1448,8 @@
   }
 
   /* ---------- modo real: API + login + eventos ---------- */
-  var API = false, TOKEN = '', NOME = '', ASSUNTO = 'Princípios da Administração Pública (art. 37, CF)';
-  var lastQA = null, lgModo = 'cadastro';
+  var API = false, TOKEN = '', NOME = '', ASSUNTO = '';
+  var lastQA = null, lgModo = 'cadastro', PROVA_ISO = null;
   try { TOKEN = localStorage.getItem('persisteia_token') || ''; } catch(e){}
   function apiFetch(path, body){
     var h = {'Content-Type':'application/json'};
@@ -1252,25 +1457,55 @@
     return fetch(path, { method: body ? 'POST' : 'GET', headers: h, body: body ? JSON.stringify(body) : undefined });
   }
   function evento(tipo, verbo, detalhe, status){
+    if(verbo && (status || 'concluido') === 'concluido' && typeof marcaVerbo === 'function') marcaVerbo(verbo);
     if(!API || !TOKEN) return;
     apiFetch('/api/evento', { tipo: tipo, assunto: ASSUNTO, verbo: verbo || null, detalhe: detalhe || null, status: status || 'concluido' }).catch(function(){});
   }
   function initReal(){
     apiFetch('/api/aluno').then(function(r){
       if(r.status === 200){
-        API = true; $('realEdital').style.display = 'block';
+        API = true;
         r.json().then(function(d){
           NOME = d.nome || '';
-          if(d.config){ JA_CONFIG = true; enterApp(); }
+          $('login').classList.remove('show');
+          fecharSite();
+          aplicarAcesso(d.assinatura);
+          ADMIN = !!d.admin;
+          if(ADMIN && $('tabAdmin')) $('tabAdmin').style.display = '';
+          conferirVolta();
+          if(d.assinatura && !d.assinatura.liberado) return;
+          if(d.n_topicos){ $('stT').textContent = d.n_topicos; }
+          if(d.edital_titulo){ $('edTitulo').textContent = d.edital_titulo; }
+          var dataCfg = (d.config && d.config.data_prova) || d.edital_data_prova || null;
+          if(dataCfg){ PROVA_ISO = dataCfg; temData = true; if($('dtInput')) $('dtInput').value = dataCfg; }
+          if(d.config && d.tem_edital){ JA_CONFIG = true; enterApp(); }
+          else if(d.tem_edital){ obGo(4); calcTempo(); }
+          else { obGo(2); }
         });
       } else if(r.status === 401){
         API = true; TOKEN = '';
         try { localStorage.removeItem('persisteia_token'); } catch(e){}
-        $('realEdital').style.display = 'block';
-        $('login').classList.add('show');
+        mostrarSite();
+      } else {
+        semServidor('O servidor respondeu com erro ' + r.status + '.');
       }
-    }).catch(function(){ /* sem API: modo demonstração */ });
+    }).catch(function(){
+      semServidor('Não consegui falar com o servidor.');
+    });
   }
+  function semServidor(msg){
+    $('login').classList.remove('show');
+    $('ob').style.display = 'flex';
+    document.querySelectorAll('.ob-step').forEach(function(x){ x.classList.remove('active'); });
+    var box = $('ob1');
+    box.classList.add('active');
+    box.querySelector('.ob-hero').innerHTML =
+      '<h1>Estamos fora do ar por um instante</h1>' +
+      '<p>' + esc(msg) + ' Isso costuma durar poucos segundos, logo depois de uma atualização do sistema.</p>' +
+      '<button class="btn" onclick="location.reload()">Tentar de novo</button>';
+  }
+  function voltarAoSite(){ $('login').classList.remove('show'); mostrarSite(); }
+  function fecharSite(){ document.body.classList.remove('sitemode'); $('site').classList.remove('show'); }
   function lgToggle(){
     lgModo = (lgModo === 'cadastro') ? 'login' : 'cadastro';
     $('lgTitle').textContent = lgModo === 'cadastro' ? 'Criar minha conta' : 'Entrar';
@@ -1290,42 +1525,124 @@
           TOKEN = x.d.token; NOME = x.d.nome || '';
           try { localStorage.setItem('persisteia_token', TOKEN); } catch(e){}
           $('login').classList.remove('show');
-          toast('Bem-vinda(o), ' + (NOME || 'concurseira(o)') + '! Seu progresso agora fica salvo.');
+          fecharSite();
+          toast('Bem-vinda(o), ' + (NOME || 'concurseira(o)') + '! Seu progresso fica salvo a partir de agora.');
+          initReal();
         } else {
           $('lgErr').textContent = x.d.erro || 'Não deu certo — confira os dados';
         }
       })
       .catch(function(){ $('lgBtn').disabled = false; $('lgErr').textContent = 'Sem conexão com o servidor'; });
   }
-  function analisarEdital(){
+  function escolherCargo(nome){
+    $('cargoBox').style.display = 'none';
+    $('edStatus').textContent = 'Extraindo o programa de "' + nome + '"… pode levar até um minuto.';
+    analisarEdital(nome);
+  }
+
+  function analisarEdital(cargo){
     var txt = $('edTexto').value.trim();
-    if(txt.length < 200){ $('edStatus').textContent = 'Cole um trecho maior — pelo menos a lista de disciplinas e tópicos.'; return; }
+    if(!PDF64 && txt.length < 200){ $('edStatus').textContent = 'Cole o conteúdo programático, ou arraste o PDF do edital.'; return; }
     if(!TOKEN){ $('login').classList.add('show'); return; }
-    $('edStatus').textContent = 'Analisando com IA…';
-    $('drop').style.pointerEvents = 'none';
+    $('edStatus').textContent = PDF64 ? 'Lendo seu PDF com a IA… pode levar até um minuto.' : 'Analisando com IA… isso leva alguns segundos.';
     var lis = document.querySelectorAll('#proc li'), i = 0;
     var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
-    apiFetch('/api/edital', { texto: txt })
+    var carga = PDF64 ? { pdf_base64: PDF64 } : { texto: txt };
+    if(cargo) carga.cargo = cargo;
+    apiFetch('/api/edital', carga)
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         clearInterval(anim);
         lis.forEach(function(l){ l.classList.add('on','done'); });
+        if(x.s === 200 && x.d.precisa_cargo){
+          lis.forEach(function(l){ l.classList.remove('on','done'); });
+          $('edStatus').textContent = 'Encontrei ' + x.d.cargos.length + ' cargos neste edital.';
+          if(x.d.data_prova){ PROVA_ISO = x.d.data_prova; }
+          var box = $('cargoLista'); box.innerHTML = '';
+          x.d.cargos.forEach(function(nome){
+            var b = document.createElement('button');
+            b.className = 'optchip'; b.textContent = nome;
+            b.onclick = function(){ escolherCargo(nome); };
+            box.appendChild(b);
+          });
+          $('cargoBox').style.display = 'block';
+          $('cargoBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
         if(x.s === 200 && x.d.ok){
           $('edTitulo').textContent = x.d.titulo;
+          $('cargoBox').style.display = 'none';
           $('edSub').textContent = x.d.data_prova ? ('seu edital · prova em ' + x.d.data_prova.split('-').reverse().join('/')) : 'seu edital · data da prova a confirmar';
           $('stD').textContent = x.d.n_disciplinas;
           $('stT').textContent = x.d.n_topicos;
-          if(x.d.data_prova){ $('dtProva').textContent = 'Prova: ' + x.d.data_prova.split('-').reverse().join('/'); }
-          else { setData(false); }
-          toast('Edital lido de verdade: ' + x.d.n_disciplinas + ' disciplinas, ' + x.d.n_topicos + ' tópicos salvos no seu banco');
+          PROVA_ISO = x.d.data_prova || null;
+          if(PROVA_ISO){
+            $('dtInput').value = PROVA_ISO;
+            temData = true;
+            var dd = diasAte(PROVA_ISO);
+            $('dtSub').textContent = (dd !== null && dd < 0)
+              ? 'essa data do edital já passou — corrija acima'
+              : 'encontrei essa data no edital — ajuste se precisar';
+          } else {
+            $('dtSub').textContent = 'não encontrei a data no edital — informe acima';
+          }
+          toast(x.d.n_disciplinas + ' disciplinas e ' + x.d.n_topicos + ' tópicos salvos no seu banco');
           setTimeout(function(){ obGo(3); }, 500);
         } else {
           $('edStatus').textContent = x.d.erro || 'Não consegui analisar — tente colar só o conteúdo programático.';
-          $('drop').style.pointerEvents = 'auto';
+          lis.forEach(function(l){ l.classList.remove('on','done'); });
         }
       })
-      .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor.'; $('drop').style.pointerEvents = 'auto'; });
+      .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor. Tente de novo.'; });
   }
+  var PDF64 = null, PDFNOME = '';
+  function lerArquivo(inp){ usarArquivo(inp.files && inp.files[0]); }
+  function usarArquivo(f){
+    if(!f) return;
+    var ehPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
+    if(f.size > 4200000){
+      $('edStatus').textContent = 'Arquivo muito grande (' + Math.round(f.size/1048576) + ' MB). Envie só as páginas do conteúdo programático, ou cole o texto.';
+      return;
+    }
+    var fr = new FileReader();
+    if(ehPdf){
+      fr.onload = function(){
+        PDF64 = String(fr.result).split(',')[1] || null;
+        PDFNOME = f.name;
+        $('dropTxt').textContent = '✓ ' + f.name;
+        $('edStatus').textContent = 'PDF pronto. Toque em "Analisar meu edital" — a IA lê o documento inteiro.';
+      };
+      fr.readAsDataURL(f);
+    } else {
+      fr.onload = function(){
+        PDF64 = null;
+        $('edTexto').value = String(fr.result || '').slice(0, 150000);
+        $('dropTxt').textContent = '✓ ' + f.name;
+        $('edStatus').textContent = 'Texto carregado — confira acima e toque em Analisar meu edital.';
+      };
+      fr.readAsText(f);
+    }
+  }
+  (function(){
+    var z = null;
+    function pega(){ return document.getElementById('drop'); }
+    ['dragenter','dragover'].forEach(function(ev){
+      document.addEventListener(ev, function(e){
+        z = pega(); if(!z) return;
+        e.preventDefault(); z.classList.add('over');
+      });
+    });
+    ['dragleave','drop'].forEach(function(ev){
+      document.addEventListener(ev, function(e){
+        z = pega(); if(!z) return;
+        e.preventDefault(); if(ev === 'dragleave' && e.relatedTarget) return;
+        z.classList.remove('over');
+        if(ev === 'drop' && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+          usarArquivo(e.dataTransfer.files[0]);
+        }
+      });
+    });
+  })();
   initReal();
 
   /* ---------- onboarding ---------- */
@@ -1333,28 +1650,24 @@
     document.querySelectorAll('.ob-step').forEach(function(s){ s.classList.remove('active'); });
     $('ob'+n).classList.add('active');
   }
-  function startProc(){
-    $('drop').style.pointerEvents = 'none';
-    var lis = document.querySelectorAll('#proc li'), i = 0;
-    function step(){
-      if(i > 0){ lis[i-1].classList.add('done'); }
-      if(i < lis.length){ lis[i].classList.add('on'); i++; setTimeout(step, 850); }
-      else { setTimeout(function(){ obGo(3); }, 400); }
-    }
-    step();
-  }
   function enterApp(){
     $('ob').style.display = 'none';
     $('tabbar').classList.add('show');
     $('fab').classList.add('show');
     $('scr-hoje').classList.add('active');
-    drawRing(); drawWave(); drawLine(); drawCal(); drawHeat();
-    if(API && TOKEN){
-      if(!JA_CONFIG){
-        apiFetch('/api/aluno', { data_prova: temData ? '2026-11-29' : null, horas_dia: selVal('gH'), dias_semana: selVal('gD') }).catch(function(){});
-      }
-      carregarReal();
+    drawRing(); drawWave(); vozCarregar();
+    $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
+    $('limpeBox').innerHTML = '';
+    $('limpeWord').textContent = '';
+    $('leiBox').innerHTML = '<span class="muted">Carregando o trecho para você completar de memória…</span>';
+    $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões inéditas no estilo da banca…</p>';
+    $('lBody').innerHTML = '<p>Carregando…</p>';
+    $('musLyr').innerHTML = '<span class="muted">Gerando a letra mnemônica…</span>';
+    $('podQuote').textContent = 'Preparando o roteiro do episódio…';
+    if(!JA_CONFIG){
+      apiFetch('/api/aluno', { data_prova: (temData && PROVA_ISO) ? PROVA_ISO : null, horas_dia: selVal('gH'), dias_semana: selVal('gD') }).catch(function(){});
     }
+    carregarReal();
   }
 
   /* ---------- navigation ---------- */
@@ -1367,8 +1680,8 @@
   }
 
   /* ---------- ring dos 7 verbos ---------- */
-  function drawRing(){
-    var svg = $('ring'), cx = 54, cy = 54, r = 44, segs = 8, done = 2;
+  function drawRing(feitos){
+    var svg = $('ring'), cx = 54, cy = 54, r = 44, segs = 8, done = (typeof feitos === 'number' ? feitos : 0);
     var gapDeg = 7, seg = 360/segs - gapDeg, html = '';
     function pt(a){ var rad = (a-90)*Math.PI/180; return (cx + r*Math.cos(rad)).toFixed(2) + ' ' + (cy + r*Math.sin(rad)).toFixed(2); }
     for(var i = 0; i < segs; i++){
@@ -1376,33 +1689,277 @@
       var color = i < done ? 'var(--accent)' : (i === done ? 'var(--warm)' : 'var(--ring-track)');
       html += '<path d="M ' + pt(a0) + ' A ' + r + ' ' + r + ' 0 0 1 ' + pt(a1) + '" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round"/>';
     }
-    html += '<text x="54" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)" font-family="Bricolage Grotesque,sans-serif">2/8</text>';
+    html += '<text x="54" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)" font-family="Bricolage Grotesque,sans-serif">' + done + '/8</text>';
     html += '<text x="54" y="66" text-anchor="middle" font-size="8.5" fill="var(--muted)" letter-spacing="1">VERBOS</text>';
     svg.innerHTML = html;
   }
 
-  /* ---------- podcast fake player ---------- */
-  var playing = false, pTimer = null, pSec = 0, TOTAL = 492;
+
+  /* ---------- site, conta e assinatura ---------- */
+  var ACESSO = null, ADMIN = false;
+
+  function mostrarSite(){
+    document.body.classList.add('sitemode');
+    $('site').classList.add('show');
+    $('ob').style.display = 'none';
+    $('login').classList.remove('show');
+    window.scrollTo(0, 0);
+  }
+  function abrirConta(modo){
+    document.body.classList.remove('sitemode');
+    $('site').classList.remove('show');
+    lgModo = (modo === 'login') ? 'login' : 'cadastro';
+    $('lgTitle').textContent = lgModo === 'cadastro' ? 'Criar minha conta' : 'Entrar';
+    $('lgNome').style.display = lgModo === 'cadastro' ? 'block' : 'none';
+    $('lgBtn').textContent = lgModo === 'cadastro' ? 'Começar meus 7 dias' : 'Entrar';
+    $('lgAlt').textContent = lgModo === 'cadastro' ? 'Já tenho conta — entrar' : 'Não tenho conta — criar';
+    $('login').classList.add('show');
+  }
+  function sair(){
+    try { localStorage.removeItem('persisteia_token'); localStorage.removeItem('persisteia_topico'); } catch(e){}
+    location.reload();
+  }
+
+  function aplicarAcesso(a){
+    ACESSO = a || null;
+    if(!a) return;
+    var f = $('faixaTeste'), t = $('faixaTxt');
+    if(a.estado === 'teste' || a.estado === 'cortesia'){
+      f.classList.add('show');
+      t.textContent = a.dias_restantes === 0
+        ? 'Último dia do seu teste grátis'
+        : (a.dias_restantes === 1 ? 'Falta 1 dia de teste grátis' : 'Faltam ' + a.dias_restantes + ' dias de teste grátis');
+    } else {
+      f.classList.remove('show');
+    }
+    if(!a.liberado){ $('paywall').classList.add('show'); }
+    else { $('paywall').classList.remove('show'); }
+  }
+
+  function assinar(){
+    var b = $('pwBtn'); if(b){ b.disabled = true; b.textContent = 'Abrindo o pagamento…'; }
+    apiFetch('/api/assinatura', { assinar: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d.ja_assinante){ toast('Sua assinatura já está ativa'); location.reload(); return; }
+        if(d.checkout){ window.location.href = d.checkout; return; }
+        if(b){ b.disabled = false; b.textContent = 'Assinar agora'; }
+        if($('pwMsg')) $('pwMsg').textContent = d.erro || 'Não consegui abrir o pagamento agora.';
+        toast(d.erro || 'Não consegui abrir o pagamento agora');
+      })
+      .catch(function(){
+        if(b){ b.disabled = false; b.textContent = 'Assinar agora'; }
+        toast('Sem conexão com o servidor');
+      });
+  }
+
+  // Volta do Mercado Pago: confere o pagamento antes de liberar.
+  function conferirVolta(){
+    if(location.search.indexOf('assinatura=ok') < 0) return;
+    history.replaceState({}, '', location.pathname);
+    toast('Confirmando seu pagamento…');
+    apiFetch('/api/assinatura', { conferir: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        aplicarAcesso(d);
+        toast(d.estado === 'ativa' ? 'Assinatura ativa. Bons estudos!' : 'Pagamento ainda em processamento — te aviso assim que cair.');
+      }).catch(function(){});
+  }
+
+  // Qualquer 402 da API significa: acabou o teste.
+  function checar402(x){
+    if(x && x.s === 402){ aplicarAcesso((x.d && x.d.assinatura) || { estado: 'expirado', liberado: false }); return true; }
+    return false;
+  }
+
+  /* ---------- trocar de edital / refazer cronograma ---------- */
+  function trocarEdital(){
+    if(!confirm('Trocar de edital apaga o cronograma atual e monta um novo a partir do edital que você enviar. Seu histórico de estudo continua salvo. Deseja continuar?')) return;
+    ESCOLHIDO = null; CONT = null; REAL = null;
+    try { localStorage.removeItem('persisteia_topico'); } catch(e){}
+    $('paywall').classList.remove('show');
+    $('tabbar').classList.remove('show');
+    $('fab').classList.remove('show');
+    document.querySelectorAll('.screen').forEach(function(x){ x.classList.remove('active'); });
+    $('ob').style.display = 'block';
+    $('edTexto').value = ''; $('edStatus').textContent = '';
+    $('cargoBox').style.display = 'none';
+    if($('dropTxt')) $('dropTxt').textContent = 'Enviar o PDF do edital';
+    PDF64 = null; PDFNOME = '';
+    obGo(2);
+    window.scrollTo(0, 0);
+  }
+  function refazerCronograma(){
+    if(!confirm('Refazer o cronograma redistribui todos os assuntos do edital pelas horas que você tem por dia. O que já foi concluído volta para a fila. Continuar?')) return;
+    toast('Refazendo seu cronograma…');
+    apiFetch('/api/cronograma', { gerar: true })
+      .then(function(){ ESCOLHIDO = null; CONT = null; enterLoading(); carregarReal(); toast('Cronograma refeito ✓'); })
+      .catch(function(){ toast('Não consegui refazer agora'); });
+  }
+
+  /* ---------- painel da gestora ---------- */
+  var ADM = [];
+  function admCarregar(){
+    $('admLista').innerHTML = '<p class="muted" style="font-size:.85rem">Carregando…</p>';
+    apiFetch('/api/admin').then(function(r){ return r.json(); }).then(function(d){
+      if(d.erro){ $('admLista').innerHTML = '<p class="muted">' + esc(d.erro) + '</p>'; return; }
+      var m = d.metricas;
+      $('admMetricas').innerHTML =
+        '<div><b class="num">' + m.alunos + '</b><span>alunos</span></div>' +
+        '<div><b class="num">' + m.assinantes + '</b><span>assinantes</span></div>' +
+        '<div><b class="num">' + m.em_teste + '</b><span>em teste</span></div>' +
+        '<div><b class="num">' + m.ativos_7d + '</b><span>ativos em 7 dias</span></div>' +
+        '<div><b class="num">' + m.expirados + '</b><span>teste expirado</span></div>' +
+        '<div><b class="num">R$ ' + Number(m.receita_mensal).toFixed(2).replace('.', ',') + '</b><span>receita recorrente</span></div>' +
+        '<div><b class="num">' + m.catalogo_conteudos + '</b><span>conteúdos no catálogo</span></div>' +
+        '<div><b class="num">' + m.catalogo_audios + '</b><span>áudios de estúdio</span></div>';
+      ADM = d.alunos || [];
+      admFiltrar();
+    }).catch(function(){ $('admLista').innerHTML = '<p class="muted">Falha ao carregar.</p>'; });
+  }
+  function admFiltrar(){
+    var q = norm(($('admBusca') || {}).value || '');
+    var lista = ADM.filter(function(a){ return !q || norm(a.nome + ' ' + a.email).indexOf(q) > -1; });
+    if(!lista.length){ $('admLista').innerHTML = '<p class="muted" style="font-size:.85rem">Nenhum aluno encontrado.</p>'; return; }
+    $('admLista').innerHTML = lista.map(function(a){
+      return '<div class="adm-a">' +
+        '<div class="lin"><b>' + esc(a.nome) + '</b><span class="sit ' + a.situacao + '">' + a.situacao +
+          (a.dias_restantes !== null && (a.situacao === 'teste' || a.situacao === 'cortesia') ? ' · ' + a.dias_restantes + 'd' : '') + '</span></div>' +
+        '<div class="lin"><small>' + esc(a.email) + '</small></div>' +
+        '<div class="lin"><small>' + (a.edital ? esc(a.edital) : 'sem edital') + ' · ' + a.concluidas + '/' + a.sessoes + ' sessões · ' + a.eventos + ' ações' +
+          (a.ultimo_evento ? ' · último acesso ' + fmtData(String(a.ultimo_evento).slice(0,10)) : '') + '</small></div>' +
+        '<div class="lin" style="margin-top:8px">' +
+          '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'cortesia\',30)">+30 dias grátis</button>' +
+          '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'resetar_teste\',7)">reiniciar teste</button>' +
+          (a.situacao === 'bloqueado'
+            ? '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'liberar\')">desbloquear</button>'
+            : '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'bloquear\')">bloquear</button>') +
+        '</div></div>';
+    }).join('');
+  }
+  function admAcao(alunoId, acao, dias){
+    apiFetch('/api/admin', { aluno_id: alunoId, acao: acao, dias: dias })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ toast(d.erro || 'Feito ✓'); admCarregar(); })
+      .catch(function(){ toast('Não consegui aplicar agora'); });
+  }
+
+  /* ---------- áudio gerado (podcast e música) ---------- */
+  var AUD = { podcast: null, musica: null };
   function drawWave(){
-    var w = $('wave'), html = '';
+    var w = $('wave'); if(!w) return;
+    var html = '';
     for(var i = 0; i < 42; i++){
       var h = 8 + Math.round(24 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * .55)));
       html += '<i style="height:' + h + 'px"></i>';
     }
     w.innerHTML = html;
   }
-  function togglePlay(){
-    playing = !playing;
-    $('playIc').innerHTML = playing ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
-    if(playing){
-      pTimer = setInterval(function(){
-        pSec += 4; if(pSec >= TOTAL){ pSec = TOTAL; togglePlay(); }
-        var m = Math.floor(pSec/60), s = ('0' + pSec%60).slice(-2);
-        $('ptime').textContent = m + ':' + s + ' / 8:12';
-        var bars = document.querySelectorAll('#wave i'), lit = Math.round(bars.length * pSec / TOTAL);
-        bars.forEach(function(b, i){ b.classList.toggle('past', i < lit); });
-      }, 120);
-    } else { clearInterval(pTimer); }
+  var FALA = { tipo: null };
+
+  function vozesPt(){
+    try {
+      var vs = window.speechSynthesis.getVoices() || [];
+      var br = vs.filter(function(v){ return /pt[-_]?BR/i.test(v.lang); });
+      return br.length ? br : vs.filter(function(v){ return /^pt/i.test(v.lang); });
+    } catch(e){ return []; }
+  }
+
+  function pararFala(){
+    try { window.speechSynthesis.cancel(); } catch(e){}
+    FALA.tipo = null;
+    var p = $('ptime'); if(p && p.textContent === 'ouvindo') p.textContent = 'ouvir';
+  }
+
+  // Voz do próprio aparelho: sem custo nenhum, funciona offline depois que a teoria carregou.
+  function falarNavegador(tipo){
+    if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem voz. Use "voz de estúdio".'); return false; }
+    var texto = tipo === 'musica'
+      ? String((CONT && CONT.musica ? CONT.musica.letra : '') || '')
+      : String((CONT && CONT.podcast) || '');
+    if(!texto){ toast('Gere o conteúdo do tópico primeiro'); return false; }
+
+    if(FALA.tipo === tipo){ pararFala(); return true; }
+    pararFala();
+    FALA.tipo = tipo;
+
+    var vs = vozesPt();
+    var vozA = vs[0] || null, vozB = vs[1] || vs[0] || null;
+    var linhas = texto.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean);
+    var falas = linhas.map(function(l){
+      var leo = /^LEO\s*:|^LÉO\s*:/i.test(l);
+      var ana = /^ANA\s*:/i.test(l);
+      return { txt: l.replace(/^(ANA|LEO|LÉO)\s*:\s*/i, ''), voz: leo ? vozB : vozA, dois: leo || ana };
+    });
+
+    falas.forEach(function(f, i){
+      var u = new SpeechSynthesisUtterance(f.txt);
+      u.lang = 'pt-BR';
+      if(f.voz) u.voice = f.voz;
+      u.rate = tipo === 'musica' ? 0.95 : 1.02;
+      u.pitch = f.dois && f.voz === vozB ? 0.9 : 1;
+      if(i === falas.length - 1){
+        u.onend = function(){
+          FALA.tipo = null;
+          if(tipo === 'podcast'){ $('ptime').textContent = 'ouvido ✓'; evento('podcast_ouvido', 'ouvir', { voz: 'navegador' }, 'concluido'); }
+          else { evento('musica_ouvida', 'ouvir', { voz: 'navegador' }, 'em_andamento'); }
+        };
+      }
+      window.speechSynthesis.speak(u);
+    });
+    if(tipo === 'podcast') $('ptime').textContent = 'ouvindo';
+    return true;
+  }
+
+  // Play: usa o áudio de estúdio se ele JÁ existir no catálogo (custo zero),
+  // senão fala com a voz do aparelho. Gerar voz nova só pelo link "voz de estúdio".
+  function tocarAudio(tipo){
+    var it = itemAtivo();
+    if(!it){ toast('Abra um tópico primeiro'); return; }
+    var el = $(tipo === 'musica' ? 'audMus' : 'audPod');
+    if(AUD[tipo]){ pararFala(); el.style.display = 'block'; el.play(); return; }
+
+    apiFetch('/api/audio?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
+             '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.audio_base64){ aplicarAudio(tipo, d.audio_base64, el); }
+        else { falarNavegador(tipo); }
+      })
+      .catch(function(){ falarNavegador(tipo); });
+  }
+
+  function aplicarAudio(tipo, b64, el){
+    pararFala();
+    AUD[tipo] = 'data:audio/wav;base64,' + b64;
+    el = el || $(tipo === 'musica' ? 'audMus' : 'audPod');
+    el.src = AUD[tipo]; el.style.display = 'block';
+    el.play().catch(function(){});
+    if(tipo === 'podcast'){
+      $('ptime').textContent = 'ouvindo';
+      el.addEventListener('ended', function(){ $('ptime').textContent = 'ouvido ✓'; evento('podcast_ouvido', 'ouvir', { voz: 'estudio' }, 'concluido'); }, { once: true });
+    } else {
+      el.addEventListener('ended', function(){ evento('musica_ouvida', 'ouvir', { voz: 'estudio' }, 'em_andamento'); }, { once: true });
+    }
+  }
+
+  // Voz de estúdio (IA): só é gerada quando o aluno pede, e uma única vez por
+  // tópico — a partir daí todo mundo ouve a mesma, sem custo novo.
+  function estudio(tipo){
+    var it = itemAtivo();
+    if(!it){ toast('Abra um tópico primeiro'); return false; }
+    if(AUD[tipo]){ tocarAudio(tipo); return false; }
+    pararFala();
+    if(tipo === 'podcast') $('ptime').textContent = 'gerando…';
+    toast('Gerando a voz de estúdio… leva alguns segundos');
+    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64); }
+        else { if(tipo === 'podcast') $('ptime').textContent = 'ouvir'; toast(x.d.erro || 'Não consegui gerar a voz agora'); }
+      })
+      .catch(function(){ toast('Sem conexão para gerar a voz'); if(tipo === 'podcast') $('ptime').textContent = 'ouvir'; });
+    return false;
   }
 
   /* ---------- expanders ---------- */
@@ -1482,74 +2039,116 @@
     ['Quais são os 5 princípios expressos do caput do art. 37?', 'LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência (este incluído pela EC 19/98).'],
     ['Cite dois princípios IMPLÍCITOS da Administração Pública.', 'Razoabilidade, proporcionalidade, autotutela, continuidade do serviço público, entre outros — não estão no caput, mas regem a Administração.']
   ];
-  var fcI = 0;
+  var fcI = 0, FC_MODO = 'hoje', FC_HOJE = null, FC_REV = [];
   var fcLabels = ['Errei — volta em 10 min', 'Quase — volta em 1 dia', 'Fácil — volta em 4 dias'];
-  function fcNext(grade){
-    toast(fcLabels[grade] + ' (agenda FSRS atualizada)');
-    evento('flashcard_revisado', 'treinar', { nota: grade }, 'em_andamento');
-    fcI = (fcI + 1) % fcs.length;
+
+  function irRevisar(){
+    var card = $('t-treinar');
+    if(card && !card.classList.contains('open')) card.classList.add('open');
+    fcModo('revisao');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function fcModo(m){
+    FC_MODO = m;
+    $('fcModoHoje').classList.toggle('sel', m === 'hoje');
+    $('fcModoRev').classList.toggle('sel', m === 'revisao');
+    if(m === 'hoje'){
+      if(FC_HOJE && FC_HOJE.length){
+        fcs = FC_HOJE.slice(); fcI = 0; fcMostra();
+        $('fcSub').textContent = 'Cartões do assunto que você está estudando';
+      } else {
+        $('fc').classList.remove('flip');
+        $('fcF').textContent = 'Carregando os cartões do assunto…';
+        $('fcB').textContent = '';
+        $('fcSub').textContent = 'Assim que a teoria carregar, os cartões aparecem aqui';
+      }
+      return;
+    }
+    $('fcSub').textContent = 'Carregando o que está vencido…';
+    apiFetch('/api/flashcard').then(function(r){ return r.json(); }).then(function(d){
+      FC_REV = d.devidos || [];
+      if(!FC_REV.length){
+        $('fcF').textContent = 'Nada vencido agora ✓';
+        $('fcB').textContent = 'Suas revisões voltam no momento certo do esquecimento — de qualquer assunto já estudado.';
+        $('fcSub').textContent = 'Nenhuma revisão pendente';
+        return;
+      }
+      fcs = FC_REV.map(function(x){ return [x.frente, x.verso]; });
+      fcI = 0; fcMostra();
+      $('fcSub').textContent = FC_REV.length + ' cartão(ões) vencido(s), de todos os assuntos já estudados';
+    }).catch(function(){ $('fcSub').textContent = 'Não consegui carregar as revisões'; });
+  }
+
+  function fcMostra(){
     var fc = $('fc'); fc.classList.remove('flip');
-    setTimeout(function(){ $('fcF').textContent = fcs[fcI][0]; $('fcB').textContent = fcs[fcI][1]; }, 260);
+    if(!fcs.length) return;
+    $('fcF').textContent = fcs[fcI][0];
+    $('fcB').textContent = fcs[fcI][1];
+  }
+  function fcNext(grade){
+    toast(fcLabels[grade]);
+    evento('flashcard_revisado', 'treinar', { nota: grade, modo: FC_MODO }, 'em_andamento');
+    if(FC_MODO === 'revisao' && FC_REV[fcI] && FC_REV[fcI].id){
+      apiFetch('/api/flashcard', { revisar: FC_REV[fcI].id, nota: grade }).catch(function(){});
+      FC_REV.splice(fcI, 1); fcs.splice(fcI, 1);
+      if(!fcs.length){
+        $('fc').classList.remove('flip');
+        $('fcF').textContent = 'Revisões em dia ✓';
+        $('fcB').textContent = 'Você zerou a fila de hoje. Os cartões voltam no momento certo.';
+        $('fcSub').textContent = 'Nenhuma revisão pendente';
+        carregarReal();
+        return;
+      }
+      if(fcI >= fcs.length) fcI = 0;
+      setTimeout(fcMostra, 260);
+      $('fcSub').textContent = FC_REV.length + ' cartão(ões) vencido(s) restante(s)';
+      return;
+    }
+    fcI = (fcI + 1) % fcs.length;
+    $('fc').classList.remove('flip');
+    setTimeout(fcMostra, 260);
   }
 
   /* ---------- charts ---------- */
-  function drawLine(){
-    var vals = [52,58,55,63,66,64,70,71], meta = 80;
+  function drawLine(semanas){
+    var pts = (semanas || []).filter(function(x){ return x.pct != null; });
+    if(pts.length < 2){
+      $('chLine').innerHTML = '<p class="muted" style="font-size:.82rem; padding:14px 0">Responda questões em pelo menos duas semanas para eu desenhar sua curva de acerto.</p>';
+      return;
+    }
+    var vals = pts.map(function(x){ return x.pct; }), meta = 80;
     var W = 360, H = 158, x0 = 30, x1 = 336, yTop = 16, yBot = 132;
-    function X(i){ return x0 + i*(x1-x0)/(vals.length-1); }
-    function Y(v){ return yBot - (v-40)*(yBot-yTop)/50; }
-    var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Acerto semanal subindo de 52% para 71% em 8 semanas; meta 80%">';
-    [40,60,80].forEach(function(g){
-      s += '<line x1="'+x0+'" y1="'+Y(g)+'" x2="'+x1+'" y2="'+Y(g)+'" stroke="var(--grid)" stroke-width="1"/>';
-      s += '<text x="'+(x0-6)+'" y="'+(Y(g)+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+g+'</text>';
+    function X(i){ return vals.length > 1 ? x0 + i*(x1-x0)/(vals.length-1) : (x0+x1)/2; }
+    function Y(v){ return yBot - v*(yBot-yTop)/100; }
+    var s2 = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Acerto semanal em questoes">';
+    [0,50,100].forEach(function(g){
+      s2 += '<line x1="'+x0+'" y1="'+Y(g)+'" x2="'+x1+'" y2="'+Y(g)+'" stroke="var(--grid)" stroke-width="1"/>';
+      s2 += '<text x="'+(x0-6)+'" y="'+(Y(g)+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+g+'</text>';
     });
-    s += '<line x1="'+x0+'" y1="'+Y(meta)+'" x2="'+x1+'" y2="'+Y(meta)+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    s2 += '<line x1="'+x0+'" y1="'+Y(meta)+'" x2="'+x1+'" y2="'+Y(meta)+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>';
     var area = 'M'+X(0)+' '+yBot, line = '';
     vals.forEach(function(v,i){
       line += (i ? ' L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1);
       area += ' L' + X(i).toFixed(1) + ' ' + Y(v).toFixed(1);
     });
     area += ' L'+X(vals.length-1)+' '+yBot+' Z';
-    s += '<path d="'+area+'" fill="var(--c1)" opacity=".1"/>';
-    s += '<path d="'+line+'" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linejoin="round"/>';
-    s += '<circle cx="'+X(vals.length-1)+'" cy="'+Y(71)+'" r="4" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
-    s += '<text x="'+(X(vals.length-1)-2)+'" y="'+(Y(71)-9)+'" text-anchor="end" font-size="10" font-weight="700" fill="var(--ink)">71%</text>';
-    ['s1','s2','s3','s4','s5','s6','s7','s8'].forEach(function(lb,i){
-      if(i%2===0){ s += '<text x="'+X(i)+'" y="'+(yBot+14)+'" text-anchor="middle" font-size="8.5" fill="var(--muted)">'+lb+'</text>'; }
-    });
-    s += '</svg>';
-    $('chLine').innerHTML = s;
+    s2 += '<path d="'+area+'" fill="var(--c1)" opacity=".1"/>';
+    s2 += '<path d="'+line+'" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linejoin="round"/>';
+    var ult = vals[vals.length-1];
+    s2 += '<circle cx="'+X(vals.length-1)+'" cy="'+Y(ult)+'" r="4" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
+    s2 += '<text x="'+(X(vals.length-1)-2)+'" y="'+(Y(ult)-9)+'" text-anchor="end" font-size="10" font-weight="700" fill="var(--ink)">'+ult+'%</text>';
+    s2 += '</svg>';
+    $('chLine').innerHTML = s2;
   }
 
-  function drawCal(){
-    var rows = [
-      ['Constitucional', 84, 78],
-      ['Português', 72, 74],
-      ['Criminalística', 88, 69],
-      ['Raciocínio Lógico', 55, 62]
-    ];
-    var W = 360, rowH = 34, H = rows.length*rowH + 24, xL = 110, xR = 348;
-    function X(v){ return xL + (v-40)*(xR-xL)/60; }
-    var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Comparação entre confiança declarada e acerto real por disciplina">';
-    [50,70,90].forEach(function(g){
-      s += '<line x1="'+X(g)+'" y1="6" x2="'+X(g)+'" y2="'+(H-18)+'" stroke="var(--grid)" stroke-width="1"/>';
-      s += '<text x="'+X(g)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8.5" fill="var(--muted)">'+g+'%</text>';
-    });
-    rows.forEach(function(r,i){
-      var y = 14 + i*rowH + rowH/2 - 8;
-      s += '<text x="0" y="'+(y+3.5)+'" font-size="10" fill="var(--ink)">'+r[0]+'</text>';
-      s += '<line x1="'+X(r[1])+'" y1="'+y+'" x2="'+X(r[2])+'" y2="'+y+'" stroke="var(--line)" stroke-width="2"/>';
-      s += '<circle cx="'+X(r[1])+'" cy="'+y+'" r="5" fill="var(--c2)" stroke="var(--card)" stroke-width="2"/>';
-      s += '<circle cx="'+X(r[2])+'" cy="'+y+'" r="5" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
-    });
-    s += '</svg>';
-    $('chCal').innerHTML = s;
-  }
-
-  function drawHeat(){
-    var seed = [3,2,3,1,0,2,3,3,2,1,3,2,0,1,3,3,2,3,1,2,3,0,2,3,3,1,2,3,2,3,1,3,2,2,3,0,3,2,3,1,2,3,3,2,1,3,3,2,3,1,2,2,3,3,2,3,3,1,3,3];
-    var html = '';
-    seed.forEach(function(v){ html += '<i class="'+(v ? 'l'+v : '')+'"></i>'; });
+  function drawHeat(diasAtivos){
+    var set = {}; (diasAtivos || []).forEach(function(d){ set[d] = 1; });
+    var html = '', hoje = new Date();
+    for(var i = 59; i >= 0; i--){
+      var d = new Date(hoje.getTime() - i*86400000).toISOString().slice(0,10);
+      html += '<i class="' + (set[d] ? 'l3' : '') + '" title="' + d + '"></i>';
+    }
     $('heat').innerHTML = html;
   }
 
@@ -1557,12 +2156,22 @@
   var temData = true;
   function setData(sim){
     temData = sim;
-    $('dtOk').classList.toggle('sel', sim);
     $('dtNo').classList.toggle('sel', !sim);
-    $('dtProva').textContent = sim ? 'Prova: 29/11/2026' : 'Estudo contínuo (sem edital publicado)';
-    $('dtSub').textContent = sim ? 'Encontrei a data no edital — confirme ou ajuste'
-      : 'Você estuda em ciclos de 16 semanas; quando o edital sair, o plano se reancora na data real';
+    $('dtInput').disabled = !sim;
+    $('dtInput').style.opacity = sim ? '1' : '.4';
+    $('dtProva').textContent = sim ? 'Data da prova' : 'Estudo contínuo (sem data definida)';
+    $('dtSub').textContent = sim ? 'ajuste se a data estiver errada ou em branco'
+      : 'quando o edital marcar a prova, volte aqui e informe a data';
     calcTempo();
+  }
+  function setDataManual(v){
+    PROVA_ISO = v || null;
+    if(v){ temData = true; $('dtNo').classList.remove('sel'); $('dtInput').disabled = false; $('dtInput').style.opacity = '1'; }
+    calcTempo();
+  }
+  function diasAte(iso){
+    if(!iso) return null;
+    return Math.round((Date.parse(iso + 'T12:00:00') - Date.now()) / 86400000);
   }
   function pick(el){
     el.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
@@ -1572,21 +2181,29 @@
   function selVal(gid){ return parseFloat(document.querySelector('#'+gid+' .sel').dataset.v); }
   function calcTempo(){
     var h = selVal('gH'), d = selVal('gD'), box = $('calcBox');
-    var precisa = 150; // horas estimadas do edital de exemplo (teoria + esteira + revisões)
-    if(!temData){
+    var nTop = parseInt(String($('stT').textContent).replace(/\D/g,''), 10) || 0;
+    var precisa = Math.round(nTop * 0.9);
+    if(!temData || !PROVA_ISO){
       box.className = 'calc';
-      box.innerHTML = '<b>Ciclo contínuo:</b> com <b class="num">' + (h*d) + 'h/semana</b>, você cobre os assuntos universais (Português, RLM, Constitucional, Administrativo, Informática) em ritmo sustentável. Quando o edital sair, o cronograma se reancora sozinho na data da prova.';
+      box.innerHTML = '<b>Ciclo contínuo:</b> com <b class="num">' + (h*d) + 'h/semana</b> você cobre ' +
+        (nTop ? 'os <b class="num">' + nTop + '</b> tópicos' : 'os tópicos') + ' do seu edital em ritmo sustentável. Informe a data quando ela sair e eu reancoro tudo.';
       return;
     }
-    var semanas = 13.4, total = Math.round(h*d*semanas);
+    var dias = diasAte(PROVA_ISO);
+    if(dias === null || dias < 0){
+      box.className = 'calc warn';
+      box.innerHTML = '<b>Essa data já passou.</b> Corrija o campo acima com a data da sua prova, ou escolha "ainda não há concurso previsto".';
+      return;
+    }
+    var semanas = dias / 7, total = Math.round(h * d * semanas);
     if(total >= precisa){
       box.className = 'calc';
-      box.innerHTML = '<b>Cabe!</b> ' + h + 'h × ' + d + ' dias = <b class="num">' + total + 'h</b> até a prova. Seu edital pede ~<b class="num">150h</b> (teoria + esteira + revisões). Você fecha 100% com folga para o modo véspera.';
+      box.innerHTML = '<b>Cabe!</b> ' + h + 'h × ' + d + ' dias, em <b class="num">' + dias + '</b> dias até a prova = <b class="num">' + total + 'h</b>. Seu edital pede ~<b class="num">' + precisa + 'h</b> (' + nTop + ' tópicos). Você fecha 100% com folga para a véspera.';
     } else {
-      var rec = Math.ceil((precisa/(d*semanas))*4)/4;
-      var cob = Math.round(total/precisa*100);
+      var rec = Math.ceil((precisa / Math.max(d * semanas, 1)) * 4) / 4;
+      var cob = precisa ? Math.round(total / precisa * 100) : 0;
       box.className = 'calc warn';
-      box.innerHTML = '<b>Atenção:</b> ' + h + 'h × ' + d + ' dias = <b class="num">' + total + 'h</b>, e o edital pede ~<b class="num">150h</b>. Duas saídas: subir para <b>' + String(rec).replace('.', ',') + 'h/dia</b>, ou eu priorizo por incidência da banca — com suas horas, cobrimos os tópicos que respondem por ~<b class="num">' + Math.min(cob+18,97) + '%</b> das questões. Você decide; eu recalculo.';
+      box.innerHTML = '<b>Atenção:</b> ' + h + 'h × ' + d + ' dias em ' + dias + ' dias = <b class="num">' + total + 'h</b>, e o edital pede ~<b class="num">' + precisa + 'h</b>. Duas saídas: subir para <b>' + String(rec).replace('.', ',') + 'h/dia</b>, ou eu priorizo por incidência — com suas horas cobrimos cerca de <b class="num">' + Math.min(cob + 15, 97) + '%</b> do que mais cai.';
     }
   }
   calcTempo();
@@ -1618,14 +2235,25 @@
   }
   var recapShown = false, rqDone = 0;
   function openLeitor(){
-    buildReader(); $('leitor').classList.add('open');
+    buildReader(); recapShown = false; $('recap').classList.remove('show');
+    $('leitor').classList.add('open');
     toast('Modo foco ligado · retomando de onde você parou — 43%');
   }
   function closeLeitor(){
     stopTp(); stopEco();
-    if(!recapShown){
-      recapShown = true;
-      $('rMarks').textContent = Math.max(marks, 5);
+    var qs = (CONT && CONT.questoes) ? CONT.questoes.slice(0, 3) : [];
+    if(!recapShown && qs.length){
+      recapShown = true; rqDone = 0;
+      $('rMarks').textContent = marks;
+      $('recapFim').classList.remove('show');
+      $('recapQs').innerHTML = qs.map(function(q, i){
+        return '<div class="rq" id="rq' + i + '">' +
+          '<p>' + esc(q.enunciado) + '</p>' +
+          '<div class="q-btns">' +
+            '<button class="btn ghost small" onclick="rqA(' + i + ',true)">Certo</button>' +
+            '<button class="btn ghost small" onclick="rqA(' + i + ',false)">Errado</button>' +
+          '</div><p class="fbm"></p></div>';
+      }).join('');
       $('recap').classList.add('show');
       return;
     }
@@ -1637,14 +2265,18 @@
     $('recap').classList.remove('show');
     $('leitor').classList.remove('open');
   }
-  function rqA(q, certo, btn){
-    var rq = $('rq'+q);
-    if(rq.classList.contains('ok') || rq.classList.contains('no')) return;
-    rq.classList.add(certo ? 'ok' : 'no');
-    rq.querySelector('.fbm').textContent = certo ? 'Isso! Recuperado com sucesso.' :
-      (q === 1 ? 'São cinco — o LIMPE. Este item volta amanhã.' : q === 2 ? 'É a Administração; o particular pode o que a lei não proíbe. Volta amanhã.' : 'EC 19/1998. Este item volta amanhã.');
+  function rqA(i, escolha){
+    var rq = $('rq' + i);
+    if(!rq || rq.classList.contains('ok') || rq.classList.contains('no')) return;
+    var item = (CONT.questoes || [])[i];
+    var acertou = (escolha === !!item.gabarito);
+    rq.classList.add(acertou ? 'ok' : 'no');
+    rq.querySelector('.fbm').textContent = acertou
+      ? 'Isso! Recuperado com sucesso.'
+      : ('O gabarito é ' + (item.gabarito ? 'Certo' : 'Errado') + '. ' + item.comentario);
+    evento('recap', 'raciocinar', { respondeu_certo: acertou }, 'em_andamento');
     rqDone++;
-    if(rqDone >= 3){ $('recapFim').classList.add('show'); }
+    if(rqDone >= Math.min(3, (CONT.questoes || []).length)){ $('recapFim').classList.add('show'); }
   }
 
   /* ---------- modo eco (shadowing) ---------- */
@@ -1695,71 +2327,246 @@
     lFs = Math.min(1.45, Math.max(.85, lFs + d*.1));
     $('lBody').style.fontSize = lFs.toFixed(2) + 'rem';
   }
+  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '';
+
   function setLMode(m){
     $('mSil').classList.toggle('sel', m === 'sil');
     $('mTp').classList.toggle('sel', m === 'tp');
     $('mEco').classList.toggle('sel', m === 'eco');
     stopEco();
     if(m === 'eco'){
-      stopTp();
+      pararGravacao(true);
       $('leitor').classList.remove('tpmode'); $('lBody').classList.remove('tp');
       lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
-      buildEco();
-      $('lDone').classList.remove('show');
-      ecoStep();
-      ecoTimer = setInterval(ecoStep, 2400);
-      toast('Modo Eco: ouça a frase e repita — bom para lei seca e literalidade');
+      buildEco(); $('lDone').classList.remove('show');
+      ecoStep(); ecoTimer = setInterval(ecoStep, 2400);
+      toast('Modo Eco: ouça a frase e repita');
       return;
     }
     if(m === 'tp'){
       $('leitor').classList.add('tpmode'); $('lBody').classList.add('tp');
-      $('lHint').textContent = 'lendo no seu ritmo…';
       $('lDone').classList.remove('show');
-      tpIdx = 0;
+      tpIdx = 0; PALAVRAS_OUVIDAS = 0; TRANSCRICAO = '';
       lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
       $('lBody').scrollTop = 0;
-      tpPaused = false;
-      tpTimer = setInterval(tpStep, 320);
-      syncRec();
-      toast('Pode ler em voz alta — estou gravando e acompanhando você');
+      marcarAtual();
+      iniciarGravacao();
     } else {
-      stopTp();
+      pararGravacao(true);
       $('leitor').classList.remove('tpmode'); $('lBody').classList.remove('tp');
       $('lHint').textContent = 'toque numa palavra para marcar';
       lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
     }
   }
-  function tpStep(){
-    if(tpIdx > 0){
-      var prev = lWords[tpIdx-1];
-      prev.classList.remove('cur');
-      prev.classList.add(prev.classList.contains('kw') ? 'kwlit' : 'past');
+
+  function marcarAtual(){
+    lWords.forEach(function(w, i){
+      w.classList.remove('cur');
+      if(i < tpIdx){ w.classList.add(w.classList.contains('kw') ? 'kwlit' : 'past'); }
+      else { w.classList.remove('past','kwlit'); }
+    });
+    if(tpIdx < lWords.length){
+      lWords[tpIdx].classList.add('cur');
+      if(tpIdx % 5 === 0){ lWords[tpIdx].scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     }
-    if(tpIdx >= lWords.length){
-      stopTp();
-      $('leitor').classList.remove('tpmode');
-      $('lDone').classList.add('show');
-      $('lProg').style.width = '100%';
-      $('lHint').textContent = 'gravação salva ✓';
-      evento('voz_alta', 'ler', null, 'concluido');
+    $('lProg').style.width = (43 + 57 * Math.min(tpIdx / Math.max(lWords.length, 1), 1)).toFixed(1) + '%';
+  }
+
+  function avancarComFala(texto){
+    var ditas = norm(texto).replace(/[.,:;!?()"]/g, ' ').split(/\s+/).filter(Boolean);
+    PALAVRAS_OUVIDAS = Math.max(PALAVRAS_OUVIDAS, ditas.length);
+    var i = tpIdx, casadas = 0;
+    for(var k = 0; k < ditas.length && i < lWords.length; k++){
+      var alvo = norm(lWords[i].textContent).replace(/[.,:;!?()"]/g, '');
+      if(!alvo){ i++; continue; }
+      if(alvo === ditas[k] || (alvo.length > 3 && ditas[k].indexOf(alvo.slice(0, 4)) === 0)){ i++; casadas++; }
+    }
+    if(casadas > 0 || ditas.length > tpIdx){
+      tpIdx = Math.max(tpIdx, Math.min(i, lWords.length));
+      marcarAtual();
+    }
+    if(tpIdx >= lWords.length){ pararGravacao(false); }
+  }
+
+  function iniciarGravacao(){
+    RECCHUNKS = []; RECT0 = Date.now();
+    tpPaused = false; syncRec();
+    $('lHint').textContent = 'lendo…';
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      toast('Seu navegador não permite gravar áudio aqui');
       return;
     }
-    var w = lWords[tpIdx];
-    w.classList.add('cur');
-    if(tpIdx % 6 === 0){ w.scrollIntoView({block:'center', behavior:'smooth'}); }
-    $('lProg').style.width = (43 + 57*tpIdx/lWords.length).toFixed(1) + '%';
-    tpIdx++;
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      try {
+        REC = new MediaRecorder(stream);
+        REC.ondataavailable = function(e){ if(e.data && e.data.size) RECCHUNKS.push(e.data); };
+        REC.onstop = function(){ stream.getTracks().forEach(function(t){ t.stop(); }); };
+        REC.start();
+      } catch(e){ REC = null; }
+
+      if(SR){
+        RECON = new SR();
+        RECON.lang = 'pt-BR'; RECON.continuous = true; RECON.interimResults = true;
+        RECON.onresult = function(ev){
+          var txt = '';
+          for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript + ' '; }
+          TRANSCRICAO = txt.trim();
+          if(!tpPaused) avancarComFala(TRANSCRICAO);
+        };
+        RECON.onerror = function(){};
+        RECON.onend = function(){ if(REC && REC.state === 'recording' && !tpPaused){ try { RECON.start(); } catch(e){} } };
+        try { RECON.start(); } catch(e){}
+        toast('Pode ler em voz alta — eu acompanho e gravo');
+      } else {
+        toast('Gravando. Seu navegador não transcreve em tempo real — use o Chrome para o teleprompter seguir sua voz');
+        tpTimer = setInterval(function(){ if(!tpPaused){ tpIdx++; marcarAtual(); if(tpIdx >= lWords.length) pararGravacao(false); } }, 380);
+      }
+    }).catch(function(){
+      toast('Preciso da permissão do microfone para gravar sua leitura');
+      setLMode('sil');
+    });
   }
-  function stopTp(){ if(tpTimer){ clearInterval(tpTimer); tpTimer = null; } tpPaused = false; syncRec(); }
+
+  function pararGravacao(silencioso){
+    if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
+    if(RECON){ try { RECON.onend = null; RECON.stop(); } catch(e){} RECON = null; }
+    var tinhaGravacao = !!REC;
+    if(REC){
+      var r = REC; REC = null;
+      r.onstop = function(){
+        try { r.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
+        if(silencioso || !RECCHUNKS.length) return;
+        finalizarLeitura();
+      };
+      try { r.stop(); } catch(e){ if(!silencioso) finalizarLeitura(); }
+    } else if(!silencioso){
+      finalizarLeitura();
+    }
+    if(!silencioso){
+      $('leitor').classList.remove('tpmode');
+      $('lProg').style.width = '100%';
+      $('lHint').textContent = 'gravação salva ✓';
+    }
+  }
+
+  function finalizarLeitura(){
+    var seg = Math.max(1, Math.round((Date.now() - RECT0) / 1000));
+    var palavras = PALAVRAS_OUVIDAS || tpIdx;
+    var ppm = Math.round(palavras / (seg / 60));
+    var url = RECCHUNKS.length ? URL.createObjectURL(new Blob(RECCHUNKS, { type: 'audio/webm' })) : null;
+    var mm = Math.floor(seg / 60), ss = ('0' + (seg % 60)).slice(-2);
+
+    $('lDone').classList.add('show');
+    $('lDone').innerHTML =
+      '<b>Leitura em voz alta concluída · ' + mm + ':' + ss + ' gravados' + (ppm ? ' · fluência: ' + ppm + ' palavras/min' : '') + '</b><br>' +
+      'Sua gravação ficou salva para reouvir, e a transcrição virou material de revisão.' +
+      (url ? '<audio controls src="' + url + '" style="width:100%; margin-top:10px"></audio>' : '') +
+      (TRANSCRICAO ? '<p class="l-meta" style="margin-top:8px">Transcrição: "' + esc(TRANSCRICAO.slice(0, 220)) + '…"</p>' : '');
+
+    if(RECCHUNKS.length){
+      var titulo = ($('leitorTitle') || {}).textContent || 'Leitura';
+      var blob = new Blob(RECCHUNKS, { type: 'audio/webm' });
+      vozSalvar({ id: 'g' + Date.now(), titulo: titulo, quando: Date.now(), dur: mm + ':' + ss, ppm: ppm, blob: blob })
+        .then(function(ok){ vozCarregar(); if(!ok && url) minhaVozAdd(titulo, url, mm + ':' + ss, ppm); });
+    }
+    evento('voz_alta', 'ler', { segundos: seg, ppm: ppm, transcricao: TRANSCRICAO.slice(0, 800) }, 'concluido');
+    toast('Leitura registrada · ' + (ppm ? ppm + ' ppm' : mm + ':' + ss));
+  }
+
+  /* ---------- Minha Voz: gravações guardadas no próprio aparelho ---------- */
+  var VOZDB = null;
+  function vozDb(){
+    return new Promise(function(ok, falha){
+      if(VOZDB) return ok(VOZDB);
+      if(!window.indexedDB) return falha();
+      var req = indexedDB.open('persisteia_voz', 1);
+      req.onupgradeneeded = function(){ req.result.createObjectStore('gravacoes', { keyPath: 'id' }); };
+      req.onsuccess = function(){ VOZDB = req.result; ok(VOZDB); };
+      req.onerror = function(){ falha(); };
+    });
+  }
+  function vozSalvar(reg){
+    return vozDb().then(function(db){
+      return new Promise(function(ok){
+        var tx = db.transaction('gravacoes', 'readwrite');
+        tx.objectStore('gravacoes').put(reg);
+        tx.oncomplete = function(){ ok(true); };
+        tx.onerror = function(){ ok(false); };
+      });
+    }).catch(function(){ return false; });
+  }
+  function vozListar(){
+    return vozDb().then(function(db){
+      return new Promise(function(ok){
+        var req = db.transaction('gravacoes').objectStore('gravacoes').getAll();
+        req.onsuccess = function(){ ok((req.result || []).sort(function(a,b){ return b.quando - a.quando; })); };
+        req.onerror = function(){ ok([]); };
+      });
+    }).catch(function(){ return []; });
+  }
+  function vozApagar(id){
+    return vozDb().then(function(db){
+      return new Promise(function(ok){
+        var tx = db.transaction('gravacoes', 'readwrite');
+        tx.objectStore('gravacoes').delete(id);
+        tx.oncomplete = function(){ ok(true); };
+        tx.onerror = function(){ ok(false); };
+      });
+    }).catch(function(){ return false; });
+  }
+  function vozQuando(ts){
+    var d = new Date(ts), hoje = new Date();
+    var dif = Math.floor((hoje.setHours(0,0,0,0) - new Date(ts).setHours(0,0,0,0)) / 86400000);
+    if(dif === 0) return 'hoje';
+    if(dif === 1) return 'ontem';
+    return d.toLocaleDateString('pt-BR');
+  }
+  function vozCarregar(){
+    var pai = $('mvLista'); if(!pai) return;
+    vozListar().then(function(regs){
+      if(!regs.length){
+        pai.innerHTML = '<p class="muted" style="font-size:.8rem">Nenhuma gravação ainda. Leia a teoria em voz alta no Leitor e sua faixa aparece aqui.</p>';
+        return;
+      }
+      pai.innerHTML = '';
+      regs.slice(0, 30).forEach(function(r){
+        var url = URL.createObjectURL(r.blob);
+        var div = document.createElement('div');
+        div.className = 'mv-row';
+        div.innerHTML = '<button class="mv-play" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+          '<span class="mi"><b>' + esc(r.titulo) + '</b><small class="num">' + vozQuando(r.quando) + ' · ' + r.dur + (r.ppm ? ' · ' + r.ppm + ' ppm' : '') + '</small></span>' +
+          '<button class="iconbtn" style="width:30px;height:30px;font-size:.8rem" title="Apagar" aria-label="Apagar gravação">✕</button>' +
+          '<audio src="' + url + '" style="display:none"></audio>';
+        div.querySelector('.mv-play').onclick = function(){ div.querySelector('audio').play(); };
+        div.querySelector('.iconbtn').onclick = function(){ vozApagar(r.id).then(vozCarregar); };
+        pai.appendChild(div);
+      });
+    });
+  }
+
+  function minhaVozAdd(titulo, url, dur, ppm){
+    var pai = $('mvLista'); if(!pai) return;
+    var vazio = pai.querySelector('p'); if(vazio) vazio.remove();
+    var div = document.createElement('div');
+    div.className = 'mv-row';
+    div.innerHTML = '<button class="mv-play" onclick="this.parentNode.querySelector(\'audio\').play()" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+      '<span class="mi"><b>' + esc(titulo) + '</b><small class="num">agora · ' + dur + (ppm ? ' · ' + ppm + ' ppm' : '') + '</small></span>' +
+      '<audio src="' + url + '" style="display:none"></audio>';
+    pai.insertBefore(div, pai.firstChild);
+  }
+
+  function stopTp(){ pararGravacao(true); tpPaused = false; syncRec(); }
 
   /* ---------- externas: confirmar com um toque ---------- */
-  function extDone(btn){
+  function extDone(btn, verbo){
     var badge = document.createElement('span');
     badge.className = 'stbadge auto num';
     badge.textContent = '✓ agora · você confirmou';
     btn.replaceWith(badge);
     toast('Registrado! Atividade externa concluída — dashboard atualizado');
-    evento('externo_confirmado', 'escrever', null, 'concluido');
+    evento('externo_confirmado', verbo || 'escrever', null, 'concluido');
+    marcaVerbo(verbo || 'escrever');
   }
 
   /* ---------- dashboard: visões ---------- */
@@ -1814,26 +2621,27 @@
   }
   function tpPause(){
     if(tpPaused){
-      tpPaused = false; tpTimer = setInterval(tpStep, 320);
+      tpPaused = false;
+      if(REC && REC.state === 'paused'){ try { REC.resume(); } catch(e){} }
+      if(RECON){ try { RECON.start(); } catch(e){} }
       toast('Gravação retomada — continue de onde parou');
     } else {
-      if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
       tpPaused = true;
+      if(REC && REC.state === 'recording'){ try { REC.pause(); } catch(e){} }
+      if(RECON){ try { RECON.onend = null; RECON.stop(); } catch(e){} }
       toast('Pausado. Respire — retome quando quiser');
     }
     syncRec();
   }
   function tpRestart(){
-    if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
-    tpPaused = false;
-    tpIdx = 0;
+    pararGravacao(true);
+    tpPaused = false; tpIdx = 0; PALAVRAS_OUVIDAS = 0; TRANSCRICAO = '';
     lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
     $('lDone').classList.remove('show');
     $('leitor').classList.add('tpmode');
     $('lBody').scrollTop = 0;
-    $('lProg').style.width = '43%';
-    tpTimer = setInterval(tpStep, 320);
-    syncRec();
+    marcarAtual();
+    iniciarGravacao();
     toast('Nova gravação iniciada — a anterior foi descartada');
   }
 
@@ -1919,8 +2727,42 @@
     toast('Dúvida salva como flashcard — entrou na sua agenda de revisão');
   }
 
-  /* ---------- modo real: cronograma, conteúdo e dashboard de verdade ---------- */
-  var REAL = null, CONT = null, JA_CONFIG = false;
+  /* ---------- modo real: cronograma, conteúdo e dashboard ---------- */
+  var REAL = null, CONT = null, JA_CONFIG = false, ESCOLHIDO = null, DIA_SEL = null;
+  try { ESCOLHIDO = localStorage.getItem('persisteia_topico') || null; } catch(e){}
+  function itemAtivo(){
+    if(!REAL) return null;
+    if(ESCOLHIDO){
+      var it = (REAL.itens || []).filter(function(x){ return x.cron_id === ESCOLHIDO; })[0];
+      if(it && it.status !== 'concluido') return it;
+    }
+    return REAL.hoje;
+  }
+  function estudarTopico(cronId){
+    ESCOLHIDO = cronId;
+    try { localStorage.setItem('persisteia_topico', cronId); } catch(e){}
+    FEITOS = {}; CONT = null;
+    AUD = { podcast: null, musica: null };
+    try { pararFala(); } catch(e){}
+    var _ap = $('audPod'), _am = $('audMus');
+    if(_ap){ _ap.pause(); _ap.removeAttribute('src'); _ap.style.display = 'none'; }
+    if(_am){ _am.pause(); _am.removeAttribute('src'); _am.style.display = 'none'; }
+    if($('ptime')) $('ptime').textContent = 'ouvir';
+    document.querySelectorAll('.tab').forEach(function(t){ if(t.dataset.scr === 'hoje') t.click(); });
+    toast('Abrindo este tópico — gerando o conteúdo dos 8 verbos…');
+    enterLoading();
+    carregarReal();
+  }
+  function enterLoading(){
+    $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
+    $('limpeBox').innerHTML = ''; $('limpeWord').textContent = '';
+    $('leiBox').innerHTML = '<span class="muted">Carregando…</span>';
+    $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões…</p>';
+    $('lBody').innerHTML = '<p>Carregando…</p>';
+    $('musLyr').innerHTML = '<span class="muted">Gerando a letra…</span>';
+    if($('mapaBox')) $('mapaBox').innerHTML = '<p class="muted" style="font-size:.85rem">Desenhando o mapa mental do assunto…</p>';
+    $('podQuote').textContent = 'Preparando o roteiro…';
+  }
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
   function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
   function fmtData(iso){ return iso ? iso.split('-').reverse().join('/') : ''; }
@@ -1929,39 +2771,100 @@
     if(!(API && TOKEN)) return;
     apiFetch('/api/cronograma').then(function(r){ return r.json(); }).then(function(d){
       if(d && d.sem_cronograma){
-        toast('Gerando seu cronograma a partir do edital…');
+        toast('Montando seu cronograma a partir do edital…');
         return apiFetch('/api/cronograma', { gerar: true }).then(function(){ carregarReal(); });
       }
       if(!d || !d.hoje) return;
       REAL = d;
-      aplicarHojeReal(d);
+      var it = itemAtivo();
+      aplicarHojeReal(d, it);
       aplicarPlanoReal(d);
-      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(d.hoje.topico_id))
-        .then(function(r){ return r.json(); })
-        .then(function(c){ if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); } })
-        .catch(function(){});
+      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(it.topico_id) + '&parte=' + (it.parte || 1))
+        .then(function(r){ return r.json().then(function(c){ if(r.status === 402){ checar402({ s: 402, d: c }); return null; } return c; }); })
+        .then(function(c){
+          if(!c) return;
+          if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); }
+          else { $('lerIntro').textContent = 'Não consegui gerar o conteúdo agora. Recarregue a página em alguns instantes.'; }
+        })
+        .catch(function(){ $('lerIntro').textContent = 'Falha ao gerar o conteúdo — tente recarregar.'; });
     }).catch(function(){});
     apiFetch('/api/dashboard').then(function(r){ return r.json(); })
       .then(function(dd){ if(dd && dd.cobertura) aplicarDashReal(dd); }).catch(function(){});
   }
 
-  function aplicarHojeReal(d){
-    ASSUNTO = d.hoje.topico + ' — ' + d.hoje.disciplina;
-    $('hdrAssunto').textContent = d.hoje.topico;
-    $('hdrAssuntoSub').textContent = ' · ' + d.hoje.disciplina + (d.hoje.atrasado ? ' · retomando atraso' : '');
-    $('nextT').textContent = 'Continuar: ' + d.hoje.topico;
+  var VERBOS = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
+  var FEITOS = {};
+  function marcaVerbo(v){
+    if(!v || FEITOS[v]) return;
+    FEITOS[v] = true;
+    var chips = document.querySelectorAll('.ringlbl .chip');
+    chips.forEach(function(c){
+      if(norm(c.textContent) === norm(v)) { c.classList.remove('now'); c.classList.add('done'); }
+    });
+    var sb = $('sb' + v.charAt(0).toUpperCase() + v.slice(1));
+    if(sb){ sb.className = 'stbadge auto num'; sb.textContent = '✓ concluído'; }
+    var n = Object.keys(FEITOS).length;
+    var ring = $('ring');
+    if(ring){ drawRing(n); }
+    var lbl = document.querySelector('.ringlbl b');
+    if(lbl) lbl.textContent = n + ' de 8 verbos hoje';
+  }
+
+  function fmtHoras(h){
+    h = Number(h) || 0;
+    if(h < 1) return Math.round(h * 60) + ' min';
+    var inteiro = Math.floor(h), min = Math.round((h - inteiro) * 60);
+    return inteiro + ' h' + (min ? ' ' + min + ' min' : '');
+  }
+
+  // Um dia pode ter vários assuntos curtos, ou uma parte de um assunto grande.
+  function desenharSessoesDia(d, it){
+    var box = $('sessoesDia'), lista = $('sessoesLista');
+    if(!box || !lista) return;
+    var ses = d.dia_de_hoje || [];
+    if(ses.length < 2){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    var total = ses.reduce(function(n, s){ return n + (Number(s.horas) || 0); }, 0);
+    lista.innerHTML = ses.map(function(s){
+      var atual = s.cron_id === it.cron_id;
+      var feito = s.status === 'concluido';
+      return '<button class="btn ' + (atual ? 'small' : 'ghost small') + '" style="text-align:left" ' +
+        'onclick="estudarTopico(\'' + s.cron_id + '\')">' +
+        (feito ? '✓ ' : '') + esc(s.topico) +
+        (Number(s.partes) > 1 ? ' <span class="muted">· parte ' + s.parte + '/' + s.partes + '</span>' : '') +
+        (s.horas ? ' <span class="muted">· ' + fmtHoras(s.horas) + '</span>' : '') + '</button>';
+    }).join('');
+    lista.insertAdjacentHTML('beforeend',
+      '<span class="muted" style="font-size:.75rem; align-self:center">total do dia: ' + fmtHoras(total) + '</span>');
+  }
+
+  function aplicarHojeReal(d, it){
+    it = it || d.hoje;
+    if(it.cron_id === d.hoje.cron_id){
+      (d.verbos_hoje || []).forEach(function(v){ if(v.status === 'concluido') marcaVerbo(v.verbo); });
+    }
+    var parteTxt = (Number(it.partes) > 1) ? ' · parte ' + it.parte + ' de ' + it.partes : '';
+    ASSUNTO = it.topico + (Number(it.partes) > 1 ? ' (parte ' + it.parte + ')' : '') + ' — ' + it.disciplina;
+    $('hdrAssunto').textContent = it.topico;
+    $('hdrAssuntoSub').textContent = ' · ' + it.disciplina + parteTxt +
+      (it.horas ? ' · ' + fmtHoras(it.horas) : '') +
+      (it.data < new Date().toISOString().slice(0,10) ? ' · retomando atraso' : '');
+    desenharSessoesDia(d, it);
+    $('nextT').textContent = 'Continuar: ' + it.topico + parteTxt;
     $('nextS').textContent = 'teoria no Leitor · depois eu te levo aos outros verbos';
-    $('leitorTitle').textContent = d.hoje.topico;
+    $('leitorTitle').textContent = it.topico;
     var chatSub = document.querySelector('#chat .c-top small');
-    if(chatSub) chatSub.textContent = 'no assunto: ' + d.hoje.topico;
+    if(chatSub) chatSub.textContent = 'no assunto: ' + it.topico;
     if(!$('btnConcluir')){
       var b = document.createElement('button');
       b.className = 'btn ghost small'; b.id = 'btnConcluir';
       b.style.margin = '0 0 14px'; b.textContent = 'Concluir assunto de hoje ✓';
       b.onclick = function(){
-        apiFetch('/api/cronograma', { concluir: REAL.hoje.cron_id }).then(function(){
+        var alvo = itemAtivo();
+        apiFetch('/api/cronograma', { concluir: alvo.cron_id }).then(function(){
           toast('Assunto concluído! Puxando o próximo do cronograma…');
-          CONT = null; carregarReal();
+          ESCOLHIDO = null; try { localStorage.removeItem('persisteia_topico'); } catch(e){}
+          FEITOS = {}; CONT = null; enterLoading(); carregarReal();
         }).catch(function(){});
       };
       var next = document.querySelector('.nextcard');
@@ -1969,8 +2872,43 @@
     }
   }
 
+  function desenharMapa(m){
+    if(!m || !m.ramos || !m.ramos.length){ $('mapaBox').innerHTML = ''; return; }
+    var ramos = m.ramos.slice(0, 6), n = ramos.length;
+    var W = 720, H = n > 4 ? 460 : 380, cx = W/2, cy = H/2;
+    var rx = W*0.33, ry = H*0.32;
+    var svg = '<svg class="mm" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Mapa mental de ' + esc(m.centro) + '">';
+    var pos = [];
+    for(var i = 0; i < n; i++){
+      var ang = -Math.PI/2 + i * 2*Math.PI/n;
+      pos.push([cx + rx*Math.cos(ang), cy + ry*Math.sin(ang)]);
+    }
+    pos.forEach(function(p){
+      svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="var(--line)" stroke-width="1.6"/>';
+    });
+    svg += '<rect x="'+(cx-85)+'" y="'+(cy-26)+'" width="170" height="52" rx="14" fill="var(--accent)"/>';
+    svg += '<text x="'+cx+'" y="'+(cy+6)+'" text-anchor="middle" fill="var(--on-accent)" font-size="15" font-weight="700">' + esc(String(m.centro).slice(0, 26)) + '</text>';
+    ramos.forEach(function(r, i){
+      var p = pos[i], itens = (r.itens || []).slice(0, 4);
+      var h = 28 + itens.length * 15, w = 168;
+      var x = Math.max(6, Math.min(W - w - 6, p[0] - w/2)), y = p[1] - h/2;
+      svg += '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w+'" height="'+h+'" rx="12" fill="var(--card2)" stroke="var(--line)"/>';
+      svg += '<text x="'+(x + w/2)+'" y="'+(y + 18)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--accent)">' + esc(String(r.titulo).slice(0, 24)) + '</text>';
+      itens.forEach(function(it, j){
+        svg += '<text x="'+(x + w/2)+'" y="'+(y + 33 + j*15)+'" text-anchor="middle" font-size="10" fill="var(--ink)">' + esc(String(it).slice(0, 30)) + '</text>';
+      });
+    });
+    svg += '</svg>';
+    $('mapaBox').innerHTML = svg;
+  }
+
   function aplicarConteudoReal(c){
-    $('lerIntro').innerHTML = 'O essencial de <b>' + esc(c.topico) + '</b> — e o mnemônico do assunto (toque nas letras):';
+    desenharMapa(c.mapa);
+    $('musCard').textContent = 'Bônus · ' + ((c.musica && c.musica.estilo) ? c.musica.estilo : 'Música do assunto');
+    var recorte = (Number(c.partes) > 1)
+      ? ' <span class="muted">(parte ' + c.parte + ' de ' + c.partes + (c.subtitulo ? ': ' + esc(c.subtitulo) : '') + ')</span>'
+      : (c.subtitulo ? ' <span class="muted">(' + esc(c.subtitulo) + ')</span>' : '');
+    $('lerIntro').innerHTML = 'O essencial de <b>' + esc(c.topico) + '</b>' + recorte + ' — e o mnemônico do assunto (toque nas letras):';
     var sigla = String(c.acronimo.sigla || '').replace(/[^A-Za-zÀ-ú]/g, '').slice(0, 6).toUpperCase();
     var box = $('limpeBox'); box.innerHTML = '';
     for(var i = 0; i < sigla.length; i++){
@@ -1980,14 +2918,14 @@
         box.appendChild(bl);
       })(i);
     }
-    if(!sigla.length){ box.innerHTML = ''; $('limpeWord').textContent = c.acronimo.itens.join(' · '); }
+    if(!sigla.length){ $('limpeWord').textContent = c.acronimo.itens.join(' · '); }
     else { $('limpeWord').textContent = 'Toque em uma letra ↑'; }
 
     var paras = String(c.resumo).split(/\n+/).filter(function(x){ return x.trim(); });
     $('lBody').innerHTML = paras.map(function(pp){ return '<p>' + esc(pp) + '</p>'; }).join('');
     lWords = null; ecoSents = null; marks = 0; $('lMarks').textContent = '0';
 
-    var lei = esc(c.lei_seca), n = 0;
+    var lei = esc(c.trecho_chave || c.lei_seca || ''), n = 0;
     lei = lei.replace(/\[\[(.+?)\]\]/g, function(_, w){
       n++;
       return '<input class="gap-in" data-ans="' + w.trim() + '" oninput="gap(this)" aria-label="lacuna ' + n + '">';
@@ -1995,32 +2933,86 @@
     gapsTotal = n || 1; gapsDone = 0;
     $('leiBox').innerHTML = '"' + lei + '"';
 
-    var qz = c.questoes || []; var html = '';
-    for(var q = 0; q < qz.length; q++){
-      html += '<div id="rq_' + q + '" style="' + (q ? 'display:none; margin-top:16px' : '') + '">' +
-        '<p class="q-src">Questão ' + (q + 1) + ' · certo/errado</p>' +
-        '<p class="q-enun">' + esc(qz[q].enunciado) + '</p>' +
-        '<div class="q-btns">' +
-          '<button class="btn ghost small" onclick="ansReal(' + q + ',true)">Certo</button>' +
-          '<button class="btn ghost small" onclick="ansReal(' + q + ',false)">Errado</button>' +
-        '</div><div class="fb" id="rfb_' + q + '"></div></div>';
-    }
-    $('quizBox').innerHTML = html;
+    $('qBanca').textContent = c.banca
+      ? 'Questões no estilo da banca ' + c.banca + ' — troque o formato quando quiser.'
+      : 'Banca ainda não identificada: questões em estilo clássico. Escolha o formato que sua prova cobra.';
+    renderQuestoes();
 
     if(c.flashcards && c.flashcards.length){
       fcs = c.flashcards.map(function(x){ return [x.frente, x.verso]; });
+      FC_HOJE = fcs.slice(); FC_MODO = 'hoje';
+      if($('fcModoHoje')){ $('fcModoHoje').classList.add('sel'); $('fcModoRev').classList.remove('sel'); }
       fcI = 0; $('fcF').textContent = fcs[0][0]; $('fcB').textContent = fcs[0][1];
-      apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: REAL.hoje.topico_id }).catch(function(){});
+      apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: itemAtivo().topico_id }).catch(function(){});
     }
-
     if(c.feynman && c.feynman.length){
       $('feynQ').innerHTML = 'Explique em voz alta: <b>' + esc(c.feynman[0].pergunta) + '</b>';
     }
-    $('podQuote').textContent = '"' + String(c.podcast).slice(0, 260) + '…" — roteiro gerado; o áudio entra quando ligarmos a voz.';
+    $('podQuote').textContent = '"' + String(c.podcast).slice(0, 260) + '…"';
     $('musTitle').textContent = 'Música do assunto';
     $('musSub').textContent = esc(c.musica.estilo);
     $('musLyr').innerHTML = esc(c.musica.letra).replace(/\n/g, '<br>');
-    toast('Conteúdo do assunto gerado e salvo no catálogo ✓');
+  }
+
+  var Q_FMT = 'ce';
+  try { Q_FMT = localStorage.getItem('persisteia_formato') || 'ce'; } catch(e){}
+
+  function setFormato(f){
+    Q_FMT = f;
+    try { localStorage.setItem('persisteia_formato', f); } catch(e){}
+    $('fmtCE').classList.toggle('sel', f === 'ce');
+    $('fmtME').classList.toggle('sel', f === 'me');
+    renderQuestoes();
+  }
+
+  function renderQuestoes(){
+    if(!CONT){ return; }
+    $('fmtCE').classList.toggle('sel', Q_FMT === 'ce');
+    $('fmtME').classList.toggle('sel', Q_FMT === 'me');
+    var html = '';
+    if(Q_FMT === 'me'){
+      var me = CONT.questoes_me || [];
+      if(!me.length){
+        $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Este assunto foi gerado antes da múltipla escolha existir. Use Certo/Errado ou estude um assunto novo para ver os dois formatos.</p>';
+        return;
+      }
+      for(var q = 0; q < me.length; q++){
+        html += '<div id="rq_' + q + '" style="' + (q ? 'display:none; margin-top:16px' : '') + '">' +
+          '<p class="q-src">Questão ' + (q + 1) + ' · múltipla escolha</p>' +
+          '<p class="q-enun">' + esc(me[q].enunciado) + '</p><div class="q-btns" style="flex-direction:column; gap:8px">';
+        (me[q].alternativas || []).forEach(function(alt, k){
+          html += '<button class="btn ghost small" style="text-align:left; justify-content:flex-start" onclick="ansME(' + q + ',' + k + ')">' +
+            String.fromCharCode(65 + k) + ') ' + esc(alt) + '</button>';
+        });
+        html += '</div><div class="fb" id="rfb_' + q + '"></div></div>';
+      }
+    } else {
+      var qz = CONT.questoes || [];
+      for(var i = 0; i < qz.length; i++){
+        html += '<div id="rq_' + i + '" style="' + (i ? 'display:none; margin-top:16px' : '') + '">' +
+          '<p class="q-src">Questão ' + (i + 1) + ' · certo/errado</p>' +
+          '<p class="q-enun">' + esc(qz[i].enunciado) + '</p>' +
+          '<div class="q-btns">' +
+            '<button class="btn ghost small" onclick="ansReal(' + i + ',true)">Certo</button>' +
+            '<button class="btn ghost small" onclick="ansReal(' + i + ',false)">Errado</button>' +
+          '</div><div class="fb" id="rfb_' + i + '"></div></div>';
+      }
+    }
+    $('quizBox').innerHTML = html;
+  }
+
+  function ansME(q, escolha){
+    var item = (CONT.questoes_me || [])[q];
+    if(!item) return;
+    var fb = $('rfb_' + q);
+    var acertou = (escolha === item.correta);
+    var letra = String.fromCharCode(65 + item.correta);
+    fb.className = 'fb ' + (acertou ? 'ok' : 'no');
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('A correta é a ' + letra + ').')) + '</b>' + esc(item.comentario);
+    evento('questao', 'raciocinar', { n: q + 1, formato: 'me', respondeu_certo: acertou },
+           (q + 1 >= (CONT.questoes_me || []).length) ? 'concluido' : 'em_andamento');
+    var prox = $('rq_' + (q + 1));
+    if(prox) prox.style.display = 'block';
   }
 
   function ansReal(q, escolha){
@@ -2035,26 +3027,111 @@
   }
 
   function aplicarPlanoReal(d){
-    $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> tópicos concluídos · ' + esc(d.edital);
-    $('planoProj').innerHTML = '<b>Projeção real:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
-      (d.data_prova ? ' — prova em ' + fmtData(d.data_prova) + '.' : '. Quando a data da prova sair, eu reancoro tudo.');
-    var html = '';
-    d.resumo.por_disciplina.forEach(function(disc, i){
-      var pct = Math.round(100 * disc.concluidos / disc.total);
-      var cor = PAL[i % PAL.length];
-      html += '<div class="drow"><span class="dot" style="background:' + cor + '"></span>' +
-        '<span class="dn">' + esc(disc.nome) + '<small class="num">' + disc.concluidos + ' de ' + disc.total + ' tópicos</small></span>' +
-        '<span class="db"><i style="width:' + pct + '%; background:' + cor + '"></i></span>' +
-        '<span class="dp num">' + pct + '%</span></div>';
-    });
-    html += '<p class="eyebrow" style="margin:14px 0 4px">Próximos no cronograma</p>';
-    d.proximos.forEach(function(px){
-      html += '<div class="a-row"><span class="st next"></span><span class="an">' + esc(px.topico) + ' <small class="muted">· ' + esc(px.disciplina) + '</small></span><span class="ah num">' + fmtData(px.data) + '</span></div>';
+    var itens = d.itens || [];
+    var hojeISO = new Date().toISOString().slice(0,10);
+    var dd = diasAte(d.data_prova);
+    $('planoTit').textContent = d.edital || 'Seu plano';
+    $('planoCount').textContent = (dd === null) ? 'estudo contínuo' : (dd < 0 ? 'data da prova passou' : 'prova em ' + dd + ' dias');
+
+    // ----- faixa da semana -----
+    var base = new Date(); base.setHours(12,0,0,0);
+    var dow = base.getDay(), seg = new Date(base.getTime() - ((dow + 6) % 7) * 86400000);
+    var DIA = ['seg','ter','qua','qui','sex','sáb','dom'];
+    var htmlSem = '';
+    for(var i = 0; i < 7; i++){
+      var dt = new Date(seg.getTime() + i*86400000);
+      var iso = dt.toISOString().slice(0,10);
+      var doDia = itens.filter(function(x){ return x.data === iso; });
+      var todosOk = doDia.length && doDia.every(function(x){ return x.status === 'concluido'; });
+      var cls = 'day' + (iso === hojeISO ? ' today' : (todosOk ? ' done' : ''));
+      htmlSem += '<button class="' + cls + '" onclick="verDia(\'' + iso + '\')">' + DIA[i] + '<b class="num">' + dt.getDate() + '</b></button>';
+    }
+    $('planoSemana').innerHTML = htmlSem;
+    verDia(DIA_SEL || hojeISO, itens);
+
+    // ----- cronograma completo, por disciplina e tópico -----
+    $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> sessões concluídas' +
+      (d.resumo.horas_totais ? ' <span class="muted">· ' + fmtHoras(d.resumo.horas_totais) + ' de estudo no edital inteiro</span>' : '');
+    $('planoProj').innerHTML = '<b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
+      (d.data_prova ? (dd < 0 ? ' — a data de prova cadastrada já passou; ajuste no seu perfil.' : ' — prova em ' + fmtData(d.data_prova) + '.') : '. Sem data de prova cadastrada.');
+
+    var porDisc = {};
+    itens.forEach(function(x){ (porDisc[x.disciplina] = porDisc[x.disciplina] || []).push(x); });
+    var html = '', k = 0;
+    Object.keys(porDisc).forEach(function(nome){
+      var lista = porDisc[nome];
+      var feitos = lista.filter(function(x){ return x.status === 'concluido'; }).length;
+      var pct = Math.round(100 * feitos / lista.length);
+      var cor = PAL[k % PAL.length]; k++;
+      var idd = 'disc_' + k;
+      html += '<div class="disc" id="' + idd + '">' +
+        '<button class="disc-h" onclick="document.getElementById(\'' + idd + '\').classList.toggle(\'open\')">' +
+          '<span class="dot" style="width:10px;height:10px;border-radius:50%;background:' + cor + ';flex:none"></span>' +
+          '<span class="nm">' + esc(nome) + '</span>' +
+          '<span class="hrs num">' + feitos + '/' + lista.length + ' · ' + fmtHoras(lista.reduce(function(n, x){ return n + (Number(x.horas) || 0); }, 0)) + '</span>' +
+          '<span class="mini"><i style="width:' + pct + '%; background:' + cor + '"></i></span>' +
+        '</button><div class="assuntos">';
+      lista.forEach(function(x){
+        var st = x.status === 'concluido' ? 'done' : (x.cron_id === (itemAtivo() || {}).cron_id ? 'now' : 'next');
+        html += '<button class="a-row" style="width:100%; background:none; border:none; text-align:left; cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
+          '<span class="st ' + st + '"></span>' +
+          '<span class="an">' + esc(x.topico) +
+            (Number(x.partes) > 1 ? ' <span class="muted">· parte ' + x.parte + '/' + x.partes + '</span>' : '') +
+            (x.horas ? ' <span class="muted">· ' + fmtHoras(x.horas) + '</span>' : '') + '</span>' +
+          '<span class="ah num">' + fmtData(x.data) + '</span></button>';
+      });
+      html += '</div></div>';
     });
     $('planoLista').innerHTML = html;
+    if($('planoEdital')){
+      $('planoEdital').textContent = (d.edital || 'Edital carregado') +
+        ' · ' + (d.resumo.total || 0) + ' sessões' +
+        (d.resumo.horas_totais ? ' · ' + fmtHoras(d.resumo.horas_totais) + ' de estudo' : '') +
+        (d.data_prova ? ' · prova em ' + fmtData(d.data_prova) : ' · sem data de prova');
+    }
+  }
+
+  function verDia(iso, itens){
+    DIA_SEL = iso;
+    itens = itens || (REAL && REAL.itens) || [];
+    document.querySelectorAll('#planoSemana .day').forEach(function(b){
+      b.classList.toggle('today', b.textContent.indexOf(String(new Date(iso + 'T12:00:00').getDate())) > -1 && b.textContent.slice(3) === String(new Date(iso + 'T12:00:00').getDate()));
+    });
+    var doDia = itens.filter(function(x){ return x.data === iso; });
+    if(!doDia.length){
+      $('planoDia').innerHTML = '<p class="muted" style="font-size:.85rem">Nenhum tópico agendado para ' + fmtData(iso) + '. Dia livre — ou aproveite para adiantar um tópico da lista abaixo.</p>';
+      return;
+    }
+    $('planoDia').innerHTML = doDia.map(function(x){
+      var feito = x.status === 'concluido';
+      return '<div class="block"><span class="hr num">' + (x.horas ? fmtHoras(x.horas) : fmtData(x.data).slice(0,5)) + '</span>' +
+        '<button class="card" style="text-align:left; border:1px solid var(--line); cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
+          '<b>' + esc(x.topico) + (Number(x.partes) > 1 ? ' <span class="muted">· parte ' + x.parte + ' de ' + x.partes + '</span>' : '') + '</b><small>' + esc(x.disciplina) + '</small>' +
+          '<div class="vtags"><span class="vtag' + (feito ? '' : ' w') + '">' + (feito ? 'concluído ✓' : 'esteira dos 8 verbos') + '</span></div>' +
+        '</button></div>';
+    }).join('');
   }
 
   function aplicarDashReal(dd){
+    var hoje = new Date();
+    var MES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    var DIA = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    $('hdrData').textContent = DIA[hoje.getDay()] + ', ' + hoje.getDate() + ' de ' + MES[hoje.getMonth()];
+    $('hdrOla').textContent = 'Olá' + (NOME ? ', ' + NOME.split(' ')[0] : '') + '! Dia ' + dd.dia_jornada + ' da jornada';
+    $('streakN').textContent = dd.constancia_dias + (dd.constancia_dias === 1 ? ' dia' : ' dias');
+    var rev = dd.revisoes || [];
+    if(rev.length){
+      $('revTit').textContent = 'Revisões no ponto certo de hoje';
+      $('revChips').innerHTML = rev.map(function(r){
+        return '<button class="rev" style="cursor:pointer; text-align:left; font:inherit; color:inherit" onclick="irRevisar()"><span>agora</span><b>' + esc(String(r.frente).slice(0, 46)) + '</b>flashcard · 1 min</button>';
+      }).join('');
+    } else {
+      $('revTit').textContent = 'Revisões';
+      $('revChips').innerHTML = '<div class="rev"><b>Nada vencido agora ✓</b>suas revisões voltam no momento certo</div>';
+    }
+    drawLine(dd.semanas);
+    drawHeat(dd.dias_ativos);
+
     $('tCobV').textContent = dd.cobertura.pct + '%';
     $('tCobD').textContent = dd.cobertura.concluidos + ' de ' + dd.cobertura.total + ' tópicos';
     $('tAcertoV').textContent = (dd.questoes.pct == null) ? '—' : dd.questoes.pct + '%';
@@ -2064,6 +3141,7 @@
     $('tRetV').textContent = dd.flashcards_devidos;
     $('tRetL').textContent = 'flashcards para revisar agora';
     $('tRetD').textContent = '';
+
     var html = '';
     dd.por_disciplina.forEach(function(disc, i){
       var cor = PAL[i % PAL.length];
@@ -2073,6 +3151,7 @@
         '<span class="dp num">' + disc.pct + '%</span></div>';
     });
     if(html) $('dvDiscList').innerHTML = html;
+
     var ordem = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
     var mapa = {}; (dd.por_verbo || []).forEach(function(v){ mapa[v.verbo] = v.eventos; });
     var max = 1; ordem.forEach(function(v){ if((mapa[v] || 0) > max) max = mapa[v]; });
@@ -2084,8 +3163,37 @@
         '<span class="db"><i style="width:' + pct + '%"></i></span><span class="dp num">' + nEv + '</span></div>';
     });
     $('dvVerboList').innerHTML = vhtml;
-    $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano de amanhã reforça.';
-    drawRadar(vals);
+
+    if(REAL && REAL.itens){
+      var ordemV = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
+      var ativo = itemAtivo() || {};
+      var porD = {};
+      REAL.itens.forEach(function(x){ (porD[x.disciplina] = porD[x.disciplina] || []).push(x); });
+      var th = '', kk = 0;
+      Object.keys(porD).forEach(function(nome){
+        var cor = PAL[kk % PAL.length]; kk++;
+        th += '<p style="font-size:.82rem; margin:' + (kk > 1 ? '18px' : '0') + ' 0 4px"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + cor + '; margin-right:6px"></span><b>' + esc(nome) + '</b></p>';
+        porD[nome].slice(0, 6).forEach(function(x){
+          var ehAtivo = x.cron_id === ativo.cron_id;
+          var feitosN = x.status === 'concluido' ? 8 : (ehAtivo ? Object.keys(FEITOS).length : 0);
+          th += '<div class="trow"><div class="tn"><b>' + esc(x.topico) + '</b><span class="num">' + feitosN + '/8 · ' + (x.status === 'concluido' ? 'concluído' : (ehAtivo ? 'em estudo' : fmtData(x.data))) + '</span></div><div class="vmx">';
+          for(var vi = 0; vi < 8; vi++){
+            var cls = '';
+            if(x.status === 'concluido') cls = 'on';
+            else if(ehAtivo && FEITOS[ordemV[vi]]) cls = 'on';
+            else if(ehAtivo && vi === 0) cls = 'now';
+            th += '<i class="' + cls + '"></i>';
+          }
+          th += '</div></div>';
+        });
+        if(porD[nome].length > 6){
+          th += '<p class="muted" style="font-size:.7rem; margin-top:6px">+ ' + (porD[nome].length - 6) + ' tópicos nesta disciplina</p>';
+        }
+      });
+      $('dvTemaList').innerHTML = th;
+    }
+    $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano reforça a seguir.';
+    radarDrawn = false; drawRadar(vals);
   }
 
   /* keyboard access for flashcard */
@@ -2095,6 +3203,3 @@
 </script>
 
 
-
-</body>
-</html>

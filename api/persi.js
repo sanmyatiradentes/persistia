@@ -1,6 +1,6 @@
 // Persi, o tira-dúvidas (verbo Perguntar). POST {question, assunto}
 // Responde via Gemini e, se o aluno estiver logado, salva a dúvida no Turso.
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini, acessoDoAluno, MODELO_LEVE } = require('./_lib');
 
 const SYSTEM = `Você é o Persi, o tira-dúvidas do PersisteIA, um aplicativo brasileiro de estudos para concursos públicos.
 
@@ -22,10 +22,23 @@ module.exports = async (req, res) => {
     return res.status(400).json({ erro: 'Pergunta ausente ou longa demais' });
   }
 
+  // Persi só responde a quem está no teste, na cortesia ou com assinatura em dia.
+  try {
+    await ensureSchema();
+    const dono = await alunoDoToken(req);
+    if (!dono) return res.status(401).json({ erro: 'Entre na sua conta' });
+    const acesso = await acessoDoAluno(dono);
+    if (!acesso.liberado) return res.status(402).json({ erro: 'Seu período de teste terminou', assinatura: acesso });
+  } catch (e) {
+    return res.status(500).json({ erro: 'Erro ao verificar seu acesso' });
+  }
+
   try {
     const answer = await chamarGemini(
       SYSTEM,
-      `Assunto em estudo agora: ${assunto || 'preparação para concurso público'}.\n\nDúvida do aluno: ${question}`
+      `Assunto em estudo agora: ${assunto || 'preparação para concurso público'}.\n\nDúvida do aluno: ${question}`,
+      null,
+      MODELO_LEVE
     );
 
     try {
