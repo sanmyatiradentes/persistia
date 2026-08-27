@@ -1,0 +1,2100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="PersisteIA — envie seu edital; o resto é com a gente. Demonstração navegável do sistema de estudos para concursos.">
+<meta name="theme-color" content="#0E8F6E">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+</head>
+<body>
+<title>PersisteIA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Albert+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#EFF5F0; --card:#FFFFFF; --card2:#F7FAF7; --ink:#16241D; --muted:#5C6E64;
+    --line:#DCE7DF; --accent:#0E8F6E; --accent-soft:#E2F2EB; --on-accent:#FFFFFF;
+    --warm:#B97A0F; --warm-soft:#F6EDDC; --violet:#7A4FD6;
+    --good:#0E8F6E; --warn:#B97A0F; --crit:#C24A3A; --crit-soft:#F7E4E0;
+    --c1:#0E8F6E; --c2:#B97A0F; --c3:#7A4FD6;
+    --ring-track:#DCE7DF; --shadow:0 1px 2px rgba(22,36,29,.06),0 8px 24px rgba(22,36,29,.07);
+    --grid:#E6EEE8;
+    --d1:#0E8F6E; --d2:#B97A0F; --d3:#7A4FD6; --d4:#B85C3A; --d5:#2E7DBE; --d6:#8A6D00; --d7:#C4497E;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1411; --card:#16201B; --card2:#1B2620; --ink:#E7F0EA; --muted:#93A69B;
+      --line:#24312A; --accent:#2FBE92; --accent-soft:#153328; --on-accent:#08130E;
+      --warm:#D2953A; --warm-soft:#2E2415; --violet:#9C8BEA;
+      --good:#2FBE92; --warn:#D2953A; --crit:#E07B6B; --crit-soft:#3A211C;
+      --c1:#1FA37D; --c2:#BF8332; --c3:#8A76DF;
+      --ring-track:#24312A; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+      --grid:#202C25;
+      --d1:#1FA37D; --d2:#BF8332; --d3:#8A76DF; --d4:#C97757; --d5:#4E97D6; --d6:#9C8A28; --d7:#CE6E9C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1411; --card:#16201B; --card2:#1B2620; --ink:#E7F0EA; --muted:#93A69B;
+    --line:#24312A; --accent:#2FBE92; --accent-soft:#153328; --on-accent:#08130E;
+    --warm:#D2953A; --warm-soft:#2E2415; --violet:#9C8BEA;
+    --good:#2FBE92; --warn:#D2953A; --crit:#E07B6B; --crit-soft:#3A211C;
+    --c1:#1FA37D; --c2:#BF8332; --c3:#8A76DF;
+    --ring-track:#24312A; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    --grid:#202C25;
+    --d1:#1FA37D; --d2:#BF8332; --d3:#8A76DF; --d4:#C97757; --d5:#4E97D6; --d6:#9C8A28; --d7:#CE6E9C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Albert Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:440px; margin:0 auto; min-height:100dvh; position:relative;
+    display:flex; flex-direction:column; background:var(--bg);
+  }
+  @media(min-width:520px){
+    body{padding:24px 0}
+    .app{min-height:calc(100dvh - 48px); border:1px solid var(--line); border-radius:28px; overflow:hidden; box-shadow:var(--shadow)}
+  }
+  h1,h2,h3,.brand,.big{font-family:"Bricolage Grotesque","Albert Sans",system-ui,sans-serif}
+  h2{font-size:1.05rem; font-weight:700; letter-spacing:-.01em}
+  .screen{display:none; flex:1; flex-direction:column; padding:20px 18px 96px}
+  .screen.active{display:flex}
+  .eyebrow{font-size:.68rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow)}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--accent); color:var(--on-accent); border:none; border-radius:999px;
+    padding:13px 22px; font:600 .95rem "Albert Sans",system-ui,sans-serif; cursor:pointer;
+    transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.ghost{background:transparent; color:var(--accent); border:1.5px solid var(--accent)}
+  .btn.small{padding:8px 14px; font-size:.82rem}
+  .btn:focus-visible,.tab:focus-visible,.chip:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .muted{color:var(--muted)}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ---------- onboarding ---------- */
+  #ob{padding:0}
+  .ob-step{display:none; flex:1; flex-direction:column; padding:28px 24px 32px; min-height:100dvh}
+  @media(min-width:520px){.ob-step{min-height:calc(100dvh - 48px)}}
+  .ob-step.active{display:flex}
+  .brand{font-weight:800; font-size:1.35rem; letter-spacing:-.02em}
+  .brand .ia{color:var(--accent)}
+  .ob-hero{flex:1; display:flex; flex-direction:column; justify-content:center; gap:18px}
+  .ob-hero h1{font-size:2rem; line-height:1.12; font-weight:800; letter-spacing:-.025em; text-wrap:balance}
+  .ob-hero h1 em{font-style:normal; color:var(--accent)}
+  .ob-hero p{color:var(--muted); max-width:34ch}
+  .drop{
+    border:1.5px dashed var(--accent); background:var(--accent-soft); border-radius:18px;
+    padding:26px 18px; text-align:center; cursor:pointer; transition:transform .12s;
+  }
+  .drop:active{transform:scale(.98)}
+  .drop strong{display:block; margin-top:8px}
+  .drop span{font-size:.8rem; color:var(--muted)}
+  .proc{list-style:none; display:flex; flex-direction:column; gap:14px; margin-top:18px}
+  .proc li{display:flex; gap:12px; align-items:center; opacity:.28; transition:opacity .3s}
+  .proc li.on{opacity:1}
+  .proc li.done .spin{border-color:var(--accent); background:var(--accent)}
+  .proc li.done .spin::after{content:"✓"; color:var(--on-accent); font-size:.7rem; font-weight:700}
+  .spin{
+    width:22px; height:22px; border-radius:50%; border:2px solid var(--line); flex:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .proc li.on:not(.done) .spin{border-color:var(--accent); border-top-color:transparent; animation:rot 1s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .ob-stats{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0}
+  .ob-stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px}
+  .ob-stat b{font-family:"Bricolage Grotesque",sans-serif; font-size:1.3rem; display:block; letter-spacing:-.02em}
+  .ob-stat span{font-size:.74rem; color:var(--muted)}
+
+  /* ---------- header / hoje ---------- */
+  .top{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px}
+  .streak{
+    display:inline-flex; align-items:center; gap:6px; background:var(--warm-soft); color:var(--warm);
+    border-radius:999px; padding:6px 12px; font-weight:700; font-size:.82rem;
+  }
+  .ringwrap{display:flex; gap:16px; align-items:center; margin-bottom:16px}
+  .ringlbl{flex:1}
+  .verbs{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+  .chip{
+    font-size:.72rem; font-weight:600; padding:4px 10px; border-radius:999px;
+    background:var(--card); border:1px solid var(--line); color:var(--muted); cursor:pointer;
+  }
+  .chip.done{background:var(--accent-soft); border-color:transparent; color:var(--accent)}
+  .revchips{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin:10px 0 18px}
+  .revchips::-webkit-scrollbar{display:none}
+  .rev{
+    flex:none; background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:10px 14px; font-size:.8rem;
+  }
+  .rev b{display:block; font-size:.84rem}
+  .rev span{color:var(--warm); font-weight:700; font-size:.7rem; letter-spacing:.05em; text-transform:uppercase}
+
+  .sess{display:flex; flex-direction:column; gap:12px}
+  .task{overflow:hidden; padding:0}
+  .task-h{display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; width:100%; background:none; border:none; text-align:left; color:inherit; font:inherit}
+  .task-ic{
+    width:38px; height:38px; border-radius:12px; background:var(--accent-soft); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .task.warm .task-ic{background:var(--warm-soft); color:var(--warm)}
+  .task-h b{display:block; font-size:.95rem}
+  .task-h small{color:var(--muted); font-size:.78rem}
+  .task-min{margin-left:auto; text-align:right; flex:none}
+  .task-min .t{font-weight:700; font-size:.85rem}
+  .task-min .s{font-size:.68rem; color:var(--muted); display:block}
+  .task-b{display:none; padding:4px 16px 18px; border-top:1px solid var(--line)}
+  .task.open .task-b{display:block}
+  .task-b .inner{padding-top:12px}
+
+  /* player */
+  .player{display:flex; align-items:center; gap:12px}
+  .play{
+    width:46px; height:46px; border-radius:50%; background:var(--accent); color:var(--on-accent);
+    border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;
+  }
+  .wave{display:flex; align-items:center; gap:2px; height:34px; flex:1}
+  .wave i{width:3px; border-radius:2px; background:var(--accent); opacity:.35}
+  .wave i.past{opacity:1}
+  .ptime{font-size:.75rem; color:var(--muted)}
+  .quote{
+    border-left:3px solid var(--accent); padding:8px 12px; background:var(--card2);
+    border-radius:0 12px 12px 0; font-size:.85rem; margin-top:12px; color:var(--muted); font-style:italic;
+  }
+
+  /* limpe */
+  .limpe{display:flex; gap:6px; margin:12px 0}
+  .limpe b{
+    flex:1; aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    background:var(--accent-soft); color:var(--accent); border-radius:12px;
+    font-family:"Bricolage Grotesque",sans-serif; font-size:1.25rem; cursor:pointer; transition:transform .12s;
+  }
+  .limpe b:active{transform:scale(.92)}
+  #limpeWord{min-height:1.4em; font-weight:600; font-size:.9rem; color:var(--accent)}
+
+  /* typing */
+  .lei{background:var(--card2); border-radius:12px; padding:12px; font-size:.88rem; line-height:1.9}
+  .gap-in{
+    border:none; border-bottom:2px solid var(--warn); background:transparent; color:inherit;
+    font:inherit; width:90px; text-align:center; padding:0 2px;
+  }
+  .gap-in.ok{border-bottom-color:var(--good); color:var(--good); font-weight:700}
+  .gap-in.bad{border-bottom-color:var(--crit); color:var(--crit)}
+
+  /* quiz */
+  .q-enun{font-size:.9rem; background:var(--card2); border-radius:12px; padding:12px; margin-bottom:12px}
+  .q-src{font-size:.7rem; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px}
+  .q-btns{display:flex; gap:10px}
+  .q-btns .btn{flex:1}
+  .conf{margin:12px 0 4px; font-size:.78rem; color:var(--muted)}
+  .conf input{width:100%; accent-color:var(--accent)}
+  .fb{display:none; margin-top:12px; border-radius:12px; padding:12px; font-size:.85rem}
+  .fb.ok{display:block; background:var(--accent-soft); color:var(--ink)}
+  .fb.no{display:block; background:var(--crit-soft); color:var(--ink)}
+  .fb b{display:block; margin-bottom:4px}
+  .fb.ok b{color:var(--good)} .fb.no b{color:var(--crit)}
+
+  /* flashcards */
+  .fc{perspective:900px; height:170px; cursor:pointer; margin-bottom:12px}
+  .fc-in{position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d}
+  .fc.flip .fc-in{transform:rotateY(180deg)}
+  @media(prefers-reduced-motion:reduce){
+    .fc-in{transition:none}
+    .proc li.on:not(.done) .spin{animation:none}
+  }
+  .fc-f,.fc-b{
+    position:absolute; inset:0; backface-visibility:hidden; border-radius:14px;
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:18px;
+    font-size:.92rem;
+  }
+  .fc-f{background:var(--accent); color:var(--on-accent); font-weight:600}
+  .fc-b{background:var(--card2); border:1px solid var(--line); transform:rotateY(180deg); font-size:.85rem}
+  .fc-acts{display:flex; gap:8px}
+  .fc-acts button{
+    flex:1; border:1px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:12px; padding:10px 4px; font:600 .8rem "Albert Sans",sans-serif; cursor:pointer;
+  }
+  .fc-acts button small{display:block; font-weight:500; color:var(--muted); font-size:.66rem}
+  .fc-acts .e{color:var(--crit)} .fc-acts .f{color:var(--good)}
+
+  /* musica */
+  .lyrics{background:var(--card2); border-radius:12px; padding:12px; font-size:.88rem; line-height:1.8; margin-top:12px}
+  .lyrics b{color:var(--warm)}
+
+  /* feynman */
+  .mic{
+    width:64px; height:64px; border-radius:50%; border:none; background:var(--crit); color:#fff;
+    display:flex; align-items:center; justify-content:center; margin:14px auto; cursor:pointer;
+  }
+  .mic.rec{animation:pulse 1.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(194,74,58,.4)}70%{box-shadow:0 0 0 16px rgba(194,74,58,0)}100%{box-shadow:0 0 0 0 rgba(194,74,58,0)}}
+  @media(prefers-reduced-motion:reduce){.mic.rec{animation:none}}
+
+  /* mindmap svg */
+  .mm{width:100%; height:auto; display:block; margin-top:10px}
+  .mm text{font-family:"Albert Sans",sans-serif}
+
+  /* ---------- plano ---------- */
+  .week{display:flex; gap:6px; margin:14px 0}
+  .day{
+    flex:1; text-align:center; border-radius:12px; padding:8px 2px; border:1px solid var(--line);
+    background:var(--card); font-size:.72rem; cursor:pointer;
+  }
+  .day b{display:block; font-size:.9rem; font-family:"Bricolage Grotesque",sans-serif}
+  .day.today{background:var(--accent); color:var(--on-accent); border-color:transparent}
+  .day.done{background:var(--accent-soft); border-color:transparent; color:var(--accent)}
+  .blocks{display:flex; flex-direction:column; gap:10px; margin-top:14px}
+  .block{display:flex; gap:12px; align-items:flex-start}
+  .block .hr{font-size:.72rem; color:var(--muted); width:44px; flex:none; padding-top:12px; text-align:right}
+  .block .card{flex:1; padding:12px 14px}
+  .block .card b{font-size:.88rem; display:block}
+  .block .card small{color:var(--muted); font-size:.75rem}
+  .vtags{display:flex; gap:4px; margin-top:6px; flex-wrap:wrap}
+  .vtag{font-size:.64rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:2px 8px; border-radius:999px}
+  .vtag.w{background:var(--warm-soft); color:var(--warm)}
+  .cover{display:flex; flex-direction:column; gap:10px; margin-top:12px}
+  .cov{font-size:.8rem}
+  .cov .lbl{display:flex; justify-content:space-between; margin-bottom:4px}
+  .cov .bar{height:8px; border-radius:99px; background:var(--ring-track); overflow:hidden}
+  .cov .bar i{display:block; height:100%; border-radius:99px; background:var(--c1)}
+
+  /* ---------- evolução ---------- */
+  .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px}
+  .tile{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 14px; box-shadow:var(--shadow)}
+  .tile b{font-family:"Bricolage Grotesque",sans-serif; font-size:1.45rem; letter-spacing:-.02em; display:block; font-variant-numeric:tabular-nums}
+  .tile span{font-size:.72rem; color:var(--muted)}
+  .tile .d{font-size:.68rem; font-weight:700; display:block; margin-top:2px}
+  .tile .up{color:var(--good)} .tile .dn{color:var(--crit)}
+  .chart-card{margin-bottom:14px}
+  .chart-card h2{margin-bottom:2px}
+  .chart-card .sub{font-size:.76rem; color:var(--muted); margin-bottom:10px}
+  .legend{display:flex; gap:14px; font-size:.72rem; color:var(--muted); margin-bottom:8px; flex-wrap:wrap}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px}
+  svg text{font-family:"Albert Sans",sans-serif}
+  .heat{display:grid; grid-template-columns:repeat(15,1fr); gap:3px; margin-top:8px}
+  .heat i{aspect-ratio:1; border-radius:3px; background:var(--ring-track)}
+  .heat i.l1{background:color-mix(in oklab, var(--c1) 30%, var(--card))}
+  .heat i.l2{background:color-mix(in oklab, var(--c1) 60%, var(--card))}
+  .heat i.l3{background:var(--c1)}
+
+  /* ---------- método ---------- */
+  .met{display:flex; flex-direction:column; gap:10px}
+  .met .card b{font-size:.92rem}
+  .met .card p{font-size:.82rem; color:var(--muted); margin-top:4px}
+  .met .vnum{
+    font-family:"Bricolage Grotesque",sans-serif; font-weight:800; color:var(--accent);
+    font-size:.8rem; letter-spacing:.06em;
+  }
+  .honest{border:1.5px solid var(--warm); background:var(--warm-soft)}
+  .honest p{color:var(--ink)}
+
+  /* ---------- tabbar ---------- */
+  .tabbar{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:440px;
+    display:none; background:color-mix(in oklab, var(--card) 92%, transparent);
+    backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:40;
+  }
+  @media(min-width:520px){.tabbar{bottom:24px; border:1px solid var(--line); border-radius:0 0 28px 28px}}
+  .tabbar.show{display:flex}
+  .tab{
+    flex:1; background:none; border:none; padding:10px 0 12px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    color:var(--muted); font:600 .64rem "Albert Sans",sans-serif; letter-spacing:.03em;
+  }
+  .tab.active{color:var(--accent)}
+  .tab svg{width:22px; height:22px}
+  .toast{
+    position:fixed; bottom:88px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:999px;
+    font-size:.82rem; font-weight:600; opacity:0; pointer-events:none; transition:all .3s; z-index:120;
+    max-width:90%; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .demo-note{font-size:.68rem; color:var(--muted); text-align:center; margin-top:18px}
+
+  /* ---------- onboarding: data + tempo ---------- */
+  .optlbl{font-size:.8rem; font-weight:700; margin-top:16px}
+  .optchips{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 2px}
+  .optchip{
+    padding:9px 16px; border-radius:999px; border:1.5px solid var(--line); background:var(--card);
+    font:600 .85rem "Albert Sans",sans-serif; cursor:pointer; color:var(--ink);
+  }
+  .optchip.sel{background:var(--accent); color:var(--on-accent); border-color:transparent}
+  .calc{background:var(--accent-soft); border-radius:12px; padding:12px 14px; font-size:.84rem; margin-top:14px}
+  .calc.warn{background:var(--warm-soft)}
+  .datecard{
+    display:flex; gap:12px; align-items:center; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:12px 14px;
+  }
+  .datecard b{font-family:"Bricolage Grotesque",sans-serif; font-size:1.05rem; display:block}
+  .datecard small{color:var(--muted); font-size:.75rem}
+
+  /* ---------- cronograma completo ---------- */
+  .disc{border-top:1px solid var(--line)}
+  .disc:last-child{border-bottom:1px solid var(--line)}
+  .disc-h{
+    width:100%; background:none; border:none; color:inherit; font:inherit; text-align:left;
+    display:flex; align-items:center; gap:10px; padding:11px 2px; cursor:pointer;
+  }
+  .disc-h .nm{flex:1; font-size:.86rem; font-weight:600}
+  .disc-h .hrs{font-size:.72rem; color:var(--muted); white-space:nowrap}
+  .disc-h .mini{width:64px; height:6px; border-radius:99px; background:var(--ring-track); overflow:hidden; flex:none}
+  .disc-h .mini i{display:block; height:100%; background:var(--c1); border-radius:99px}
+  .assuntos{display:none; padding:2px 2px 12px}
+  .disc.open .assuntos{display:block}
+  .a-row{display:flex; gap:10px; align-items:center; font-size:.79rem; padding:7px 0; border-top:1px dashed var(--line)}
+  .a-row .st{width:9px; height:9px; border-radius:50%; flex:none}
+  .st.done{background:var(--accent)} .st.now{background:var(--warm)} .st.next{background:transparent; border:1.5px solid var(--muted)}
+  .a-row .an{flex:1}
+  .a-row .ah{color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums}
+
+  /* ---------- leitor ---------- */
+  #leitor{
+    position:fixed; inset:0; z-index:90; background:var(--bg); display:none; flex-direction:column;
+    max-width:440px; margin:0 auto;
+  }
+  #leitor.open{display:flex}
+  @media(min-width:520px){#leitor{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  .l-top{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--card)}
+  .l-top .ttl{flex:1; min-width:0}
+  .l-top .ttl b{font-size:.85rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .l-top .ttl small{font-size:.68rem; color:var(--muted)}
+  .iconbtn{background:none; border:1px solid var(--line); border-radius:10px; color:var(--ink); width:34px; height:34px; font:700 .9rem "Albert Sans",sans-serif; cursor:pointer; flex:none}
+  .l-prog{height:4px; background:var(--ring-track)}
+  .l-prog i{display:block; height:100%; background:var(--accent); transition:width .3s}
+  .l-body{flex:1; overflow-y:auto; padding:24px 22px 40px; font-family:Georgia,"Times New Roman",serif; line-height:1.9}
+  .l-body p{margin-bottom:16px; max-width:100%}
+  .w{cursor:pointer; border-radius:4px; padding:0 1px}
+  .w.mark{background:var(--warm-soft); box-shadow:inset 0 -2px 0 var(--warm)}
+  .l-body.tp{font-size:1.28em; line-height:2.15}
+  .l-body.tp .w{cursor:default}
+  .tp .w.past{opacity:.4}
+  .tp .w.cur{background:var(--accent); color:var(--on-accent)}
+  .tp .w.kwlit{color:var(--warm); font-weight:700; opacity:1}
+  .l-bar{
+    border-top:1px solid var(--line); background:var(--card); padding:10px 14px;
+    display:flex; align-items:center; gap:10px; justify-content:space-between;
+  }
+  .lmode{display:flex; background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:3px}
+  .lmode button{
+    border:none; background:none; color:var(--muted); font:600 .76rem "Albert Sans",sans-serif;
+    padding:7px 14px; border-radius:999px; cursor:pointer;
+  }
+  .lmode button.sel{background:var(--accent); color:var(--on-accent)}
+  .rec{display:none; align-items:center; gap:6px; color:var(--crit); font-weight:700; font-size:.74rem}
+  .rec i{width:8px; height:8px; border-radius:50%; background:var(--crit); animation:pulse 1.2s infinite}
+  @media(prefers-reduced-motion:reduce){.rec i{animation:none}}
+  #leitor.tpmode .rec{display:inline-flex}
+  .tpc{display:none; width:38px; height:38px; font-size:1rem}
+  #leitor.tpmode .tpc{display:inline-flex; align-items:center; justify-content:center}
+  #leitor.tpmode #lHint{display:none}
+  .rec.paused i{animation:none; background:var(--warm)}
+  .rec.paused{color:var(--warm)}
+
+  /* ---------- fluxo guiado / status ---------- */
+  .nextcard{
+    display:flex; align-items:center; gap:12px; background:var(--accent); color:var(--on-accent);
+    border:none; border-radius:18px; padding:15px 16px; margin-bottom:14px; cursor:pointer;
+    width:100%; font:inherit; text-align:left; box-shadow:var(--shadow);
+  }
+  .nextcard b{font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem; display:block; letter-spacing:-.01em}
+  .nextcard small{opacity:.85; font-size:.75rem}
+  .nextcard .go{margin-left:auto; font-size:1.3rem; flex:none}
+  .chip.now{background:var(--warm-soft); color:var(--warm); border-color:transparent}
+  .stbadge{font-size:.64rem; font-weight:700; padding:4px 9px; border-radius:999px; white-space:nowrap; flex:none}
+  .stbadge.auto{background:var(--accent-soft); color:var(--accent)}
+  .stbadge.wait{background:var(--card2); color:var(--muted); border:1px solid var(--line)}
+  .stbadge.now{background:var(--warm-soft); color:var(--warm)}
+  .btn-feito{
+    background:transparent; border:1.5px solid var(--accent); color:var(--accent); border-radius:999px;
+    padding:6px 13px; font:700 .72rem "Albert Sans",sans-serif; cursor:pointer; flex:none;
+  }
+  .latetag{font-size:.62rem; font-weight:800; color:var(--warm); letter-spacing:.05em; text-transform:uppercase}
+
+  /* ---------- dashboard: visões ---------- */
+  .seg{display:flex; background:var(--card); border:1px solid var(--line); border-radius:999px; padding:3px; margin-bottom:14px}
+  .seg button{flex:1; border:none; background:none; color:var(--muted); font:600 .72rem "Albert Sans",sans-serif; padding:9px 2px; border-radius:999px; cursor:pointer}
+  .seg button.sel{background:var(--accent); color:var(--on-accent)}
+  .dv{display:none} .dv.sel{display:block}
+  .drow{display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line)}
+  .drow:first-of-type{border-top:none}
+  .drow .dot{width:10px; height:10px; border-radius:50%; flex:none}
+  .drow .dn{flex:1; font-size:.83rem; min-width:0}
+  .drow .dn small{display:block; color:var(--muted); font-size:.68rem}
+  .drow .db{width:96px; height:8px; border-radius:99px; background:var(--ring-track); overflow:hidden; flex:none}
+  .drow .db i{display:block; height:100%; border-radius:99px}
+  .drow .dp{width:40px; text-align:right; font-size:.8rem; font-weight:700; font-variant-numeric:tabular-nums}
+  .trow{padding:11px 0; border-top:1px solid var(--line)}
+  .trow .tn{font-size:.82rem; display:flex; justify-content:space-between; gap:8px; margin-bottom:7px}
+  .trow .tn b{font-weight:600}
+  .trow .tn span{color:var(--muted); font-size:.72rem; white-space:nowrap}
+  .vmx{display:flex; gap:5px}
+  .vmx i{flex:1; height:17px; border-radius:5px; background:var(--ring-track)}
+  .vmx i.on{background:var(--d3)}
+  .vmx i.now{background:var(--warm)}
+  .vmx i.ext{background:transparent; border:1.6px dashed var(--warm)}
+  .vleg{display:flex; gap:12px; flex-wrap:wrap; font-size:.66rem; color:var(--muted); margin-top:12px}
+  .vleg i{display:inline-block; width:12px; height:12px; border-radius:4px; vertical-align:-2px; margin-right:4px; background:var(--ring-track)}
+  .vleg i.on{background:var(--d3)} .vleg i.now{background:var(--warm)} .vleg i.ext{background:transparent; border:1.6px dashed var(--warm)}
+  .vrow{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:.8rem}
+  .vrow .vn{width:88px; flex:none; font-weight:600}
+  .vrow .db{flex:1; height:8px; border-radius:99px; background:var(--ring-track); overflow:hidden}
+  .vrow .db i{display:block; height:100%; border-radius:99px; background:var(--accent)}
+  .vrow .dp{width:40px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums}
+
+  /* ---------- leitor: sépia, eco, recap ---------- */
+  #leitor.sepia .l-body{background:#F1E7CF; color:#3D3222}
+  .w.eapp{background:var(--accent-soft); box-shadow:inset 0 -2px 0 var(--accent)}
+  .w.eyou{background:var(--warm-soft); box-shadow:inset 0 -2px 0 var(--warm)}
+  #leitor.sepia .w.eapp{background:#DCEBDD}
+  #leitor.sepia .w.eyou{background:#F0DCB4}
+  .recap{
+    display:none; position:absolute; inset:0; z-index:6; background:var(--bg);
+    padding:26px 20px; overflow-y:auto; flex-direction:column; gap:14px;
+  }
+  .recap.show{display:flex}
+  .recap h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; letter-spacing:-.01em}
+  .rq{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px}
+  .rq p{font-size:.88rem; margin-bottom:10px}
+  .rq .q-btns .btn{pointer-events:auto}
+  .rq .fbm{display:none; font-size:.78rem; margin-top:8px; font-weight:600}
+  .rq.ok .fbm{display:block; color:var(--good)}
+  .rq.no .fbm{display:block; color:var(--crit)}
+  .recap-fim{display:none; background:var(--accent-soft); border-radius:14px; padding:14px 16px; font-size:.82rem}
+  .recap-fim.show{display:block}
+  .mv-row{display:flex; gap:10px; align-items:center; padding:9px 0; border-top:1px solid var(--line); font-size:.82rem}
+  .mv-row:first-of-type{border-top:none}
+  .mv-row .mi{flex:1; min-width:0}
+  .mv-row .mi b{display:block; font-size:.84rem}
+  .mv-row .mi small{color:var(--muted); font-size:.7rem}
+  .mv-play{
+    width:34px; height:34px; border-radius:50%; border:1.5px solid var(--accent); background:transparent;
+    color:var(--accent); cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- chatbot Persi ---------- */
+  .fab{
+    position:fixed; bottom:96px; right:max(16px, calc(50vw - 204px)); z-index:50;
+    width:54px; height:54px; border-radius:50%; border:none; background:var(--accent); color:var(--on-accent);
+    display:none; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow);
+  }
+  .fab.show{display:flex}
+  #chat{
+    position:fixed; inset:0; z-index:95; background:var(--bg); display:none; flex-direction:column;
+    max-width:440px; margin:0 auto;
+  }
+  #chat.open{display:flex}
+  @media(min-width:520px){#chat{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  .c-top{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--card)}
+  .c-ava{
+    width:38px; height:38px; border-radius:50%; background:var(--accent); color:var(--on-accent); flex:none;
+    display:flex; align-items:center; justify-content:center; font-family:"Bricolage Grotesque",sans-serif; font-weight:800;
+  }
+  .c-top .ttl{flex:1}
+  .c-top .ttl b{font-size:.9rem; display:block}
+  .c-top .ttl small{font-size:.68rem; color:var(--muted)}
+  .c-msgs{flex:1; overflow-y:auto; padding:16px 14px; display:flex; flex-direction:column; gap:10px}
+  .msg{max-width:85%; padding:10px 14px; border-radius:16px; font-size:.88rem; line-height:1.55}
+  .msg.bot{background:var(--card); border:1px solid var(--line); border-bottom-left-radius:6px; align-self:flex-start}
+  .msg.user{background:var(--accent); color:var(--on-accent); border-bottom-right-radius:6px; align-self:flex-end}
+  .msg .fonte-chip{
+    display:inline-block; margin-top:8px; font-size:.66rem; font-weight:700; letter-spacing:.04em;
+    background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:3px 10px;
+  }
+  .msg .mk{color:var(--warm); font-weight:700}
+  .msg .fc-btn{
+    display:inline-block; margin-top:8px; margin-left:6px; font-size:.66rem; font-weight:700;
+    border:1.2px solid var(--warm); color:var(--warm); background:transparent; border-radius:999px;
+    padding:3px 10px; cursor:pointer; font-family:"Albert Sans",sans-serif; letter-spacing:.04em;
+  }
+  .typing{display:flex; gap:4px; padding:12px 16px; align-self:flex-start}
+  .typing i{width:7px; height:7px; border-radius:50%; background:var(--muted); opacity:.4; animation:blink 1.2s infinite}
+  .typing i:nth-child(2){animation-delay:.2s} .typing i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  @media(prefers-reduced-motion:reduce){.typing i{animation:none}}
+  .c-sug{display:flex; gap:8px; overflow-x:auto; padding:10px 14px 4px; flex-wrap:nowrap}
+  .c-sug::-webkit-scrollbar{display:none}
+  .c-sug button{
+    flex:none; border:1.2px solid var(--accent); color:var(--accent); background:transparent;
+    border-radius:999px; padding:8px 14px; font:600 .76rem "Albert Sans",sans-serif; cursor:pointer;
+  }
+  .c-in{display:flex; gap:8px; padding:10px 14px 14px; background:var(--bg)}
+  .c-in input{
+    flex:1; border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:999px; padding:11px 16px; font:400 .88rem "Albert Sans",sans-serif;
+  }
+  .c-in button{
+    width:44px; height:44px; border-radius:50%; border:none; background:var(--accent); color:var(--on-accent);
+    cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- login (modo real) ---------- */
+  #login{
+    position:fixed; inset:0; z-index:100; background:var(--bg); display:none;
+    max-width:440px; margin:0 auto; padding:28px 24px; flex-direction:column; justify-content:center; gap:12px;
+  }
+  #login.show{display:flex}
+  #login input{
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:14px; padding:13px 16px; font:400 .95rem "Albert Sans",sans-serif; width:100%;
+  }
+  #login .err{color:var(--crit); font-size:.8rem; min-height:1.2em}
+  .lg-alt{background:none; border:none; color:var(--accent); font:600 .85rem "Albert Sans",sans-serif; cursor:pointer; padding:8px}
+
+  /* ---------- edital real (modo real) ---------- */
+  #realEdital{display:none; margin-top:14px}
+  #realEdital textarea{
+    width:100%; min-height:120px; border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:14px; padding:12px 14px; font:400 .85rem "Albert Sans",sans-serif; resize:vertical;
+  }
+  .l-done{
+    display:none; border-top:1px solid var(--line); background:var(--accent-soft); padding:14px 16px; font-size:.83rem;
+  }
+  .l-done.show{display:block}
+  .l-done b{color:var(--accent)}
+  .l-meta{font-size:.7rem; color:var(--muted)}
+</style>
+
+<div class="app">
+
+  <!-- ================= ONBOARDING ================= -->
+  <div id="ob">
+    <div class="ob-step active" id="ob1">
+      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div class="ob-hero">
+        <h1>Envie seu edital.<br><em>O resto é com a gente.</em></h1>
+        <p>A PersisteIA transforma qualquer edital em um plano diário que faz você ouvir, ler, falar, digitar, escrever, raciocinar, treinar e perguntar — até a aprovação.</p>
+        <button class="btn" onclick="obGo(2)">Enviar meu edital</button>
+        <button class="btn ghost" onclick="obGo(2)">Ver com um edital de exemplo</button>
+      </div>
+      <p class="demo-note">Protótipo navegável · dados de demonstração</p>
+    </div>
+
+    <div class="ob-step" id="ob2">
+      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div class="ob-hero">
+        <div class="drop" id="drop" onclick="startProc()" role="button" tabindex="0" aria-label="Selecionar edital em PDF">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+          <strong>Toque para selecionar o PDF do edital</strong>
+          <span>Edital de exemplo: Perito Criminal — 80 vagas</span>
+        </div>
+        <div id="realEdital">
+          <p class="optlbl">Ou cole o conteúdo programático do seu edital real:</p>
+          <textarea id="edTexto" placeholder="Cole aqui o trecho do edital com as disciplinas e tópicos…" aria-label="Texto do edital"></textarea>
+          <button class="btn small" style="margin-top:8px" onclick="analisarEdital()">Analisar com IA</button>
+          <p class="muted" style="font-size:.72rem; margin-top:6px" id="edStatus"></p>
+        </div>
+        <ul class="proc" id="proc">
+          <li><span class="spin"></span>Lendo o edital e o conteúdo programático</li>
+          <li><span class="spin"></span>Mapeando 214 tópicos em 8 disciplinas</li>
+          <li><span class="spin"></span>Cruzando com 9.412 questões da banca</li>
+          <li><span class="spin"></span>Montando seu plano dos 8 verbos</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ob-step" id="ob3">
+      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div class="ob-hero">
+        <p class="eyebrow">Edital mapeado</p>
+        <h1><span id="edTitulo">Perito Criminal</span><br><span class="muted" id="edSub" style="font-size:1.1rem; font-weight:600">edital de exemplo · prova em 94 dias</span></h1>
+        <div class="ob-stats">
+          <div class="ob-stat"><b class="num" id="stD">8</b><span>disciplinas</span></div>
+          <div class="ob-stat"><b class="num" id="stT">214</b><span>tópicos priorizados por peso e incidência</span></div>
+          <div class="ob-stat"><b class="num">2h/dia</b><span>seu tempo disponível</span></div>
+          <div class="ob-stat"><b class="num">8</b><span>verbos por assunto: a Esteira de Aprendizado Ativo</span></div>
+        </div>
+        <p>Seu plano replaneja sozinho toda noite. Nenhuma planilha, nenhuma decisão difícil: é só abrir e estudar.</p>
+        <button class="btn" onclick="obGo(4)">Continuar</button>
+      </div>
+    </div>
+
+    <div class="ob-step" id="ob4">
+      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div class="ob-hero">
+        <p class="eyebrow">Última etapa · seu ritmo</p>
+        <div class="datecard">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+          <div style="flex:1"><b id="dtProva">Prova: 29/11/2026</b><small id="dtSub">Encontrei a data no edital — confirme ou ajuste</small></div>
+        </div>
+        <div class="optchips">
+          <button class="optchip sel" id="dtOk" onclick="setData(true)">Confirmar data</button>
+          <button class="optchip" id="dtNo" onclick="setData(false)">Ainda não há concurso previsto</button>
+        </div>
+
+        <p class="optlbl">Quanto tempo você tem por dia?</p>
+        <div class="optchips" id="gH">
+          <button class="optchip" data-v="1" onclick="pick(this)">1h</button>
+          <button class="optchip" data-v="1.5" onclick="pick(this)">1h30</button>
+          <button class="optchip sel" data-v="2" onclick="pick(this)">2h</button>
+          <button class="optchip" data-v="3" onclick="pick(this)">3h</button>
+        </div>
+        <p class="optlbl">Quantos dias por semana?</p>
+        <div class="optchips" id="gD">
+          <button class="optchip" data-v="5" onclick="pick(this)">5</button>
+          <button class="optchip sel" data-v="6" onclick="pick(this)">6</button>
+          <button class="optchip" data-v="7" onclick="pick(this)">7</button>
+        </div>
+
+        <div class="calc" id="calcBox" aria-live="polite"></div>
+        <button class="btn" onclick="enterApp()">Gerar meu cronograma</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HOJE ================= -->
+  <section class="screen" id="scr-hoje">
+    <div class="top">
+      <div>
+        <p class="eyebrow">Quinta, 27 de agosto</p>
+        <h2 style="font-size:1.25rem">Olá! Dia 12 da jornada</h2>
+      </div>
+      <span class="streak" title="12 dias seguidos de estudo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 1s.75 2.5-1 5c-1.5 2.14-3.4 3.4-3.4 6a4.9 4.9 0 009.8 0c0-1.2-.4-2.3-.9-3.2 0 0-.5 1.7-2 2.2.6-1.6 1-4.6-2.5-10zM8 9.5S5.1 11.9 5.1 15a6.9 6.9 0 0013.8 0"/></svg>
+        <span class="num">12 dias</span>
+      </span>
+    </div>
+
+    <div class="card ringwrap">
+      <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia: 2 de 8 verbos concluídos e 1 em andamento"></svg>
+      <div class="ringlbl">
+        <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">2 de 8 verbos · 1 em andamento</b>
+        <p class="muted" style="font-size:.8rem">Assunto do dia: <b style="color:var(--accent)" id="hdrAssunto">Princípios da Administração Pública</b><span id="hdrAssuntoSub"> (art. 37, CF)</span></p>
+        <div class="verbs">
+          <span class="chip now">Ler</span><span class="chip done">Ouvir</span><span class="chip done">Treinar</span>
+          <span class="chip">Falar</span><span class="chip">Digitar</span><span class="chip">Escrever</span><span class="chip">Raciocinar</span><span class="chip">Perguntar</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="eyebrow" style="margin-bottom:6px">Revisões no ponto certo de hoje</p>
+    <div class="revchips">
+      <div class="rev"><span>24 h</span><b>Atos administrativos</b>5 flashcards · 4 min</div>
+      <div class="rev"><span>7 dias</span><b>Crase</b>ditado relâmpago · 3 min</div>
+      <div class="rev"><span>30 dias</span><b>Cadeia de custódia</b>3 questões · 5 min</div>
+    </div>
+
+    <button class="nextcard" onclick="openLeitor()">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" style="flex:none"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg>
+      <span><b id="nextT">Continuar: Teoria no Leitor</b><small id="nextS">faltam ~4 min · depois eu te levo ao próximo verbo</small></span>
+      <span class="go">→</span>
+    </button>
+
+    <div class="sess">
+
+      <!-- LER -->
+      <div class="card task open" id="t-ler" style="border-color:var(--accent)">
+        <button class="task-h" onclick="tg('t-ler')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg></span>
+          <span><b>Ler · Teoria completa no Leitor</b><small>Todo assunto começa aqui — silenciosa ou em voz alta</small></span>
+          <span class="stbadge now num">43% · agora</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <p style="font-size:.88rem" id="lerIntro">Os cinco princípios expressos do art. 37 formam o acrônimo <b>LIMPE</b> — toque em cada letra:</p>
+          <div class="limpe" id="limpeBox">
+            <b onclick="limpe('Legalidade — a Administração só faz o que a lei autoriza')">L</b>
+            <b onclick="limpe('Impessoalidade — interesse público, sem promoção pessoal (§1º)')">I</b>
+            <b onclick="limpe('Moralidade — honestidade e boa-fé administrativa')">M</b>
+            <b onclick="limpe('Publicidade — transparência como regra; sigilo é exceção')">P</b>
+            <b onclick="limpe('Eficiência — resultados com economicidade (EC 19/98)')">E</b>
+          </div>
+          <p id="limpeWord" aria-live="polite">Toque em uma letra ↑</p>
+          <button class="btn small" style="margin-top:12px" onclick="openLeitor()">Abrir a teoria completa no Leitor</button>
+          <p class="muted" style="font-size:.72rem; margin-top:6px">Leitura silenciosa ou em voz alta com teleprompter — a teoria vem antes da prática.</p>
+        </div></div>
+      </div>
+
+      <!-- OUVIR -->
+      <div class="card task" id="t-ouvir">
+        <button class="task-h" onclick="tg('t-ouvir')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12v3a2 2 0 002 2h1v-7H5a2 2 0 00-2 2zm18 0v3a2 2 0 01-2 2h-1v-7h1a2 2 0 012 2zM6 10a6 6 0 0112 0"/></svg></span>
+          <span><b>Ouvir · Podcast do dia</b><small>Externo: ouviu no trajeto? Um toque e pronto</small></span>
+          <span class="stbadge auto num">✓ 07:02 · você confirmou</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <div class="player">
+            <button class="play" id="playBtn" onclick="togglePlay()" aria-label="Reproduzir podcast"><svg id="playIc" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <div class="wave" id="wave" aria-hidden="true"></div>
+            <span class="ptime num" id="ptime">0:00 / 8:12</span>
+          </div>
+          <p class="quote" id="podQuote">"…antes de eu responder, pensa aí: quais são os cinco princípios <b>expressos</b> no caput do art. 37? Pausa de três segundos… anotou? Então vamos conferir…"</p>
+        </div></div>
+      </div>
+
+      <!-- FALAR -->
+      <div class="card task" id="t-falar">
+        <button class="task-h" onclick="tg('t-falar')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span>
+          <span><b>Falar · Explique como se ensinasse</b><small>A IA ouve, transcreve e aponta o que faltou</small></span>
+          <span class="stbadge wait num">4 min · a fazer</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <p style="font-size:.88rem; text-align:center" id="feynQ">Explique em voz alta: <b>por que o concurso público concretiza a impessoalidade?</b></p>
+          <button class="mic" id="mic" onclick="feyn()" aria-label="Gravar explicação"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0h-1.6a5.4 5.4 0 01-10.8 0H5zM11 19h2v3h-2z"/></svg></button>
+          <div class="fb" id="feynFb"></div>
+        </div></div>
+      </div>
+
+      <!-- DIGITAR -->
+      <div class="card task" id="t-digitar">
+        <button class="task-h" onclick="tg('t-digitar')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
+          <span><b>Digitar · Lei seca ativa</b><small>Complete o caput do art. 37 de memória</small></span>
+          <span class="stbadge wait num">3 min · a fazer</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <p class="lei" id="leiBox">"A administração pública direta e indireta de qualquer dos Poderes […] obedecerá aos princípios de
+            <input class="gap-in" data-ans="legalidade" oninput="gap(this)" aria-label="lacuna 1">,
+            <input class="gap-in" data-ans="impessoalidade" oninput="gap(this)" aria-label="lacuna 2">,
+            <input class="gap-in" data-ans="moralidade" oninput="gap(this)" aria-label="lacuna 3">,
+            <input class="gap-in" data-ans="publicidade" oninput="gap(this)" aria-label="lacuna 4"> e
+            <input class="gap-in" data-ans="eficiência" oninput="gap(this)" aria-label="lacuna 5">…"
+          </p>
+          <p class="muted" style="font-size:.75rem; margin-top:8px">Digitar de memória usa o efeito de geração: fixa mais do que reler dez vezes.</p>
+        </div></div>
+      </div>
+
+      <!-- ESCREVER -->
+      <div class="card task" id="t-escrever">
+        <button class="task-h" onclick="tg('t-escrever')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+          <span><b>Escrever · Mapa mental à mão <span class="latetag">· de ontem</span></b><small>Externo: fez no caderno? Confirme com um toque</small></span>
+          <button class="btn-feito" onclick="event.stopPropagation(); extDone(this)">Feito ✓</button>
+        </button>
+        <div class="task-b"><div class="inner">
+          <svg class="mm" viewBox="0 0 340 190" role="img" aria-label="Mapa mental do artigo 37: LIMPE e desdobramentos">
+            <line x1="170" y1="95" x2="60" y2="35" stroke="var(--line)" stroke-width="1.5"/>
+            <line x1="170" y1="95" x2="60" y2="155" stroke="var(--line)" stroke-width="1.5"/>
+            <line x1="170" y1="95" x2="280" y2="35" stroke="var(--line)" stroke-width="1.5"/>
+            <line x1="170" y1="95" x2="280" y2="155" stroke="var(--line)" stroke-width="1.5"/>
+            <line x1="170" y1="95" x2="170" y2="22" stroke="var(--line)" stroke-width="1.5"/>
+            <rect x="128" y="78" width="84" height="34" rx="10" fill="var(--accent)"/>
+            <text x="170" y="99" text-anchor="middle" fill="var(--on-accent)" font-size="13" font-weight="700">Art. 37 CF</text>
+            <rect x="132" y="8" width="76" height="26" rx="8" fill="var(--accent-soft)"/>
+            <text x="170" y="25" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="700">LIMPE</text>
+            <rect x="14" y="22" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
+            <text x="60" y="39" text-anchor="middle" fill="var(--ink)" font-size="10">expressos ×5</text>
+            <rect x="14" y="142" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
+            <text x="60" y="159" text-anchor="middle" fill="var(--ink)" font-size="10">implícitos ∞</text>
+            <rect x="234" y="22" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
+            <text x="280" y="39" text-anchor="middle" fill="var(--ink)" font-size="10">§1º vedações</text>
+            <rect x="234" y="142" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
+            <text x="280" y="159" text-anchor="middle" fill="var(--ink)" font-size="10">EC 19/98</text>
+          </svg>
+          <p class="muted" style="font-size:.75rem; margin-top:8px">Escrever à mão engaja áreas motoras que reforçam a memória — capriche no traço.</p>
+        </div></div>
+      </div>
+
+      <!-- RACIOCINAR -->
+      <div class="card task" id="t-raciocinar">
+        <button class="task-h" onclick="tg('t-raciocinar')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2a4.5 4.5 0 00-4.4 5.5A4.5 4.5 0 006 16v1a3 3 0 003 3h1V2h-.5zM14.5 2a4.5 4.5 0 014.4 5.5A4.5 4.5 0 0118 16v1a3 3 0 01-3 3h-1V2h.5z"/></svg></span>
+          <span><b>Raciocinar · Questões da banca</b><small>Diga sua confiança antes de responder</small></span>
+          <span class="stbadge wait num">6 min · a fazer</span>
+        </button>
+        <div class="task-b"><div class="inner" id="quizBox">
+          <div id="q1">
+            <p class="q-src">Questão 1 · estilo certo/errado</p>
+            <p class="q-enun">O princípio da publicidade impede, em qualquer hipótese, a restrição de acesso a informações produzidas pela Administração Pública.</p>
+            <p class="conf">Quanto você confia na sua resposta? <b class="num" id="c1v">70%</b></p>
+            <div class="conf"><input type="range" min="50" max="100" value="70" oninput="c1v.textContent=this.value+'%'" aria-label="Confiança na resposta"></div>
+            <div class="q-btns">
+              <button class="btn ghost small" onclick="ans(1,true)">Certo</button>
+              <button class="btn ghost small" onclick="ans(1,false)">Errado</button>
+            </div>
+            <div class="fb" id="fb1"></div>
+          </div>
+          <div id="q2" style="display:none; margin-top:16px">
+            <p class="q-src">Questão 2 · estilo certo/errado</p>
+            <p class="q-enun">A veiculação de nomes ou imagens que caracterizem promoção pessoal de autoridade em publicidade oficial viola o princípio da impessoalidade.</p>
+            <div class="q-btns">
+              <button class="btn ghost small" onclick="ans(2,true)">Certo</button>
+              <button class="btn ghost small" onclick="ans(2,false)">Errado</button>
+            </div>
+            <div class="fb" id="fb2"></div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- TREINAR -->
+      <div class="card task" id="t-treinar">
+        <button class="task-h" onclick="tg('t-treinar')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="15" rx="2"/><path d="M8 3h13v15"/></svg></span>
+          <span><b>Treinar · Flashcards</b><small>Revisão espaçada no ritmo do seu esquecimento</small></span>
+          <span class="stbadge auto num">✓ 12:31 · automático</span>
+        </button>
+        <div class="task-b"><div class="inner" id="fcWrap">
+          <div class="fc" id="fc" onclick="this.classList.toggle('flip')" role="button" tabindex="0" aria-label="Virar flashcard">
+            <div class="fc-in">
+              <div class="fc-f" id="fcF">O que o §1º do art. 37 veda na publicidade dos órgãos públicos?</div>
+              <div class="fc-b" id="fcB">Promoção pessoal: nomes, símbolos ou imagens de autoridades ou servidores. A publicidade deve ter caráter educativo, informativo ou de orientação social.</div>
+            </div>
+          </div>
+          <div class="fc-acts">
+            <button onclick="fcNext(0)"><span class="e">Errei</span><small>ver em 10 min</small></button>
+            <button onclick="fcNext(1)">Quase<small>ver em 1 dia</small></button>
+            <button onclick="fcNext(2)"><span class="f">Fácil</span><small>ver em 4 dias</small></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- MÚSICA -->
+      <div class="card task warm" id="t-musica">
+        <button class="task-h" onclick="tg('t-musica')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V6l11-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="15" r="2.5"/></svg></span>
+          <span><b>Bônus · Forró do LIMPE</b><small>O refrão que não sai mais da sua cabeça</small></span>
+          <span class="stbadge wait num">2:40</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <div class="player">
+            <button class="play" style="background:var(--warm)" onclick="toast('No app final, a música toca aqui — gerada por IA e curada pela equipe')" aria-label="Tocar música"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <div style="flex:1">
+              <b style="font-size:.88rem" id="musTitle">Forró do LIMPE</b>
+              <p class="muted" style="font-size:.75rem" id="musSub">PersisteIA Estúdio · Direito Administrativo</p>
+            </div>
+          </div>
+          <div class="lyrics" id="musLyr">
+            ♪ É <b>L</b> de Legalidade, só faço o que a lei mandar<br>
+            <b>I</b> de Impessoal, não é pra se promover<br>
+            <b>M</b> de Moralidade, é honesto o meu agir<br>
+            <b>P</b> de Publicidade, todo mundo pode ver<br>
+            e o <b>E</b> de Eficiência veio pra <em>modernizar</em>…<br>
+            <b>LIMPE, LIMPE</b> — no caput do 37! ♪
+          </div>
+        </div></div>
+      </div>
+
+      <!-- PERGUNTAR -->
+      <div class="card task" id="t-perguntar">
+        <button class="task-h" onclick="tg('t-perguntar')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 01-8 8H4l2.2-2.6A8 8 0 1121 12z"/><path d="M9.6 9.2a2.6 2.6 0 115 1c-.6 1-1.6 1.2-1.6 2.3M13 15.8h.01"/></svg></span>
+          <span><b>Perguntar · Interrogue o assunto</b><small>Formule 2 perguntas suas e tire com o Persi</small></span>
+          <span class="stbadge wait num">0/2 · a fazer</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <p style="font-size:.88rem">Perguntar é aprender duas vezes: formular a própria dúvida expõe lacunas que você não sabia que tinha. Pergunte qualquer coisa do assunto — o Persi responde com a fonte citada, e a dúvida vira flashcard.</p>
+          <button class="btn small" style="margin-top:12px" onclick="openChat()">Perguntar ao Persi</button>
+          <p class="muted" style="font-size:.72rem; margin-top:6px">As perguntas feitas no chat contam sozinhas para este verbo.</p>
+        </div></div>
+      </div>
+
+      <!-- MINHA VOZ -->
+      <div class="card">
+        <h2 style="font-size:.98rem">Minha Voz · sua playlist de revisão</h2>
+        <p class="muted" style="font-size:.74rem; margin-bottom:6px">As leituras que você gravou, prontas para o trajeto — eu intercalo perguntas entre as faixas.</p>
+        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Princípios da Adm. Pública</b><small class="num">hoje · 2:41 · fluência 142 ppm</small></span></div>
+        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Atos administrativos</b><small class="num">ontem · 3:05 · fluência 136 ppm</small></span></div>
+        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Crase</b><small class="num">segunda · 1:58 · fluência 128 ppm</small></span></div>
+        <p class="muted" style="font-size:.7rem; margin-top:8px">Ouvir a matéria na própria voz é um dos reforços de memória mais fortes que existem.</p>
+      </div>
+
+    </div>
+    <p class="muted" style="font-size:.74rem; margin-top:14px">A ordem é sugestão: adiante o que quiser ou deixe para depois — eu recalculo e nada se perde. O que você faz aqui dentro eu marco sozinho; só o que é externo (ouvir fora do app, escrever no caderno) pede um toque seu no "Feito".</p>
+    <p class="demo-note">Conteúdos de demonstração gerados para o edital de exemplo</p>
+  </section>
+
+  <!-- ================= PLANO ================= -->
+  <section class="screen" id="scr-plano">
+    <div class="top">
+      <div>
+        <p class="eyebrow">Cronograma vivo</p>
+        <h2 style="font-size:1.25rem">Sua semana</h2>
+      </div>
+      <span class="chip done num">prova em 94 dias</span>
+    </div>
+
+    <div class="week" role="tablist" aria-label="Dias da semana">
+      <div class="day done">seg<b class="num">24</b></div>
+      <div class="day done">ter<b class="num">25</b></div>
+      <div class="day done">qua<b class="num">26</b></div>
+      <div class="day today">qui<b class="num">27</b></div>
+      <div class="day">sex<b class="num">28</b></div>
+      <div class="day">sáb<b class="num">29</b></div>
+      <div class="day">dom<b class="num">30</b></div>
+    </div>
+
+    <div class="blocks">
+      <div class="block"><span class="hr num">06:40</span>
+        <div class="card"><b>Podcast no trajeto</b><small>Princípios da Adm. Pública · 8 min</small>
+          <div class="vtags"><span class="vtag">ouvir</span></div>
+        </div>
+      </div>
+      <div class="block"><span class="hr num">12:30</span>
+        <div class="card"><b>Revisões do ponto certo</b><small>Atos adm. (24h) · Crase (7d) · Cadeia de custódia (30d) · 12 min</small>
+          <div class="vtags"><span class="vtag">treinar</span><span class="vtag">digitar</span><span class="vtag">raciocinar</span></div>
+        </div>
+      </div>
+      <div class="block"><span class="hr num">19:00</span>
+        <div class="card"><b>Bloco principal · 50 min</b><small>Resumo, lei seca de memória e explicação falada — com intercalação de RLM no fim</small>
+          <div class="vtags"><span class="vtag">ler</span><span class="vtag">digitar</span><span class="vtag">falar</span><span class="vtag">escrever</span><span class="vtag">raciocinar</span></div>
+        </div>
+      </div>
+      <div class="block"><span class="hr num">21:30</span>
+        <div class="card"><b>Fechamento leve</b><small>Flashcards do dia + Forró do LIMPE · 10 min</small>
+          <div class="vtags"><span class="vtag">treinar</span><span class="vtag w">bônus</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Cobertura do edital</h2>
+      <p class="muted" style="font-size:.76rem">Ponderada por peso da disciplina e incidência da banca</p>
+      <div class="cover">
+        <div class="cov"><div class="lbl"><span>Direito Constitucional</span><b class="num">62%</b></div><div class="bar"><i style="width:62%"></i></div></div>
+        <div class="cov"><div class="lbl"><span>Português</span><b class="num">55%</b></div><div class="bar"><i style="width:55%"></i></div></div>
+        <div class="cov"><div class="lbl"><span>Direito Administrativo</span><b class="num">41%</b></div><div class="bar"><i style="width:41%"></i></div></div>
+        <div class="cov"><div class="lbl"><span>Criminalística</span><b class="num">33%</b></div><div class="bar"><i style="width:33%"></i></div></div>
+        <div class="cov"><div class="lbl"><span>Raciocínio Lógico</span><b class="num">28%</b></div><div class="bar"><i style="width:28%"></i></div></div>
+        <div class="cov"><div class="lbl"><span>Medicina Legal</span><b class="num">18%</b></div><div class="bar"><i style="width:18%"></i></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Cronograma completo do edital</h2>
+      <p class="muted" style="font-size:.76rem" id="planoHead">150h estimadas · <b class="num" style="color:var(--accent)">62h concluídas</b> · seu ritmo: 12h/semana</p>
+      <div class="calc" style="margin:10px 0 14px" id="planoProj">
+        <b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>18/11</b> — 11 dias antes da prova, com a última semana reservada ao modo véspera. Cada assunto abaixo tem hora estimada e data prevista; toque para abrir.
+      </div>
+
+      <div id="planoLista">
+      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
+        <button class="disc-h"><span class="nm">Direito Constitucional</span><span class="hrs num">24h/38h</span><span class="mini"><i style="width:62%"></i></span></button>
+      </div>
+      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
+        <button class="disc-h"><span class="nm">Português</span><span class="hrs num">17h/30h</span><span class="mini"><i style="width:55%"></i></span></button>
+      </div>
+      <div class="disc open" id="discAdm">
+        <button class="disc-h" onclick="event.stopPropagation(); discAdm.classList.toggle('open')"><span class="nm">Direito Administrativo</span><span class="hrs num">14h/34h</span><span class="mini"><i style="width:41%"></i></span></button>
+        <div class="assuntos">
+          <div class="a-row"><span class="st done"></span><span class="an">Atos administrativos</span><span class="ah num">5h · ✓ 24–26/08</span></div>
+          <div class="a-row"><span class="st now"></span><span class="an"><b>Princípios da Adm. Pública</b> (hoje)</span><span class="ah num">4h · 27–29/08</span></div>
+          <div class="a-row"><span class="st next"></span><span class="an">Poderes administrativos</span><span class="ah num">4h · 01/09</span></div>
+          <div class="a-row"><span class="st next"></span><span class="an">Licitações — Lei 14.133</span><span class="ah num">8h · 03–08/09</span></div>
+          <div class="a-row"><span class="st next"></span><span class="an">Serviços públicos</span><span class="ah num">4h · 10/09</span></div>
+          <div class="a-row"><span class="st next"></span><span class="an">Improbidade administrativa</span><span class="ah num">5h · 12/09</span></div>
+          <div class="a-row"><span class="st next"></span><span class="an">Processo administrativo</span><span class="ah num">4h · 15/09</span></div>
+        </div>
+      </div>
+      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
+        <button class="disc-h"><span class="nm">Criminalística</span><span class="hrs num">9h/26h</span><span class="mini"><i style="width:33%"></i></span></button>
+      </div>
+      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
+        <button class="disc-h"><span class="nm">Raciocínio Lógico</span><span class="hrs num">6h/20h</span><span class="mini"><i style="width:28%"></i></span></button>
+      </div>
+      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
+        <button class="disc-h"><span class="nm">Medicina Legal</span><span class="hrs num">3h/18h</span><span class="mini"><i style="width:18%"></i></span></button>
+      </div>
+      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
+        <button class="disc-h"><span class="nm">Informática</span><span class="hrs num">1h/12h</span><span class="mini"><i style="width:10%"></i></span></button>
+      </div>
+      </div>
+      <p class="muted" style="font-size:.7rem; margin-top:10px">Cada assunto começa pela teoria no Leitor e depois entra na esteira dos 8 verbos. As horas estimadas vêm do tamanho do tópico e da incidência da banca; as datas se recalculam toda noite.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px; background:var(--accent-soft); border-color:transparent">
+      <p style="font-size:.84rem"><b>Replanejado hoje às 03:12.</b> Você rendeu menos em RLM ontem — o plano puxou uma dose extra de questões fáceis para reconstruir a base antes de avançar. Nada ficou para trás: só mudou de lugar.</p>
+    </div>
+  </section>
+
+  <!-- ================= EVOLUÇÃO ================= -->
+  <section class="screen" id="scr-evolucao">
+    <div class="top">
+      <div>
+        <p class="eyebrow">Dashboard</p>
+        <h2 style="font-size:1.25rem">Sua evolução</h2>
+      </div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><b class="num" id="tCobV">38%</b><span>cobertura do edital</span> <span class="d up" id="tCobD">▲ 6 pp na semana</span></div>
+      <div class="tile"><b class="num" id="tAcertoV">71%</b><span>acerto em questões</span> <span class="d up" id="tAcertoD">▲ 4 pp na semana</span></div>
+      <div class="tile"><b class="num" id="tStreakV">12 dias</b><span>constância atual</span> <span class="d up" id="tStreakD">recorde: 12</span></div>
+      <div class="tile"><b class="num" id="tRetV">82%</b><span id="tRetL">retenção estimada (FSRS)</span> <span class="d up" id="tRetD">estável</span></div>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Evolução por dimensão</h2>
+      <p class="sub">Disciplina, tema e verbo — rastreado sozinho enquanto você estuda</p>
+      <div class="seg" role="tablist" aria-label="Dimensão do dashboard">
+        <button class="sel" onclick="dvShow('disc',this)">Por disciplina</button>
+        <button onclick="dvShow('tema',this)">Por tema</button>
+        <button onclick="dvShow('verbo',this)">Por verbo</button>
+      </div>
+
+      <div class="dv sel" id="dv-disc"><div id="dvDiscList">
+        <div class="drow"><span class="dot" style="background:var(--d1)"></span><span class="dn">Direito Constitucional<small class="num">24h de 38h</small></span><span class="db"><i style="width:62%; background:var(--d1)"></i></span><span class="dp num">62%</span></div>
+        <div class="drow"><span class="dot" style="background:var(--d2)"></span><span class="dn">Português<small class="num">17h de 30h</small></span><span class="db"><i style="width:55%; background:var(--d2)"></i></span><span class="dp num">55%</span></div>
+        <div class="drow"><span class="dot" style="background:var(--d3)"></span><span class="dn">Direito Administrativo<small class="num">14h de 34h</small></span><span class="db"><i style="width:41%; background:var(--d3)"></i></span><span class="dp num">41%</span></div>
+        <div class="drow"><span class="dot" style="background:var(--d4)"></span><span class="dn">Criminalística<small class="num">9h de 26h</small></span><span class="db"><i style="width:33%; background:var(--d4)"></i></span><span class="dp num">33%</span></div>
+        <div class="drow"><span class="dot" style="background:var(--d5)"></span><span class="dn">Raciocínio Lógico<small class="num">6h de 20h</small></span><span class="db"><i style="width:28%; background:var(--d5)"></i></span><span class="dp num">28%</span></div>
+        <div class="drow"><span class="dot" style="background:var(--d6)"></span><span class="dn">Medicina Legal<small class="num">3h de 18h</small></span><span class="db"><i style="width:18%; background:var(--d6)"></i></span><span class="dp num">18%</span></div>
+        <div class="drow"><span class="dot" style="background:var(--d7)"></span><span class="dn">Informática<small class="num">1h de 12h</small></span><span class="db"><i style="width:10%; background:var(--d7)"></i></span><span class="dp num">10%</span></div>
+        </div><p class="muted" style="font-size:.7rem; margin-top:10px">Cada disciplina mantém sua cor em todo o app. Toque em uma para abrir os temas.</p>
+      </div>
+
+      <div class="dv" id="dv-tema">
+        <p style="font-size:.82rem; margin-bottom:4px"><span class="dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--d3); margin-right:6px"></span><b>Direito Administrativo</b> <span class="muted" style="font-size:.72rem">· cada quadradinho é um verbo</span></p>
+        <div class="trow"><div class="tn"><b>Atos administrativos</b><span class="num">8/8 · concluído</span></div>
+          <div class="vmx"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+        <div class="trow"><div class="tn"><b>Princípios da Adm. Pública</b><span class="num">3/8 · hoje</span></div>
+          <div class="vmx"><i class="now" title="Ler: em andamento"></i><i class="on" title="Ouvir: você confirmou"></i><i title="Falar"></i><i title="Digitar"></i><i class="ext" title="Escrever: aguarda sua confirmação"></i><i title="Raciocinar"></i><i class="on" title="Treinar: automático"></i><i title="Perguntar"></i></div></div>
+        <div class="trow"><div class="tn"><b>Poderes administrativos</b><span class="num">0/8 · 01/09</span></div>
+          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="trow"><div class="tn"><b>Licitações — Lei 14.133</b><span class="num">0/8 · 03/09</span></div>
+          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="trow"><div class="tn"><b>Improbidade administrativa</b><span class="num">0/8 · 12/09</span></div>
+          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="vleg"><span><i class="on"></i>concluído</span><span><i class="now"></i>em andamento</span><span><i class="ext"></i>externo — aguarda seu "Feito"</span><span><i></i>a fazer</span></div>
+        <p class="muted" style="font-size:.7rem; margin-top:8px">Ordem dos quadradinhos: Ler · Ouvir · Falar · Digitar · Escrever · Raciocinar · Treinar · Perguntar.</p>
+      </div>
+
+      <div class="dv" id="dv-verbo">
+        <div id="radar"></div><div id="dvVerboList">
+        <div class="vrow"><span class="vn">Ler</span><span class="db"><i style="width:81%"></i></span><span class="dp num">81%</span></div>
+        <div class="vrow"><span class="vn">Treinar</span><span class="db"><i style="width:77%"></i></span><span class="dp num">77%</span></div>
+        <div class="vrow"><span class="vn">Ouvir</span><span class="db"><i style="width:74%"></i></span><span class="dp num">74%</span></div>
+        <div class="vrow"><span class="vn">Raciocinar</span><span class="db"><i style="width:70%"></i></span><span class="dp num">70%</span></div>
+        <div class="vrow"><span class="vn">Digitar</span><span class="db"><i style="width:66%"></i></span><span class="dp num">66%</span></div>
+        <div class="vrow"><span class="vn">Perguntar</span><span class="db"><i style="width:58%"></i></span><span class="dp num">58%</span></div>
+        <div class="vrow"><span class="vn">Falar</span><span class="db"><i style="width:52%"></i></span><span class="dp num">52%</span></div>
+        <div class="vrow"><span class="vn">Escrever</span><span class="db"><i style="width:38%; background:var(--warm)"></i></span><span class="dp num" style="color:var(--warm)">38%</span></div>
+        </div><p style="font-size:.78rem; margin-top:10px; color:var(--warm)" id="dvVerboNota"><b>Escrever é seu verbo mais atrasado</b> — 4 atividades externas aguardam o seu "Feito". Se já fez no caderno, confirme; se não, o plano de amanhã reserva 10 min.</p>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Acerto semanal</h2>
+      <p class="sub">Percentual de acertos em questões · últimas 8 semanas</p>
+      <div class="legend"><span><i style="background:var(--c1)"></i>Você</span><span><i style="background:var(--muted); height:2px; border-radius:1px; vertical-align:3px"></i>Meta de aprovação (80%)</span></div>
+      <div id="chLine"></div>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Confiança × acerto</h2>
+      <p class="sub">Onde você acha que sabe vs. onde acerta de verdade</p>
+      <div class="legend"><span><i style="background:var(--c2)"></i>Confiança declarada</span><span><i style="background:var(--c1)"></i>Acerto real</span></div>
+      <div id="chCal"></div>
+      <p style="font-size:.8rem; margin-top:8px; color:var(--warn)"><b>Atenção:</b> em Criminalística você confia 19 pontos acima do que acerta — o plano de amanhã já reforçou o assunto.</p>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Constância</h2>
+      <p class="sub">Últimos 60 dias · quanto mais escuro, mais verbos concluídos</p>
+      <div class="heat" id="heat" role="img" aria-label="Mapa de constância dos últimos 60 dias"></div>
+    </div>
+  </section>
+
+  <!-- ================= MÉTODO ================= -->
+  <section class="screen" id="scr-metodo">
+    <div class="top">
+      <div>
+        <p class="eyebrow">Por trás do app</p>
+        <h2 style="font-size:1.25rem">A Esteira de Aprendizado Ativo</h2>
+      </div>
+    </div>
+    <p class="muted" style="font-size:.85rem; margin-bottom:14px">Cada assunto do edital passa por oito verbos. Não é variedade por variedade: cada verbo aciona um efeito comprovado pela ciência da aprendizagem.</p>
+    <div class="met">
+      <div class="card"><span class="vnum">01 · OUVIR</span><b> — codificação dupla</b><p>O mesmo conteúdo entra pelo canal auditivo em momentos mortos do dia (trajeto, fila), criando uma segunda via de memória.</p></div>
+      <div class="card"><span class="vnum">02 · LER</span><b> — carga certa, sem excesso</b><p>Resumos enxutos com o que a banca de fato cobra. Reler pouco: a leitura aqui prepara a recuperação, não a substitui.</p></div>
+      <div class="card"><span class="vnum">03 · FALAR</span><b> — efeito de produção + Feynman</b><p>Explicar em voz alta expõe lacunas invisíveis. A IA transcreve e devolve o que você omitiu.</p></div>
+      <div class="card"><span class="vnum">04 · DIGITAR</span><b> — efeito de geração</b><p>Completar a lei seca de memória fixa mais do que qualquer releitura — o cérebro guarda o que produz.</p></div>
+      <div class="card"><span class="vnum">05 · ESCREVER</span><b> — memória motora</b><p>Esquemas copiados à mão engajam circuitos motores e espaciais que a tela não alcança.</p></div>
+      <div class="card"><span class="vnum">06 · RACIOCINAR</span><b> — prática de recuperação + calibração</b><p>Questões no estilo exato da banca, com sua confiança declarada antes — para treinar também o seu "sei que sei".</p></div>
+      <div class="card"><span class="vnum">07 · TREINAR</span><b> — repetição espaçada (FSRS)</b><p>Cada item volta no momento ótimo do seu esquecimento, calculado individualmente. Revisar cedo desperdiça; tarde, perde.</p></div>
+      <div class="card"><span class="vnum">08 · PERGUNTAR</span><b> — interrogação elaborativa</b><p>Formular as próprias perguntas e caçar as respostas é aprender duas vezes: expõe lacunas que você não sabia que tinha. O Persi responde com a fonte citada, e toda dúvida vira flashcard.</p></div>
+      <div class="card honest"><b>Por que não falamos em "estilos de aprendizagem"?</b><p>A ideia de que cada pessoa aprende só no "seu estilo" não tem respaldo científico. O que a evidência mostra é o contrário: <b>todo cérebro aprende mais quando o conteúdo entra por várias portas</b>. Por isso, aqui ninguém escolhe um estilo — todo mundo passa pelos oito verbos.</p></div>
+      <div class="card"><b>E a persistência?</b><p>A maior causa de reprovação não é técnica: é desistência. A PersisteIA replaneja quando você falha, protege sua constância e celebra cada marco da jornada — porque quem persiste, passa.</p></div>
+    </div>
+  </section>
+
+  <!-- ================= LEITOR ================= -->
+  <div id="leitor" role="dialog" aria-label="Leitor de teoria">
+    <div class="l-top">
+      <button class="iconbtn" onclick="closeLeitor()" aria-label="Fechar leitor">←</button>
+      <div class="ttl"><b id="leitorTitle">Princípios da Administração Pública</b><small id="lMeta">Teoria · 43% lido · ~4 min restantes · <span id="lMarks" class="num">0</span> marcações</small></div>
+      <button class="iconbtn" onclick="lFont(-1)" aria-label="Diminuir letra">A−</button>
+      <button class="iconbtn" onclick="lFont(1)" aria-label="Aumentar letra">A+</button>
+      <button class="iconbtn" onclick="document.getElementById('leitor').classList.toggle('sepia')" aria-label="Alternar modo sépia">◑</button>
+    </div>
+    <div class="l-prog"><i id="lProg" style="width:43%"></i></div>
+    <div class="l-body" id="lBody" style="font-size:1.05rem">
+      <p>Os princípios do artigo 37 são o alicerce de toda a Administração Pública brasileira. O caput enumera cinco princípios expressos, que formam o acrônimo LIMPE: legalidade, impessoalidade, moralidade, publicidade e eficiência.</p>
+      <p>Pela legalidade, a Administração só pode fazer o que a lei autoriza, ao contrário do particular, que pode fazer tudo o que a lei não proíbe. A impessoalidade exige atuação voltada ao interesse público, vedando a promoção pessoal de autoridades, conforme o parágrafo primeiro.</p>
+      <p>A moralidade impõe honestidade e boa-fé como requisito de validade do ato, e dela o Supremo extraiu a vedação ao nepotismo. A publicidade faz da transparência a regra, ressalvado o sigilo imprescindível à segurança da sociedade e do Estado. A eficiência, incluída pela Emenda 19 de 1998, cobra resultados com economicidade.</p>
+    </div>
+    <div class="l-done" id="lDone">
+      <b>Leitura em voz alta concluída · 2:41 gravados · fluência: 142 palavras/min (+6 na semana)</b><br>
+      Sua gravação ficou salva para você reouvir no trajeto, e a transcrição virou material de revisão. Você hesitou em <b>"imprescindível"</b> e <b>"economicidade"</b> — as duas viraram flashcards de amanhã.
+      <div class="player" style="margin-top:10px">
+        <button class="play" style="width:38px; height:38px" onclick="toast('No app final, sua gravação toca aqui')" aria-label="Ouvir minha gravação"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+        <span class="l-meta">Minha leitura · hoje, 19:24 · 2:41</span>
+      </div>
+    </div>
+    <div class="recap" id="recap">
+      <h3>Antes de sair: 30 segundos de memória</h3>
+      <p class="muted" style="font-size:.8rem">Recuperar agora o que você acabou de ler multiplica a retenção. Três toques e pronto.</p>
+      <div class="rq" id="rq1">
+        <p>Quantos princípios <b>expressos</b> há no caput do art. 37?</p>
+        <div class="q-btns"><button class="btn ghost small" onclick="rqA(1,true,this)">Cinco</button><button class="btn ghost small" onclick="rqA(1,false,this)">Sete</button></div>
+        <p class="fbm"></p>
+      </div>
+      <div class="rq" id="rq2">
+        <p>Quem só pode fazer o que a lei <b>autoriza</b>?</p>
+        <div class="q-btns"><button class="btn ghost small" onclick="rqA(2,true,this)">A Administração</button><button class="btn ghost small" onclick="rqA(2,false,this)">O particular</button></div>
+        <p class="fbm"></p>
+      </div>
+      <div class="rq" id="rq3">
+        <p>A eficiência entrou no caput por qual emenda?</p>
+        <div class="q-btns"><button class="btn ghost small" onclick="rqA(3,true,this)">EC 19/98</button><button class="btn ghost small" onclick="rqA(3,false,this)">EC 45/04</button></div>
+        <p class="fbm"></p>
+      </div>
+      <div class="recap-fim" id="recapFim">
+        <b>Sessão registrada ✓</b> Suas <b class="num" id="rMarks">5</b> marcações viraram flashcards e entraram no <b>Meu Resumo</b> do assunto. Modo foco desligado — suas notificações voltaram. Amanhã eu retomo exatamente de onde você parou.
+        <div style="margin-top:12px"><button class="btn small" onclick="reallyClose()">Concluir leitura</button></div>
+      </div>
+    </div>
+    <div class="l-bar">
+      <div class="lmode" role="tablist" aria-label="Modo de leitura">
+        <button id="mSil" class="sel" onclick="setLMode('sil')">Silenciosa</button>
+        <button id="mTp" onclick="setLMode('tp')">Voz alta</button>
+        <button id="mEco" onclick="setLMode('eco')">Eco</button>
+      </div>
+      <span class="rec"><i></i><span id="recTxt">REC</span></span>
+      <span class="tpctl" style="display:contents">
+        <button class="iconbtn tpc" id="btnPause" onclick="tpPause()" aria-label="Pausar gravação">⏸</button>
+        <button class="iconbtn tpc" onclick="tpRestart()" aria-label="Gravar novamente do início">↺</button>
+      </span>
+      <span class="l-meta" id="lHint">toque numa palavra para marcar</span>
+    </div>
+  </div>
+
+  <!-- ================= CHATBOT PERSI ================= -->
+  <button class="fab" id="fab" onclick="openChat()" aria-label="Tirar dúvida com o Persi">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a8 8 0 01-8 8H4l2.2-2.6A8 8 0 1121 12z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>
+  </button>
+
+  <div id="chat" role="dialog" aria-label="Tira-dúvidas do assunto">
+    <div class="c-top">
+      <button class="iconbtn" onclick="document.getElementById('chat').classList.remove('open')" aria-label="Fechar chat">←</button>
+      <span class="c-ava">P</span>
+      <div class="ttl"><b>Persi · tira-dúvidas</b><small>no assunto: Princípios da Administração Pública</small></div>
+    </div>
+    <div class="c-msgs" id="cMsgs">
+      <div class="msg bot">Oi! Eu li o mesmo material que você e respondo com base nas fontes oficiais — sempre citando o dispositivo. Qual é a dúvida de hoje?</div>
+    </div>
+    <div class="c-sug" id="cSug">
+      <button onclick="ask(1)">Anular × revogar?</button>
+      <button onclick="ask(2)">Por que concurso = impessoalidade?</button>
+      <button onclick="ask(3)">Me dá um macete pro LIMPE</button>
+    </div>
+    <div class="c-in">
+      <input id="cInput" type="text" placeholder="Escreva sua dúvida…" aria-label="Escreva sua dúvida" onkeydown="if(event.key==='Enter')askFree()">
+      <button onclick="askFree()" aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ================= TABBAR ================= -->
+  <nav class="tabbar" id="tabbar" aria-label="Navegação principal">
+    <button class="tab active" data-scr="hoje" onclick="nav('hoje',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+      Hoje</button>
+    <button class="tab" data-scr="plano" onclick="nav('plano',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+      Plano</button>
+    <button class="tab" data-scr="evolucao" onclick="nav('evolucao',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M5 17l4-6 4 3 6-9"/></svg>
+      Evolução</button>
+    <button class="tab" data-scr="metodo" onclick="nav('metodo',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a4.5 4.5 0 00-4.4 5.5A4.2 4.2 0 006 16.2V17a3 3 0 003 3h6a3 3 0 003-3v-.8a4.2 4.2 0 00-1.6-7.7A4.5 4.5 0 0012 3z"/><path d="M12 10v10"/></svg>
+      Método</button>
+  </nav>
+
+  <!-- ================= LOGIN (modo real) ================= -->
+  <div id="login" role="dialog" aria-label="Entrar na sua conta">
+    <div class="brand" style="margin-bottom:8px">Persiste<span class="ia">IA</span></div>
+    <h2 style="font-size:1.3rem" id="lgTitle">Criar minha conta</h2>
+    <p class="muted" style="font-size:.85rem">Seu progresso fica salvo e sincronizado — é rapidinho.</p>
+    <input id="lgNome" type="text" placeholder="Seu nome" autocomplete="name">
+    <input id="lgEmail" type="email" placeholder="Seu e-mail" autocomplete="email">
+    <input id="lgSenha" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password">
+    <p class="err" id="lgErr"></p>
+    <button class="btn" id="lgBtn" onclick="lgEnviar()">Começar</button>
+    <button class="lg-alt" id="lgAlt" onclick="lgToggle()">Já tenho conta — entrar</button>
+    <button class="lg-alt" style="color:var(--muted)" onclick="document.getElementById('login').classList.remove('show'); toast('Explorando sem conta — nada será salvo')">Só dar uma olhada — criar conta depois</button>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script>
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- toast ---------- */
+  var toastT;
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  /* ---------- modo real: API + login + eventos ---------- */
+  var API = false, TOKEN = '', NOME = '', ASSUNTO = 'Princípios da Administração Pública (art. 37, CF)';
+  var lastQA = null, lgModo = 'cadastro';
+  try { TOKEN = localStorage.getItem('persisteia_token') || ''; } catch(e){}
+  function apiFetch(path, body){
+    var h = {'Content-Type':'application/json'};
+    if(TOKEN) h['Authorization'] = 'Bearer ' + TOKEN;
+    return fetch(path, { method: body ? 'POST' : 'GET', headers: h, body: body ? JSON.stringify(body) : undefined });
+  }
+  function evento(tipo, verbo, detalhe, status){
+    if(!API || !TOKEN) return;
+    apiFetch('/api/evento', { tipo: tipo, assunto: ASSUNTO, verbo: verbo || null, detalhe: detalhe || null, status: status || 'concluido' }).catch(function(){});
+  }
+  function initReal(){
+    apiFetch('/api/aluno').then(function(r){
+      if(r.status === 200){
+        API = true; $('realEdital').style.display = 'block';
+        r.json().then(function(d){
+          NOME = d.nome || '';
+          if(d.config){ JA_CONFIG = true; enterApp(); }
+        });
+      } else if(r.status === 401){
+        API = true; TOKEN = '';
+        try { localStorage.removeItem('persisteia_token'); } catch(e){}
+        $('realEdital').style.display = 'block';
+        $('login').classList.add('show');
+      }
+    }).catch(function(){ /* sem API: modo demonstração */ });
+  }
+  function lgToggle(){
+    lgModo = (lgModo === 'cadastro') ? 'login' : 'cadastro';
+    $('lgTitle').textContent = lgModo === 'cadastro' ? 'Criar minha conta' : 'Entrar';
+    $('lgNome').style.display = lgModo === 'cadastro' ? 'block' : 'none';
+    $('lgBtn').textContent = lgModo === 'cadastro' ? 'Começar' : 'Entrar';
+    $('lgAlt').textContent = lgModo === 'cadastro' ? 'Já tenho conta — entrar' : 'Não tenho conta — criar';
+    $('lgErr').textContent = '';
+  }
+  function lgEnviar(){
+    $('lgErr').textContent = '';
+    $('lgBtn').disabled = true;
+    apiFetch('/api/auth', { acao: lgModo, nome: $('lgNome').value, email: $('lgEmail').value, senha: $('lgSenha').value })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        $('lgBtn').disabled = false;
+        if(x.s === 200 && x.d.token){
+          TOKEN = x.d.token; NOME = x.d.nome || '';
+          try { localStorage.setItem('persisteia_token', TOKEN); } catch(e){}
+          $('login').classList.remove('show');
+          toast('Bem-vinda(o), ' + (NOME || 'concurseira(o)') + '! Seu progresso agora fica salvo.');
+        } else {
+          $('lgErr').textContent = x.d.erro || 'Não deu certo — confira os dados';
+        }
+      })
+      .catch(function(){ $('lgBtn').disabled = false; $('lgErr').textContent = 'Sem conexão com o servidor'; });
+  }
+  function analisarEdital(){
+    var txt = $('edTexto').value.trim();
+    if(txt.length < 200){ $('edStatus').textContent = 'Cole um trecho maior — pelo menos a lista de disciplinas e tópicos.'; return; }
+    if(!TOKEN){ $('login').classList.add('show'); return; }
+    $('edStatus').textContent = 'Analisando com IA…';
+    $('drop').style.pointerEvents = 'none';
+    var lis = document.querySelectorAll('#proc li'), i = 0;
+    var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
+    apiFetch('/api/edital', { texto: txt })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        clearInterval(anim);
+        lis.forEach(function(l){ l.classList.add('on','done'); });
+        if(x.s === 200 && x.d.ok){
+          $('edTitulo').textContent = x.d.titulo;
+          $('edSub').textContent = x.d.data_prova ? ('seu edital · prova em ' + x.d.data_prova.split('-').reverse().join('/')) : 'seu edital · data da prova a confirmar';
+          $('stD').textContent = x.d.n_disciplinas;
+          $('stT').textContent = x.d.n_topicos;
+          if(x.d.data_prova){ $('dtProva').textContent = 'Prova: ' + x.d.data_prova.split('-').reverse().join('/'); }
+          else { setData(false); }
+          toast('Edital lido de verdade: ' + x.d.n_disciplinas + ' disciplinas, ' + x.d.n_topicos + ' tópicos salvos no seu banco');
+          setTimeout(function(){ obGo(3); }, 500);
+        } else {
+          $('edStatus').textContent = x.d.erro || 'Não consegui analisar — tente colar só o conteúdo programático.';
+          $('drop').style.pointerEvents = 'auto';
+        }
+      })
+      .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor.'; $('drop').style.pointerEvents = 'auto'; });
+  }
+  initReal();
+
+  /* ---------- onboarding ---------- */
+  function obGo(n){
+    document.querySelectorAll('.ob-step').forEach(function(s){ s.classList.remove('active'); });
+    $('ob'+n).classList.add('active');
+  }
+  function startProc(){
+    $('drop').style.pointerEvents = 'none';
+    var lis = document.querySelectorAll('#proc li'), i = 0;
+    function step(){
+      if(i > 0){ lis[i-1].classList.add('done'); }
+      if(i < lis.length){ lis[i].classList.add('on'); i++; setTimeout(step, 850); }
+      else { setTimeout(function(){ obGo(3); }, 400); }
+    }
+    step();
+  }
+  function enterApp(){
+    $('ob').style.display = 'none';
+    $('tabbar').classList.add('show');
+    $('fab').classList.add('show');
+    $('scr-hoje').classList.add('active');
+    drawRing(); drawWave(); drawLine(); drawCal(); drawHeat();
+    if(API && TOKEN){
+      if(!JA_CONFIG){
+        apiFetch('/api/aluno', { data_prova: temData ? '2026-11-29' : null, horas_dia: selVal('gH'), dias_semana: selVal('gD') }).catch(function(){});
+      }
+      carregarReal();
+    }
+  }
+
+  /* ---------- navigation ---------- */
+  function nav(scr, btn){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    $('scr-'+scr).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- ring dos 7 verbos ---------- */
+  function drawRing(){
+    var svg = $('ring'), cx = 54, cy = 54, r = 44, segs = 8, done = 2;
+    var gapDeg = 7, seg = 360/segs - gapDeg, html = '';
+    function pt(a){ var rad = (a-90)*Math.PI/180; return (cx + r*Math.cos(rad)).toFixed(2) + ' ' + (cy + r*Math.sin(rad)).toFixed(2); }
+    for(var i = 0; i < segs; i++){
+      var a0 = i*(360/segs) + gapDeg/2, a1 = a0 + seg;
+      var color = i < done ? 'var(--accent)' : (i === done ? 'var(--warm)' : 'var(--ring-track)');
+      html += '<path d="M ' + pt(a0) + ' A ' + r + ' ' + r + ' 0 0 1 ' + pt(a1) + '" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round"/>';
+    }
+    html += '<text x="54" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)" font-family="Bricolage Grotesque,sans-serif">2/8</text>';
+    html += '<text x="54" y="66" text-anchor="middle" font-size="8.5" fill="var(--muted)" letter-spacing="1">VERBOS</text>';
+    svg.innerHTML = html;
+  }
+
+  /* ---------- podcast fake player ---------- */
+  var playing = false, pTimer = null, pSec = 0, TOTAL = 492;
+  function drawWave(){
+    var w = $('wave'), html = '';
+    for(var i = 0; i < 42; i++){
+      var h = 8 + Math.round(24 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * .55)));
+      html += '<i style="height:' + h + 'px"></i>';
+    }
+    w.innerHTML = html;
+  }
+  function togglePlay(){
+    playing = !playing;
+    $('playIc').innerHTML = playing ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+    if(playing){
+      pTimer = setInterval(function(){
+        pSec += 4; if(pSec >= TOTAL){ pSec = TOTAL; togglePlay(); }
+        var m = Math.floor(pSec/60), s = ('0' + pSec%60).slice(-2);
+        $('ptime').textContent = m + ':' + s + ' / 8:12';
+        var bars = document.querySelectorAll('#wave i'), lit = Math.round(bars.length * pSec / TOTAL);
+        bars.forEach(function(b, i){ b.classList.toggle('past', i < lit); });
+      }, 120);
+    } else { clearInterval(pTimer); }
+  }
+
+  /* ---------- expanders ---------- */
+  function tg(id){ $(id).classList.toggle('open'); }
+
+  /* ---------- LIMPE ---------- */
+  function limpe(txt){ $('limpeWord').textContent = txt; }
+
+  /* ---------- lei seca gaps ---------- */
+  var gapsDone = 0, gapsTotal = 5;
+  function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+  function gap(inp){
+    var ok = norm(inp.value) === norm(inp.dataset.ans);
+    var partial = norm(inp.dataset.ans).indexOf(norm(inp.value)) === 0;
+    inp.classList.toggle('ok', ok);
+    inp.classList.toggle('bad', !ok && !partial && inp.value.length > 2);
+    if(ok && !inp.dataset.counted){
+      inp.dataset.counted = '1'; inp.disabled = true; gapsDone++;
+      if(gapsDone === gapsTotal){ toast('Trecho completo de memória! Verbo "digitar" concluído ✓'); evento('lei_seca', 'digitar', { lacunas: gapsTotal }, 'concluido'); }
+    }
+  }
+
+  /* ---------- Feynman ---------- */
+  var feynOn = false;
+  function feyn(){
+    var m = $('mic'), fb = $('feynFb');
+    if(!feynOn){
+      feynOn = true; m.classList.add('rec'); fb.className = 'fb'; fb.innerHTML = '';
+      toast('Ouvindo… explique com suas palavras');
+      setTimeout(function(){
+        m.classList.remove('rec'); feynOn = false;
+        fb.className = 'fb ok';
+        if(CONT && CONT.feynman && CONT.feynman.length){
+          var fy = CONT.feynman[0];
+          fb.innerHTML = '<b>Explicação registrada!</b>Pontos-chave que eu esperava ouvir: ' +
+            fy.pontos.map(function(x){ return esc(x); }).join('; ') +
+            '.<br><br>No app, a transcrição da sua fala é comparada com esses pontos — o que faltar vira flashcard.';
+          evento('feynman', 'falar', { pergunta: fy.pergunta }, 'concluido');
+          return;
+        }
+        fb.innerHTML = '<b>Boa explicação! 2 de 3 pontos-chave</b>' +
+          'Você citou o acesso igualitário aos cargos e a seleção por mérito ✓<br><br>' +
+          '<b style="color:var(--warn)">Faltou:</b> a vedação à promoção pessoal (art. 37, §1º). Esse ponto entrou nos seus flashcards de amanhã.';
+        evento('feynman', 'falar', null, 'concluido');
+      }, 3200);
+    }
+  }
+
+  /* ---------- questões ---------- */
+  function ans(q, certo){
+    var fb = $('fb'+q);
+    if(q === 1){
+      if(!certo){
+        fb.className = 'fb ok';
+        fb.innerHTML = '<b>Errado — você acertou!</b>A publicidade é a regra, mas admite exceções: sigilo imprescindível à segurança da sociedade e do Estado (art. 5º, XXXIII). "Em qualquer hipótese" derruba a questão — clássico da banca.';
+      } else {
+        fb.className = 'fb no';
+        fb.innerHTML = '<b>O gabarito é Errado.</b>Cuidado com "em qualquer hipótese": a publicidade admite exceções constitucionais (art. 5º, XXXIII). Expressões absolutas quase sempre escondem a pegadinha.';
+      }
+      $('q2').style.display = 'block';
+      evento('questao', 'raciocinar', { n: 1, respondeu_certo: !certo }, 'em_andamento');
+    } else {
+      if(certo){
+        fb.className = 'fb ok';
+        fb.innerHTML = '<b>Certo — você acertou!</b>É a literalidade do art. 37, §1º: nada de nomes, símbolos ou imagens que caracterizem promoção pessoal. Sua calibração nesta questão foi registrada no dashboard.';
+      } else {
+        fb.className = 'fb no';
+        fb.innerHTML = '<b>O gabarito é Certo.</b>Art. 37, §1º, literal. Este item virou flashcard e volta para você em 10 minutos.';
+      }
+      evento('questao', 'raciocinar', { n: 2, respondeu_certo: certo }, 'concluido');
+    }
+  }
+
+  /* ---------- flashcards ---------- */
+  var fcs = [
+    ['O que o §1º do art. 37 veda na publicidade dos órgãos públicos?', 'Promoção pessoal: nomes, símbolos ou imagens de autoridades ou servidores. A publicidade deve ter caráter educativo, informativo ou de orientação social.'],
+    ['Quais são os 5 princípios expressos do caput do art. 37?', 'LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência (este incluído pela EC 19/98).'],
+    ['Cite dois princípios IMPLÍCITOS da Administração Pública.', 'Razoabilidade, proporcionalidade, autotutela, continuidade do serviço público, entre outros — não estão no caput, mas regem a Administração.']
+  ];
+  var fcI = 0;
+  var fcLabels = ['Errei — volta em 10 min', 'Quase — volta em 1 dia', 'Fácil — volta em 4 dias'];
+  function fcNext(grade){
+    toast(fcLabels[grade] + ' (agenda FSRS atualizada)');
+    evento('flashcard_revisado', 'treinar', { nota: grade }, 'em_andamento');
+    fcI = (fcI + 1) % fcs.length;
+    var fc = $('fc'); fc.classList.remove('flip');
+    setTimeout(function(){ $('fcF').textContent = fcs[fcI][0]; $('fcB').textContent = fcs[fcI][1]; }, 260);
+  }
+
+  /* ---------- charts ---------- */
+  function drawLine(){
+    var vals = [52,58,55,63,66,64,70,71], meta = 80;
+    var W = 360, H = 158, x0 = 30, x1 = 336, yTop = 16, yBot = 132;
+    function X(i){ return x0 + i*(x1-x0)/(vals.length-1); }
+    function Y(v){ return yBot - (v-40)*(yBot-yTop)/50; }
+    var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Acerto semanal subindo de 52% para 71% em 8 semanas; meta 80%">';
+    [40,60,80].forEach(function(g){
+      s += '<line x1="'+x0+'" y1="'+Y(g)+'" x2="'+x1+'" y2="'+Y(g)+'" stroke="var(--grid)" stroke-width="1"/>';
+      s += '<text x="'+(x0-6)+'" y="'+(Y(g)+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+g+'</text>';
+    });
+    s += '<line x1="'+x0+'" y1="'+Y(meta)+'" x2="'+x1+'" y2="'+Y(meta)+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    var area = 'M'+X(0)+' '+yBot, line = '';
+    vals.forEach(function(v,i){
+      line += (i ? ' L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1);
+      area += ' L' + X(i).toFixed(1) + ' ' + Y(v).toFixed(1);
+    });
+    area += ' L'+X(vals.length-1)+' '+yBot+' Z';
+    s += '<path d="'+area+'" fill="var(--c1)" opacity=".1"/>';
+    s += '<path d="'+line+'" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linejoin="round"/>';
+    s += '<circle cx="'+X(vals.length-1)+'" cy="'+Y(71)+'" r="4" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
+    s += '<text x="'+(X(vals.length-1)-2)+'" y="'+(Y(71)-9)+'" text-anchor="end" font-size="10" font-weight="700" fill="var(--ink)">71%</text>';
+    ['s1','s2','s3','s4','s5','s6','s7','s8'].forEach(function(lb,i){
+      if(i%2===0){ s += '<text x="'+X(i)+'" y="'+(yBot+14)+'" text-anchor="middle" font-size="8.5" fill="var(--muted)">'+lb+'</text>'; }
+    });
+    s += '</svg>';
+    $('chLine').innerHTML = s;
+  }
+
+  function drawCal(){
+    var rows = [
+      ['Constitucional', 84, 78],
+      ['Português', 72, 74],
+      ['Criminalística', 88, 69],
+      ['Raciocínio Lógico', 55, 62]
+    ];
+    var W = 360, rowH = 34, H = rows.length*rowH + 24, xL = 110, xR = 348;
+    function X(v){ return xL + (v-40)*(xR-xL)/60; }
+    var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Comparação entre confiança declarada e acerto real por disciplina">';
+    [50,70,90].forEach(function(g){
+      s += '<line x1="'+X(g)+'" y1="6" x2="'+X(g)+'" y2="'+(H-18)+'" stroke="var(--grid)" stroke-width="1"/>';
+      s += '<text x="'+X(g)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8.5" fill="var(--muted)">'+g+'%</text>';
+    });
+    rows.forEach(function(r,i){
+      var y = 14 + i*rowH + rowH/2 - 8;
+      s += '<text x="0" y="'+(y+3.5)+'" font-size="10" fill="var(--ink)">'+r[0]+'</text>';
+      s += '<line x1="'+X(r[1])+'" y1="'+y+'" x2="'+X(r[2])+'" y2="'+y+'" stroke="var(--line)" stroke-width="2"/>';
+      s += '<circle cx="'+X(r[1])+'" cy="'+y+'" r="5" fill="var(--c2)" stroke="var(--card)" stroke-width="2"/>';
+      s += '<circle cx="'+X(r[2])+'" cy="'+y+'" r="5" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
+    });
+    s += '</svg>';
+    $('chCal').innerHTML = s;
+  }
+
+  function drawHeat(){
+    var seed = [3,2,3,1,0,2,3,3,2,1,3,2,0,1,3,3,2,3,1,2,3,0,2,3,3,1,2,3,2,3,1,3,2,2,3,0,3,2,3,1,2,3,3,2,1,3,3,2,3,1,2,2,3,3,2,3,3,1,3,3];
+    var html = '';
+    seed.forEach(function(v){ html += '<i class="'+(v ? 'l'+v : '')+'"></i>'; });
+    $('heat').innerHTML = html;
+  }
+
+  /* ---------- onboarding: data + tempo ---------- */
+  var temData = true;
+  function setData(sim){
+    temData = sim;
+    $('dtOk').classList.toggle('sel', sim);
+    $('dtNo').classList.toggle('sel', !sim);
+    $('dtProva').textContent = sim ? 'Prova: 29/11/2026' : 'Estudo contínuo (sem edital publicado)';
+    $('dtSub').textContent = sim ? 'Encontrei a data no edital — confirme ou ajuste'
+      : 'Você estuda em ciclos de 16 semanas; quando o edital sair, o plano se reancora na data real';
+    calcTempo();
+  }
+  function pick(el){
+    el.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
+    el.classList.add('sel');
+    calcTempo();
+  }
+  function selVal(gid){ return parseFloat(document.querySelector('#'+gid+' .sel').dataset.v); }
+  function calcTempo(){
+    var h = selVal('gH'), d = selVal('gD'), box = $('calcBox');
+    var precisa = 150; // horas estimadas do edital de exemplo (teoria + esteira + revisões)
+    if(!temData){
+      box.className = 'calc';
+      box.innerHTML = '<b>Ciclo contínuo:</b> com <b class="num">' + (h*d) + 'h/semana</b>, você cobre os assuntos universais (Português, RLM, Constitucional, Administrativo, Informática) em ritmo sustentável. Quando o edital sair, o cronograma se reancora sozinho na data da prova.';
+      return;
+    }
+    var semanas = 13.4, total = Math.round(h*d*semanas);
+    if(total >= precisa){
+      box.className = 'calc';
+      box.innerHTML = '<b>Cabe!</b> ' + h + 'h × ' + d + ' dias = <b class="num">' + total + 'h</b> até a prova. Seu edital pede ~<b class="num">150h</b> (teoria + esteira + revisões). Você fecha 100% com folga para o modo véspera.';
+    } else {
+      var rec = Math.ceil((precisa/(d*semanas))*4)/4;
+      var cob = Math.round(total/precisa*100);
+      box.className = 'calc warn';
+      box.innerHTML = '<b>Atenção:</b> ' + h + 'h × ' + d + ' dias = <b class="num">' + total + 'h</b>, e o edital pede ~<b class="num">150h</b>. Duas saídas: subir para <b>' + String(rec).replace('.', ',') + 'h/dia</b>, ou eu priorizo por incidência da banca — com suas horas, cobrimos os tópicos que respondem por ~<b class="num">' + Math.min(cob+18,97) + '%</b> das questões. Você decide; eu recalculo.';
+    }
+  }
+  calcTempo();
+
+  /* ---------- leitor ---------- */
+  var KW = ['limpe','legalidade','impessoalidade','moralidade','publicidade','eficiência','promoção','pessoal','nepotismo','sigilo','imprescindível','economicidade','emenda','19','1998'];
+  var lWords = null, tpTimer = null, tpIdx = 0, marks = 0, lFs = 1.05;
+  function buildReader(){
+    if(lWords) return;
+    lWords = [];
+    document.querySelectorAll('#lBody p').forEach(function(par){
+      var words = par.textContent.split(' '), html = '';
+      words.forEach(function(w){
+        var clean = norm(w).replace(/[.,:;!?()"]/g,'');
+        var isK = KW.indexOf(clean) >= 0;
+        html += '<span class="w' + (isK ? ' kw' : '') + '">' + w + '</span> ';
+      });
+      par.innerHTML = html;
+    });
+    lWords = Array.prototype.slice.call(document.querySelectorAll('#lBody .w'));
+    lWords.forEach(function(w){
+      w.addEventListener('click', function(){
+        if($('lBody').classList.contains('tp')) return;
+        w.classList.toggle('mark');
+        marks += w.classList.contains('mark') ? 1 : -1;
+        $('lMarks').textContent = marks;
+      });
+    });
+  }
+  var recapShown = false, rqDone = 0;
+  function openLeitor(){
+    buildReader(); $('leitor').classList.add('open');
+    toast('Modo foco ligado · retomando de onde você parou — 43%');
+  }
+  function closeLeitor(){
+    stopTp(); stopEco();
+    if(!recapShown){
+      recapShown = true;
+      $('rMarks').textContent = Math.max(marks, 5);
+      $('recap').classList.add('show');
+      return;
+    }
+    reallyClose();
+  }
+  function reallyClose(){
+    evento('leitura_teoria', 'ler', { marcacoes: marks }, 'concluido');
+    stopTp(); stopEco();
+    $('recap').classList.remove('show');
+    $('leitor').classList.remove('open');
+  }
+  function rqA(q, certo, btn){
+    var rq = $('rq'+q);
+    if(rq.classList.contains('ok') || rq.classList.contains('no')) return;
+    rq.classList.add(certo ? 'ok' : 'no');
+    rq.querySelector('.fbm').textContent = certo ? 'Isso! Recuperado com sucesso.' :
+      (q === 1 ? 'São cinco — o LIMPE. Este item volta amanhã.' : q === 2 ? 'É a Administração; o particular pode o que a lei não proíbe. Volta amanhã.' : 'EC 19/1998. Este item volta amanhã.');
+    rqDone++;
+    if(rqDone >= 3){ $('recapFim').classList.add('show'); }
+  }
+
+  /* ---------- modo eco (shadowing) ---------- */
+  var ecoTimer = null, ecoSents = null, ecoI = 0, ecoPhase = 0;
+  function buildEco(){
+    if(ecoSents) return;
+    ecoSents = []; var start = 0;
+    lWords.forEach(function(w, i){
+      if(/[.!?]$/.test(w.textContent)){ ecoSents.push([start, i]); start = i+1; }
+    });
+    if(start < lWords.length) ecoSents.push([start, lWords.length-1]);
+  }
+  function ecoPaint(cls){
+    var r = ecoSents[ecoI];
+    for(var i = r[0]; i <= r[1]; i++){
+      lWords[i].classList.remove('eapp','eyou');
+      if(cls) lWords[i].classList.add(cls);
+    }
+  }
+  function ecoStep(){
+    if(ecoPhase === 0){
+      ecoPaint('eapp'); $('lHint').textContent = '🔊 o app lê a frase ' + (ecoI+1) + ' de ' + ecoSents.length + '…';
+      lWords[ecoSents[ecoI][0]].scrollIntoView({block:'center', behavior:'smooth'});
+      ecoPhase = 1;
+    } else {
+      ecoPaint('eyou'); $('lHint').textContent = '🎤 sua vez — repita em voz alta';
+      ecoPhase = 0;
+      var fim = ecoI >= ecoSents.length - 1;
+      if(fim){
+        clearInterval(ecoTimer); ecoTimer = null;
+        setTimeout(function(){
+          ecoPaint(null);
+          toast('Eco concluído! Frases repetidas contam para o verbo Falar');
+          evento('eco', 'falar', null, 'em_andamento');
+          setLMode('sil');
+        }, 2200);
+        return;
+      }
+      ecoI++;
+    }
+  }
+  function stopEco(){
+    if(ecoTimer){ clearInterval(ecoTimer); ecoTimer = null; }
+    if(ecoSents && lWords){ lWords.forEach(function(w){ w.classList.remove('eapp','eyou'); }); }
+    ecoI = 0; ecoPhase = 0;
+  }
+  function lFont(d){
+    lFs = Math.min(1.45, Math.max(.85, lFs + d*.1));
+    $('lBody').style.fontSize = lFs.toFixed(2) + 'rem';
+  }
+  function setLMode(m){
+    $('mSil').classList.toggle('sel', m === 'sil');
+    $('mTp').classList.toggle('sel', m === 'tp');
+    $('mEco').classList.toggle('sel', m === 'eco');
+    stopEco();
+    if(m === 'eco'){
+      stopTp();
+      $('leitor').classList.remove('tpmode'); $('lBody').classList.remove('tp');
+      lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
+      buildEco();
+      $('lDone').classList.remove('show');
+      ecoStep();
+      ecoTimer = setInterval(ecoStep, 2400);
+      toast('Modo Eco: ouça a frase e repita — bom para lei seca e literalidade');
+      return;
+    }
+    if(m === 'tp'){
+      $('leitor').classList.add('tpmode'); $('lBody').classList.add('tp');
+      $('lHint').textContent = 'lendo no seu ritmo…';
+      $('lDone').classList.remove('show');
+      tpIdx = 0;
+      lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
+      $('lBody').scrollTop = 0;
+      tpPaused = false;
+      tpTimer = setInterval(tpStep, 320);
+      syncRec();
+      toast('Pode ler em voz alta — estou gravando e acompanhando você');
+    } else {
+      stopTp();
+      $('leitor').classList.remove('tpmode'); $('lBody').classList.remove('tp');
+      $('lHint').textContent = 'toque numa palavra para marcar';
+      lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
+    }
+  }
+  function tpStep(){
+    if(tpIdx > 0){
+      var prev = lWords[tpIdx-1];
+      prev.classList.remove('cur');
+      prev.classList.add(prev.classList.contains('kw') ? 'kwlit' : 'past');
+    }
+    if(tpIdx >= lWords.length){
+      stopTp();
+      $('leitor').classList.remove('tpmode');
+      $('lDone').classList.add('show');
+      $('lProg').style.width = '100%';
+      $('lHint').textContent = 'gravação salva ✓';
+      evento('voz_alta', 'ler', null, 'concluido');
+      return;
+    }
+    var w = lWords[tpIdx];
+    w.classList.add('cur');
+    if(tpIdx % 6 === 0){ w.scrollIntoView({block:'center', behavior:'smooth'}); }
+    $('lProg').style.width = (43 + 57*tpIdx/lWords.length).toFixed(1) + '%';
+    tpIdx++;
+  }
+  function stopTp(){ if(tpTimer){ clearInterval(tpTimer); tpTimer = null; } tpPaused = false; syncRec(); }
+
+  /* ---------- externas: confirmar com um toque ---------- */
+  function extDone(btn){
+    var badge = document.createElement('span');
+    badge.className = 'stbadge auto num';
+    badge.textContent = '✓ agora · você confirmou';
+    btn.replaceWith(badge);
+    toast('Registrado! Atividade externa concluída — dashboard atualizado');
+    evento('externo_confirmado', 'escrever', null, 'concluido');
+  }
+
+  /* ---------- dashboard: visões ---------- */
+  function dvShow(k, btn){
+    document.querySelectorAll('.dv').forEach(function(d){ d.classList.remove('sel'); });
+    btn.parentNode.querySelectorAll('button').forEach(function(b){ b.classList.remove('sel'); });
+    $('dv-'+k).classList.add('sel');
+    btn.classList.add('sel');
+    if(k === 'verbo'){ drawRadar(); }
+  }
+  var radarDrawn = false;
+  function drawRadar(customVals){
+    if(radarDrawn && !customVals) return; radarDrawn = true;
+    var labels = ['Ler','Ouvir','Falar','Digitar','Escrever','Raciocinar','Treinar','Perguntar'];
+    var vals = customVals || [81,74,52,66,38,70,77,58];
+    var cx = 160, cy = 118, R = 82, N = 8;
+    function pt(i, frac){
+      var a = -Math.PI/2 + i*2*Math.PI/N;
+      return [(cx + R*frac*Math.cos(a)), (cy + R*frac*Math.sin(a))];
+    }
+    var s = '<svg viewBox="0 0 320 240" style="width:100%; height:auto" role="img" aria-label="Radar de conclusão por verbo: Ler 81%, Treinar 77%, Ouvir 74%, Raciocinar 70%, Digitar 66%, Perguntar 58%, Falar 52%, Escrever 38%">';
+    [0.25,0.5,0.75,1].forEach(function(f){
+      var pts = [];
+      for(var i=0;i<N;i++){ pts.push(pt(i,f).map(function(v){return v.toFixed(1);}).join(',')); }
+      s += '<polygon points="'+pts.join(' ')+'" fill="none" stroke="var(--grid)" stroke-width="1"/>';
+    });
+    for(var i=0;i<N;i++){
+      var p1 = pt(i,1);
+      s += '<line x1="'+cx+'" y1="'+cy+'" x2="'+p1[0].toFixed(1)+'" y2="'+p1[1].toFixed(1)+'" stroke="var(--grid)" stroke-width="1"/>';
+      var pl = pt(i,1.22);
+      s += '<text x="'+pl[0].toFixed(1)+'" y="'+(pl[1]+3).toFixed(1)+'" text-anchor="middle" font-size="10" fill="var(--muted)">'+labels[i]+'</text>';
+    }
+    var poly = [];
+    for(var i=0;i<N;i++){ poly.push(pt(i, vals[i]/100).map(function(v){return v.toFixed(1);}).join(',')); }
+    s += '<polygon points="'+poly.join(' ')+'" fill="var(--accent)" opacity=".14"/>';
+    s += '<polygon points="'+poly.join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
+    for(var i=0;i<N;i++){
+      var pv = pt(i, vals[i]/100);
+      var col = (labels[i] === 'Escrever') ? 'var(--warm)' : 'var(--accent)';
+      s += '<circle cx="'+pv[0].toFixed(1)+'" cy="'+pv[1].toFixed(1)+'" r="4" fill="'+col+'" stroke="var(--card)" stroke-width="2"/>';
+    }
+    s += '</svg>';
+    $('radar').innerHTML = s;
+  }
+  var tpPaused = false;
+  function syncRec(){
+    var rec = document.querySelector('#leitor .rec');
+    if(!rec) return;
+    rec.classList.toggle('paused', tpPaused);
+    $('recTxt').textContent = tpPaused ? 'PAUSADO' : 'REC';
+    var b = $('btnPause'); if(b){ b.textContent = tpPaused ? '▶' : '⏸'; b.setAttribute('aria-label', tpPaused ? 'Retomar gravação' : 'Pausar gravação'); }
+  }
+  function tpPause(){
+    if(tpPaused){
+      tpPaused = false; tpTimer = setInterval(tpStep, 320);
+      toast('Gravação retomada — continue de onde parou');
+    } else {
+      if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
+      tpPaused = true;
+      toast('Pausado. Respire — retome quando quiser');
+    }
+    syncRec();
+  }
+  function tpRestart(){
+    if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
+    tpPaused = false;
+    tpIdx = 0;
+    lWords.forEach(function(w){ w.classList.remove('past','cur','kwlit'); });
+    $('lDone').classList.remove('show');
+    $('leitor').classList.add('tpmode');
+    $('lBody').scrollTop = 0;
+    $('lProg').style.width = '43%';
+    tpTimer = setInterval(tpStep, 320);
+    syncRec();
+    toast('Nova gravação iniciada — a anterior foi descartada');
+  }
+
+  /* ---------- chatbot Persi ---------- */
+  var ANSWERS = {
+    1: ['Qual a diferença entre anular e revogar?',
+        'Anular é para ato <span class="mk">ilegal</span> — apaga desde a origem (efeito retroativo). Revogar é para ato legal que ficou <span class="mk">inconveniente</span> — vale dali para frente. Quem autoriza as duas é a autotutela. Macete: i<b>L</b>egal → anu<b>L</b>a; in<b>C</b>onveniente → revoga por <b>C</b>onveniência.<br><span class="fonte-chip">Fonte: Súmula 473, STF</span><button class="fc-btn" onclick="fcSave(this)">virar flashcard</button>'],
+    2: ['Por que o concurso público concretiza a impessoalidade?',
+        'Porque troca a relação pessoal pelo <span class="mk">mérito</span>: qualquer pessoa, em igualdade de condições, disputa o cargo por critérios objetivos — ninguém entra por ser amigo de alguém. É a face "isonomia" da impessoalidade; a outra face é a vedação à promoção pessoal.<br><span class="fonte-chip">Fonte: art. 37, caput e II, CF</span><button class="fc-btn" onclick="fcSave(this)">virar flashcard</button>'],
+    3: ['Me dá um macete para o LIMPE',
+        'Imagine um <span class="mk">balde de LIMPEza</span> no hall do órgão público — a Administração precisa estar sempre "limpa": <b>L</b>egalidade, <b>I</b>mpessoalidade, <b>M</b>oralidade, <b>P</b>ublicidade, <b>E</b>ficiência. E o E chegou por último, na faxina da Emenda 19/98. Quer fixar de vez? Toca o Forró do LIMPE na tela Hoje.<br><span class="fonte-chip">Fonte: art. 37, caput, CF</span><button class="fc-btn" onclick="fcSave(this)">virar flashcard</button>']
+  };
+  function openChat(){ $('chat').classList.add('open'); }
+  function botSay(html, delay){
+    var box = $('cMsgs');
+    var t = document.createElement('div');
+    t.className = 'typing'; t.innerHTML = '<i></i><i></i><i></i>';
+    box.appendChild(t); box.scrollTop = box.scrollHeight;
+    setTimeout(function(){
+      t.remove();
+      var m = document.createElement('div');
+      m.className = 'msg bot'; m.innerHTML = html;
+      box.appendChild(m); box.scrollTop = box.scrollHeight;
+    }, delay || 900);
+  }
+  function userSay(txt){
+    var box = $('cMsgs');
+    var m = document.createElement('div');
+    m.className = 'msg user'; m.textContent = txt;
+    box.appendChild(m); box.scrollTop = box.scrollHeight;
+  }
+  function ask(n){
+    userSay(ANSWERS[n][0]);
+    botSay(ANSWERS[n][1]);
+    lastQA = { frente: ANSWERS[n][0], verso: ANSWERS[n][1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() };
+    evento('pergunta', 'perguntar', { q: ANSWERS[n][0], sugerida: true }, 'em_andamento');
+  }
+  function botMsgNow(txt, comFc){
+    var box = $('cMsgs');
+    var m = document.createElement('div');
+    m.className = 'msg bot';
+    m.textContent = txt;
+    if(comFc){
+      var b = document.createElement('button');
+      b.className = 'fc-btn'; b.textContent = 'virar flashcard';
+      b.onclick = function(){ fcSave(b); };
+      m.appendChild(document.createElement('br'));
+      m.appendChild(b);
+    }
+    box.appendChild(m); box.scrollTop = box.scrollHeight;
+  }
+  function askFree(){
+    var inp = $('cInput');
+    var q = inp.value.trim();
+    if(!q) return;
+    userSay(q);
+    inp.value = '';
+    var box = $('cMsgs');
+    var t = document.createElement('div');
+    t.className = 'typing'; t.innerHTML = '<i></i><i></i><i></i>';
+    box.appendChild(t); box.scrollTop = box.scrollHeight;
+    apiFetch('/api/persi', { question: q, assunto: ASSUNTO })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      t.remove();
+      if(d && d.answer){
+        botMsgNow(d.answer, true);
+        lastQA = { frente: q, verso: d.answer };
+        evento('pergunta', 'perguntar', { q: q }, 'concluido');
+      }
+      else { botMsgNow('Não consegui consultar minha base agora. Tente de novo em instantes — ou toque numa das perguntas sugeridas abaixo.'); }
+    })
+    .catch(function(){
+      t.remove();
+      botMsgNow('Nesta demonstração estática eu ainda não consulto a base. No site publicado (com a chave configurada), eu respondo qualquer dúvida do assunto com a fonte citada. Experimente as perguntas sugeridas abaixo.');
+    });
+  }
+  function fcSave(btn){
+    btn.replaceWith(Object.assign(document.createElement('span'), {className:'fonte-chip', textContent:'✓ flashcard salvo · volta amanhã'}));
+    if(API && TOKEN && lastQA){
+      apiFetch('/api/flashcard', { frente: lastQA.frente, verso: lastQA.verso, origem: 'persi' }).catch(function(){});
+    }
+    toast('Dúvida salva como flashcard — entrou na sua agenda de revisão');
+  }
+
+  /* ---------- modo real: cronograma, conteúdo e dashboard de verdade ---------- */
+  var REAL = null, CONT = null, JA_CONFIG = false;
+  var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
+  function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
+  function fmtData(iso){ return iso ? iso.split('-').reverse().join('/') : ''; }
+
+  function carregarReal(){
+    if(!(API && TOKEN)) return;
+    apiFetch('/api/cronograma').then(function(r){ return r.json(); }).then(function(d){
+      if(d && d.sem_cronograma){
+        toast('Gerando seu cronograma a partir do edital…');
+        return apiFetch('/api/cronograma', { gerar: true }).then(function(){ carregarReal(); });
+      }
+      if(!d || !d.hoje) return;
+      REAL = d;
+      aplicarHojeReal(d);
+      aplicarPlanoReal(d);
+      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(d.hoje.topico_id))
+        .then(function(r){ return r.json(); })
+        .then(function(c){ if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); } })
+        .catch(function(){});
+    }).catch(function(){});
+    apiFetch('/api/dashboard').then(function(r){ return r.json(); })
+      .then(function(dd){ if(dd && dd.cobertura) aplicarDashReal(dd); }).catch(function(){});
+  }
+
+  function aplicarHojeReal(d){
+    ASSUNTO = d.hoje.topico + ' — ' + d.hoje.disciplina;
+    $('hdrAssunto').textContent = d.hoje.topico;
+    $('hdrAssuntoSub').textContent = ' · ' + d.hoje.disciplina + (d.hoje.atrasado ? ' · retomando atraso' : '');
+    $('nextT').textContent = 'Continuar: ' + d.hoje.topico;
+    $('nextS').textContent = 'teoria no Leitor · depois eu te levo aos outros verbos';
+    $('leitorTitle').textContent = d.hoje.topico;
+    var chatSub = document.querySelector('#chat .c-top small');
+    if(chatSub) chatSub.textContent = 'no assunto: ' + d.hoje.topico;
+    if(!$('btnConcluir')){
+      var b = document.createElement('button');
+      b.className = 'btn ghost small'; b.id = 'btnConcluir';
+      b.style.margin = '0 0 14px'; b.textContent = 'Concluir assunto de hoje ✓';
+      b.onclick = function(){
+        apiFetch('/api/cronograma', { concluir: REAL.hoje.cron_id }).then(function(){
+          toast('Assunto concluído! Puxando o próximo do cronograma…');
+          CONT = null; carregarReal();
+        }).catch(function(){});
+      };
+      var next = document.querySelector('.nextcard');
+      next.parentNode.insertBefore(b, next.nextSibling);
+    }
+  }
+
+  function aplicarConteudoReal(c){
+    $('lerIntro').innerHTML = 'O essencial de <b>' + esc(c.topico) + '</b> — e o mnemônico do assunto (toque nas letras):';
+    var sigla = String(c.acronimo.sigla || '').replace(/[^A-Za-zÀ-ú]/g, '').slice(0, 6).toUpperCase();
+    var box = $('limpeBox'); box.innerHTML = '';
+    for(var i = 0; i < sigla.length; i++){
+      (function(i){
+        var bl = document.createElement('b'); bl.textContent = sigla[i];
+        bl.onclick = function(){ limpe(c.acronimo.itens[i] || c.acronimo.itens.join(' · ')); };
+        box.appendChild(bl);
+      })(i);
+    }
+    if(!sigla.length){ box.innerHTML = ''; $('limpeWord').textContent = c.acronimo.itens.join(' · '); }
+    else { $('limpeWord').textContent = 'Toque em uma letra ↑'; }
+
+    var paras = String(c.resumo).split(/\n+/).filter(function(x){ return x.trim(); });
+    $('lBody').innerHTML = paras.map(function(pp){ return '<p>' + esc(pp) + '</p>'; }).join('');
+    lWords = null; ecoSents = null; marks = 0; $('lMarks').textContent = '0';
+
+    var lei = esc(c.lei_seca), n = 0;
+    lei = lei.replace(/\[\[(.+?)\]\]/g, function(_, w){
+      n++;
+      return '<input class="gap-in" data-ans="' + w.trim() + '" oninput="gap(this)" aria-label="lacuna ' + n + '">';
+    });
+    gapsTotal = n || 1; gapsDone = 0;
+    $('leiBox').innerHTML = '"' + lei + '"';
+
+    var qz = c.questoes || []; var html = '';
+    for(var q = 0; q < qz.length; q++){
+      html += '<div id="rq_' + q + '" style="' + (q ? 'display:none; margin-top:16px' : '') + '">' +
+        '<p class="q-src">Questão ' + (q + 1) + ' · certo/errado</p>' +
+        '<p class="q-enun">' + esc(qz[q].enunciado) + '</p>' +
+        '<div class="q-btns">' +
+          '<button class="btn ghost small" onclick="ansReal(' + q + ',true)">Certo</button>' +
+          '<button class="btn ghost small" onclick="ansReal(' + q + ',false)">Errado</button>' +
+        '</div><div class="fb" id="rfb_' + q + '"></div></div>';
+    }
+    $('quizBox').innerHTML = html;
+
+    if(c.flashcards && c.flashcards.length){
+      fcs = c.flashcards.map(function(x){ return [x.frente, x.verso]; });
+      fcI = 0; $('fcF').textContent = fcs[0][0]; $('fcB').textContent = fcs[0][1];
+      apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: REAL.hoje.topico_id }).catch(function(){});
+    }
+
+    if(c.feynman && c.feynman.length){
+      $('feynQ').innerHTML = 'Explique em voz alta: <b>' + esc(c.feynman[0].pergunta) + '</b>';
+    }
+    $('podQuote').textContent = '"' + String(c.podcast).slice(0, 260) + '…" — roteiro gerado; o áudio entra quando ligarmos a voz.';
+    $('musTitle').textContent = 'Música do assunto';
+    $('musSub').textContent = esc(c.musica.estilo);
+    $('musLyr').innerHTML = esc(c.musica.letra).replace(/\n/g, '<br>');
+    toast('Conteúdo do assunto gerado e salvo no catálogo ✓');
+  }
+
+  function ansReal(q, escolha){
+    var item = CONT.questoes[q];
+    var fb = $('rfb_' + q);
+    var acertou = (escolha === !!item.gabarito);
+    fb.className = 'fb ' + (acertou ? 'ok' : 'no');
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('O gabarito é ' + (item.gabarito ? 'Certo' : 'Errado') + '.')) + '</b>' + esc(item.comentario);
+    evento('questao', 'raciocinar', { n: q + 1, respondeu_certo: acertou }, (q + 1 >= CONT.questoes.length) ? 'concluido' : 'em_andamento');
+    var prox = $('rq_' + (q + 1));
+    if(prox) prox.style.display = 'block';
+  }
+
+  function aplicarPlanoReal(d){
+    $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> tópicos concluídos · ' + esc(d.edital);
+    $('planoProj').innerHTML = '<b>Projeção real:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
+      (d.data_prova ? ' — prova em ' + fmtData(d.data_prova) + '.' : '. Quando a data da prova sair, eu reancoro tudo.');
+    var html = '';
+    d.resumo.por_disciplina.forEach(function(disc, i){
+      var pct = Math.round(100 * disc.concluidos / disc.total);
+      var cor = PAL[i % PAL.length];
+      html += '<div class="drow"><span class="dot" style="background:' + cor + '"></span>' +
+        '<span class="dn">' + esc(disc.nome) + '<small class="num">' + disc.concluidos + ' de ' + disc.total + ' tópicos</small></span>' +
+        '<span class="db"><i style="width:' + pct + '%; background:' + cor + '"></i></span>' +
+        '<span class="dp num">' + pct + '%</span></div>';
+    });
+    html += '<p class="eyebrow" style="margin:14px 0 4px">Próximos no cronograma</p>';
+    d.proximos.forEach(function(px){
+      html += '<div class="a-row"><span class="st next"></span><span class="an">' + esc(px.topico) + ' <small class="muted">· ' + esc(px.disciplina) + '</small></span><span class="ah num">' + fmtData(px.data) + '</span></div>';
+    });
+    $('planoLista').innerHTML = html;
+  }
+
+  function aplicarDashReal(dd){
+    $('tCobV').textContent = dd.cobertura.pct + '%';
+    $('tCobD').textContent = dd.cobertura.concluidos + ' de ' + dd.cobertura.total + ' tópicos';
+    $('tAcertoV').textContent = (dd.questoes.pct == null) ? '—' : dd.questoes.pct + '%';
+    $('tAcertoD').textContent = dd.questoes.total ? (dd.questoes.certas + ' de ' + dd.questoes.total + ' questões') : 'responda questões';
+    $('tStreakV').textContent = dd.constancia_dias + (dd.constancia_dias === 1 ? ' dia' : ' dias');
+    $('tStreakD').textContent = 'de estudo seguido';
+    $('tRetV').textContent = dd.flashcards_devidos;
+    $('tRetL').textContent = 'flashcards para revisar agora';
+    $('tRetD').textContent = '';
+    var html = '';
+    dd.por_disciplina.forEach(function(disc, i){
+      var cor = PAL[i % PAL.length];
+      html += '<div class="drow"><span class="dot" style="background:' + cor + '"></span>' +
+        '<span class="dn">' + esc(disc.nome) + '<small class="num">' + disc.concluidos + ' de ' + disc.total + ' tópicos</small></span>' +
+        '<span class="db"><i style="width:' + disc.pct + '%; background:' + cor + '"></i></span>' +
+        '<span class="dp num">' + disc.pct + '%</span></div>';
+    });
+    if(html) $('dvDiscList').innerHTML = html;
+    var ordem = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
+    var mapa = {}; (dd.por_verbo || []).forEach(function(v){ mapa[v.verbo] = v.eventos; });
+    var max = 1; ordem.forEach(function(v){ if((mapa[v] || 0) > max) max = mapa[v]; });
+    var vhtml = '', vals = [];
+    ordem.forEach(function(v){
+      var nEv = mapa[v] || 0, pct = Math.round(100 * nEv / max);
+      vals.push(pct);
+      vhtml += '<div class="vrow"><span class="vn">' + v.charAt(0).toUpperCase() + v.slice(1) + '</span>' +
+        '<span class="db"><i style="width:' + pct + '%"></i></span><span class="dp num">' + nEv + '</span></div>';
+    });
+    $('dvVerboList').innerHTML = vhtml;
+    $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano de amanhã reforça.';
+    drawRadar(vals);
+  }
+
+  /* keyboard access for flashcard */
+  $('fc') && $('fc').addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); this.classList.toggle('flip'); }
+  });
+</script>
+
+
+
+</body>
+</html>
