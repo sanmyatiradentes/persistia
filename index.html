@@ -716,10 +716,14 @@
         <p class="eyebrow">Passo 2 de 2 · seu ritmo</p>
         <div class="datecard">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-          <div style="flex:1"><b id="dtProva">Data da prova</b><small id="dtSub">confirme ou ajuste</small></div>
+          <div style="flex:1">
+            <b id="dtProva">Data da prova</b>
+            <input type="date" id="dtInput" onchange="setDataManual(this.value)" aria-label="Data da prova"
+                   style="margin:6px 0 4px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:8px 10px; font:600 .9rem 'Albert Sans',sans-serif; width:100%; max-width:220px">
+            <small id="dtSub">ajuste se a data estiver errada ou em branco</small>
+          </div>
         </div>
         <div class="optchips">
-          <button class="optchip sel" id="dtOk" onclick="setData(true)">Confirmar data</button>
           <button class="optchip" id="dtNo" onclick="setData(false)">Ainda não há concurso previsto</button>
         </div>
 
@@ -998,101 +1002,20 @@
     <div class="top">
       <div>
         <p class="eyebrow">Cronograma vivo</p>
-        <h2 style="font-size:1.25rem">Sua semana</h2>
+        <h2 style="font-size:1.25rem" id="planoTit">Seu plano</h2>
       </div>
-      <span class="chip done num">prova em 94 dias</span>
+      <span class="chip done num" id="planoCount">—</span>
     </div>
 
-    <div class="week" role="tablist" aria-label="Dias da semana">
-      <div class="day done">seg<b class="num">24</b></div>
-      <div class="day done">ter<b class="num">25</b></div>
-      <div class="day done">qua<b class="num">26</b></div>
-      <div class="day today">qui<b class="num">27</b></div>
-      <div class="day">sex<b class="num">28</b></div>
-      <div class="day">sáb<b class="num">29</b></div>
-      <div class="day">dom<b class="num">30</b></div>
-    </div>
-
-    <div class="blocks">
-      <div class="block"><span class="hr num">06:40</span>
-        <div class="card"><b>Podcast no trajeto</b><small>Princípios da Adm. Pública · 8 min</small>
-          <div class="vtags"><span class="vtag">ouvir</span></div>
-        </div>
-      </div>
-      <div class="block"><span class="hr num">12:30</span>
-        <div class="card"><b>Revisões do ponto certo</b><small>Atos adm. (24h) · Crase (7d) · Cadeia de custódia (30d) · 12 min</small>
-          <div class="vtags"><span class="vtag">treinar</span><span class="vtag">digitar</span><span class="vtag">raciocinar</span></div>
-        </div>
-      </div>
-      <div class="block"><span class="hr num">19:00</span>
-        <div class="card"><b>Bloco principal · 50 min</b><small>Resumo, lei seca de memória e explicação falada — com intercalação de RLM no fim</small>
-          <div class="vtags"><span class="vtag">ler</span><span class="vtag">digitar</span><span class="vtag">falar</span><span class="vtag">escrever</span><span class="vtag">raciocinar</span></div>
-        </div>
-      </div>
-      <div class="block"><span class="hr num">21:30</span>
-        <div class="card"><b>Fechamento leve</b><small>Flashcards do dia + Forró do LIMPE · 10 min</small>
-          <div class="vtags"><span class="vtag">treinar</span><span class="vtag w">bônus</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h2>Cobertura do edital</h2>
-      <p class="muted" style="font-size:.76rem">Ponderada por peso da disciplina e incidência da banca</p>
-      <div class="cover">
-        <div class="cov"><div class="lbl"><span>Direito Constitucional</span><b class="num">62%</b></div><div class="bar"><i style="width:62%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Português</span><b class="num">55%</b></div><div class="bar"><i style="width:55%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Direito Administrativo</span><b class="num">41%</b></div><div class="bar"><i style="width:41%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Criminalística</span><b class="num">33%</b></div><div class="bar"><i style="width:33%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Raciocínio Lógico</span><b class="num">28%</b></div><div class="bar"><i style="width:28%"></i></div></div>
-        <div class="cov"><div class="lbl"><span>Medicina Legal</span><b class="num">18%</b></div><div class="bar"><i style="width:18%"></i></div></div>
-      </div>
-    </div>
+    <div class="week" id="planoSemana" role="tablist" aria-label="Dias da semana"></div>
+    <div class="blocks" id="planoDia"></div>
 
     <div class="card" style="margin-top:16px">
       <h2>Cronograma completo do edital</h2>
-      <p class="muted" style="font-size:.76rem" id="planoHead">150h estimadas · <b class="num" style="color:var(--accent)">62h concluídas</b> · seu ritmo: 12h/semana</p>
-      <div class="calc" style="margin:10px 0 14px" id="planoProj">
-        <b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>18/11</b> — 11 dias antes da prova, com a última semana reservada ao modo véspera. Cada assunto abaixo tem hora estimada e data prevista; toque para abrir.
-      </div>
-
-      <div id="planoLista">
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Direito Constitucional</span><span class="hrs num">24h/38h</span><span class="mini"><i style="width:62%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Português</span><span class="hrs num">17h/30h</span><span class="mini"><i style="width:55%"></i></span></button>
-      </div>
-      <div class="disc open" id="discAdm">
-        <button class="disc-h" onclick="event.stopPropagation(); discAdm.classList.toggle('open')"><span class="nm">Direito Administrativo</span><span class="hrs num">14h/34h</span><span class="mini"><i style="width:41%"></i></span></button>
-        <div class="assuntos">
-          <div class="a-row"><span class="st done"></span><span class="an">Atos administrativos</span><span class="ah num">5h · ✓ 24–26/08</span></div>
-          <div class="a-row"><span class="st now"></span><span class="an"><b>Princípios da Adm. Pública</b> (hoje)</span><span class="ah num">4h · 27–29/08</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Poderes administrativos</span><span class="ah num">4h · 01/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Licitações — Lei 14.133</span><span class="ah num">8h · 03–08/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Serviços públicos</span><span class="ah num">4h · 10/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Improbidade administrativa</span><span class="ah num">5h · 12/09</span></div>
-          <div class="a-row"><span class="st next"></span><span class="an">Processo administrativo</span><span class="ah num">4h · 15/09</span></div>
-        </div>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Criminalística</span><span class="hrs num">9h/26h</span><span class="mini"><i style="width:33%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Raciocínio Lógico</span><span class="hrs num">6h/20h</span><span class="mini"><i style="width:28%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Medicina Legal</span><span class="hrs num">3h/18h</span><span class="mini"><i style="width:18%"></i></span></button>
-      </div>
-      <div class="disc" onclick="toast('Toque em Direito Administrativo para ver o detalhe por assunto')">
-        <button class="disc-h"><span class="nm">Informática</span><span class="hrs num">1h/12h</span><span class="mini"><i style="width:10%"></i></span></button>
-      </div>
-      </div>
-      <p class="muted" style="font-size:.7rem; margin-top:10px">Cada assunto começa pela teoria no Leitor e depois entra na esteira dos 8 verbos. As horas estimadas vêm do tamanho do tópico e da incidência da banca; as datas se recalculam toda noite.</p>
-    </div>
-
-    <div class="card" style="margin-top:12px; background:var(--accent-soft); border-color:transparent">
-      <p style="font-size:.84rem"><b>Replanejado hoje às 03:12.</b> Você rendeu menos em RLM ontem — o plano puxou uma dose extra de questões fáceis para reconstruir a base antes de avançar. Nada ficou para trás: só mudou de lugar.</p>
+      <p class="muted" style="font-size:.76rem" id="planoHead">—</p>
+      <div class="calc" style="margin:10px 0 14px" id="planoProj"></div>
+      <div id="planoLista"></div>
+      <p class="muted" style="font-size:.7rem; margin-top:10px">Toque numa disciplina para abrir os tópicos. Toque num tópico para estudá-lo agora.</p>
     </div>
   </section>
 
@@ -1133,17 +1056,7 @@
       </div>
 
       <div class="dv" id="dv-tema">
-        <p style="font-size:.82rem; margin-bottom:4px"><span class="dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--d3); margin-right:6px"></span><b>Direito Administrativo</b> <span class="muted" style="font-size:.72rem">· cada quadradinho é um verbo</span></p>
-        <div class="trow"><div class="tn"><b>Atos administrativos</b><span class="num">8/8 · concluído</span></div>
-          <div class="vmx"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
-        <div class="trow"><div class="tn"><b>Princípios da Adm. Pública</b><span class="num">3/8 · hoje</span></div>
-          <div class="vmx"><i class="now" title="Ler: em andamento"></i><i class="on" title="Ouvir: você confirmou"></i><i title="Falar"></i><i title="Digitar"></i><i class="ext" title="Escrever: aguarda sua confirmação"></i><i title="Raciocinar"></i><i class="on" title="Treinar: automático"></i><i title="Perguntar"></i></div></div>
-        <div class="trow"><div class="tn"><b>Poderes administrativos</b><span class="num">0/8 · 01/09</span></div>
-          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-        <div class="trow"><div class="tn"><b>Licitações — Lei 14.133</b><span class="num">0/8 · 03/09</span></div>
-          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-        <div class="trow"><div class="tn"><b>Improbidade administrativa</b><span class="num">0/8 · 12/09</span></div>
-          <div class="vmx"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div id="dvTemaList"></div>
         <div class="vleg"><span><i class="on"></i>concluído</span><span><i class="now"></i>em andamento</span><span><i class="ext"></i>externo — aguarda seu "Feito"</span><span><i></i>a fazer</span></div>
         <p class="muted" style="font-size:.7rem; margin-top:8px">Ordem dos quadradinhos: Ler · Ouvir · Falar · Digitar · Escrever · Raciocinar · Treinar · Perguntar.</p>
       </div>
@@ -1348,8 +1261,12 @@
         r.json().then(function(d){
           NOME = d.nome || '';
           $('login').classList.remove('show');
+          if(d.n_topicos){ $('stT').textContent = d.n_topicos; }
+          if(d.edital_titulo){ $('edTitulo').textContent = d.edital_titulo; }
+          var dataCfg = (d.config && d.config.data_prova) || d.edital_data_prova || null;
+          if(dataCfg){ PROVA_ISO = dataCfg; temData = true; if($('dtInput')) $('dtInput').value = dataCfg; }
           if(d.config && d.tem_edital){ JA_CONFIG = true; enterApp(); }
-          else if(d.tem_edital){ obGo(4); }
+          else if(d.tem_edital){ obGo(4); calcTempo(); }
           else { obGo(2); }
         });
       } else if(r.status === 401){
@@ -1443,8 +1360,16 @@
           $('stD').textContent = x.d.n_disciplinas;
           $('stT').textContent = x.d.n_topicos;
           PROVA_ISO = x.d.data_prova || null;
-          if(PROVA_ISO){ $('dtProva').textContent = 'Prova: ' + PROVA_ISO.split('-').reverse().join('/'); $('dtSub').textContent = 'encontrei essa data no edital — confirme ou ajuste'; }
-          else { setData(false); }
+          if(PROVA_ISO){
+            $('dtInput').value = PROVA_ISO;
+            temData = true;
+            var dd = diasAte(PROVA_ISO);
+            $('dtSub').textContent = (dd !== null && dd < 0)
+              ? 'essa data do edital já passou — corrija acima'
+              : 'encontrei essa data no edital — ajuste se precisar';
+          } else {
+            $('dtSub').textContent = 'não encontrei a data no edital — informe acima';
+          }
           toast(x.d.n_disciplinas + ' disciplinas e ' + x.d.n_topicos + ' tópicos salvos no seu banco');
           setTimeout(function(){ obGo(3); }, 500);
         } else {
@@ -1710,12 +1635,22 @@
   var temData = true;
   function setData(sim){
     temData = sim;
-    $('dtOk').classList.toggle('sel', sim);
     $('dtNo').classList.toggle('sel', !sim);
-    $('dtProva').textContent = sim ? 'Prova: 29/11/2026' : 'Estudo contínuo (sem edital publicado)';
-    $('dtSub').textContent = sim ? 'Encontrei a data no edital — confirme ou ajuste'
-      : 'Você estuda em ciclos de 16 semanas; quando o edital sair, o plano se reancora na data real';
+    $('dtInput').disabled = !sim;
+    $('dtInput').style.opacity = sim ? '1' : '.4';
+    $('dtProva').textContent = sim ? 'Data da prova' : 'Estudo contínuo (sem data definida)';
+    $('dtSub').textContent = sim ? 'ajuste se a data estiver errada ou em branco'
+      : 'quando o edital marcar a prova, volte aqui e informe a data';
     calcTempo();
+  }
+  function setDataManual(v){
+    PROVA_ISO = v || null;
+    if(v){ temData = true; $('dtNo').classList.remove('sel'); $('dtInput').disabled = false; $('dtInput').style.opacity = '1'; }
+    calcTempo();
+  }
+  function diasAte(iso){
+    if(!iso) return null;
+    return Math.round((Date.parse(iso + 'T12:00:00') - Date.now()) / 86400000);
   }
   function pick(el){
     el.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
@@ -1725,21 +1660,29 @@
   function selVal(gid){ return parseFloat(document.querySelector('#'+gid+' .sel').dataset.v); }
   function calcTempo(){
     var h = selVal('gH'), d = selVal('gD'), box = $('calcBox');
-    var precisa = 150; // horas estimadas do edital de exemplo (teoria + esteira + revisões)
-    if(!temData){
+    var nTop = parseInt(String($('stT').textContent).replace(/\D/g,''), 10) || 0;
+    var precisa = Math.round(nTop * 0.9);
+    if(!temData || !PROVA_ISO){
       box.className = 'calc';
-      box.innerHTML = '<b>Ciclo contínuo:</b> com <b class="num">' + (h*d) + 'h/semana</b>, você cobre os assuntos universais (Português, RLM, Constitucional, Administrativo, Informática) em ritmo sustentável. Quando o edital sair, o cronograma se reancora sozinho na data da prova.';
+      box.innerHTML = '<b>Ciclo contínuo:</b> com <b class="num">' + (h*d) + 'h/semana</b> você cobre ' +
+        (nTop ? 'os <b class="num">' + nTop + '</b> tópicos' : 'os tópicos') + ' do seu edital em ritmo sustentável. Informe a data quando ela sair e eu reancoro tudo.';
       return;
     }
-    var semanas = 13.4, total = Math.round(h*d*semanas);
+    var dias = diasAte(PROVA_ISO);
+    if(dias === null || dias < 0){
+      box.className = 'calc warn';
+      box.innerHTML = '<b>Essa data já passou.</b> Corrija o campo acima com a data da sua prova, ou escolha "ainda não há concurso previsto".';
+      return;
+    }
+    var semanas = dias / 7, total = Math.round(h * d * semanas);
     if(total >= precisa){
       box.className = 'calc';
-      box.innerHTML = '<b>Cabe!</b> ' + h + 'h × ' + d + ' dias = <b class="num">' + total + 'h</b> até a prova. Seu edital pede ~<b class="num">150h</b> (teoria + esteira + revisões). Você fecha 100% com folga para o modo véspera.';
+      box.innerHTML = '<b>Cabe!</b> ' + h + 'h × ' + d + ' dias, em <b class="num">' + dias + '</b> dias até a prova = <b class="num">' + total + 'h</b>. Seu edital pede ~<b class="num">' + precisa + 'h</b> (' + nTop + ' tópicos). Você fecha 100% com folga para a véspera.';
     } else {
-      var rec = Math.ceil((precisa/(d*semanas))*4)/4;
-      var cob = Math.round(total/precisa*100);
+      var rec = Math.ceil((precisa / Math.max(d * semanas, 1)) * 4) / 4;
+      var cob = precisa ? Math.round(total / precisa * 100) : 0;
       box.className = 'calc warn';
-      box.innerHTML = '<b>Atenção:</b> ' + h + 'h × ' + d + ' dias = <b class="num">' + total + 'h</b>, e o edital pede ~<b class="num">150h</b>. Duas saídas: subir para <b>' + String(rec).replace('.', ',') + 'h/dia</b>, ou eu priorizo por incidência da banca — com suas horas, cobrimos os tópicos que respondem por ~<b class="num">' + Math.min(cob+18,97) + '%</b> das questões. Você decide; eu recalculo.';
+      box.innerHTML = '<b>Atenção:</b> ' + h + 'h × ' + d + ' dias em ' + dias + ' dias = <b class="num">' + total + 'h</b>, e o edital pede ~<b class="num">' + precisa + 'h</b>. Duas saídas: subir para <b>' + String(rec).replace('.', ',') + 'h/dia</b>, ou eu priorizo por incidência — com suas horas cobrimos cerca de <b class="num">' + Math.min(cob + 15, 97) + '%</b> do que mais cai.';
     }
   }
   calcTempo();
@@ -2074,7 +2017,34 @@
   }
 
   /* ---------- modo real: cronograma, conteúdo e dashboard ---------- */
-  var REAL = null, CONT = null, JA_CONFIG = false;
+  var REAL = null, CONT = null, JA_CONFIG = false, ESCOLHIDO = null, DIA_SEL = null;
+  try { ESCOLHIDO = localStorage.getItem('persisteia_topico') || null; } catch(e){}
+  function itemAtivo(){
+    if(!REAL) return null;
+    if(ESCOLHIDO){
+      var it = (REAL.itens || []).filter(function(x){ return x.cron_id === ESCOLHIDO; })[0];
+      if(it && it.status !== 'concluido') return it;
+    }
+    return REAL.hoje;
+  }
+  function estudarTopico(cronId){
+    ESCOLHIDO = cronId;
+    try { localStorage.setItem('persisteia_topico', cronId); } catch(e){}
+    FEITOS = {}; CONT = null;
+    document.querySelectorAll('.tab').forEach(function(t){ if(t.dataset.scr === 'hoje') t.click(); });
+    toast('Abrindo este tópico — gerando o conteúdo dos 8 verbos…');
+    enterLoading();
+    carregarReal();
+  }
+  function enterLoading(){
+    $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
+    $('limpeBox').innerHTML = ''; $('limpeWord').textContent = '';
+    $('leiBox').innerHTML = '<span class="muted">Carregando…</span>';
+    $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões…</p>';
+    $('lBody').innerHTML = '<p>Carregando…</p>';
+    $('musLyr').innerHTML = '<span class="muted">Gerando a letra…</span>';
+    $('podQuote').textContent = 'Preparando o roteiro…';
+  }
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
   function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
   function fmtData(iso){ return iso ? iso.split('-').reverse().join('/') : ''; }
@@ -2088,9 +2058,10 @@
       }
       if(!d || !d.hoje) return;
       REAL = d;
-      aplicarHojeReal(d);
+      var it = itemAtivo();
+      aplicarHojeReal(d, it);
       aplicarPlanoReal(d);
-      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(d.hoje.topico_id))
+      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(it.topico_id))
         .then(function(r){ return r.json(); })
         .then(function(c){
           if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); }
@@ -2120,24 +2091,29 @@
     if(lbl) lbl.textContent = n + ' de 8 verbos hoje';
   }
 
-  function aplicarHojeReal(d){
-    (d.verbos_hoje || []).forEach(function(v){ if(v.status === 'concluido') marcaVerbo(v.verbo); });
-    ASSUNTO = d.hoje.topico + ' — ' + d.hoje.disciplina;
-    $('hdrAssunto').textContent = d.hoje.topico;
-    $('hdrAssuntoSub').textContent = ' · ' + d.hoje.disciplina + (d.hoje.atrasado ? ' · retomando atraso' : '');
-    $('nextT').textContent = 'Continuar: ' + d.hoje.topico;
+  function aplicarHojeReal(d, it){
+    it = it || d.hoje;
+    if(it.cron_id === d.hoje.cron_id){
+      (d.verbos_hoje || []).forEach(function(v){ if(v.status === 'concluido') marcaVerbo(v.verbo); });
+    }
+    ASSUNTO = it.topico + ' — ' + it.disciplina;
+    $('hdrAssunto').textContent = it.topico;
+    $('hdrAssuntoSub').textContent = ' · ' + it.disciplina + (it.data < new Date().toISOString().slice(0,10) ? ' · retomando atraso' : '');
+    $('nextT').textContent = 'Continuar: ' + it.topico;
     $('nextS').textContent = 'teoria no Leitor · depois eu te levo aos outros verbos';
-    $('leitorTitle').textContent = d.hoje.topico;
+    $('leitorTitle').textContent = it.topico;
     var chatSub = document.querySelector('#chat .c-top small');
-    if(chatSub) chatSub.textContent = 'no assunto: ' + d.hoje.topico;
+    if(chatSub) chatSub.textContent = 'no assunto: ' + it.topico;
     if(!$('btnConcluir')){
       var b = document.createElement('button');
       b.className = 'btn ghost small'; b.id = 'btnConcluir';
       b.style.margin = '0 0 14px'; b.textContent = 'Concluir assunto de hoje ✓';
       b.onclick = function(){
-        apiFetch('/api/cronograma', { concluir: REAL.hoje.cron_id }).then(function(){
+        var alvo = itemAtivo();
+        apiFetch('/api/cronograma', { concluir: alvo.cron_id }).then(function(){
           toast('Assunto concluído! Puxando o próximo do cronograma…');
-          CONT = null; carregarReal();
+          ESCOLHIDO = null; try { localStorage.removeItem('persisteia_topico'); } catch(e){}
+          FEITOS = {}; CONT = null; enterLoading(); carregarReal();
         }).catch(function(){});
       };
       var next = document.querySelector('.nextcard');
@@ -2186,7 +2162,7 @@
     if(c.flashcards && c.flashcards.length){
       fcs = c.flashcards.map(function(x){ return [x.frente, x.verso]; });
       fcI = 0; $('fcF').textContent = fcs[0][0]; $('fcB').textContent = fcs[0][1];
-      apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: REAL.hoje.topico_id }).catch(function(){});
+      apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: itemAtivo().topico_id }).catch(function(){});
     }
     if(c.feynman && c.feynman.length){
       $('feynQ').innerHTML = 'Explique em voz alta: <b>' + esc(c.feynman[0].pergunta) + '</b>';
@@ -2209,23 +2185,80 @@
   }
 
   function aplicarPlanoReal(d){
-    $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> tópicos concluídos · ' + esc(d.edital);
+    var itens = d.itens || [];
+    var hojeISO = new Date().toISOString().slice(0,10);
+    var dd = diasAte(d.data_prova);
+    $('planoTit').textContent = d.edital || 'Seu plano';
+    $('planoCount').textContent = (dd === null) ? 'estudo contínuo' : (dd < 0 ? 'data da prova passou' : 'prova em ' + dd + ' dias');
+
+    // ----- faixa da semana -----
+    var base = new Date(); base.setHours(12,0,0,0);
+    var dow = base.getDay(), seg = new Date(base.getTime() - ((dow + 6) % 7) * 86400000);
+    var DIA = ['seg','ter','qua','qui','sex','sáb','dom'];
+    var htmlSem = '';
+    for(var i = 0; i < 7; i++){
+      var dt = new Date(seg.getTime() + i*86400000);
+      var iso = dt.toISOString().slice(0,10);
+      var doDia = itens.filter(function(x){ return x.data === iso; });
+      var todosOk = doDia.length && doDia.every(function(x){ return x.status === 'concluido'; });
+      var cls = 'day' + (iso === hojeISO ? ' today' : (todosOk ? ' done' : ''));
+      htmlSem += '<button class="' + cls + '" onclick="verDia(\'' + iso + '\')">' + DIA[i] + '<b class="num">' + dt.getDate() + '</b></button>';
+    }
+    $('planoSemana').innerHTML = htmlSem;
+    verDia(DIA_SEL || hojeISO, itens);
+
+    // ----- cronograma completo, por disciplina e tópico -----
+    $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> tópicos concluídos';
     $('planoProj').innerHTML = '<b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
-      (d.data_prova ? ' — prova em ' + fmtData(d.data_prova) + '.' : '. Quando a data da prova sair, eu reancoro tudo.');
-    var html = '';
-    d.resumo.por_disciplina.forEach(function(disc, i){
-      var pct = Math.round(100 * disc.concluidos / disc.total);
-      var cor = PAL[i % PAL.length];
-      html += '<div class="drow"><span class="dot" style="background:' + cor + '"></span>' +
-        '<span class="dn">' + esc(disc.nome) + '<small class="num">' + disc.concluidos + ' de ' + disc.total + ' tópicos</small></span>' +
-        '<span class="db"><i style="width:' + pct + '%; background:' + cor + '"></i></span>' +
-        '<span class="dp num">' + pct + '%</span></div>';
-    });
-    html += '<p class="eyebrow" style="margin:14px 0 4px">Próximos no cronograma</p>';
-    d.proximos.forEach(function(px){
-      html += '<div class="a-row"><span class="st next"></span><span class="an">' + esc(px.topico) + ' <small class="muted">· ' + esc(px.disciplina) + '</small></span><span class="ah num">' + fmtData(px.data) + '</span></div>';
+      (d.data_prova ? (dd < 0 ? ' — a data de prova cadastrada já passou; ajuste no seu perfil.' : ' — prova em ' + fmtData(d.data_prova) + '.') : '. Sem data de prova cadastrada.');
+
+    var porDisc = {};
+    itens.forEach(function(x){ (porDisc[x.disciplina] = porDisc[x.disciplina] || []).push(x); });
+    var html = '', k = 0;
+    Object.keys(porDisc).forEach(function(nome){
+      var lista = porDisc[nome];
+      var feitos = lista.filter(function(x){ return x.status === 'concluido'; }).length;
+      var pct = Math.round(100 * feitos / lista.length);
+      var cor = PAL[k % PAL.length]; k++;
+      var idd = 'disc_' + k;
+      html += '<div class="disc" id="' + idd + '">' +
+        '<button class="disc-h" onclick="document.getElementById(\'' + idd + '\').classList.toggle(\'open\')">' +
+          '<span class="dot" style="width:10px;height:10px;border-radius:50%;background:' + cor + ';flex:none"></span>' +
+          '<span class="nm">' + esc(nome) + '</span>' +
+          '<span class="hrs num">' + feitos + '/' + lista.length + '</span>' +
+          '<span class="mini"><i style="width:' + pct + '%; background:' + cor + '"></i></span>' +
+        '</button><div class="assuntos">';
+      lista.forEach(function(x){
+        var st = x.status === 'concluido' ? 'done' : (x.cron_id === (itemAtivo() || {}).cron_id ? 'now' : 'next');
+        html += '<button class="a-row" style="width:100%; background:none; border:none; text-align:left; cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
+          '<span class="st ' + st + '"></span>' +
+          '<span class="an">' + esc(x.topico) + '</span>' +
+          '<span class="ah num">' + fmtData(x.data) + '</span></button>';
+      });
+      html += '</div></div>';
     });
     $('planoLista').innerHTML = html;
+  }
+
+  function verDia(iso, itens){
+    DIA_SEL = iso;
+    itens = itens || (REAL && REAL.itens) || [];
+    document.querySelectorAll('#planoSemana .day').forEach(function(b){
+      b.classList.toggle('today', b.textContent.indexOf(String(new Date(iso + 'T12:00:00').getDate())) > -1 && b.textContent.slice(3) === String(new Date(iso + 'T12:00:00').getDate()));
+    });
+    var doDia = itens.filter(function(x){ return x.data === iso; });
+    if(!doDia.length){
+      $('planoDia').innerHTML = '<p class="muted" style="font-size:.85rem">Nenhum tópico agendado para ' + fmtData(iso) + '. Dia livre — ou aproveite para adiantar um tópico da lista abaixo.</p>';
+      return;
+    }
+    $('planoDia').innerHTML = doDia.map(function(x){
+      var feito = x.status === 'concluido';
+      return '<div class="block"><span class="hr num">' + fmtData(x.data).slice(0,5) + '</span>' +
+        '<button class="card" style="text-align:left; border:1px solid var(--line); cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
+          '<b>' + esc(x.topico) + '</b><small>' + esc(x.disciplina) + '</small>' +
+          '<div class="vtags"><span class="vtag' + (feito ? '' : ' w') + '">' + (feito ? 'concluído ✓' : 'esteira dos 8 verbos') + '</span></div>' +
+        '</button></div>';
+    }).join('');
   }
 
   function aplicarDashReal(dd){
@@ -2279,6 +2312,35 @@
         '<span class="db"><i style="width:' + pct + '%"></i></span><span class="dp num">' + nEv + '</span></div>';
     });
     $('dvVerboList').innerHTML = vhtml;
+
+    if(REAL && REAL.itens){
+      var ordemV = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
+      var ativo = itemAtivo() || {};
+      var porD = {};
+      REAL.itens.forEach(function(x){ (porD[x.disciplina] = porD[x.disciplina] || []).push(x); });
+      var th = '', kk = 0;
+      Object.keys(porD).forEach(function(nome){
+        var cor = PAL[kk % PAL.length]; kk++;
+        th += '<p style="font-size:.82rem; margin:' + (kk > 1 ? '18px' : '0') + ' 0 4px"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + cor + '; margin-right:6px"></span><b>' + esc(nome) + '</b></p>';
+        porD[nome].slice(0, 6).forEach(function(x){
+          var ehAtivo = x.cron_id === ativo.cron_id;
+          var feitosN = x.status === 'concluido' ? 8 : (ehAtivo ? Object.keys(FEITOS).length : 0);
+          th += '<div class="trow"><div class="tn"><b>' + esc(x.topico) + '</b><span class="num">' + feitosN + '/8 · ' + (x.status === 'concluido' ? 'concluído' : (ehAtivo ? 'em estudo' : fmtData(x.data))) + '</span></div><div class="vmx">';
+          for(var vi = 0; vi < 8; vi++){
+            var cls = '';
+            if(x.status === 'concluido') cls = 'on';
+            else if(ehAtivo && FEITOS[ordemV[vi]]) cls = 'on';
+            else if(ehAtivo && vi === 0) cls = 'now';
+            th += '<i class="' + cls + '"></i>';
+          }
+          th += '</div></div>';
+        });
+        if(porD[nome].length > 6){
+          th += '<p class="muted" style="font-size:.7rem; margin-top:6px">+ ' + (porD[nome].length - 6) + ' tópicos nesta disciplina</p>';
+        }
+      });
+      $('dvTemaList').innerHTML = th;
+    }
     $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano reforça a seguir.';
     radarDrawn = false; drawRadar(vals);
   }

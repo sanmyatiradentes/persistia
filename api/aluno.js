@@ -18,11 +18,27 @@ module.exports = async (req, res) => {
         sql: "SELECT COUNT(*) AS n FROM flashcards WHERE aluno_id = ? AND proxima_revisao <= ?",
         args: [aluno.id, agora()]
       });
-      const ed = await db.execute({ sql: 'SELECT COUNT(*) AS n FROM editais WHERE aluno_id = ?', args: [aluno.id] });
+      const ed = await db.execute({
+        sql: 'SELECT id, titulo, data_prova FROM editais WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 1',
+        args: [aluno.id]
+      });
+      let nTopicos = 0, editalData = null, editalTitulo = null;
+      if (ed.rows.length) {
+        editalData = ed.rows[0].data_prova || null;
+        editalTitulo = ed.rows[0].titulo || null;
+        const nt = await db.execute({
+          sql: `SELECT COUNT(*) AS n FROM topicos t JOIN disciplinas d ON d.id = t.disciplina_id WHERE d.edital_id = ?`,
+          args: [ed.rows[0].id]
+        });
+        nTopicos = Number(nt.rows[0].n);
+      }
       return res.status(200).json({
         nome: aluno.nome, email: aluno.email,
         config: c.rows[0] || null,
-        tem_edital: Number(ed.rows[0].n) > 0,
+        tem_edital: ed.rows.length > 0,
+        edital_titulo: editalTitulo,
+        edital_data_prova: editalData,
+        n_topicos: nTopicos,
         eventos: Number(ev.rows[0].n),
         flashcards_devidos: Number(fc.rows[0].n)
       });
