@@ -17,6 +17,8 @@ flashcards com repetição espaçada e dashboard de evolução.
 | Nome | Valor |
 |---|---|
 | `GEMINI_API_KEY` | chave do Google AI Studio |
+| `GEMINI_MODEL` | (opcional) modelo de qualidade — padrão `gemini-2.5-flash` |
+| `GEMINI_MODEL_LEVE` | (opcional) modelo econômico do Persi — padrão `gemini-2.5-flash-lite` |
 | `TURSO_DATABASE_URL` | URL `libsql://…` do banco no Turso |
 | `TURSO_AUTH_TOKEN` | token do banco no Turso |
 

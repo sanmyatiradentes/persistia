@@ -868,25 +868,7 @@
           <button class="btn-feito" onclick="event.stopPropagation(); extDone(this, 'escrever')">Feito ✓</button>
         </button>
         <div class="task-b"><div class="inner">
-          <svg class="mm" viewBox="0 0 340 190" role="img" aria-label="Mapa mental do artigo 37: LIMPE e desdobramentos">
-            <line x1="170" y1="95" x2="60" y2="35" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="60" y2="155" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="280" y2="35" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="280" y2="155" stroke="var(--line)" stroke-width="1.5"/>
-            <line x1="170" y1="95" x2="170" y2="22" stroke="var(--line)" stroke-width="1.5"/>
-            <rect x="128" y="78" width="84" height="34" rx="10" fill="var(--accent)"/>
-            <text x="170" y="99" text-anchor="middle" fill="var(--on-accent)" font-size="13" font-weight="700">Art. 37 CF</text>
-            <rect x="132" y="8" width="76" height="26" rx="8" fill="var(--accent-soft)"/>
-            <text x="170" y="25" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="700">LIMPE</text>
-            <rect x="14" y="22" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="60" y="39" text-anchor="middle" fill="var(--ink)" font-size="10">expressos ×5</text>
-            <rect x="14" y="142" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="60" y="159" text-anchor="middle" fill="var(--ink)" font-size="10">implícitos ∞</text>
-            <rect x="234" y="22" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="280" y="39" text-anchor="middle" fill="var(--ink)" font-size="10">§1º vedações</text>
-            <rect x="234" y="142" width="92" height="26" rx="8" fill="var(--card2)" stroke="var(--line)"/>
-            <text x="280" y="159" text-anchor="middle" fill="var(--ink)" font-size="10">EC 19/98</text>
-          </svg>
+          <div id="mapaBox"></div>
           <p class="muted" style="font-size:.75rem; margin-top:8px">Escrever à mão engaja áreas motoras que reforçam a memória — capriche no traço.</p>
         </div></div>
       </div>
@@ -898,7 +880,13 @@
           <span><b>Raciocinar · Questões da banca</b><small>Diga sua confiança antes de responder</small></span>
           <span class="stbadge wait num" id="sbRaciocinar">6 min · a fazer</span>
         </button>
-        <div class="task-b"><div class="inner" id="quizBox">
+        <div class="task-b"><div class="inner">
+          <div class="lmode" id="qFmt" style="margin-bottom:12px; width:fit-content">
+            <button id="fmtCE" class="sel" onclick="setFormato('ce')">Certo/Errado</button>
+            <button id="fmtME" onclick="setFormato('me')">Múltipla escolha</button>
+          </div>
+          <p class="muted" style="font-size:.72rem; margin:-6px 0 10px" id="qBanca"></p>
+          <div id="quizBox">
           <div id="q1">
             <p class="q-src">Questão 1 · estilo certo/errado</p>
             <p class="q-enun">O princípio da publicidade impede, em qualquer hipótese, a restrição de acesso a informações produzidas pela Administração Pública.</p>
@@ -919,6 +907,7 @@
             </div>
             <div class="fb" id="fb2"></div>
           </div>
+          </div>
         </div></div>
       </div>
 
@@ -926,10 +915,14 @@
       <div class="card task" id="t-treinar">
         <button class="task-h" onclick="tg('t-treinar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="15" rx="2"/><path d="M8 3h13v15"/></svg></span>
-          <span><b>Treinar · Flashcards</b><small>Revisão espaçada no ritmo do seu esquecimento</small></span>
+          <span><b>Treinar · Flashcards</b><small id="fcSub">Revisão espaçada no ritmo do seu esquecimento</small></span>
           <span class="stbadge wait num" id="sbTreinar">a fazer</span>
         </button>
         <div class="task-b"><div class="inner" id="fcWrap">
+          <div class="lmode" style="margin-bottom:12px; width:fit-content">
+            <button id="fcModoHoje" class="sel" onclick="fcModo('hoje')">Assunto de hoje</button>
+            <button id="fcModoRev" onclick="fcModo('revisao')">Revisões pendentes</button>
+          </div>
           <div class="fc" id="fc" onclick="this.classList.toggle('flip')" role="button" tabindex="0" aria-label="Virar flashcard">
             <div class="fc-in">
               <div class="fc-f" id="fcF">O que o §1º do art. 37 veda na publicidade dos órgãos públicos?</div>
@@ -948,8 +941,8 @@
       <div class="card task warm" id="t-musica">
         <button class="task-h" onclick="tg('t-musica')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V6l11-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="15" r="2.5"/></svg></span>
-          <span><b>Bônus · Forró do LIMPE</b><small>O refrão que não sai mais da sua cabeça</small></span>
-          <span class="stbadge wait num">2:40</span>
+          <span><b id="musCard">Bônus · Música do assunto</b><small>O refrão que não sai mais da sua cabeça</small></span>
+          <span class="stbadge wait num" id="musDur">ouvir</span>
         </button>
         <div class="task-b"><div class="inner">
           <div class="player">
@@ -989,9 +982,7 @@
       <div class="card">
         <h2 style="font-size:.98rem">Minha Voz · sua playlist de revisão</h2>
         <p class="muted" style="font-size:.74rem; margin-bottom:6px">As leituras que você gravou, prontas para o trajeto — eu intercalo perguntas entre as faixas.</p>
-        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Princípios da Adm. Pública</b><small class="num">hoje · 2:41 · fluência 142 ppm</small></span></div>
-        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Atos administrativos</b><small class="num">ontem · 3:05 · fluência 136 ppm</small></span></div>
-        <div class="mv-row"><button class="mv-play" onclick="toast('No app final, sua gravação toca aqui, com perguntas entre as faixas')" aria-label="Tocar gravação"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="mi"><b>Crase</b><small class="num">segunda · 1:58 · fluência 128 ppm</small></span></div>
+        <div id="mvLista"><p class="muted" style="font-size:.8rem">Nenhuma gravação ainda. Leia a teoria em voz alta no Leitor e sua faixa aparece aqui.</p></div>
         <p class="muted" style="font-size:.7rem; margin-top:8px">Ouvir a matéria na própria voz é um dos reforços de memória mais fortes que existem.</p>
       </div>
 
@@ -1597,14 +1588,75 @@
     ['Quais são os 5 princípios expressos do caput do art. 37?', 'LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência (este incluído pela EC 19/98).'],
     ['Cite dois princípios IMPLÍCITOS da Administração Pública.', 'Razoabilidade, proporcionalidade, autotutela, continuidade do serviço público, entre outros — não estão no caput, mas regem a Administração.']
   ];
-  var fcI = 0;
+  var fcI = 0, FC_MODO = 'hoje', FC_HOJE = null, FC_REV = [];
   var fcLabels = ['Errei — volta em 10 min', 'Quase — volta em 1 dia', 'Fácil — volta em 4 dias'];
-  function fcNext(grade){
-    toast(fcLabels[grade] + ' (agenda FSRS atualizada)');
-    evento('flashcard_revisado', 'treinar', { nota: grade }, 'em_andamento');
-    fcI = (fcI + 1) % fcs.length;
+
+  function irRevisar(){
+    var card = $('t-treinar');
+    if(card && !card.classList.contains('open')) card.classList.add('open');
+    fcModo('revisao');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function fcModo(m){
+    FC_MODO = m;
+    $('fcModoHoje').classList.toggle('sel', m === 'hoje');
+    $('fcModoRev').classList.toggle('sel', m === 'revisao');
+    if(m === 'hoje'){
+      if(FC_HOJE && FC_HOJE.length){
+        fcs = FC_HOJE.slice(); fcI = 0; fcMostra();
+        $('fcSub').textContent = 'Cartões do assunto que você está estudando';
+      } else {
+        $('fc').classList.remove('flip');
+        $('fcF').textContent = 'Carregando os cartões do assunto…';
+        $('fcB').textContent = '';
+        $('fcSub').textContent = 'Assim que a teoria carregar, os cartões aparecem aqui';
+      }
+      return;
+    }
+    $('fcSub').textContent = 'Carregando o que está vencido…';
+    apiFetch('/api/flashcard').then(function(r){ return r.json(); }).then(function(d){
+      FC_REV = d.devidos || [];
+      if(!FC_REV.length){
+        $('fcF').textContent = 'Nada vencido agora ✓';
+        $('fcB').textContent = 'Suas revisões voltam no momento certo do esquecimento — de qualquer assunto já estudado.';
+        $('fcSub').textContent = 'Nenhuma revisão pendente';
+        return;
+      }
+      fcs = FC_REV.map(function(x){ return [x.frente, x.verso]; });
+      fcI = 0; fcMostra();
+      $('fcSub').textContent = FC_REV.length + ' cartão(ões) vencido(s), de todos os assuntos já estudados';
+    }).catch(function(){ $('fcSub').textContent = 'Não consegui carregar as revisões'; });
+  }
+
+  function fcMostra(){
     var fc = $('fc'); fc.classList.remove('flip');
-    setTimeout(function(){ $('fcF').textContent = fcs[fcI][0]; $('fcB').textContent = fcs[fcI][1]; }, 260);
+    if(!fcs.length) return;
+    $('fcF').textContent = fcs[fcI][0];
+    $('fcB').textContent = fcs[fcI][1];
+  }
+  function fcNext(grade){
+    toast(fcLabels[grade]);
+    evento('flashcard_revisado', 'treinar', { nota: grade, modo: FC_MODO }, 'em_andamento');
+    if(FC_MODO === 'revisao' && FC_REV[fcI] && FC_REV[fcI].id){
+      apiFetch('/api/flashcard', { revisar: FC_REV[fcI].id, nota: grade }).catch(function(){});
+      FC_REV.splice(fcI, 1); fcs.splice(fcI, 1);
+      if(!fcs.length){
+        $('fc').classList.remove('flip');
+        $('fcF').textContent = 'Revisões em dia ✓';
+        $('fcB').textContent = 'Você zerou a fila de hoje. Os cartões voltam no momento certo.';
+        $('fcSub').textContent = 'Nenhuma revisão pendente';
+        carregarReal();
+        return;
+      }
+      if(fcI >= fcs.length) fcI = 0;
+      setTimeout(fcMostra, 260);
+      $('fcSub').textContent = FC_REV.length + ' cartão(ões) vencido(s) restante(s)';
+      return;
+    }
+    fcI = (fcI + 1) % fcs.length;
+    $('fc').classList.remove('flip');
+    setTimeout(fcMostra, 260);
   }
 
   /* ---------- charts ---------- */
@@ -1952,15 +2004,14 @@
   }
 
   function minhaVozAdd(titulo, url, dur, ppm){
-    var box = document.querySelector('#scr-hoje .card .mv-row');
-    var pai = box ? box.parentNode : null;
-    if(!pai) return;
+    var pai = $('mvLista'); if(!pai) return;
+    var vazio = pai.querySelector('p'); if(vazio) vazio.remove();
     var div = document.createElement('div');
     div.className = 'mv-row';
     div.innerHTML = '<button class="mv-play" onclick="this.parentNode.querySelector(\'audio\').play()" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
       '<span class="mi"><b>' + esc(titulo) + '</b><small class="num">agora · ' + dur + (ppm ? ' · ' + ppm + ' ppm' : '') + '</small></span>' +
       '<audio src="' + url + '" style="display:none"></audio>';
-    pai.insertBefore(div, pai.querySelector('.mv-row'));
+    pai.insertBefore(div, pai.firstChild);
   }
 
   function stopTp(){ pararGravacao(true); tpPaused = false; syncRec(); }
@@ -2161,6 +2212,7 @@
     $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões…</p>';
     $('lBody').innerHTML = '<p>Carregando…</p>';
     $('musLyr').innerHTML = '<span class="muted">Gerando a letra…</span>';
+    if($('mapaBox')) $('mapaBox').innerHTML = '<p class="muted" style="font-size:.85rem">Desenhando o mapa mental do assunto…</p>';
     $('podQuote').textContent = 'Preparando o roteiro…';
   }
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
@@ -2239,7 +2291,39 @@
     }
   }
 
+  function desenharMapa(m){
+    if(!m || !m.ramos || !m.ramos.length){ $('mapaBox').innerHTML = ''; return; }
+    var ramos = m.ramos.slice(0, 6), n = ramos.length;
+    var W = 720, H = n > 4 ? 460 : 380, cx = W/2, cy = H/2;
+    var rx = W*0.33, ry = H*0.32;
+    var svg = '<svg class="mm" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Mapa mental de ' + esc(m.centro) + '">';
+    var pos = [];
+    for(var i = 0; i < n; i++){
+      var ang = -Math.PI/2 + i * 2*Math.PI/n;
+      pos.push([cx + rx*Math.cos(ang), cy + ry*Math.sin(ang)]);
+    }
+    pos.forEach(function(p){
+      svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="var(--line)" stroke-width="1.6"/>';
+    });
+    svg += '<rect x="'+(cx-85)+'" y="'+(cy-26)+'" width="170" height="52" rx="14" fill="var(--accent)"/>';
+    svg += '<text x="'+cx+'" y="'+(cy+6)+'" text-anchor="middle" fill="var(--on-accent)" font-size="15" font-weight="700">' + esc(String(m.centro).slice(0, 26)) + '</text>';
+    ramos.forEach(function(r, i){
+      var p = pos[i], itens = (r.itens || []).slice(0, 4);
+      var h = 28 + itens.length * 15, w = 168;
+      var x = Math.max(6, Math.min(W - w - 6, p[0] - w/2)), y = p[1] - h/2;
+      svg += '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w+'" height="'+h+'" rx="12" fill="var(--card2)" stroke="var(--line)"/>';
+      svg += '<text x="'+(x + w/2)+'" y="'+(y + 18)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--accent)">' + esc(String(r.titulo).slice(0, 24)) + '</text>';
+      itens.forEach(function(it, j){
+        svg += '<text x="'+(x + w/2)+'" y="'+(y + 33 + j*15)+'" text-anchor="middle" font-size="10" fill="var(--ink)">' + esc(String(it).slice(0, 30)) + '</text>';
+      });
+    });
+    svg += '</svg>';
+    $('mapaBox').innerHTML = svg;
+  }
+
   function aplicarConteudoReal(c){
+    desenharMapa(c.mapa);
+    $('musCard').textContent = 'Bônus · ' + ((c.musica && c.musica.estilo) ? c.musica.estilo : 'Música do assunto');
     $('lerIntro').innerHTML = 'O essencial de <b>' + esc(c.topico) + '</b> — e o mnemônico do assunto (toque nas letras):';
     var sigla = String(c.acronimo.sigla || '').replace(/[^A-Za-zÀ-ú]/g, '').slice(0, 6).toUpperCase();
     var box = $('limpeBox'); box.innerHTML = '';
@@ -2265,20 +2349,15 @@
     gapsTotal = n || 1; gapsDone = 0;
     $('leiBox').innerHTML = '"' + lei + '"';
 
-    var qz = c.questoes || []; var html = '';
-    for(var q = 0; q < qz.length; q++){
-      html += '<div id="rq_' + q + '" style="' + (q ? 'display:none; margin-top:16px' : '') + '">' +
-        '<p class="q-src">Questão ' + (q + 1) + ' · certo/errado</p>' +
-        '<p class="q-enun">' + esc(qz[q].enunciado) + '</p>' +
-        '<div class="q-btns">' +
-          '<button class="btn ghost small" onclick="ansReal(' + q + ',true)">Certo</button>' +
-          '<button class="btn ghost small" onclick="ansReal(' + q + ',false)">Errado</button>' +
-        '</div><div class="fb" id="rfb_' + q + '"></div></div>';
-    }
-    $('quizBox').innerHTML = html;
+    $('qBanca').textContent = c.banca
+      ? 'Questões no estilo da banca ' + c.banca + ' — troque o formato quando quiser.'
+      : 'Banca ainda não identificada: questões em estilo clássico. Escolha o formato que sua prova cobra.';
+    renderQuestoes();
 
     if(c.flashcards && c.flashcards.length){
       fcs = c.flashcards.map(function(x){ return [x.frente, x.verso]; });
+      FC_HOJE = fcs.slice(); FC_MODO = 'hoje';
+      if($('fcModoHoje')){ $('fcModoHoje').classList.add('sel'); $('fcModoRev').classList.remove('sel'); }
       fcI = 0; $('fcF').textContent = fcs[0][0]; $('fcB').textContent = fcs[0][1];
       apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: itemAtivo().topico_id }).catch(function(){});
     }
@@ -2289,6 +2368,67 @@
     $('musTitle').textContent = 'Música do assunto';
     $('musSub').textContent = esc(c.musica.estilo);
     $('musLyr').innerHTML = esc(c.musica.letra).replace(/\n/g, '<br>');
+  }
+
+  var Q_FMT = 'ce';
+  try { Q_FMT = localStorage.getItem('persisteia_formato') || 'ce'; } catch(e){}
+
+  function setFormato(f){
+    Q_FMT = f;
+    try { localStorage.setItem('persisteia_formato', f); } catch(e){}
+    $('fmtCE').classList.toggle('sel', f === 'ce');
+    $('fmtME').classList.toggle('sel', f === 'me');
+    renderQuestoes();
+  }
+
+  function renderQuestoes(){
+    if(!CONT){ return; }
+    $('fmtCE').classList.toggle('sel', Q_FMT === 'ce');
+    $('fmtME').classList.toggle('sel', Q_FMT === 'me');
+    var html = '';
+    if(Q_FMT === 'me'){
+      var me = CONT.questoes_me || [];
+      if(!me.length){
+        $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Este assunto foi gerado antes da múltipla escolha existir. Use Certo/Errado ou estude um assunto novo para ver os dois formatos.</p>';
+        return;
+      }
+      for(var q = 0; q < me.length; q++){
+        html += '<div id="rq_' + q + '" style="' + (q ? 'display:none; margin-top:16px' : '') + '">' +
+          '<p class="q-src">Questão ' + (q + 1) + ' · múltipla escolha</p>' +
+          '<p class="q-enun">' + esc(me[q].enunciado) + '</p><div class="q-btns" style="flex-direction:column; gap:8px">';
+        (me[q].alternativas || []).forEach(function(alt, k){
+          html += '<button class="btn ghost small" style="text-align:left; justify-content:flex-start" onclick="ansME(' + q + ',' + k + ')">' +
+            String.fromCharCode(65 + k) + ') ' + esc(alt) + '</button>';
+        });
+        html += '</div><div class="fb" id="rfb_' + q + '"></div></div>';
+      }
+    } else {
+      var qz = CONT.questoes || [];
+      for(var i = 0; i < qz.length; i++){
+        html += '<div id="rq_' + i + '" style="' + (i ? 'display:none; margin-top:16px' : '') + '">' +
+          '<p class="q-src">Questão ' + (i + 1) + ' · certo/errado</p>' +
+          '<p class="q-enun">' + esc(qz[i].enunciado) + '</p>' +
+          '<div class="q-btns">' +
+            '<button class="btn ghost small" onclick="ansReal(' + i + ',true)">Certo</button>' +
+            '<button class="btn ghost small" onclick="ansReal(' + i + ',false)">Errado</button>' +
+          '</div><div class="fb" id="rfb_' + i + '"></div></div>';
+      }
+    }
+    $('quizBox').innerHTML = html;
+  }
+
+  function ansME(q, escolha){
+    var item = (CONT.questoes_me || [])[q];
+    if(!item) return;
+    var fb = $('rfb_' + q);
+    var acertou = (escolha === item.correta);
+    var letra = String.fromCharCode(65 + item.correta);
+    fb.className = 'fb ' + (acertou ? 'ok' : 'no');
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('A correta é a ' + letra + ').')) + '</b>' + esc(item.comentario);
+    evento('questao', 'raciocinar', { n: q + 1, formato: 'me', respondeu_certo: acertou },
+           (q + 1 >= (CONT.questoes_me || []).length) ? 'concluido' : 'em_andamento');
+    var prox = $('rq_' + (q + 1));
+    if(prox) prox.style.display = 'block';
   }
 
   function ansReal(q, escolha){
@@ -2390,7 +2530,7 @@
     if(rev.length){
       $('revTit').textContent = 'Revisões no ponto certo de hoje';
       $('revChips').innerHTML = rev.map(function(r){
-        return '<div class="rev"><span>agora</span><b>' + esc(String(r.frente).slice(0, 46)) + '</b>flashcard · 1 min</div>';
+        return '<button class="rev" style="cursor:pointer; text-align:left; font:inherit; color:inherit" onclick="irRevisar()"><span>agora</span><b>' + esc(String(r.frente).slice(0, 46)) + '</b>flashcard · 1 min</button>';
       }).join('');
     } else {
       $('revTit').textContent = 'Revisões';

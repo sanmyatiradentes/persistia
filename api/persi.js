@@ -1,6 +1,6 @@
 // Persi, o tira-dúvidas (verbo Perguntar). POST {question, assunto}
 // Responde via Gemini e, se o aluno estiver logado, salva a dúvida no Turso.
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini, MODELO_LEVE } = require('./_lib');
 
 const SYSTEM = `Você é o Persi, o tira-dúvidas do PersisteIA, um aplicativo brasileiro de estudos para concursos públicos.
 
@@ -25,7 +25,9 @@ module.exports = async (req, res) => {
   try {
     const answer = await chamarGemini(
       SYSTEM,
-      `Assunto em estudo agora: ${assunto || 'preparação para concurso público'}.\n\nDúvida do aluno: ${question}`
+      `Assunto em estudo agora: ${assunto || 'preparação para concurso público'}.\n\nDúvida do aluno: ${question}`,
+      null,
+      MODELO_LEVE
     );
 
     try {

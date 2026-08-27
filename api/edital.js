@@ -7,6 +7,7 @@ const SYS_CARGOS = `Você analisa editais de concurso público brasileiros (ou p
 Responda APENAS com o que está no documento:
 - titulo: nome curto do órgão/concurso (ex.: "Polícia Civil do Amazonas — 2026").
 - data_prova: data da prova objetiva no formato AAAA-MM-DD, ou null se não constar.
+- banca: nome da banca organizadora (ex.: "Cebraspe", "FGV", "Vunesp", "Instituto AOCP"), ou null se o documento não disser.
 - cargos: lista dos cargos (ou áreas/especialidades) para os quais o edital traz conteúdo programático.
   Use o nome exato do edital (ex.: "Perito Criminal — Área 3: Engenharia"). Se o edital for de um cargo único, retorne uma lista com um item.
 Não invente cargos.`;
@@ -16,6 +17,7 @@ const SCHEMA_CARGOS = {
   properties: {
     titulo: { type: 'string' },
     data_prova: { type: 'string', nullable: true },
+    banca: { type: 'string', nullable: true },
     cargos: { type: 'array', items: { type: 'string' } }
   },
   required: ['titulo', 'cargos']
@@ -75,7 +77,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    let titulo = '', dataProva = null, cargos = [];
+    let titulo = '', dataProva = null, cargos = [], banca = String(body.banca || '') || null;
 
     // Etapa 1 — descobrir os cargos (só quando o aluno ainda não escolheu)
     if (!cargoEscolhido) {
@@ -88,9 +90,10 @@ module.exports = async (req, res) => {
       titulo = info.titulo || 'Meu edital';
       dataProva = info.data_prova || null;
       cargos = Array.isArray(info.cargos) ? info.cargos.filter(Boolean) : [];
+      banca = info.banca || banca;
 
       if (cargos.length > 1) {
-        return res.status(200).json({ precisa_cargo: true, titulo, data_prova: dataProva, cargos: cargos.slice(0, 30) });
+        return res.status(200).json({ precisa_cargo: true, titulo, data_prova: dataProva, banca, cargos: cargos.slice(0, 30) });
       }
     }
 
@@ -112,8 +115,8 @@ module.exports = async (req, res) => {
     const db = getDb();
     const editalId = id();
     await db.execute({
-      sql: 'INSERT INTO editais (id, aluno_id, titulo, data_prova, criado_em) VALUES (?,?,?,?,?)',
-      args: [editalId, aluno.id, tituloFinal.slice(0, 220), provaFinal, agora()]
+      sql: 'INSERT INTO editais (id, aluno_id, titulo, data_prova, banca, criado_em) VALUES (?,?,?,?,?,?)',
+      args: [editalId, aluno.id, tituloFinal.slice(0, 220), provaFinal, banca, agora()]
     });
 
     let nTop = 0;
@@ -139,7 +142,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       ok: true, edital_id: editalId,
-      titulo: tituloFinal, cargo: alvo || null, data_prova: provaFinal,
+      titulo: tituloFinal, cargo: alvo || null, data_prova: provaFinal, banca: banca || null,
       n_disciplinas: dados.disciplinas.length, n_topicos: nTop,
       disciplinas: dados.disciplinas.map(d => ({ nome: d.nome, topicos: (d.topicos || []).length }))
     });

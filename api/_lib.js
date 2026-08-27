@@ -52,10 +52,16 @@ const DDL = [
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`
 ];
 
+const MIGRACOES = [
+  'ALTER TABLE editais ADD COLUMN banca TEXT',
+  'ALTER TABLE config ADD COLUMN estilo_questao TEXT'
+];
+
 async function ensureSchema() {
   if (schemaOk) return;
   const d = getDb();
   for (const sql of DDL) await d.execute(sql);
+  for (const sql of MIGRACOES) { try { await d.execute(sql); } catch (_) { /* já existe */ } }
   schemaOk = true;
 }
 
@@ -84,14 +90,21 @@ function cors(res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 }
 
-async function chamarGeminiPartes(systemText, partes, jsonSchema) {
+// Modelos por tarefa:
+//   GEMINI_MODEL       → qualidade (edital e conteúdo, gerados uma vez e cacheados)
+//   GEMINI_MODEL_LEVE  → volume (Persi tira-dúvidas, muitas chamadas por aluno)
+// Para economizar ao máximo, basta apontar os dois para o mesmo modelo lite.
+const MODELO_PADRAO = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODELO_LEVE = process.env.GEMINI_MODEL_LEVE || 'gemini-2.5-flash-lite';
+
+async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY não configurada');
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = modelo || MODELO_PADRAO;
   const body = {
     systemInstruction: { parts: [{ text: systemText }] },
     contents: [{ role: 'user', parts: partes }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+    generationConfig: { temperature: 0.3, maxOutputTokens: 16384 }
   };
   if (jsonSchema) {
     body.generationConfig.responseMimeType = 'application/json';
@@ -108,14 +121,14 @@ async function chamarGeminiPartes(systemText, partes, jsonSchema) {
   return text;
 }
 
-async function chamarGemini(systemText, userText, jsonSchema) {
+async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY não configurada');
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = modelo || MODELO_PADRAO;
   const body = {
     systemInstruction: { parts: [{ text: systemText }] },
     contents: [{ role: 'user', parts: [{ text: userText }] }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+    generationConfig: { temperature: 0.3, maxOutputTokens: 16384 }
   };
   if (jsonSchema) {
     body.generationConfig.responseMimeType = 'application/json';
@@ -132,4 +145,4 @@ async function chamarGemini(systemText, userText, jsonSchema) {
   return text;
 }
 
-module.exports = { getDb, ensureSchema, agora, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes };
+module.exports = { getDb, ensureSchema, agora, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, MODELO_PADRAO, MODELO_LEVE };
