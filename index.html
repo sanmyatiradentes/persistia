@@ -554,6 +554,7 @@
   #realEdital .drop.over span, #realEdital .drop.over svg{color:var(--on-accent) !important; opacity:.9}
   .oudivisor{display:flex; align-items:center; gap:10px; margin:16px 0 4px; color:var(--muted); font-size:.76rem}
   .oudivisor::before, .oudivisor::after{content:''; flex:1; height:1px; background:var(--line)}
+  #cargoLista .optchip{text-align:left; padding:12px 16px; font-size:.86rem; line-height:1.35}
   #realEdital textarea{
     width:100%; min-height:120px; border:1.5px solid var(--line); background:var(--card); color:var(--ink);
     border-radius:14px; padding:12px 14px; font:400 .85rem "Albert Sans",sans-serif; resize:vertical;
@@ -679,6 +680,10 @@
           </div>
           <button class="btn" style="margin-top:12px" onclick="analisarEdital()">Analisar meu edital</button>
           <p class="muted" style="font-size:.75rem; margin-top:8px" id="edStatus"></p>
+          <div id="cargoBox" style="display:none; margin-top:16px">
+            <p class="optlbl" style="margin-top:0">Este edital tem vários cargos. Qual é o seu?</p>
+            <div class="optchips" id="cargoLista" style="flex-direction:column; align-items:stretch"></div>
+          </div>
         </div>
         <ul class="proc" id="proc">
           <li><span class="spin"></span>Lendo o conteúdo programático</li>
@@ -1396,20 +1401,44 @@
       })
       .catch(function(){ $('lgBtn').disabled = false; $('lgErr').textContent = 'Sem conexão com o servidor'; });
   }
-  function analisarEdital(){
+  function escolherCargo(nome){
+    $('cargoBox').style.display = 'none';
+    $('edStatus').textContent = 'Extraindo o programa de "' + nome + '"… pode levar até um minuto.';
+    analisarEdital(nome);
+  }
+
+  function analisarEdital(cargo){
     var txt = $('edTexto').value.trim();
     if(!PDF64 && txt.length < 200){ $('edStatus').textContent = 'Cole o conteúdo programático, ou arraste o PDF do edital.'; return; }
     if(!TOKEN){ $('login').classList.add('show'); return; }
     $('edStatus').textContent = PDF64 ? 'Lendo seu PDF com a IA… pode levar até um minuto.' : 'Analisando com IA… isso leva alguns segundos.';
     var lis = document.querySelectorAll('#proc li'), i = 0;
     var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
-    apiFetch('/api/edital', PDF64 ? { pdf_base64: PDF64 } : { texto: txt })
+    var carga = PDF64 ? { pdf_base64: PDF64 } : { texto: txt };
+    if(cargo) carga.cargo = cargo;
+    apiFetch('/api/edital', carga)
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         clearInterval(anim);
         lis.forEach(function(l){ l.classList.add('on','done'); });
+        if(x.s === 200 && x.d.precisa_cargo){
+          lis.forEach(function(l){ l.classList.remove('on','done'); });
+          $('edStatus').textContent = 'Encontrei ' + x.d.cargos.length + ' cargos neste edital.';
+          if(x.d.data_prova){ PROVA_ISO = x.d.data_prova; }
+          var box = $('cargoLista'); box.innerHTML = '';
+          x.d.cargos.forEach(function(nome){
+            var b = document.createElement('button');
+            b.className = 'optchip'; b.textContent = nome;
+            b.onclick = function(){ escolherCargo(nome); };
+            box.appendChild(b);
+          });
+          $('cargoBox').style.display = 'block';
+          $('cargoBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
         if(x.s === 200 && x.d.ok){
           $('edTitulo').textContent = x.d.titulo;
+          $('cargoBox').style.display = 'none';
           $('edSub').textContent = x.d.data_prova ? ('seu edital · prova em ' + x.d.data_prova.split('-').reverse().join('/')) : 'seu edital · data da prova a confirmar';
           $('stD').textContent = x.d.n_disciplinas;
           $('stT').textContent = x.d.n_topicos;
