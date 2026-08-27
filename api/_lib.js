@@ -84,6 +84,30 @@ function cors(res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 }
 
+async function chamarGeminiPartes(systemText, partes, jsonSchema) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY não configurada');
+  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const body = {
+    systemInstruction: { parts: [{ text: systemText }] },
+    contents: [{ role: 'user', parts: partes }],
+    generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+  };
+  if (jsonSchema) {
+    body.generationConfig.responseMimeType = 'application/json';
+    body.generationConfig.responseSchema = jsonSchema;
+  }
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  );
+  if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
+  const data = await r.json();
+  const text = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text).join('') || '';
+  if (!text) throw new Error('Resposta vazia do modelo');
+  return text;
+}
+
 async function chamarGemini(systemText, userText, jsonSchema) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY não configurada');
@@ -108,4 +132,4 @@ async function chamarGemini(systemText, userText, jsonSchema) {
   return text;
 }
 
-module.exports = { getDb, ensureSchema, agora, id, hashSenha, alunoDoToken, cors, chamarGemini };
+module.exports = { getDb, ensureSchema, agora, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes };

@@ -549,6 +549,11 @@
 
   /* ---------- edital real (modo real) ---------- */
   #realEdital{display:block; margin-top:14px}
+  #realEdital .drop{margin-top:12px}
+  #realEdital .drop.over{background:var(--accent); color:var(--on-accent)}
+  #realEdital .drop.over span, #realEdital .drop.over svg{color:var(--on-accent) !important; opacity:.9}
+  .oudivisor{display:flex; align-items:center; gap:10px; margin:16px 0 4px; color:var(--muted); font-size:.76rem}
+  .oudivisor::before, .oudivisor::after{content:''; flex:1; height:1px; background:var(--line)}
   #realEdital textarea{
     width:100%; min-height:120px; border:1.5px solid var(--line); background:var(--card); color:var(--ink);
     border-radius:14px; padding:12px 14px; font:400 .85rem "Albert Sans",sans-serif; resize:vertical;
@@ -659,17 +664,20 @@
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
         <p class="eyebrow">Passo 1 de 2</p>
-        <h1 style="font-size:1.5rem">Cole o conteúdo programático do seu edital</h1>
-        <p class="muted" style="font-size:.85rem">Abra o PDF do edital, selecione a parte das disciplinas e tópicos, copie e cole aqui. A IA lê e monta seu plano.</p>
+        <h1 style="font-size:1.5rem">Envie o edital do seu concurso</h1>
+        <p class="muted" style="font-size:.85rem">Mande o PDF inteiro que a IA lê para você — ou cole só a parte do conteúdo programático. Em seguida eu monto seu plano.</p>
         <div id="realEdital">
           <textarea id="edTexto" placeholder="Ex.: DIREITO CONSTITUCIONAL: 1 Princípios fundamentais. 2 Direitos e garantias… DIREITO ADMINISTRATIVO: 1 Princípios…" aria-label="Texto do edital"></textarea>
-          <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap">
-            <button class="btn" onclick="analisarEdital()">Analisar meu edital</button>
-            <label class="lg-alt" style="cursor:pointer; margin:0">
-              ou enviar arquivo .txt
-              <input type="file" id="edArquivo" accept=".txt,text/plain" style="display:none" onchange="lerArquivo(this)">
-            </label>
+          <p class="oudivisor">ou</p>
+          <div class="drop" id="drop" onclick="document.getElementById('edArquivo').click()" role="button" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('edArquivo').click();}"
+               aria-label="Arraste o PDF do edital aqui ou clique para escolher">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+            <strong id="dropTxt">Enviar o PDF do edital</strong>
+            <span>toque para escolher, ou arraste o arquivo aqui (.pdf ou .txt)</span>
+            <input type="file" id="edArquivo" accept=".pdf,application/pdf,.txt,text/plain" style="display:none" onchange="lerArquivo(this)">
           </div>
+          <button class="btn" style="margin-top:12px" onclick="analisarEdital()">Analisar meu edital</button>
           <p class="muted" style="font-size:.75rem; margin-top:8px" id="edStatus"></p>
         </div>
         <ul class="proc" id="proc">
@@ -1390,12 +1398,12 @@
   }
   function analisarEdital(){
     var txt = $('edTexto').value.trim();
-    if(txt.length < 200){ $('edStatus').textContent = 'Cole um trecho maior — pelo menos a lista de disciplinas e tópicos.'; return; }
+    if(!PDF64 && txt.length < 200){ $('edStatus').textContent = 'Cole o conteúdo programático, ou arraste o PDF do edital.'; return; }
     if(!TOKEN){ $('login').classList.add('show'); return; }
-    $('edStatus').textContent = 'Analisando com IA… isso leva alguns segundos.';
+    $('edStatus').textContent = PDF64 ? 'Lendo seu PDF com a IA… pode levar até um minuto.' : 'Analisando com IA… isso leva alguns segundos.';
     var lis = document.querySelectorAll('#proc li'), i = 0;
     var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
-    apiFetch('/api/edital', { texto: txt })
+    apiFetch('/api/edital', PDF64 ? { pdf_base64: PDF64 } : { texto: txt })
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         clearInterval(anim);
@@ -1417,13 +1425,54 @@
       })
       .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor. Tente de novo.'; });
   }
-  function lerArquivo(inp){
-    var f = inp.files && inp.files[0];
+  var PDF64 = null, PDFNOME = '';
+  function lerArquivo(inp){ usarArquivo(inp.files && inp.files[0]); }
+  function usarArquivo(f){
     if(!f) return;
+    var ehPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
+    if(f.size > 4200000){
+      $('edStatus').textContent = 'Arquivo muito grande (' + Math.round(f.size/1048576) + ' MB). Envie só as páginas do conteúdo programático, ou cole o texto.';
+      return;
+    }
     var fr = new FileReader();
-    fr.onload = function(){ $('edTexto').value = String(fr.result || '').slice(0, 150000); $('edStatus').textContent = 'Arquivo carregado — confira e toque em Analisar meu edital.'; };
-    fr.readAsText(f);
+    if(ehPdf){
+      fr.onload = function(){
+        PDF64 = String(fr.result).split(',')[1] || null;
+        PDFNOME = f.name;
+        $('dropTxt').textContent = '✓ ' + f.name;
+        $('edStatus').textContent = 'PDF pronto. Toque em "Analisar meu edital" — a IA lê o documento inteiro.';
+      };
+      fr.readAsDataURL(f);
+    } else {
+      fr.onload = function(){
+        PDF64 = null;
+        $('edTexto').value = String(fr.result || '').slice(0, 150000);
+        $('dropTxt').textContent = '✓ ' + f.name;
+        $('edStatus').textContent = 'Texto carregado — confira acima e toque em Analisar meu edital.';
+      };
+      fr.readAsText(f);
+    }
   }
+  (function(){
+    var z = null;
+    function pega(){ return document.getElementById('drop'); }
+    ['dragenter','dragover'].forEach(function(ev){
+      document.addEventListener(ev, function(e){
+        z = pega(); if(!z) return;
+        e.preventDefault(); z.classList.add('over');
+      });
+    });
+    ['dragleave','drop'].forEach(function(ev){
+      document.addEventListener(ev, function(e){
+        z = pega(); if(!z) return;
+        e.preventDefault(); if(ev === 'dragleave' && e.relatedTarget) return;
+        z.classList.remove('over');
+        if(ev === 'drop' && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+          usarArquivo(e.dataTransfer.files[0]);
+        }
+      });
+    });
+  })();
   initReal();
 
   /* ---------- onboarding ---------- */

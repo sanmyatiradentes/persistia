@@ -1,6 +1,6 @@
 // Análise real de edital: POST {texto} → Gemini extrai estrutura → salva no Turso.
 // Retorna {titulo, data_prova, n_disciplinas, n_topicos, disciplinas:[{nome, topicos}]}
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini, chamarGeminiPartes } = require('./_lib');
 
 const SYSTEM = `Você analisa editais de concurso público brasileiros (ou programas de vestibular).
 Extraia APENAS do texto fornecido:
@@ -37,11 +37,23 @@ module.exports = async (req, res) => {
   const aluno = await alunoDoToken(req);
   if (!aluno) return res.status(401).json({ erro: 'Entre na sua conta' });
 
-  const texto = String((req.body || {}).texto || '').slice(0, 150000);
-  if (texto.length < 200) return res.status(400).json({ erro: 'Cole o conteúdo programático do edital (pelo menos algumas linhas)' });
+  const body = req.body || {};
+  const texto = String(body.texto || '').slice(0, 150000);
+  const pdf = typeof body.pdf_base64 === 'string' ? body.pdf_base64 : '';
+  if (!pdf && texto.length < 200) {
+    return res.status(400).json({ erro: 'Cole o conteúdo programático do edital, ou envie o PDF' });
+  }
+  if (pdf && pdf.length > 6000000) {
+    return res.status(413).json({ erro: 'PDF muito grande. Envie só as páginas do conteúdo programático, ou cole o texto.' });
+  }
 
   try {
-    const bruto = await chamarGemini(SYSTEM, `Texto do edital:\n\n${texto}`, SCHEMA);
+    const bruto = pdf
+      ? await chamarGeminiPartes(SYSTEM, [
+          { inlineData: { mimeType: 'application/pdf', data: pdf } },
+          { text: 'Extraia deste edital em PDF o título, a data da prova objetiva e todo o conteúdo programático (disciplinas e tópicos).' }
+        ], SCHEMA)
+      : await chamarGemini(SYSTEM, `Texto do edital:\n\n${texto}`, SCHEMA);
     const dados = JSON.parse(bruto);
     if (!Array.isArray(dados.disciplinas) || !dados.disciplinas.length) {
       return res.status(422).json({ erro: 'Não encontrei conteúdo programático nesse texto — cole a seção das disciplinas' });
