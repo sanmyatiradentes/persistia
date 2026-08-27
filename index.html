@@ -1204,11 +1204,13 @@
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h2>Meu edital</h2>
-      <p class="muted" style="font-size:.8rem" id="planoEdital">—</p>
+      <h2>Minha conta</h2>
+      <p class="muted" style="font-size:.8rem" id="planoConta">—</p>
+      <p class="muted" style="font-size:.8rem; margin-top:4px" id="planoEdital">—</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
         <button class="btn ghost small" onclick="refazerCronograma()">Refazer cronograma</button>
         <button class="btn ghost small" onclick="trocarEdital()">Trocar de edital</button>
+        <button class="btn ghost small" onclick="sair()">Sair da conta</button>
       </div>
       <p class="muted" style="font-size:.7rem; margin-top:10px">Mudou de concurso, saiu edital novo ou você quer estudar outro cargo? Trocar o edital monta um plano do zero — seu histórico de estudo continua guardado.</p>
     </div>
@@ -1716,8 +1718,9 @@
     $('login').classList.add('show');
   }
   function sair(){
+    if(!confirm('Sair da sua conta neste aparelho? Seu progresso continua salvo.')) return;
     try { localStorage.removeItem('persisteia_token'); localStorage.removeItem('persisteia_topico'); } catch(e){}
-    location.reload();
+    TOKEN = ''; location.href = location.pathname;
   }
 
   function aplicarAcesso(a){
@@ -3083,6 +3086,15 @@
       html += '</div></div>';
     });
     $('planoLista').innerHTML = html;
+    if($('planoConta')){
+      var est = ACESSO ? ACESSO.estado : '';
+      var sit = est === 'ativa' ? 'assinatura ativa'
+        : est === 'admin' ? 'acesso de gestora'
+        : est === 'cortesia' ? 'cortesia · ' + ACESSO.dias_restantes + ' dias'
+        : est === 'teste' ? 'teste grátis · ' + ACESSO.dias_restantes + ' dias restantes'
+        : 'sem assinatura';
+      $('planoConta').textContent = (NOME || 'Minha conta') + ' · ' + sit;
+    }
     if($('planoEdital')){
       $('planoEdital').textContent = (d.edital || 'Edital carregado') +
         ' · ' + (d.resumo.total || 0) + ' sessões' +
