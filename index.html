@@ -559,6 +559,87 @@
   .l-done.show{display:block}
   .l-done b{color:var(--accent)}
   .l-meta{font-size:.7rem; color:var(--muted)}
+
+  /* ================= LAYOUT DE COMPUTADOR ================= */
+  @media (min-width: 900px){
+    body{padding:0}
+    .app{
+      max-width:1280px; width:100%; min-height:100dvh; margin:0 auto;
+      border:none; border-radius:0; box-shadow:none; overflow:visible;
+      display:grid; grid-template-columns:250px minmax(0,1fr);
+    }
+    .app > .screen{grid-column:2; grid-row:1}
+    #ob{grid-column:1 / -1; grid-row:1; display:flex; align-items:center; justify-content:center}
+    .ob-step{width:100%; max-width:660px; margin:0 auto; min-height:auto; padding:48px 32px}
+    .ob-step.active{display:flex}
+    .ob-hero h1{font-size:2.6rem}
+    .ob-stats{grid-template-columns:repeat(4,1fr)}
+    #realEdital textarea{min-height:200px; font-size:.92rem}
+
+    .tabbar{
+      grid-column:1; grid-row:1; position:sticky; top:0; align-self:start;
+      transform:none; left:auto; bottom:auto; width:auto; max-width:none; height:100dvh;
+      flex-direction:column; align-items:stretch; gap:4px;
+      background:var(--card); border:none; border-right:1px solid var(--line); border-radius:0;
+      padding:22px 14px; backdrop-filter:none;
+    }
+    .tabbar::before{
+      content:"PersisteIA"; font-family:"Bricolage Grotesque",sans-serif; font-weight:800;
+      font-size:1.2rem; letter-spacing:-.02em; color:var(--ink); padding:6px 14px 22px;
+    }
+    .tab{
+      flex:none; flex-direction:row; justify-content:flex-start; align-items:center; gap:12px;
+      padding:12px 14px; border-radius:12px; font-size:.92rem; letter-spacing:0;
+    }
+    .tab:hover{background:var(--bg)}
+    .tab.active{background:var(--accent-soft)}
+    .tab svg{width:20px; height:20px}
+
+    .screen{padding:34px 40px 70px; max-width:960px}
+    .top h2{font-size:1.5rem !important}
+
+    /* Hoje: duas colunas */
+    #scr-hoje{display:none}
+    #scr-hoje.active{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(280px,.9fr); gap:0 30px; align-content:start; align-items:start}
+    #scr-hoje > .revchips{margin-bottom:18px}
+    #scr-hoje .rev{align-self:start}
+    #scr-hoje > .top{grid-column:1 / -1}
+    #scr-hoje > .ringwrap{grid-column:2; grid-row:2 / span 2; align-self:start; flex-direction:column; text-align:center}
+    #scr-hoje > .ringwrap .verbs{justify-content:center}
+    #scr-hoje > #revTit{grid-column:1; margin-top:4px}
+    #scr-hoje > .revchips{grid-column:1}
+    #scr-hoje > .nextcard{grid-column:1}
+    #scr-hoje > #btnConcluir{grid-column:1; justify-self:start}
+    #scr-hoje > .sess{grid-column:1}
+    #scr-hoje > p{grid-column:1}
+
+    /* Evolução e Plano: grade */
+    #scr-evolucao{display:none}
+    #scr-evolucao.active{display:grid; grid-template-columns:1fr 1fr; gap:0 18px; align-content:start}
+    #scr-evolucao > .top, #scr-evolucao > .tiles{grid-column:1 / -1}
+    #scr-evolucao > .tiles{grid-template-columns:repeat(4,1fr)}
+    #scr-evolucao > .chart-card:first-of-type{grid-column:1 / -1}
+    .heat{grid-template-columns:repeat(20,1fr)}
+
+    /* Método em duas colunas */
+    #scr-metodo .met{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+
+    /* Overlays centrados */
+    #leitor, #chat, #login{
+      left:50%; transform:translateX(-50%); width:min(780px, 92vw); max-width:none;
+      top:36px; bottom:36px; border-radius:22px; border:1px solid var(--line); overflow:hidden;
+      box-shadow:0 24px 60px rgba(0,0,0,.18);
+    }
+    #login{padding:40px; justify-content:center}
+    #login > *{width:100%; max-width:440px; margin-left:auto; margin-right:auto}
+    .l-body{padding:36px 15% 60px}
+    .recap{padding:40px 12%}
+    .fab{right:40px; bottom:40px; width:58px; height:58px}
+  }
+  @media (min-width: 1180px){
+    .screen{max-width:1040px}
+    .l-body{padding:40px 18% 60px}
+  }
 </style>
 
 <div class="app">
@@ -571,30 +652,31 @@
         <h1>Envie seu edital.<br><em>O resto é com a gente.</em></h1>
         <p>A PersisteIA transforma qualquer edital em um plano diário que faz você ouvir, ler, falar, digitar, escrever, raciocinar, treinar e perguntar — até a aprovação.</p>
         <button class="btn" onclick="obGo(2)">Enviar meu edital</button>
-        <button class="btn ghost" onclick="obGo(2)">Ver com um edital de exemplo</button>
       </div>
-      <p class="demo-note">Protótipo navegável · dados de demonstração</p>
     </div>
 
     <div class="ob-step" id="ob2">
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
-        <div class="drop" id="drop" onclick="startProc()" role="button" tabindex="0" aria-label="Selecionar edital em PDF">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
-          <strong>Toque para selecionar o PDF do edital</strong>
-          <span>Edital de exemplo: Perito Criminal — 80 vagas</span>
-        </div>
+        <p class="eyebrow">Passo 1 de 2</p>
+        <h1 style="font-size:1.5rem">Cole o conteúdo programático do seu edital</h1>
+        <p class="muted" style="font-size:.85rem">Abra o PDF do edital, selecione a parte das disciplinas e tópicos, copie e cole aqui. A IA lê e monta seu plano.</p>
         <div id="realEdital">
-          <p class="optlbl">Ou cole o conteúdo programático do seu edital real:</p>
-          <textarea id="edTexto" placeholder="Cole aqui o trecho do edital com as disciplinas e tópicos…" aria-label="Texto do edital"></textarea>
-          <button class="btn small" style="margin-top:8px" onclick="analisarEdital()">Analisar com IA</button>
-          <p class="muted" style="font-size:.72rem; margin-top:6px" id="edStatus"></p>
+          <textarea id="edTexto" placeholder="Ex.: DIREITO CONSTITUCIONAL: 1 Princípios fundamentais. 2 Direitos e garantias… DIREITO ADMINISTRATIVO: 1 Princípios…" aria-label="Texto do edital"></textarea>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap">
+            <button class="btn" onclick="analisarEdital()">Analisar meu edital</button>
+            <label class="lg-alt" style="cursor:pointer; margin:0">
+              ou enviar arquivo .txt
+              <input type="file" id="edArquivo" accept=".txt,text/plain" style="display:none" onchange="lerArquivo(this)">
+            </label>
+          </div>
+          <p class="muted" style="font-size:.75rem; margin-top:8px" id="edStatus"></p>
         </div>
         <ul class="proc" id="proc">
-          <li><span class="spin"></span>Lendo o edital e o conteúdo programático</li>
-          <li><span class="spin"></span>Mapeando 214 tópicos em 8 disciplinas</li>
-          <li><span class="spin"></span>Cruzando com 9.412 questões da banca</li>
-          <li><span class="spin"></span>Montando seu plano dos 8 verbos</li>
+          <li><span class="spin"></span>Lendo o conteúdo programático</li>
+          <li><span class="spin"></span>Mapeando disciplinas e tópicos</li>
+          <li><span class="spin"></span>Priorizando por peso e incidência</li>
+          <li><span class="spin"></span>Preparando a esteira dos 8 verbos</li>
         </ul>
       </div>
     </div>
@@ -603,12 +685,12 @@
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
         <p class="eyebrow">Edital mapeado</p>
-        <h1><span id="edTitulo">Perito Criminal</span><br><span class="muted" id="edSub" style="font-size:1.1rem; font-weight:600">edital de exemplo · prova em 94 dias</span></h1>
+        <h1><span id="edTitulo">Seu edital</span><br><span class="muted" id="edSub" style="font-size:1.1rem; font-weight:600">mapeado com sucesso</span></h1>
         <div class="ob-stats">
-          <div class="ob-stat"><b class="num" id="stD">8</b><span>disciplinas</span></div>
-          <div class="ob-stat"><b class="num" id="stT">214</b><span>tópicos priorizados por peso e incidência</span></div>
-          <div class="ob-stat"><b class="num">2h/dia</b><span>seu tempo disponível</span></div>
+          <div class="ob-stat"><b class="num" id="stD">—</b><span>disciplinas</span></div>
+          <div class="ob-stat"><b class="num" id="stT">—</b><span>tópicos priorizados por peso e incidência</span></div>
           <div class="ob-stat"><b class="num">8</b><span>verbos por assunto: a Esteira de Aprendizado Ativo</span></div>
+          <div class="ob-stat"><b class="num">1</b><span>plano vivo que se replaneja sozinho</span></div>
         </div>
         <p>Seu plano replaneja sozinho toda noite. Nenhuma planilha, nenhuma decisão difícil: é só abrir e estudar.</p>
         <button class="btn" onclick="obGo(4)">Continuar</button>
@@ -618,10 +700,10 @@
     <div class="ob-step" id="ob4">
       <div class="brand">Persiste<span class="ia">IA</span></div>
       <div class="ob-hero">
-        <p class="eyebrow">Última etapa · seu ritmo</p>
+        <p class="eyebrow">Passo 2 de 2 · seu ritmo</p>
         <div class="datecard">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-          <div style="flex:1"><b id="dtProva">Prova: 29/11/2026</b><small id="dtSub">Encontrei a data no edital — confirme ou ajuste</small></div>
+          <div style="flex:1"><b id="dtProva">Data da prova</b><small id="dtSub">confirme ou ajuste</small></div>
         </div>
         <div class="optchips">
           <button class="optchip sel" id="dtOk" onclick="setData(true)">Confirmar data</button>
@@ -652,29 +734,29 @@
   <section class="screen" id="scr-hoje">
     <div class="top">
       <div>
-        <p class="eyebrow">Quinta, 27 de agosto</p>
-        <h2 style="font-size:1.25rem">Olá! Dia 12 da jornada</h2>
+        <p class="eyebrow" id="hdrData">—</p>
+        <h2 style="font-size:1.25rem" id="hdrOla">Olá!</h2>
       </div>
       <span class="streak" title="12 dias seguidos de estudo">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 1s.75 2.5-1 5c-1.5 2.14-3.4 3.4-3.4 6a4.9 4.9 0 009.8 0c0-1.2-.4-2.3-.9-3.2 0 0-.5 1.7-2 2.2.6-1.6 1-4.6-2.5-10zM8 9.5S5.1 11.9 5.1 15a6.9 6.9 0 0013.8 0"/></svg>
-        <span class="num">12 dias</span>
+        <span class="num" id="streakN">0 dias</span>
       </span>
     </div>
 
     <div class="card ringwrap">
-      <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia: 2 de 8 verbos concluídos e 1 em andamento"></svg>
+      <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia"></svg>
       <div class="ringlbl">
-        <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">2 de 8 verbos · 1 em andamento</b>
+        <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">0 de 8 verbos hoje</b>
         <p class="muted" style="font-size:.8rem">Assunto do dia: <b style="color:var(--accent)" id="hdrAssunto">Princípios da Administração Pública</b><span id="hdrAssuntoSub"> (art. 37, CF)</span></p>
         <div class="verbs">
-          <span class="chip now">Ler</span><span class="chip done">Ouvir</span><span class="chip done">Treinar</span>
+          <span class="chip now">Ler</span><span class="chip">Ouvir</span><span class="chip">Treinar</span>
           <span class="chip">Falar</span><span class="chip">Digitar</span><span class="chip">Escrever</span><span class="chip">Raciocinar</span><span class="chip">Perguntar</span>
         </div>
       </div>
     </div>
 
-    <p class="eyebrow" style="margin-bottom:6px">Revisões no ponto certo de hoje</p>
-    <div class="revchips">
+    <p class="eyebrow" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
+    <div class="revchips" id="revChips">
       <div class="rev"><span>24 h</span><b>Atos administrativos</b>5 flashcards · 4 min</div>
       <div class="rev"><span>7 dias</span><b>Crase</b>ditado relâmpago · 3 min</div>
       <div class="rev"><span>30 dias</span><b>Cadeia de custódia</b>3 questões · 5 min</div>
@@ -693,7 +775,7 @@
         <button class="task-h" onclick="tg('t-ler')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg></span>
           <span><b>Ler · Teoria completa no Leitor</b><small>Todo assunto começa aqui — silenciosa ou em voz alta</small></span>
-          <span class="stbadge now num">43% · agora</span>
+          <span class="stbadge now num" id="sbLer">agora</span>
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem" id="lerIntro">Os cinco princípios expressos do art. 37 formam o acrônimo <b>LIMPE</b> — toque em cada letra:</p>
@@ -715,7 +797,7 @@
         <button class="task-h" onclick="tg('t-ouvir')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12v3a2 2 0 002 2h1v-7H5a2 2 0 00-2 2zm18 0v3a2 2 0 01-2 2h-1v-7h1a2 2 0 012 2zM6 10a6 6 0 0112 0"/></svg></span>
           <span><b>Ouvir · Podcast do dia</b><small>Externo: ouviu no trajeto? Um toque e pronto</small></span>
-          <span class="stbadge auto num">✓ 07:02 · você confirmou</span>
+          <button class="btn-feito" id="bOuvir" onclick="event.stopPropagation(); extDone(this, 'ouvir')">Ouvi ✓</button>
         </button>
         <div class="task-b"><div class="inner">
           <div class="player">
@@ -732,7 +814,7 @@
         <button class="task-h" onclick="tg('t-falar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span>
           <span><b>Falar · Explique como se ensinasse</b><small>A IA ouve, transcreve e aponta o que faltou</small></span>
-          <span class="stbadge wait num">4 min · a fazer</span>
+          <span class="stbadge wait num" id="sbFalar">4 min · a fazer</span>
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem; text-align:center" id="feynQ">Explique em voz alta: <b>por que o concurso público concretiza a impessoalidade?</b></p>
@@ -746,7 +828,7 @@
         <button class="task-h" onclick="tg('t-digitar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
           <span><b>Digitar · Lei seca ativa</b><small>Complete o caput do art. 37 de memória</small></span>
-          <span class="stbadge wait num">3 min · a fazer</span>
+          <span class="stbadge wait num" id="sbDigitar">3 min · a fazer</span>
         </button>
         <div class="task-b"><div class="inner">
           <p class="lei" id="leiBox">"A administração pública direta e indireta de qualquer dos Poderes […] obedecerá aos princípios de
@@ -764,8 +846,8 @@
       <div class="card task" id="t-escrever">
         <button class="task-h" onclick="tg('t-escrever')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-          <span><b>Escrever · Mapa mental à mão <span class="latetag">· de ontem</span></b><small>Externo: fez no caderno? Confirme com um toque</small></span>
-          <button class="btn-feito" onclick="event.stopPropagation(); extDone(this)">Feito ✓</button>
+          <span><b>Escrever · Mapa mental à mão</b><small>Externo: fez no caderno? Confirme com um toque</small></span>
+          <button class="btn-feito" onclick="event.stopPropagation(); extDone(this, 'escrever')">Feito ✓</button>
         </button>
         <div class="task-b"><div class="inner">
           <svg class="mm" viewBox="0 0 340 190" role="img" aria-label="Mapa mental do artigo 37: LIMPE e desdobramentos">
@@ -796,7 +878,7 @@
         <button class="task-h" onclick="tg('t-raciocinar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2a4.5 4.5 0 00-4.4 5.5A4.5 4.5 0 006 16v1a3 3 0 003 3h1V2h-.5zM14.5 2a4.5 4.5 0 014.4 5.5A4.5 4.5 0 0118 16v1a3 3 0 01-3 3h-1V2h.5z"/></svg></span>
           <span><b>Raciocinar · Questões da banca</b><small>Diga sua confiança antes de responder</small></span>
-          <span class="stbadge wait num">6 min · a fazer</span>
+          <span class="stbadge wait num" id="sbRaciocinar">6 min · a fazer</span>
         </button>
         <div class="task-b"><div class="inner" id="quizBox">
           <div id="q1">
@@ -827,7 +909,7 @@
         <button class="task-h" onclick="tg('t-treinar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="15" rx="2"/><path d="M8 3h13v15"/></svg></span>
           <span><b>Treinar · Flashcards</b><small>Revisão espaçada no ritmo do seu esquecimento</small></span>
-          <span class="stbadge auto num">✓ 12:31 · automático</span>
+          <span class="stbadge wait num" id="sbTreinar">a fazer</span>
         </button>
         <div class="task-b"><div class="inner" id="fcWrap">
           <div class="fc" id="fc" onclick="this.classList.toggle('flip')" role="button" tabindex="0" aria-label="Virar flashcard">
@@ -875,7 +957,7 @@
         <button class="task-h" onclick="tg('t-perguntar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 01-8 8H4l2.2-2.6A8 8 0 1121 12z"/><path d="M9.6 9.2a2.6 2.6 0 115 1c-.6 1-1.6 1.2-1.6 2.3M13 15.8h.01"/></svg></span>
           <span><b>Perguntar · Interrogue o assunto</b><small>Formule 2 perguntas suas e tire com o Persi</small></span>
-          <span class="stbadge wait num">0/2 · a fazer</span>
+          <span class="stbadge wait num" id="sbPerguntar">0/2 · a fazer</span>
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem">Perguntar é aprender duas vezes: formular a própria dúvida expõe lacunas que você não sabia que tinha. Pergunte qualquer coisa do assunto — o Persi responde com a fonte citada, e a dúvida vira flashcard.</p>
@@ -896,7 +978,6 @@
 
     </div>
     <p class="muted" style="font-size:.74rem; margin-top:14px">A ordem é sugestão: adiante o que quiser ou deixe para depois — eu recalculo e nada se perde. O que você faz aqui dentro eu marco sozinho; só o que é externo (ouvir fora do app, escrever no caderno) pede um toque seu no "Feito".</p>
-    <p class="demo-note">Conteúdos de demonstração gerados para o edital de exemplo</p>
   </section>
 
   <!-- ================= PLANO ================= -->
@@ -1076,14 +1157,6 @@
     </div>
 
     <div class="card chart-card">
-      <h2>Confiança × acerto</h2>
-      <p class="sub">Onde você acha que sabe vs. onde acerta de verdade</p>
-      <div class="legend"><span><i style="background:var(--c2)"></i>Confiança declarada</span><span><i style="background:var(--c1)"></i>Acerto real</span></div>
-      <div id="chCal"></div>
-      <p style="font-size:.8rem; margin-top:8px; color:var(--warn)"><b>Atenção:</b> em Criminalística você confia 19 pontos acima do que acerta — o plano de amanhã já reforçou o assunto.</p>
-    </div>
-
-    <div class="card chart-card">
       <h2>Constância</h2>
       <p class="sub">Últimos 60 dias · quanto mais escuro, mais verbos concluídos</p>
       <div class="heat" id="heat" role="img" aria-label="Mapa de constância dos últimos 60 dias"></div>
@@ -1226,7 +1299,6 @@
     <p class="err" id="lgErr"></p>
     <button class="btn" id="lgBtn" onclick="lgEnviar()">Começar</button>
     <button class="lg-alt" id="lgAlt" onclick="lgToggle()">Já tenho conta — entrar</button>
-    <button class="lg-alt" style="color:var(--muted)" onclick="document.getElementById('login').classList.remove('show'); toast('Explorando sem conta — nada será salvo')">Só dar uma olhada — criar conta depois</button>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
@@ -1243,8 +1315,8 @@
   }
 
   /* ---------- modo real: API + login + eventos ---------- */
-  var API = false, TOKEN = '', NOME = '', ASSUNTO = 'Princípios da Administração Pública (art. 37, CF)';
-  var lastQA = null, lgModo = 'cadastro';
+  var API = false, TOKEN = '', NOME = '', ASSUNTO = '';
+  var lastQA = null, lgModo = 'cadastro', PROVA_ISO = null;
   try { TOKEN = localStorage.getItem('persisteia_token') || ''; } catch(e){}
   function apiFetch(path, body){
     var h = {'Content-Type':'application/json'};
@@ -1252,24 +1324,42 @@
     return fetch(path, { method: body ? 'POST' : 'GET', headers: h, body: body ? JSON.stringify(body) : undefined });
   }
   function evento(tipo, verbo, detalhe, status){
+    if(verbo && (status || 'concluido') === 'concluido' && typeof marcaVerbo === 'function') marcaVerbo(verbo);
     if(!API || !TOKEN) return;
     apiFetch('/api/evento', { tipo: tipo, assunto: ASSUNTO, verbo: verbo || null, detalhe: detalhe || null, status: status || 'concluido' }).catch(function(){});
   }
   function initReal(){
     apiFetch('/api/aluno').then(function(r){
       if(r.status === 200){
-        API = true; $('realEdital').style.display = 'block';
+        API = true;
         r.json().then(function(d){
           NOME = d.nome || '';
-          if(d.config){ JA_CONFIG = true; enterApp(); }
+          $('login').classList.remove('show');
+          if(d.config && d.tem_edital){ JA_CONFIG = true; enterApp(); }
+          else if(d.tem_edital){ obGo(4); }
+          else { obGo(2); }
         });
       } else if(r.status === 401){
         API = true; TOKEN = '';
         try { localStorage.removeItem('persisteia_token'); } catch(e){}
-        $('realEdital').style.display = 'block';
         $('login').classList.add('show');
+      } else {
+        semServidor('O servidor respondeu com erro ' + r.status + '.');
       }
-    }).catch(function(){ /* sem API: modo demonstração */ });
+    }).catch(function(){
+      semServidor('Não consegui falar com o servidor.');
+    });
+  }
+  function semServidor(msg){
+    $('login').classList.remove('show');
+    $('ob').style.display = 'flex';
+    document.querySelectorAll('.ob-step').forEach(function(x){ x.classList.remove('active'); });
+    var box = $('ob1');
+    box.classList.add('active');
+    box.querySelector('.ob-hero').innerHTML =
+      '<h1>Estamos fora do ar por um instante</h1>' +
+      '<p>' + esc(msg) + ' Isso costuma durar poucos segundos, logo depois de uma atualização do sistema.</p>' +
+      '<button class="btn" onclick="location.reload()">Tentar de novo</button>';
   }
   function lgToggle(){
     lgModo = (lgModo === 'cadastro') ? 'login' : 'cadastro';
@@ -1290,7 +1380,8 @@
           TOKEN = x.d.token; NOME = x.d.nome || '';
           try { localStorage.setItem('persisteia_token', TOKEN); } catch(e){}
           $('login').classList.remove('show');
-          toast('Bem-vinda(o), ' + (NOME || 'concurseira(o)') + '! Seu progresso agora fica salvo.');
+          toast('Bem-vinda(o), ' + (NOME || 'concurseira(o)') + '! Seu progresso fica salvo a partir de agora.');
+          initReal();
         } else {
           $('lgErr').textContent = x.d.erro || 'Não deu certo — confira os dados';
         }
@@ -1301,8 +1392,7 @@
     var txt = $('edTexto').value.trim();
     if(txt.length < 200){ $('edStatus').textContent = 'Cole um trecho maior — pelo menos a lista de disciplinas e tópicos.'; return; }
     if(!TOKEN){ $('login').classList.add('show'); return; }
-    $('edStatus').textContent = 'Analisando com IA…';
-    $('drop').style.pointerEvents = 'none';
+    $('edStatus').textContent = 'Analisando com IA… isso leva alguns segundos.';
     var lis = document.querySelectorAll('#proc li'), i = 0;
     var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
     apiFetch('/api/edital', { texto: txt })
@@ -1315,16 +1405,24 @@
           $('edSub').textContent = x.d.data_prova ? ('seu edital · prova em ' + x.d.data_prova.split('-').reverse().join('/')) : 'seu edital · data da prova a confirmar';
           $('stD').textContent = x.d.n_disciplinas;
           $('stT').textContent = x.d.n_topicos;
-          if(x.d.data_prova){ $('dtProva').textContent = 'Prova: ' + x.d.data_prova.split('-').reverse().join('/'); }
+          PROVA_ISO = x.d.data_prova || null;
+          if(PROVA_ISO){ $('dtProva').textContent = 'Prova: ' + PROVA_ISO.split('-').reverse().join('/'); $('dtSub').textContent = 'encontrei essa data no edital — confirme ou ajuste'; }
           else { setData(false); }
-          toast('Edital lido de verdade: ' + x.d.n_disciplinas + ' disciplinas, ' + x.d.n_topicos + ' tópicos salvos no seu banco');
+          toast(x.d.n_disciplinas + ' disciplinas e ' + x.d.n_topicos + ' tópicos salvos no seu banco');
           setTimeout(function(){ obGo(3); }, 500);
         } else {
           $('edStatus').textContent = x.d.erro || 'Não consegui analisar — tente colar só o conteúdo programático.';
-          $('drop').style.pointerEvents = 'auto';
+          lis.forEach(function(l){ l.classList.remove('on','done'); });
         }
       })
-      .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor.'; $('drop').style.pointerEvents = 'auto'; });
+      .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor. Tente de novo.'; });
+  }
+  function lerArquivo(inp){
+    var f = inp.files && inp.files[0];
+    if(!f) return;
+    var fr = new FileReader();
+    fr.onload = function(){ $('edTexto').value = String(fr.result || '').slice(0, 150000); $('edStatus').textContent = 'Arquivo carregado — confira e toque em Analisar meu edital.'; };
+    fr.readAsText(f);
   }
   initReal();
 
@@ -1333,28 +1431,24 @@
     document.querySelectorAll('.ob-step').forEach(function(s){ s.classList.remove('active'); });
     $('ob'+n).classList.add('active');
   }
-  function startProc(){
-    $('drop').style.pointerEvents = 'none';
-    var lis = document.querySelectorAll('#proc li'), i = 0;
-    function step(){
-      if(i > 0){ lis[i-1].classList.add('done'); }
-      if(i < lis.length){ lis[i].classList.add('on'); i++; setTimeout(step, 850); }
-      else { setTimeout(function(){ obGo(3); }, 400); }
-    }
-    step();
-  }
   function enterApp(){
     $('ob').style.display = 'none';
     $('tabbar').classList.add('show');
     $('fab').classList.add('show');
     $('scr-hoje').classList.add('active');
-    drawRing(); drawWave(); drawLine(); drawCal(); drawHeat();
-    if(API && TOKEN){
-      if(!JA_CONFIG){
-        apiFetch('/api/aluno', { data_prova: temData ? '2026-11-29' : null, horas_dia: selVal('gH'), dias_semana: selVal('gD') }).catch(function(){});
-      }
-      carregarReal();
+    drawRing(); drawWave();
+    $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
+    $('limpeBox').innerHTML = '';
+    $('limpeWord').textContent = '';
+    $('leiBox').innerHTML = '<span class="muted">Carregando o trecho para você completar de memória…</span>';
+    $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões inéditas no estilo da banca…</p>';
+    $('lBody').innerHTML = '<p>Carregando…</p>';
+    $('musLyr').innerHTML = '<span class="muted">Gerando a letra mnemônica…</span>';
+    $('podQuote').textContent = 'Preparando o roteiro do episódio…';
+    if(!JA_CONFIG){
+      apiFetch('/api/aluno', { data_prova: (temData && PROVA_ISO) ? PROVA_ISO : null, horas_dia: selVal('gH'), dias_semana: selVal('gD') }).catch(function(){});
     }
+    carregarReal();
   }
 
   /* ---------- navigation ---------- */
@@ -1367,8 +1461,8 @@
   }
 
   /* ---------- ring dos 7 verbos ---------- */
-  function drawRing(){
-    var svg = $('ring'), cx = 54, cy = 54, r = 44, segs = 8, done = 2;
+  function drawRing(feitos){
+    var svg = $('ring'), cx = 54, cy = 54, r = 44, segs = 8, done = (typeof feitos === 'number' ? feitos : 0);
     var gapDeg = 7, seg = 360/segs - gapDeg, html = '';
     function pt(a){ var rad = (a-90)*Math.PI/180; return (cx + r*Math.cos(rad)).toFixed(2) + ' ' + (cy + r*Math.sin(rad)).toFixed(2); }
     for(var i = 0; i < segs; i++){
@@ -1376,7 +1470,7 @@
       var color = i < done ? 'var(--accent)' : (i === done ? 'var(--warm)' : 'var(--ring-track)');
       html += '<path d="M ' + pt(a0) + ' A ' + r + ' ' + r + ' 0 0 1 ' + pt(a1) + '" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round"/>';
     }
-    html += '<text x="54" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)" font-family="Bricolage Grotesque,sans-serif">2/8</text>';
+    html += '<text x="54" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)" font-family="Bricolage Grotesque,sans-serif">' + done + '/8</text>';
     html += '<text x="54" y="66" text-anchor="middle" font-size="8.5" fill="var(--muted)" letter-spacing="1">VERBOS</text>';
     svg.innerHTML = html;
   }
@@ -1493,63 +1587,44 @@
   }
 
   /* ---------- charts ---------- */
-  function drawLine(){
-    var vals = [52,58,55,63,66,64,70,71], meta = 80;
+  function drawLine(semanas){
+    var pts = (semanas || []).filter(function(x){ return x.pct != null; });
+    if(pts.length < 2){
+      $('chLine').innerHTML = '<p class="muted" style="font-size:.82rem; padding:14px 0">Responda questões em pelo menos duas semanas para eu desenhar sua curva de acerto.</p>';
+      return;
+    }
+    var vals = pts.map(function(x){ return x.pct; }), meta = 80;
     var W = 360, H = 158, x0 = 30, x1 = 336, yTop = 16, yBot = 132;
-    function X(i){ return x0 + i*(x1-x0)/(vals.length-1); }
-    function Y(v){ return yBot - (v-40)*(yBot-yTop)/50; }
-    var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Acerto semanal subindo de 52% para 71% em 8 semanas; meta 80%">';
-    [40,60,80].forEach(function(g){
-      s += '<line x1="'+x0+'" y1="'+Y(g)+'" x2="'+x1+'" y2="'+Y(g)+'" stroke="var(--grid)" stroke-width="1"/>';
-      s += '<text x="'+(x0-6)+'" y="'+(Y(g)+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+g+'</text>';
+    function X(i){ return vals.length > 1 ? x0 + i*(x1-x0)/(vals.length-1) : (x0+x1)/2; }
+    function Y(v){ return yBot - v*(yBot-yTop)/100; }
+    var s2 = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Acerto semanal em questoes">';
+    [0,50,100].forEach(function(g){
+      s2 += '<line x1="'+x0+'" y1="'+Y(g)+'" x2="'+x1+'" y2="'+Y(g)+'" stroke="var(--grid)" stroke-width="1"/>';
+      s2 += '<text x="'+(x0-6)+'" y="'+(Y(g)+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+g+'</text>';
     });
-    s += '<line x1="'+x0+'" y1="'+Y(meta)+'" x2="'+x1+'" y2="'+Y(meta)+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    s2 += '<line x1="'+x0+'" y1="'+Y(meta)+'" x2="'+x1+'" y2="'+Y(meta)+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>';
     var area = 'M'+X(0)+' '+yBot, line = '';
     vals.forEach(function(v,i){
       line += (i ? ' L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1);
       area += ' L' + X(i).toFixed(1) + ' ' + Y(v).toFixed(1);
     });
     area += ' L'+X(vals.length-1)+' '+yBot+' Z';
-    s += '<path d="'+area+'" fill="var(--c1)" opacity=".1"/>';
-    s += '<path d="'+line+'" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linejoin="round"/>';
-    s += '<circle cx="'+X(vals.length-1)+'" cy="'+Y(71)+'" r="4" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
-    s += '<text x="'+(X(vals.length-1)-2)+'" y="'+(Y(71)-9)+'" text-anchor="end" font-size="10" font-weight="700" fill="var(--ink)">71%</text>';
-    ['s1','s2','s3','s4','s5','s6','s7','s8'].forEach(function(lb,i){
-      if(i%2===0){ s += '<text x="'+X(i)+'" y="'+(yBot+14)+'" text-anchor="middle" font-size="8.5" fill="var(--muted)">'+lb+'</text>'; }
-    });
-    s += '</svg>';
-    $('chLine').innerHTML = s;
+    s2 += '<path d="'+area+'" fill="var(--c1)" opacity=".1"/>';
+    s2 += '<path d="'+line+'" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linejoin="round"/>';
+    var ult = vals[vals.length-1];
+    s2 += '<circle cx="'+X(vals.length-1)+'" cy="'+Y(ult)+'" r="4" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
+    s2 += '<text x="'+(X(vals.length-1)-2)+'" y="'+(Y(ult)-9)+'" text-anchor="end" font-size="10" font-weight="700" fill="var(--ink)">'+ult+'%</text>';
+    s2 += '</svg>';
+    $('chLine').innerHTML = s2;
   }
 
-  function drawCal(){
-    var rows = [
-      ['Constitucional', 84, 78],
-      ['Português', 72, 74],
-      ['Criminalística', 88, 69],
-      ['Raciocínio Lógico', 55, 62]
-    ];
-    var W = 360, rowH = 34, H = rows.length*rowH + 24, xL = 110, xR = 348;
-    function X(v){ return xL + (v-40)*(xR-xL)/60; }
-    var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; height:auto" role="img" aria-label="Comparação entre confiança declarada e acerto real por disciplina">';
-    [50,70,90].forEach(function(g){
-      s += '<line x1="'+X(g)+'" y1="6" x2="'+X(g)+'" y2="'+(H-18)+'" stroke="var(--grid)" stroke-width="1"/>';
-      s += '<text x="'+X(g)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8.5" fill="var(--muted)">'+g+'%</text>';
-    });
-    rows.forEach(function(r,i){
-      var y = 14 + i*rowH + rowH/2 - 8;
-      s += '<text x="0" y="'+(y+3.5)+'" font-size="10" fill="var(--ink)">'+r[0]+'</text>';
-      s += '<line x1="'+X(r[1])+'" y1="'+y+'" x2="'+X(r[2])+'" y2="'+y+'" stroke="var(--line)" stroke-width="2"/>';
-      s += '<circle cx="'+X(r[1])+'" cy="'+y+'" r="5" fill="var(--c2)" stroke="var(--card)" stroke-width="2"/>';
-      s += '<circle cx="'+X(r[2])+'" cy="'+y+'" r="5" fill="var(--c1)" stroke="var(--card)" stroke-width="2"/>';
-    });
-    s += '</svg>';
-    $('chCal').innerHTML = s;
-  }
-
-  function drawHeat(){
-    var seed = [3,2,3,1,0,2,3,3,2,1,3,2,0,1,3,3,2,3,1,2,3,0,2,3,3,1,2,3,2,3,1,3,2,2,3,0,3,2,3,1,2,3,3,2,1,3,3,2,3,1,2,2,3,3,2,3,3,1,3,3];
-    var html = '';
-    seed.forEach(function(v){ html += '<i class="'+(v ? 'l'+v : '')+'"></i>'; });
+  function drawHeat(diasAtivos){
+    var set = {}; (diasAtivos || []).forEach(function(d){ set[d] = 1; });
+    var html = '', hoje = new Date();
+    for(var i = 59; i >= 0; i--){
+      var d = new Date(hoje.getTime() - i*86400000).toISOString().slice(0,10);
+      html += '<i class="' + (set[d] ? 'l3' : '') + '" title="' + d + '"></i>';
+    }
     $('heat').innerHTML = html;
   }
 
@@ -1753,13 +1828,14 @@
   function stopTp(){ if(tpTimer){ clearInterval(tpTimer); tpTimer = null; } tpPaused = false; syncRec(); }
 
   /* ---------- externas: confirmar com um toque ---------- */
-  function extDone(btn){
+  function extDone(btn, verbo){
     var badge = document.createElement('span');
     badge.className = 'stbadge auto num';
     badge.textContent = '✓ agora · você confirmou';
     btn.replaceWith(badge);
     toast('Registrado! Atividade externa concluída — dashboard atualizado');
-    evento('externo_confirmado', 'escrever', null, 'concluido');
+    evento('externo_confirmado', verbo || 'escrever', null, 'concluido');
+    marcaVerbo(verbo || 'escrever');
   }
 
   /* ---------- dashboard: visões ---------- */
@@ -1919,7 +1995,7 @@
     toast('Dúvida salva como flashcard — entrou na sua agenda de revisão');
   }
 
-  /* ---------- modo real: cronograma, conteúdo e dashboard de verdade ---------- */
+  /* ---------- modo real: cronograma, conteúdo e dashboard ---------- */
   var REAL = null, CONT = null, JA_CONFIG = false;
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
   function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
@@ -1929,7 +2005,7 @@
     if(!(API && TOKEN)) return;
     apiFetch('/api/cronograma').then(function(r){ return r.json(); }).then(function(d){
       if(d && d.sem_cronograma){
-        toast('Gerando seu cronograma a partir do edital…');
+        toast('Montando seu cronograma a partir do edital…');
         return apiFetch('/api/cronograma', { gerar: true }).then(function(){ carregarReal(); });
       }
       if(!d || !d.hoje) return;
@@ -1938,14 +2014,36 @@
       aplicarPlanoReal(d);
       apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(d.hoje.topico_id))
         .then(function(r){ return r.json(); })
-        .then(function(c){ if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); } })
-        .catch(function(){});
+        .then(function(c){
+          if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); }
+          else { $('lerIntro').textContent = 'Não consegui gerar o conteúdo agora. Recarregue a página em alguns instantes.'; }
+        })
+        .catch(function(){ $('lerIntro').textContent = 'Falha ao gerar o conteúdo — tente recarregar.'; });
     }).catch(function(){});
     apiFetch('/api/dashboard').then(function(r){ return r.json(); })
       .then(function(dd){ if(dd && dd.cobertura) aplicarDashReal(dd); }).catch(function(){});
   }
 
+  var VERBOS = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
+  var FEITOS = {};
+  function marcaVerbo(v){
+    if(!v || FEITOS[v]) return;
+    FEITOS[v] = true;
+    var chips = document.querySelectorAll('.ringlbl .chip');
+    chips.forEach(function(c){
+      if(norm(c.textContent) === norm(v)) { c.classList.remove('now'); c.classList.add('done'); }
+    });
+    var sb = $('sb' + v.charAt(0).toUpperCase() + v.slice(1));
+    if(sb){ sb.className = 'stbadge auto num'; sb.textContent = '✓ concluído'; }
+    var n = Object.keys(FEITOS).length;
+    var ring = $('ring');
+    if(ring){ drawRing(n); }
+    var lbl = document.querySelector('.ringlbl b');
+    if(lbl) lbl.textContent = n + ' de 8 verbos hoje';
+  }
+
   function aplicarHojeReal(d){
+    (d.verbos_hoje || []).forEach(function(v){ if(v.status === 'concluido') marcaVerbo(v.verbo); });
     ASSUNTO = d.hoje.topico + ' — ' + d.hoje.disciplina;
     $('hdrAssunto').textContent = d.hoje.topico;
     $('hdrAssuntoSub').textContent = ' · ' + d.hoje.disciplina + (d.hoje.atrasado ? ' · retomando atraso' : '');
@@ -1980,7 +2078,7 @@
         box.appendChild(bl);
       })(i);
     }
-    if(!sigla.length){ box.innerHTML = ''; $('limpeWord').textContent = c.acronimo.itens.join(' · '); }
+    if(!sigla.length){ $('limpeWord').textContent = c.acronimo.itens.join(' · '); }
     else { $('limpeWord').textContent = 'Toque em uma letra ↑'; }
 
     var paras = String(c.resumo).split(/\n+/).filter(function(x){ return x.trim(); });
@@ -2012,15 +2110,13 @@
       fcI = 0; $('fcF').textContent = fcs[0][0]; $('fcB').textContent = fcs[0][1];
       apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: REAL.hoje.topico_id }).catch(function(){});
     }
-
     if(c.feynman && c.feynman.length){
       $('feynQ').innerHTML = 'Explique em voz alta: <b>' + esc(c.feynman[0].pergunta) + '</b>';
     }
-    $('podQuote').textContent = '"' + String(c.podcast).slice(0, 260) + '…" — roteiro gerado; o áudio entra quando ligarmos a voz.';
+    $('podQuote').textContent = '"' + String(c.podcast).slice(0, 260) + '…"';
     $('musTitle').textContent = 'Música do assunto';
     $('musSub').textContent = esc(c.musica.estilo);
     $('musLyr').innerHTML = esc(c.musica.letra).replace(/\n/g, '<br>');
-    toast('Conteúdo do assunto gerado e salvo no catálogo ✓');
   }
 
   function ansReal(q, escolha){
@@ -2036,7 +2132,7 @@
 
   function aplicarPlanoReal(d){
     $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> tópicos concluídos · ' + esc(d.edital);
-    $('planoProj').innerHTML = '<b>Projeção real:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
+    $('planoProj').innerHTML = '<b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
       (d.data_prova ? ' — prova em ' + fmtData(d.data_prova) + '.' : '. Quando a data da prova sair, eu reancoro tudo.');
     var html = '';
     d.resumo.por_disciplina.forEach(function(disc, i){
@@ -2055,6 +2151,25 @@
   }
 
   function aplicarDashReal(dd){
+    var hoje = new Date();
+    var MES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    var DIA = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    $('hdrData').textContent = DIA[hoje.getDay()] + ', ' + hoje.getDate() + ' de ' + MES[hoje.getMonth()];
+    $('hdrOla').textContent = 'Olá' + (NOME ? ', ' + NOME.split(' ')[0] : '') + '! Dia ' + dd.dia_jornada + ' da jornada';
+    $('streakN').textContent = dd.constancia_dias + (dd.constancia_dias === 1 ? ' dia' : ' dias');
+    var rev = dd.revisoes || [];
+    if(rev.length){
+      $('revTit').textContent = 'Revisões no ponto certo de hoje';
+      $('revChips').innerHTML = rev.map(function(r){
+        return '<div class="rev"><span>agora</span><b>' + esc(String(r.frente).slice(0, 46)) + '</b>flashcard · 1 min</div>';
+      }).join('');
+    } else {
+      $('revTit').textContent = 'Revisões';
+      $('revChips').innerHTML = '<div class="rev"><b>Nada vencido agora ✓</b>suas revisões voltam no momento certo</div>';
+    }
+    drawLine(dd.semanas);
+    drawHeat(dd.dias_ativos);
+
     $('tCobV').textContent = dd.cobertura.pct + '%';
     $('tCobD').textContent = dd.cobertura.concluidos + ' de ' + dd.cobertura.total + ' tópicos';
     $('tAcertoV').textContent = (dd.questoes.pct == null) ? '—' : dd.questoes.pct + '%';
@@ -2064,6 +2179,7 @@
     $('tRetV').textContent = dd.flashcards_devidos;
     $('tRetL').textContent = 'flashcards para revisar agora';
     $('tRetD').textContent = '';
+
     var html = '';
     dd.por_disciplina.forEach(function(disc, i){
       var cor = PAL[i % PAL.length];
@@ -2073,6 +2189,7 @@
         '<span class="dp num">' + disc.pct + '%</span></div>';
     });
     if(html) $('dvDiscList').innerHTML = html;
+
     var ordem = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
     var mapa = {}; (dd.por_verbo || []).forEach(function(v){ mapa[v.verbo] = v.eventos; });
     var max = 1; ordem.forEach(function(v){ if((mapa[v] || 0) > max) max = mapa[v]; });
@@ -2084,8 +2201,8 @@
         '<span class="db"><i style="width:' + pct + '%"></i></span><span class="dp num">' + nEv + '</span></div>';
     });
     $('dvVerboList').innerHTML = vhtml;
-    $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano de amanhã reforça.';
-    drawRadar(vals);
+    $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano reforça a seguir.';
+    radarDrawn = false; drawRadar(vals);
   }
 
   /* keyboard access for flashcard */

@@ -109,8 +109,15 @@ module.exports = async (req, res) => {
     }
     const concluidos = todos.filter(r => r.status === 'concluido').length;
 
+    const assuntoHoje = hoje.topico + ' — ' + hoje.disciplina;
+    const prog = await db.execute({
+      sql: 'SELECT verbo, status FROM progresso WHERE aluno_id = ? AND assunto = ?',
+      args: [aluno.id, assuntoHoje]
+    });
+
     return res.status(200).json({
       edital: edital.titulo, data_prova: edital.data_prova,
+      verbos_hoje: prog.rows.map(r => ({ verbo: r.verbo, status: r.status })),
       hoje: { cron_id: hoje.cron_id, topico_id: hoje.topico_id, topico: hoje.topico, disciplina: hoje.disciplina, data: hoje.data, atrasado: hoje.data < hojeISO() },
       proximos: proximos.map(r => ({ topico: r.topico, disciplina: r.disciplina, data: r.data, status: r.status })),
       resumo: {

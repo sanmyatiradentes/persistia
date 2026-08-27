@@ -18,9 +18,11 @@ module.exports = async (req, res) => {
         sql: "SELECT COUNT(*) AS n FROM flashcards WHERE aluno_id = ? AND proxima_revisao <= ?",
         args: [aluno.id, agora()]
       });
+      const ed = await db.execute({ sql: 'SELECT COUNT(*) AS n FROM editais WHERE aluno_id = ?', args: [aluno.id] });
       return res.status(200).json({
         nome: aluno.nome, email: aluno.email,
         config: c.rows[0] || null,
+        tem_edital: Number(ed.rows[0].n) > 0,
         eventos: Number(ev.rows[0].n),
         flashcards_devidos: Number(fc.rows[0].n)
       });
