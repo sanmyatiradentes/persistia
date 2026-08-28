@@ -16,6 +16,8 @@ function tamanhos(h) {
     ramos: clamp(4 + h * 1.5, 5, 8),
     itens: clamp(3 + h, 4, 6),
     chaves: clamp(5 + h * 2, 6, 12),
+    dispositivos: clamp(1 + h, 2, 5),
+    destaques: clamp(10 + h * 4, 12, 22),
     palavras: clamp(380 + h * 260, 450, 1100)
   };
 }
@@ -42,6 +44,8 @@ Regras:
 - "mapa": "centro" (2 a 4 palavras) e ${t.ramos} "ramos" que cubram o assunto inteiro, cada um com "titulo" (até 3 palavras) e ${t.itens} "itens" curtos (até 6 palavras cada). Os itens devem trazer conteúdo de prova — classificação, exceção, prazo — e não rótulos genéricos.
 - "podcast": roteiro de cerca de ${t.palavras} palavras em diálogo entre ANA e LÉO — uma aula de verdade, não uma chamada: abertura de 2 frases, desenvolvimento do assunto com exemplos, três pausas de recuperação ("pensa aí…"), os erros que a banca explora e um resumo relâmpago no fim. Use apenas "ANA:" e "LEO:" como marcadores de fala.
 - "musica": estilo sugerido + letra mnemônica com refrão e 3 estrofes, cobrindo os pontos principais do assunto (o refrão repete depois de cada estrofe).
+- "dispositivos": a LEI SECA do assunto. Quando o tópico tiver base normativa, transcreva LITERALMENTE, palavra por palavra, até ${t.dispositivos} dispositivos centrais (artigo de lei ou da Constituição, inciso, parágrafo, súmula ou enunciado). Cada item tem "rotulo" com a citação exata e abreviada (ex.: "Art. 37, caput, CF/88", "Art. 5.º, LXIII, CF/88", "Art. 2.º da Lei n.º 9.784/1999", "Súmula Vinculante 13") e "texto" com a transcrição fiel e integral do dispositivo, sem cortes, sem resumo e sem adaptação. Regra inegociável: só transcreva o que você tem CERTEZA de reproduzir literalmente. Se houver qualquer dúvida sobre a redação exata, não inclua aquele dispositivo — é melhor devolver a lista vazia do que apresentar paráfrase como se fosse texto de lei. Se o assunto não for jurídico (português, informática, raciocínio lógico, história), devolva lista vazia.
+- "palavras_chave": ${t.destaques} termos que APARECEM literalmente no texto do "resumo" e merecem destaque colorido, cada um com "termo" (1 a 3 palavras, exatamente como escrito no resumo) e "tipo", escolhido entre exatamente estes seis rótulos: "conceito" (definição ou instituto central), "principio" (princípio, regra ou fundamento), "prazo" (prazo, número, quórum, percentual, valor, idade), "excecao" (exceção, ressalva, hipótese de não aplicação), "orgao" (órgão, autoridade ou competência) e "pegadinha" (o ponto exato em que a banca costuma trocar uma palavra pela outra). Distribua entre os tipos; não classifique tudo como "conceito".
 - "numeros": até 4 dados que a prova cobra de cor — prazo, quórum, percentual, idade, valor — cada um com "valor" curto (ex.: "5 anos", "2/3", "48 h") e "rotulo" de até 6 palavras. Se o assunto não tiver números decorativos, devolva lista vazia; não invente.
 - "pegadinhas": 3 erros que as bancas mais exploram neste assunto, cada um em até 18 palavras, escrito como alerta ("Confundir X com Y: ...").
 ${estilo}`;
@@ -69,6 +73,14 @@ const S_TEORIA = {
       },
       required: ['centro', 'ramos']
     },
+    dispositivos: {
+      type: 'array',
+      items: { type: 'object', properties: { rotulo: { type: 'string' }, texto: { type: 'string' } }, required: ['rotulo', 'texto'] }
+    },
+    palavras_chave: {
+      type: 'array',
+      items: { type: 'object', properties: { termo: { type: 'string' }, tipo: { type: 'string' } }, required: ['termo', 'tipo'] }
+    },
     numeros: {
       type: 'array',
       items: { type: 'object', properties: { valor: { type: 'string' }, rotulo: { type: 'string' } }, required: ['valor', 'rotulo'] }
@@ -77,7 +89,7 @@ const S_TEORIA = {
     podcast: { type: 'string' },
     musica: { type: 'object', properties: { estilo: { type: 'string' }, letra: { type: 'string' } }, required: ['estilo', 'letra'] }
   },
-  required: ['subtitulo', 'resumo', 'acronimo', 'trecho_chave', 'mapa', 'numeros', 'pegadinhas', 'podcast', 'musica']
+  required: ['subtitulo', 'resumo', 'acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas', 'podcast', 'musica']
 };
 
 const S_PRATICA = {
@@ -174,7 +186,7 @@ module.exports = async (req, res) => {
       `Duração prevista da sessão: ${horas} h\n\n`;
 
     const [teoria, pratica] = await Promise.all([
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
       gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
     ]);
     const pacote = Object.assign({}, teoria, pratica);

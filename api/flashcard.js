@@ -21,6 +21,22 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
+      const url = new URL(req.url, 'http://x');
+      // ?tudo=1 → o baralho inteiro (para a tela "abrir todos os cartões"),
+      // com o nome do tópico de origem e a marca de quem já está vencido.
+      if (url.searchParams.get('tudo')) {
+        const r = await db.execute({
+          sql: `SELECT f.id, f.frente, f.verso, f.origem, f.proxima_revisao, t.nome AS topico, d.nome AS disciplina
+                FROM flashcards f
+                LEFT JOIN topicos t ON ('topico:' || t.id) = f.origem
+                LEFT JOIN disciplinas d ON d.id = t.disciplina_id
+                WHERE f.aluno_id = ? ORDER BY f.proxima_revisao LIMIT 500`,
+          args: [aluno.id]
+        });
+        const hoje = agora();
+        const todos = r.rows.map(x => Object.assign({}, x, { devido: String(x.proxima_revisao) <= hoje }));
+        return res.status(200).json({ todos, devidos: todos.filter(x => x.devido) });
+      }
       const r = await db.execute({
         sql: `SELECT id, frente, verso, origem, proxima_revisao FROM flashcards
               WHERE aluno_id = ? AND proxima_revisao <= ? ORDER BY proxima_revisao LIMIT 20`,
