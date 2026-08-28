@@ -305,7 +305,8 @@
   .tab{
     flex:1; background:none; border:none; padding:10px 0 12px; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:3px;
-    color:var(--muted); font:600 .64rem "Albert Sans",sans-serif; letter-spacing:.03em;
+    color:var(--muted); font:600 .6rem "Albert Sans",sans-serif; letter-spacing:.02em;
+    min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .tab.active{color:var(--accent)}
   .tab svg{width:22px; height:22px}
@@ -722,6 +723,34 @@
   .cine-b button{font:700 .85rem "Albert Sans",sans-serif; border-radius:999px; padding:10px 18px; cursor:pointer; border:1px solid rgba(255,255,255,.28); background:transparent; color:#EAF6F0}
   .cine-b button.p{background:#2FBE92; border-color:#2FBE92; color:#062018}
   #cineMsg{color:#9FBFB2; font-size:.78rem; text-align:center; max-width:420px}
+
+
+  /* ===== biblioteca ===== */
+  .bib-f{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+  .bib-f input{flex:1; min-width:170px; border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+               border-radius:10px; padding:9px 12px; font:500 .88rem "Albert Sans",sans-serif}
+  .bib-chips{display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; -webkit-overflow-scrolling:touch}
+  .bib-chip{flex:none; border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:999px;
+            padding:6px 13px; font:600 .76rem "Albert Sans",sans-serif; cursor:pointer; white-space:nowrap}
+  .bib-chip.sel{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+  .bib-lista{display:grid; gap:10px}
+  .bib-item{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow)}
+  .bib-item .top{display:flex; gap:8px; align-items:flex-start; margin-bottom:2px}
+  .bib-item b{font-family:"Bricolage Grotesque",sans-serif; font-size:.98rem; line-height:1.3; flex:1}
+  .bib-item .dsc{font-size:.72rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:.04em}
+  .bib-item .met{font-size:.74rem; color:var(--muted); margin-top:2px}
+  .bib-acoes{display:flex; gap:6px; flex-wrap:wrap; margin-top:11px}
+  .bib-acoes button{border:1px solid var(--line); background:var(--card2); color:var(--ink); border-radius:999px;
+                    padding:6px 13px; font:600 .76rem "Albert Sans",sans-serif; cursor:pointer}
+  .bib-acoes button:hover{border-color:var(--accent); color:var(--accent)}
+  .bib-acoes button.pri{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+  .bib-vazio{color:var(--muted); font-size:.85rem; padding:18px 0}
+  #visor{position:fixed; inset:0; background:var(--bg); z-index:85; display:none; flex-direction:column}
+  #visor.show{display:flex}
+  #visor .vtop{display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line)}
+  #visor .vtop b{flex:1; font-family:"Bricolage Grotesque",sans-serif; font-size:.98rem}
+  #visorBody{flex:1; overflow:auto; padding:16px}
+  #visorBody svg{width:100%; height:auto; display:block; border-radius:12px}
 
 </style>
 
@@ -1436,6 +1465,28 @@
 
   <!-- ================= TABBAR ================= -->
 
+
+  <!-- ================= BIBLIOTECA ================= -->
+  <section class="screen" id="scr-biblioteca">
+    <div class="top"><div>
+      <p class="eyebrow">Tudo o que já foi criado para você</p>
+      <h2 style="font-size:1.25rem">Biblioteca</h2>
+    </div></div>
+    <p class="muted" style="font-size:.8rem; margin-bottom:14px" id="bibResumo">—</p>
+
+    <div class="bib-f">
+      <input id="bibBusca" type="search" placeholder="Buscar assunto" oninput="bibRender()">
+    </div>
+    <div class="bib-chips" id="bibDiscs"></div>
+    <div class="bib-lista" id="bibLista"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h2 style="font-size:.98rem">🎙️ Minhas gravações</h2>
+      <p class="muted" style="font-size:.74rem; margin-bottom:8px">O áudio fica guardado no aparelho onde você gravou. As fichas abaixo aparecem em qualquer aparelho.</p>
+      <div id="bibGrav"></div>
+    </div>
+  </section>
+
   <!-- ================= ADMIN ================= -->
   <section class="screen" id="scr-admin">
     <div class="top">
@@ -1464,6 +1515,9 @@
     <button class="tab" data-scr="evolucao" onclick="nav('evolucao',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M5 17l4-6 4 3 6-9"/></svg>
       Evolução</button>
+    <button class="tab" data-scr="biblioteca" onclick="nav('biblioteca',this); bibCarregar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm9-2h5a2 2 0 012 2v14a2 2 0 01-2 2h-5V3z"/></svg>
+      Biblioteca</button>
     <button class="tab" data-scr="metodo" onclick="nav('metodo',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a4.5 4.5 0 00-4.4 5.5A4.2 4.2 0 006 16.2V17a3 3 0 003 3h6a3 3 0 003-3v-.8a4.2 4.2 0 00-1.6-7.7A4.5 4.5 0 0012 3z"/><path d="M12 10v10"/></svg>
       Método</button>
@@ -1484,6 +1538,15 @@
     <button class="btn" id="lgBtn" onclick="lgEnviar()">Começar</button>
     <button class="lg-alt" id="lgAlt" onclick="lgToggle()">Já tenho conta — entrar</button>
     <button class="lg-alt" style="opacity:.7" onclick="voltarAoSite()">← Conhecer o PersisteIA antes</button>
+  </div>
+
+  <div id="visor" role="dialog" aria-label="Visualizador">
+    <div class="vtop">
+      <b id="visorTit">—</b>
+      <button class="btn ghost small" id="visorBaixar" onclick="visorBaixarPng()">Baixar imagem</button>
+      <button class="iconbtn" onclick="fecharVisor()" aria-label="Fechar">✕</button>
+    </div>
+    <div id="visorBody"></div>
   </div>
 
   <div id="cine" role="dialog" aria-label="Vídeo do assunto">
@@ -1767,6 +1830,7 @@
     try {
       // primeiro fecha o que estiver por cima
       if($('leitor') && $('leitor').classList.contains('open') && !st.leitor){ reallyClose(); return; }
+      if($('visor') && $('visor').classList.contains('show') && !st.visor){ fecharVisor(); return; }
       if($('cine') && $('cine').classList.contains('show') && !st.cine){ fecharCine(); return; }
       if($('chat') && $('chat').classList.contains('open') && !st.chat){ $('chat').classList.remove('open'); return; }
       if($('login') && $('login').classList.contains('show') && !TOKEN){ voltarAoSite(); return; }
@@ -2122,6 +2186,546 @@
         if(btn){ btn.disabled = false; btn.textContent = tipo === 'flashcards' ? 'Quero mais flashcards' : 'Quero mais questões deste assunto'; }
         toast('Sem conexão');
       });
+  }
+
+
+  /* ================= RESUMO VISUAL (infográfico) e VÍDEO DO ASSUNTO =================
+     Tudo é desenhado aqui no navegador a partir do conteúdo que já foi gerado uma vez
+     para o tópico. Não custa nada por aluno e o texto sai perfeito — ao contrário de
+     imagem gerada por IA, que erra palavra. */
+
+  var PAL_INFO = ['#0E8F6E', '#B97A0F', '#7A4FD6', '#B85C3A', '#2E7DBE', '#C4497E'];
+
+  function dadosVisual(pac){
+    var C = pac || CONT;
+    if(!C) return null;
+    var it = pac ? {} : (itemAtivo() || {});
+    return {
+      topico: String(C.topico || it.topico || 'Assunto'),
+      disciplina: String(C.disciplina || it.disciplina || ''),
+      subtitulo: String(C.subtitulo || ''),
+      parte: Number(C.partes) > 1 ? ('parte ' + C.parte + ' de ' + C.partes) : '',
+      ramos: ((C.mapa || {}).ramos || []).slice(0, 6),
+      centro: String((C.mapa || {}).centro || C.topico || ''),
+      sigla: String((C.acronimo || {}).sigla || ''),
+      itensSigla: ((C.acronimo || {}).itens || []).slice(0, 6),
+      trecho: String(C.trecho_chave || C.lei_seca || '').replace(/\[\[|\]\]/g, ''),
+      numeros: (C.numeros || []).slice(0, 4),
+      pegadinhas: (C.pegadinhas || []).slice(0, 3)
+    };
+  }
+
+  /* ---------- quebra de linha para SVG ---------- */
+  var _med = null;
+  function medir(txt, fonte){
+    if(!_med){ _med = document.createElement('canvas').getContext('2d'); }
+    _med.font = fonte;
+    return _med.measureText(txt).width;
+  }
+  function quebrar(txt, fonte, largura){
+    var palavras = String(txt).split(/\s+/), linhas = [], atual = '';
+    palavras.forEach(function(p){
+      var teste = atual ? atual + ' ' + p : p;
+      if(medir(teste, fonte) > largura && atual){ linhas.push(atual); atual = p; }
+      else { atual = teste; }
+    });
+    if(atual) linhas.push(atual);
+    return linhas;
+  }
+  function tspans(txt, x, y, fonte, largura, alturaLinha, max){
+    var ls = quebrar(txt, fonte, largura);
+    if(max && ls.length > max){ ls = ls.slice(0, max); ls[max-1] = ls[max-1].replace(/.{3}$/, '…'); }
+    return { svg: ls.map(function(l, i){
+      return '<tspan x="' + x + '" y="' + (y + i * alturaLinha) + '">' + esc(l) + '</tspan>';
+    }).join(''), linhas: ls.length };
+  }
+
+  /* ---------- o infográfico ---------- */
+  function svgInfografico(d, tema){
+    var W = 1080, escuro = tema === 'escuro';
+    var bg = escuro ? '#0D1411' : '#FFFFFF', cartao = escuro ? '#16201B' : '#F4F8F5';
+    var ink = escuro ? '#E7F0EA' : '#16241D', mut = escuro ? '#93A69B' : '#5C6E64';
+    var linha = escuro ? '#24312A' : '#DCE7DF', verde = escuro ? '#2FBE92' : '#0E8F6E';
+    var fT = '700 30px "Albert Sans", sans-serif', fP = '400 26px "Albert Sans", sans-serif';
+    var y = 0, corpo = '';
+
+    // cabeçalho
+    corpo += '<rect x="0" y="0" width="' + W + '" height="230" fill="' + verde + '"/>';
+    corpo += '<text x="64" y="86" font-family="Albert Sans, sans-serif" font-size="26" font-weight="700" fill="rgba(255,255,255,.75)" letter-spacing="3">' +
+             esc(d.disciplina.toUpperCase().slice(0, 46)) + '</text>';
+    var tit = tspans(d.topico, 64, 148, '800 46px "Bricolage Grotesque", sans-serif', W - 128, 56, 2);
+    corpo += '<text font-family="Bricolage Grotesque, Albert Sans, sans-serif" font-size="46" font-weight="800" fill="#FFFFFF">' + tit.svg + '</text>';
+    y = 148 + tit.linhas * 56 + 18;
+    if(d.subtitulo || d.parte){
+      corpo += '<text x="64" y="' + y + '" font-family="Albert Sans, sans-serif" font-size="26" fill="rgba(255,255,255,.85)">' +
+               esc([d.subtitulo, d.parte].filter(Boolean).join(' · ').slice(0, 70)) + '</text>';
+      y += 22;
+    }
+    var altCab = Math.max(230, y + 30);
+    corpo = corpo.replace('height="230"', 'height="' + altCab + '"');
+    y = altCab + 56;
+
+    // números que a prova cobra
+    if(d.numeros.length){
+      var lg = (W - 128 - (d.numeros.length - 1) * 16) / d.numeros.length;
+      d.numeros.forEach(function(n, i){
+        var x = 64 + i * (lg + 16);
+        corpo += '<rect x="' + x + '" y="' + y + '" width="' + lg + '" height="150" rx="20" fill="' + cartao + '" stroke="' + linha + '"/>';
+        corpo += '<text x="' + (x + lg/2) + '" y="' + (y + 68) + '" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="42" font-weight="800" fill="' + verde + '">' +
+                 esc(String(n.valor).slice(0, 10)) + '</text>';
+        var r = tspans(String(n.rotulo), x + lg/2, y + 104, '400 20px "Albert Sans", sans-serif', lg - 24, 24, 2);
+        corpo += '<text text-anchor="middle" font-family="Albert Sans, sans-serif" font-size="20" fill="' + mut + '">' + r.svg + '</text>';
+      });
+      y += 150 + 46;
+    }
+
+    // ramos do assunto
+    if(d.ramos.length){
+      corpo += '<text x="64" y="' + y + '" font-family="Albert Sans, sans-serif" font-size="24" font-weight="700" letter-spacing="3" fill="' + mut + '">O QUE CAI</text>';
+      y += 34;
+      d.ramos.forEach(function(r, i){
+        var cor = PAL_INFO[i % PAL_INFO.length];
+        var itens = (r.itens || []).slice(0, 4).join(' · ');
+        var li = tspans(itens, 108, y + 74, fP, W - 200, 32, 2);
+        var alt = 62 + li.linhas * 32;
+        corpo += '<rect x="64" y="' + y + '" width="' + (W - 128) + '" height="' + alt + '" rx="18" fill="' + cartao + '"/>';
+        corpo += '<rect x="64" y="' + y + '" width="8" height="' + alt + '" rx="4" fill="' + cor + '"/>';
+        corpo += '<text x="108" y="' + (y + 42) + '" font-family="Bricolage Grotesque, sans-serif" font-size="30" font-weight="700" fill="' + ink + '">' +
+                 esc(String(r.titulo).slice(0, 40)) + '</text>';
+        corpo += '<text font-family="Albert Sans, sans-serif" font-size="26" fill="' + mut + '">' + li.svg + '</text>';
+        y += alt + 16;
+      });
+      y += 30;
+    }
+
+    // trecho-chave
+    if(d.trecho){
+      var tq = tspans('“' + d.trecho + '”', 108, y + 62, '600 28px "Albert Sans", sans-serif', W - 216, 38, 5);
+      var altT = 40 + tq.linhas * 38 + 34;
+      corpo += '<rect x="64" y="' + y + '" width="' + (W - 128) + '" height="' + altT + '" rx="20" fill="none" stroke="' + verde + '" stroke-width="3"/>';
+      corpo += '<text font-family="Albert Sans, sans-serif" font-size="28" font-weight="600" fill="' + ink + '">' + tq.svg + '</text>';
+      y += altT + 40;
+    }
+
+    // mnemônico
+    if(d.sigla){
+      corpo += '<rect x="64" y="' + y + '" width="' + (W - 128) + '" height="' + (96 + d.itensSigla.length * 34) + '" rx="20" fill="' + verde + '"/>';
+      corpo += '<text x="108" y="' + (y + 60) + '" font-family="Bricolage Grotesque, sans-serif" font-size="44" font-weight="800" fill="#FFFFFF" letter-spacing="6">' +
+               esc(d.sigla.slice(0, 14)) + '</text>';
+      d.itensSigla.forEach(function(t, i){
+        corpo += '<text x="108" y="' + (y + 104 + i * 34) + '" font-family="Albert Sans, sans-serif" font-size="25" fill="rgba(255,255,255,.92)">' +
+                 esc(String(t).slice(0, 62)) + '</text>';
+      });
+      y += 96 + d.itensSigla.length * 34 + 40;
+    }
+
+    // pegadinhas
+    if(d.pegadinhas.length){
+      corpo += '<text x="64" y="' + y + '" font-family="Albert Sans, sans-serif" font-size="24" font-weight="700" letter-spacing="3" fill="' + mut + '">ONDE A BANCA DERRUBA</text>';
+      y += 36;
+      d.pegadinhas.forEach(function(pg){
+        var pl = tspans(pg, 112, y + 34, fP, W - 210, 32, 3);
+        var alt = 18 + pl.linhas * 32;
+        corpo += '<circle cx="80" cy="' + (y + 22) + '" r="9" fill="#C24A3A"/>';
+        corpo += '<text font-family="Albert Sans, sans-serif" font-size="26" fill="' + ink + '">' + pl.svg + '</text>';
+        y += alt + 14;
+      });
+      y += 26;
+    }
+
+    // rodapé
+    corpo += '<rect x="0" y="' + y + '" width="' + W + '" height="96" fill="' + cartao + '"/>';
+    corpo += '<text x="' + (W/2) + '" y="' + (y + 58) + '" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="28" font-weight="700" fill="' + mut + '">PersisteIA · persisteia.com.br</text>';
+    var H = y + 96;
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Resumo visual de ' + esc(d.topico) + '">' +
+           '<rect width="' + W + '" height="' + H + '" fill="' + bg + '"/>' + corpo + '</svg>';
+  }
+
+  function desenharInfografico(){
+    var box = $('infoPrev'); if(!box) return;
+    var d = dadosVisual();
+    if(!d){ box.innerHTML = ''; return; }
+    var escuro = false;
+    try {
+      escuro = document.documentElement.dataset.theme === 'dark' ||
+        (document.documentElement.dataset.theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    } catch(e){}
+    box.innerHTML = svgInfografico(d, escuro ? 'escuro' : 'claro');
+  }
+
+  function baixarInfografico(dados){
+    var d = dados || dadosVisual();
+    if(!d){ toast('Abra um assunto primeiro'); return; }
+    var svg = svgInfografico(d, 'claro');
+    var m = svg.match(/viewBox="0 0 (\d+) (\d+)"/);
+    var W = Number(m[1]), H = Number(m[2]);
+    var img = new Image();
+    img.onload = function(){
+      var cv = document.createElement('canvas');
+      cv.width = W; cv.height = H;
+      var cx = cv.getContext('2d');
+      cx.fillStyle = '#FFFFFF'; cx.fillRect(0, 0, W, H);
+      cx.drawImage(img, 0, 0);
+      cv.toBlob(function(b){
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = 'persisteia-' + norm(d.topico).replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+        toast('Imagem salva ✓');
+        evento('resumo_visual', 'ler', { formato: 'png' }, 'concluido');
+      }, 'image/png');
+    };
+    img.onerror = function(){ toast('Não consegui gerar a imagem neste navegador'); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  /* ---------- vídeo do assunto: slides desenhados + narração ---------- */
+  var CINE = { slides: [], i: 0, tocando: false, rec: null, pedacos: [], timer: null };
+
+  function montarSlides(d){
+    var s = [];
+    s.push({ tipo: 'capa', titulo: d.topico, sub: [d.disciplina, d.subtitulo, d.parte].filter(Boolean).join(' · '),
+             fala: d.topico + '. ' + (d.subtitulo || d.disciplina) + '.' });
+    if(d.numeros.length){
+      s.push({ tipo: 'numeros', titulo: 'De cor', itens: d.numeros,
+               fala: 'Guarde estes números: ' + d.numeros.map(function(n){ return n.valor + ', ' + n.rotulo; }).join('. ') + '.' });
+    }
+    d.ramos.forEach(function(r, i){
+      s.push({ tipo: 'ramo', cor: PAL_INFO[i % PAL_INFO.length], titulo: r.titulo, itens: (r.itens || []).slice(0, 4),
+               fala: r.titulo + '. ' + (r.itens || []).slice(0, 4).join('. ') + '.' });
+    });
+    if(d.trecho) s.push({ tipo: 'trecho', titulo: 'Trecho-chave', texto: d.trecho, fala: d.trecho });
+    if(d.sigla) s.push({ tipo: 'sigla', titulo: d.sigla, itens: d.itensSigla,
+                         fala: 'Para lembrar: ' + d.sigla + '. ' + d.itensSigla.join('. ') + '.' });
+    d.pegadinhas.forEach(function(p){
+      s.push({ tipo: 'pega', titulo: 'Onde a banca derruba', texto: p, fala: p });
+    });
+    s.push({ tipo: 'fim', titulo: 'Agora é com você', sub: 'Responda as questões deste assunto no PersisteIA',
+             fala: 'Agora responda as questões deste assunto. Persistir é o método.' });
+    return s;
+  }
+
+  function pintarSlide(sl){
+    var cv = $('cineCv'), c = cv.getContext('2d'), W = cv.width, H = cv.height;
+    c.fillStyle = '#0D1411'; c.fillRect(0, 0, W, H);
+    c.fillStyle = sl.tipo === 'capa' || sl.tipo === 'fim' ? '#0E8F6E' : '#16201B';
+    c.fillRect(0, 0, W, H);
+    var pad = 90;
+
+    function txt(t, x, y, fonte, cor, larg, alt, alinha){
+      c.font = fonte; c.fillStyle = cor; c.textAlign = alinha || 'left';
+      var ls = quebrar(t, fonte, larg);
+      ls.forEach(function(l, i){ c.fillText(l, x, y + i * alt); });
+      return y + ls.length * alt;
+    }
+
+    if(sl.tipo === 'capa' || sl.tipo === 'fim'){
+      var y0 = H/2 - 200;
+      y0 = txt(sl.titulo, W/2, y0, '800 92px "Bricolage Grotesque", "Albert Sans", sans-serif', '#FFFFFF', W - pad*2, 108, 'center');
+      txt(sl.sub || '', W/2, y0 + 60, '500 42px "Albert Sans", sans-serif', 'rgba(255,255,255,.86)', W - pad*2, 54, 'center');
+      c.font = '700 34px "Albert Sans", sans-serif'; c.fillStyle = 'rgba(255,255,255,.7)'; c.textAlign = 'center';
+      c.fillText('PersisteIA', W/2, H - 120);
+      return;
+    }
+
+    var y = 260;
+    if(sl.tipo === 'ramo'){
+      c.fillStyle = sl.cor; c.fillRect(pad, y - 90, 120, 12);
+      y = txt(sl.titulo, pad, y, '800 76px "Bricolage Grotesque", "Albert Sans", sans-serif', '#E7F0EA', W - pad*2, 92);
+      y += 60;
+      (sl.itens || []).forEach(function(it){
+        c.fillStyle = sl.cor; c.beginPath(); c.arc(pad + 16, y - 16, 12, 0, 6.3); c.fill();
+        y = txt(it, pad + 60, y, '400 46px "Albert Sans", sans-serif', '#B9CCC2', W - pad*2 - 60, 58) + 34;
+      });
+    } else if(sl.tipo === 'numeros'){
+      y = txt(sl.titulo, pad, y, '800 76px "Bricolage Grotesque", "Albert Sans", sans-serif', '#E7F0EA', W - pad*2, 92) + 70;
+      (sl.itens || []).forEach(function(n){
+        c.font = '800 82px "Bricolage Grotesque", "Albert Sans", sans-serif'; c.fillStyle = '#2FBE92'; c.textAlign = 'left';
+        c.fillText(String(n.valor).slice(0, 12), pad, y);
+        y = txt(String(n.rotulo), pad, y + 54, '400 40px "Albert Sans", sans-serif', '#B9CCC2', W - pad*2, 50) + 56;
+      });
+    } else if(sl.tipo === 'trecho' || sl.tipo === 'pega'){
+      var cor = sl.tipo === 'pega' ? '#E07B6B' : '#2FBE92';
+      c.fillStyle = cor; c.fillRect(pad, y - 92, 120, 12);
+      y = txt(sl.titulo, pad, y, '700 52px "Albert Sans", sans-serif', cor, W - pad*2, 64) + 60;
+      txt(sl.texto, pad, y, '600 56px "Albert Sans", sans-serif', '#E7F0EA', W - pad*2, 74);
+    } else if(sl.tipo === 'sigla'){
+      c.font = '800 140px "Bricolage Grotesque", "Albert Sans", sans-serif'; c.fillStyle = '#2FBE92'; c.textAlign = 'left';
+      c.fillText(String(sl.titulo).slice(0, 10), pad, y + 40);
+      y += 160;
+      (sl.itens || []).forEach(function(it){
+        y = txt(it, pad, y, '400 46px "Albert Sans", sans-serif', '#B9CCC2', W - pad*2, 58) + 26;
+      });
+    }
+    c.font = '700 30px "Albert Sans", sans-serif'; c.fillStyle = 'rgba(255,255,255,.35)'; c.textAlign = 'center';
+    c.fillText('PersisteIA · persisteia.com.br', W/2, H - 90);
+  }
+
+  function abrirCine(pac){
+    var d = dadosVisual(pac);
+    if(!d){ toast('Abra um assunto primeiro'); return; }
+    CINE.slides = montarSlides(d); CINE.i = 0; CINE.tocando = false;
+    $('cine').classList.add('show');
+    empilhar({ tela: telaAtual(), cine: true }, '#video');
+    pintarSlide(CINE.slides[0]);
+    $('cineRec').style.display = (window.MediaRecorder && $('cineCv').captureStream) ? '' : 'none';
+    $('cineMsg').textContent = AUD.podcast
+      ? 'Os slides passam com o podcast do assunto como trilha.'
+      : 'Toque o podcast uma vez no cartão Ouvir e ele entra como trilha do vídeo.';
+  }
+  function fecharCine(){
+    cineParar();
+    $('cine').classList.remove('show');
+    if(!VOLTANDO && (history.state || {}).cine){ try { history.back(); } catch(e){} }
+  }
+  function cineParar(){
+    CINE.tocando = false;
+    clearTimeout(CINE.timer);
+    if(CINE.som){ try { CINE.som.pause(); } catch(e){} CINE.som = null; }
+    pararFala();
+    if(CINE.rec && CINE.rec.state === 'recording'){ try { CINE.rec.stop(); } catch(e){} }
+    $('cinePlay').textContent = '▶ Assistir';
+  }
+
+  function cinePlay(){
+    if(CINE.tocando){ cineParar(); return; }
+    CINE.tocando = true; CINE.i = 0;
+    $('cinePlay').textContent = '⏸ Parar';
+    if(AUD.podcast && !CINE.rec){
+      try { CINE.som = new Audio(AUD.podcast); CINE.som.play().catch(function(){}); } catch(e){}
+    }
+    proximoSlide();
+  }
+  function proximoSlide(){
+    if(!CINE.tocando) return;
+    if(CINE.i >= CINE.slides.length){
+      CINE.tocando = false; $('cinePlay').textContent = '▶ Assistir';
+      if(CINE.rec && CINE.rec.state === 'recording'){ try { CINE.rec.stop(); } catch(e){} }
+      evento('video_assunto', 'ouvir', { slides: CINE.slides.length }, 'concluido');
+      return;
+    }
+    var sl = CINE.slides[CINE.i++];
+    pintarSlide(sl);
+    var dur = Math.max(2600, Math.min(9000, String(sl.fala || '').length * 62));
+    CINE.timer = setTimeout(proximoSlide, dur);
+  }
+
+  // Gravação: o canvas vira vídeo; se houver voz de estúdio, ela entra como trilha.
+  function cineGravar(){
+    var cv = $('cineCv');
+    if(!(window.MediaRecorder && cv.captureStream)){ toast('Este navegador não grava vídeo'); return; }
+    cineParar();
+    var stream = cv.captureStream(30);
+    var audioEl = null;
+    if(AUD.podcast){
+      try {
+        audioEl = new Audio(AUD.podcast);
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var src = ctx.createMediaElementSource(audioEl);
+        var dest = ctx.createMediaStreamDestination();
+        src.connect(dest); src.connect(ctx.destination);
+        dest.stream.getAudioTracks().forEach(function(t){ stream.addTrack(t); });
+      } catch(e){ audioEl = null; }
+    }
+    var tipos = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    var mime = tipos.filter(function(t){ try { return MediaRecorder.isTypeSupported(t); } catch(e){ return false; } })[0];
+    CINE.pedacos = [];
+    CINE.rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    CINE.rec.ondataavailable = function(ev){ if(ev.data && ev.data.size) CINE.pedacos.push(ev.data); };
+    CINE.rec.onstop = function(){
+      var b = new Blob(CINE.pedacos, { type: mime || 'video/webm' });
+      var ext = (mime || '').indexOf('mp4') > -1 ? 'mp4' : 'webm';
+      var d = dadosVisual() || { topico: 'assunto' };
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'persisteia-' + norm(d.topico).replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.' + ext;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 6000);
+      CINE.rec = null;
+      $('cineRec').textContent = '● Gravar vídeo';
+      $('cineMsg').textContent = 'Vídeo salvo no seu aparelho ✓';
+      evento('video_assunto', 'ouvir', { formato: ext, gravado: true }, 'concluido');
+    };
+    CINE.rec.start();
+    $('cineRec').textContent = '■ Gravando…';
+    $('cineMsg').textContent = 'Gravando — deixe a tela aberta até o fim.';
+    if(audioEl){ audioEl.play().catch(function(){}); }
+    CINE.tocando = true; CINE.i = 0; $('cinePlay').textContent = '⏸ Parar';
+    proximoSlide();
+  }
+
+
+  /* ================= BIBLIOTECA =================
+     Um lugar só para revisar: cada assunto já estudado com seu mapa mental,
+     resumo visual, vídeo, podcast e questões — e a lista das gravações de voz. */
+  var BIB = { assuntos: [], gravacoes: [], disc: 'todas', cache: {} };
+
+  function bibCarregar(){
+    if(!(API && TOKEN)) return;
+    $('bibLista').innerHTML = '<p class="bib-vazio">Carregando…</p>';
+    apiFetch('/api/biblioteca').then(function(r){ return r.json(); }).then(function(d){
+      if(d.erro){ $('bibLista').innerHTML = '<p class="bib-vazio">' + esc(d.erro) + '</p>'; return; }
+      BIB.assuntos = d.assuntos || [];
+      BIB.gravacoes = d.gravacoes || [];
+      var r2 = d.resumo || {};
+      $('bibResumo').textContent = BIB.assuntos.length
+        ? r2.assuntos + ' assuntos prontos para revisar · ' + r2.com_audio + ' com áudio · ' + r2.gravacoes + ' gravações suas'
+        : 'Assim que você estudar o primeiro assunto, ele aparece aqui com mapa, resumo visual, vídeo e podcast.';
+      var discs = ['todas'].concat(BIB.assuntos.map(function(a){ return a.disciplina; })
+        .filter(function(v, i, arr){ return v && arr.indexOf(v) === i; }));
+      $('bibDiscs').innerHTML = discs.map(function(dd){
+        return '<button class="bib-chip' + (BIB.disc === dd ? ' sel' : '') + '" onclick="bibFiltrar(\'' + dd.replace(/'/g, "\\'") + '\')">' +
+          (dd === 'todas' ? 'Todas' : esc(dd)) + '</button>';
+      }).join('');
+      bibRender();
+      bibGravacoes();
+    }).catch(function(){ $('bibLista').innerHTML = '<p class="bib-vazio">Não consegui carregar agora.</p>'; });
+  }
+
+  function bibFiltrar(d){ BIB.disc = d; bibCarregar(); }
+
+  function bibRender(){
+    var q = norm(($('bibBusca') || {}).value || '');
+    var lista = BIB.assuntos.filter(function(a){
+      if(BIB.disc !== 'todas' && a.disciplina !== BIB.disc) return false;
+      return !q || norm(a.topico + ' ' + (a.subtitulo || '')).indexOf(q) > -1;
+    });
+    if(!lista.length){
+      $('bibLista').innerHTML = '<p class="bib-vazio">' +
+        (BIB.assuntos.length ? 'Nenhum assunto com esse filtro.' : 'Nada por aqui ainda — estude um assunto e ele aparece pronto para revisão.') + '</p>';
+      return;
+    }
+    $('bibLista').innerHTML = lista.map(function(a){
+      var partes = a.partes > 1 ? ' · parte ' + a.parte + '/' + a.partes : '';
+      var audio = a.audios.indexOf('podcast') > -1;
+      return '<div class="bib-item">' +
+        '<div class="top"><b>' + esc(a.topico) + partes + '</b>' + (a.concluido ? '<span class="chip done" style="flex:none">✓</span>' : '') + '</div>' +
+        '<div class="dsc">' + esc(a.disciplina) + '</div>' +
+        '<div class="met">' + (a.subtitulo ? esc(a.subtitulo) + ' · ' : '') +
+          a.n_questoes + ' questões · ' + a.n_flashcards + ' flashcards' + (audio ? ' · podcast pronto' : '') + '</div>' +
+        '<div class="bib-acoes">' +
+          '<button class="pri" onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'mapa\')">Mapa mental</button>' +
+          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'info\')">Resumo visual</button>' +
+          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'video\')">Vídeo</button>' +
+          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'audio\')">Podcast</button>' +
+          '<button onclick="estudarTopico(\'' + a.cron_id + '\')">Estudar de novo</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  function bibGravacoes(){
+    var pai = $('bibGrav'); if(!pai) return;
+    vozListar().then(function(locais){
+      var porTitulo = {};
+      (locais || []).forEach(function(r){ porTitulo[norm(r.titulo)] = r; });
+      if(!BIB.gravacoes.length && !(locais || []).length){
+        pai.innerHTML = '<p class="bib-vazio">Nenhuma gravação ainda. No Leitor, escolha "Voz alta" e leia a teoria — a faixa fica salva aqui.</p>';
+        return;
+      }
+      var vistos = {};
+      var html = BIB.gravacoes.map(function(g){
+        var chave = norm(String(g.assunto).split(' — ')[0]);
+        vistos[chave] = true;
+        var local = porTitulo[chave];
+        var min = g.segundos ? Math.floor(g.segundos / 60) + ':' + ('0' + (g.segundos % 60)).slice(-2) : '';
+        return '<div class="mv-row">' +
+          (local
+            ? '<button class="mv-play" onclick="bibTocar(this,\'' + local.id + '\')" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>'
+            : '<span class="mv-play" style="opacity:.35" title="Áudio em outro aparelho">☁</span>') +
+          '<span class="mi"><b>' + esc(String(g.assunto).slice(0, 60)) + '</b><small class="num">' +
+            fmtData(String(g.quando).slice(0, 10)) + (min ? ' · ' + min : '') + (g.ppm ? ' · ' + g.ppm + ' ppm' : '') +
+            (local ? '' : ' · gravado em outro aparelho') + '</small></span>' +
+          '</div>';
+      }).join('');
+      // gravações locais que ainda não têm ficha no servidor
+      (locais || []).forEach(function(r){
+        if(vistos[norm(r.titulo)]) return;
+        html += '<div class="mv-row">' +
+          '<button class="mv-play" onclick="bibTocar(this,\'' + r.id + '\')" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+          '<span class="mi"><b>' + esc(r.titulo) + '</b><small class="num">' + vozQuando(r.quando) + ' · ' + r.dur + '</small></span></div>';
+      });
+      pai.innerHTML = html;
+    }).catch(function(){ pai.innerHTML = '<p class="bib-vazio">Não consegui ler as gravações deste aparelho.</p>'; });
+  }
+
+  function bibTocar(btn, id){
+    vozListar().then(function(regs){
+      var r = (regs || []).filter(function(x){ return x.id === id; })[0];
+      if(!r){ toast('Gravação não encontrada neste aparelho'); return; }
+      var a = new Audio(URL.createObjectURL(r.blob));
+      a.play().catch(function(){ toast('Não consegui tocar aqui'); });
+      btn.textContent = '❚❚';
+      a.onended = function(){ btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; };
+    });
+  }
+
+  // Abre mapa, resumo visual, vídeo ou podcast de um assunto sem sair da Biblioteca.
+  function bibAbrir(topicoId, parte, partes, oque){
+    var chave = topicoId + ':' + parte;
+    var pronto = BIB.cache[chave];
+    if(pronto) return bibMostrar(pronto, oque, topicoId, parte, partes);
+    toast('Abrindo…');
+    apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(topicoId) + '&parte=' + parte)
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        if(!c || !c.resumo){ toast('Conteúdo indisponível'); return; }
+        BIB.cache[chave] = c;
+        bibMostrar(c, oque, topicoId, parte, partes);
+      })
+      .catch(function(){ toast('Sem conexão'); });
+  }
+
+  function bibMostrar(c, oque, topicoId, parte, partes){
+    if(oque === 'video'){ AUD = { podcast: null, musica: null }; abrirCine(c); return; }
+    if(oque === 'audio'){
+      var it = { topico_id: topicoId, parte: parte, partes: partes };
+      AUD = { podcast: null, musica: null };
+      BIB_ITEM = it;
+      tocarAudioDe(it);
+      return;
+    }
+    var d = dadosVisual(c);
+    VISOR = { tipo: oque, dados: d };
+    $('visorTit').textContent = (oque === 'mapa' ? 'Mapa mental · ' : 'Resumo visual · ') + d.topico;
+    $('visorBaixar').style.display = oque === 'info' ? '' : 'none';
+    $('visorBody').innerHTML = oque === 'mapa' ? svgMapa(c.mapa) : svgInfografico(d, temaEscuro() ? 'escuro' : 'claro');
+    $('visor').classList.add('show');
+    empilhar({ tela: 'biblioteca', visor: true }, '#visor');
+  }
+
+  var VISOR = null, BIB_ITEM = null;
+  function fecharVisor(){
+    $('visor').classList.remove('show');
+    if(!VOLTANDO && (history.state || {}).visor){ try { history.back(); } catch(e){} }
+  }
+  function visorBaixarPng(){
+    if(!VISOR || VISOR.tipo !== 'info'){ return; }
+    baixarInfografico(VISOR.dados);
+  }
+  function temaEscuro(){
+    try {
+      return document.documentElement.dataset.theme === 'dark' ||
+        (document.documentElement.dataset.theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    } catch(e){ return false; }
+  }
+
+  // toca o podcast de um assunto qualquer da Biblioteca
+  function tocarAudioDe(it){
+    var el = $('audPod');
+    apiFetch('/api/audio?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=podcast&parte=' + it.parte + '&partes=' + it.partes)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.audio_base64){
+          var a = new Audio('data:audio/wav;base64,' + d.audio_base64);
+          a.play().catch(function(){});
+          toast('Tocando o podcast do assunto');
+        } else {
+          toast('Este assunto ainda não tem podcast — abra-o em Estudar para gerar');
+        }
+      })
+      .catch(function(){ toast('Sem conexão'); });
   }
 
   /* ---------- expanders ---------- */
@@ -3125,11 +3729,14 @@
   }
 
   function desenharMapa(m){
-    if(!m || !m.ramos || !m.ramos.length){ $('mapaBox').innerHTML = ''; return; }
+    $('mapaBox').innerHTML = svgMapa(m);
+  }
+  function svgMapa(m){
+    if(!m || !m.ramos || !m.ramos.length){ return ''; }
     var ramos = m.ramos.slice(0, 6), n = ramos.length;
     var W = 720, H = n > 4 ? 460 : 380, cx = W/2, cy = H/2;
     var rx = W*0.33, ry = H*0.32;
-    var svg = '<svg class="mm" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Mapa mental de ' + esc(m.centro) + '">';
+    var svg = '<svg class="mm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Mapa mental de ' + esc(m.centro) + '">';
     var pos = [];
     for(var i = 0; i < n; i++){
       var ang = -Math.PI/2 + i * 2*Math.PI/n;
@@ -3151,7 +3758,7 @@
       });
     });
     svg += '</svg>';
-    $('mapaBox').innerHTML = svg;
+    return svg;
   }
 
   function aplicarConteudoReal(c){
