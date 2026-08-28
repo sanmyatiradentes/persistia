@@ -78,10 +78,13 @@ function normalizarData(v) {
   return `${a}-${mes}-${d}`;
 }
 
-function partesDe(pdf, texto, instrucao) {
-  return pdf
-    ? [{ inlineData: { mimeType: 'application/pdf', data: pdf } }, { text: instrucao }]
-    : [{ text: instrucao + '\n\nTexto do edital:\n\n' + texto }];
+function partesDe(pdf, texto, instrucao, paginas) {
+  if (pdf) return [{ inlineData: { mimeType: 'application/pdf', data: pdf } }, { text: instrucao }];
+  // edital digitalizado: as páginas chegam como imagem, lidas no aparelho do aluno
+  if (paginas && paginas.length) {
+    return paginas.map(p => ({ inlineData: { mimeType: 'image/jpeg', data: p } })).concat([{ text: instrucao }]);
+  }
+  return [{ text: instrucao + '\n\nTexto do edital:\n\n' + texto }];
 }
 
 module.exports = async (req, res) => {
@@ -96,15 +99,18 @@ module.exports = async (req, res) => {
   if (!acesso.liberado) return res.status(402).json({ erro: 'Seu período de teste terminou', assinatura: acesso });
 
   const body = req.body || {};
-  const texto = String(body.texto || '').slice(0, 150000);
+  // O app lê o PDF no próprio aparelho e manda o texto: por isso um edital de
+  // 30 MB passa, mesmo com o teto de 4,5 MB por requisição da Vercel.
+  const texto = String(body.texto || '').slice(0, 400000);
   const pdf = typeof body.pdf_base64 === 'string' ? body.pdf_base64 : '';
+  const paginas = Array.isArray(body.paginas) ? body.paginas.filter(p => typeof p === 'string').slice(0, 40) : [];
   const cargoEscolhido = String(body.cargo || '').trim();
 
-  if (!pdf && texto.length < 200) {
+  if (!pdf && !paginas.length && texto.length < 200) {
     return res.status(400).json({ erro: 'Cole o conteúdo programático do edital, ou envie o PDF' });
   }
-  if (pdf && pdf.length > 6000000) {
-    return res.status(413).json({ erro: 'PDF muito grande. Envie só as páginas do conteúdo programático, ou cole o texto.' });
+  if (pdf && pdf.length > 3800000) {
+    return res.status(413).json({ erro: 'Este PDF é grande demais para enviar inteiro. Envie só o anexo do conteúdo programático, ou cole o texto.' });
   }
 
   try {
@@ -114,7 +120,7 @@ module.exports = async (req, res) => {
     if (!cargoEscolhido) {
       const bruto = await chamarGeminiPartes(
         SYS_CARGOS,
-        partesDe(pdf, texto, 'Liste o órgão, a data da prova objetiva e os cargos com conteúdo programático neste edital.'),
+        partesDe(pdf, texto, 'Liste o órgão, a data da prova objetiva e os cargos com conteúdo programático neste edital.', paginas),
         SCHEMA_CARGOS
       );
       const info = JSON.parse(bruto);
@@ -134,7 +140,7 @@ module.exports = async (req, res) => {
       ? `Extraia o conteúdo programático completo do cargo "${alvo}" (conhecimentos gerais/básicos + específicos), além do título e da data da prova objetiva.`
       : 'Extraia todo o conteúdo programático deste documento, além do título e da data da prova objetiva.';
 
-    const bruto2 = await chamarGeminiPartes(SYS_PROGRAMA, partesDe(pdf, texto, instrucao), SCHEMA_PROGRAMA);
+    const bruto2 = await chamarGeminiPartes(SYS_PROGRAMA, partesDe(pdf, texto, instrucao, paginas), SCHEMA_PROGRAMA);
     const dados = JSON.parse(bruto2);
     if (!Array.isArray(dados.disciplinas) || !dados.disciplinas.length) {
       return res.status(422).json({ erro: 'Não encontrei conteúdo programático — envie as páginas do programa do seu cargo' });
