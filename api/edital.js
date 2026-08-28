@@ -63,6 +63,21 @@ const SCHEMA_PROGRAMA = {
   required: ['titulo', 'disciplinas']
 };
 
+// A IA às vezes devolve 03/04/2022 em vez de 2022-04-03. Normaliza ou descarta.
+function normalizarData(v) {
+  if (!v) return null;
+  const t = String(v).trim();
+  let m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) {
+    m = t.match(/^(\d{2})[\/.-](\d{2})[\/.-](\d{4})/);
+    if (m) m = [null, m[3], m[2], m[1]];
+  }
+  if (!m) return null;
+  const [_, a, mes, d] = m;
+  if (+mes < 1 || +mes > 12 || +d < 1 || +d > 31) return null;
+  return `${a}-${mes}-${d}`;
+}
+
 function partesDe(pdf, texto, instrucao) {
   return pdf
     ? [{ inlineData: { mimeType: 'application/pdf', data: pdf } }, { text: instrucao }]
@@ -104,7 +119,7 @@ module.exports = async (req, res) => {
       );
       const info = JSON.parse(bruto);
       titulo = info.titulo || 'Meu edital';
-      dataProva = info.data_prova || null;
+      dataProva = normalizarData(info.data_prova);
       cargos = Array.isArray(info.cargos) ? info.cargos.filter(Boolean) : [];
       banca = info.banca || banca;
 
@@ -126,7 +141,7 @@ module.exports = async (req, res) => {
     }
 
     const tituloFinal = (titulo || dados.titulo || 'Meu edital') + (alvo ? ' — ' + alvo : '');
-    const provaFinal = dataProva || dados.data_prova || null;
+    const provaFinal = dataProva || normalizarData(dados.data_prova);
 
     const db = getDb();
     const editalId = id();

@@ -13,8 +13,10 @@ function tamanhos(h) {
     me: clamp(3 + h * 2, 4, 8),
     flashcards: clamp(5 + h * 4, 6, 14),
     feynman: h >= 1.5 ? 4 : 3,
-    ramos: clamp(3 + h, 4, 7),
-    palavras: clamp(200 + h * 180, 250, 600)
+    ramos: clamp(4 + h * 1.5, 5, 8),
+    itens: clamp(3 + h, 4, 6),
+    chaves: clamp(5 + h * 2, 6, 12),
+    palavras: clamp(380 + h * 260, 450, 1100)
   };
 }
 
@@ -32,40 +34,26 @@ Regras:
 - "subtitulo": em até 8 palavras, o recorte exato que este pacote cobre (ex.: "Conceito, fontes e princípios" ou "Modalidades de licitação"). Se o pacote cobre o tópico inteiro, resuma o tópico.
 - "resumo": ${t.paragrafos} parágrafos densos — conceito, fundamentos, classificações, exceções, pegadinhas de prova e exemplos concretos. Escreva como um professor experiente escreveria a teoria: sem encher linguiça e sem deixar buraco. Separe os parágrafos com uma linha em branco. Se o assunto for curto, prefira parágrafos mais enxutos a inventar conteúdo que não existe.
 - "acronimo": um mnemônico ÚTIL (sigla + o que cada letra significa). Se não couber mnemônico, crie um macete curto no campo sigla e explique nos itens.
-- "trecho_chave": o trecho essencial para memorizar — lei seca, definição canônica, súmula, fórmula ou regra central, conforme a natureza do assunto — com 4 a 6 palavras-chave marcadas entre colchetes duplos, ex.: "obedecerá aos princípios de [[legalidade]], [[impessoalidade]]...".
+- "trecho_chave": o trecho essencial para memorizar — lei seca, definição canônica, súmula, fórmula ou regra central — com 40 a 90 palavras, completo o bastante para o aluno digitar de memória e sair sabendo. Marque ${t.chaves} palavras-chave entre colchetes duplos, ex.: "obedecerá aos princípios de [[legalidade]], [[impessoalidade]]...". Se o assunto tiver mais de um dispositivo central, junte-os no mesmo trecho separando por " // ".
 - "questoes": ${t.questoes} itens inéditos no formato Certo/Errado, atacando armadilhas clássicas e cobrindo pontos diferentes; "gabarito" true = Certo; "comentario" explica em até 45 palavras.
 - "questoes_me": ${t.me} questões inéditas de MÚLTIPLA ESCOLHA, cada uma com "enunciado", 5 "alternativas" (texto puro, sem letras A) B) etc.), "correta" (índice de 0 a 4) e "comentario" de até 45 palavras.
 - "flashcards": ${t.flashcards} pares frente/verso curtos, cobrindo o recorte inteiro.
 - "feynman": ${t.feynman} perguntas para o aluno explicar em voz alta, cada uma com 3 pontos-chave esperados.
-- "mapa": "centro" (2 a 4 palavras) e ${t.ramos} "ramos", cada um com "titulo" (até 3 palavras) e 2 a 4 "itens" curtos (até 5 palavras cada).
-- "podcast": roteiro de cerca de ${t.palavras} palavras em diálogo entre ANA e LÉO, com duas pausas de recuperação ("pensa aí… "), terminando com um resumo relâmpago. Use apenas "ANA:" e "LEO:" como marcadores de fala.
-- "musica": estilo sugerido + letra mnemônica curta (refrão + 1 verso).
+- "mapa": "centro" (2 a 4 palavras) e ${t.ramos} "ramos" que cubram o assunto inteiro, cada um com "titulo" (até 3 palavras) e ${t.itens} "itens" curtos (até 6 palavras cada). Os itens devem trazer conteúdo de prova — classificação, exceção, prazo — e não rótulos genéricos.
+- "podcast": roteiro de cerca de ${t.palavras} palavras em diálogo entre ANA e LÉO — uma aula de verdade, não uma chamada: abertura de 2 frases, desenvolvimento do assunto com exemplos, três pausas de recuperação ("pensa aí…"), os erros que a banca explora e um resumo relâmpago no fim. Use apenas "ANA:" e "LEO:" como marcadores de fala.
+- "musica": estilo sugerido + letra mnemônica com refrão e 3 estrofes, cobrindo os pontos principais do assunto (o refrão repete depois de cada estrofe).
+- "numeros": até 4 dados que a prova cobra de cor — prazo, quórum, percentual, idade, valor — cada um com "valor" curto (ex.: "5 anos", "2/3", "48 h") e "rotulo" de até 6 palavras. Se o assunto não tiver números decorativos, devolva lista vazia; não invente.
+- "pegadinhas": 3 erros que as bancas mais exploram neste assunto, cada um em até 18 palavras, escrito como alerta ("Confundir X com Y: ...").
 ${estilo}`;
 }
 
-const SCHEMA = {
+const S_TEORIA = {
   type: 'object',
   properties: {
     subtitulo: { type: 'string' },
     resumo: { type: 'string' },
     acronimo: { type: 'object', properties: { sigla: { type: 'string' }, itens: { type: 'array', items: { type: 'string' } } }, required: ['sigla', 'itens'] },
     trecho_chave: { type: 'string' },
-    questoes: { type: 'array', items: { type: 'object', properties: { enunciado: { type: 'string' }, gabarito: { type: 'boolean' }, comentario: { type: 'string' } }, required: ['enunciado', 'gabarito', 'comentario'] } },
-    questoes_me: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          enunciado: { type: 'string' },
-          alternativas: { type: 'array', items: { type: 'string' } },
-          correta: { type: 'integer' },
-          comentario: { type: 'string' }
-        },
-        required: ['enunciado', 'alternativas', 'correta', 'comentario']
-      }
-    },
-    flashcards: { type: 'array', items: { type: 'object', properties: { frente: { type: 'string' }, verso: { type: 'string' } }, required: ['frente', 'verso'] } },
-    feynman: { type: 'array', items: { type: 'object', properties: { pergunta: { type: 'string' }, pontos: { type: 'array', items: { type: 'string' } } }, required: ['pergunta', 'pontos'] } },
     mapa: {
       type: 'object',
       properties: {
@@ -81,11 +69,56 @@ const SCHEMA = {
       },
       required: ['centro', 'ramos']
     },
+    numeros: {
+      type: 'array',
+      items: { type: 'object', properties: { valor: { type: 'string' }, rotulo: { type: 'string' } }, required: ['valor', 'rotulo'] }
+    },
+    pegadinhas: { type: 'array', items: { type: 'string' } },
     podcast: { type: 'string' },
     musica: { type: 'object', properties: { estilo: { type: 'string' }, letra: { type: 'string' } }, required: ['estilo', 'letra'] }
   },
-  required: ['subtitulo', 'resumo', 'acronimo', 'trecho_chave', 'questoes', 'questoes_me', 'flashcards', 'feynman', 'mapa', 'podcast', 'musica']
+  required: ['subtitulo', 'resumo', 'acronimo', 'trecho_chave', 'mapa', 'numeros', 'pegadinhas', 'podcast', 'musica']
 };
+
+const S_PRATICA = {
+  type: 'object',
+  properties: {
+    questoes: { type: 'array', items: { type: 'object', properties: { enunciado: { type: 'string' }, gabarito: { type: 'boolean' }, comentario: { type: 'string' } }, required: ['enunciado', 'gabarito', 'comentario'] } },
+    questoes_me: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          enunciado: { type: 'string' },
+          alternativas: { type: 'array', items: { type: 'string' } },
+          correta: { type: 'integer' },
+          comentario: { type: 'string' }
+        },
+        required: ['enunciado', 'alternativas', 'correta', 'comentario']
+      }
+    },
+    flashcards: { type: 'array', items: { type: 'object', properties: { frente: { type: 'string' }, verso: { type: 'string' } }, required: ['frente', 'verso'] } },
+    feynman: { type: 'array', items: { type: 'object', properties: { pergunta: { type: 'string' }, pontos: { type: 'array', items: { type: 'string' } } }, required: ['pergunta', 'pontos'] } }
+  },
+  required: ['questoes', 'questoes_me', 'flashcards', 'feynman']
+};
+
+// Uma resposta gigante é o que trunca e devolve JSON pela metade. Duas respostas
+// menores, em paralelo, cabem folgadas — e se ainda assim vier quebrada, tenta de
+// novo pedindo menos.
+async function gerar(sistemaTxt, pedido, schema, tentativas) {
+  let ultimo = null;
+  for (let n = 0; n < (tentativas || 2); n++) {
+    const extra = n === 0 ? '' : '\n\nIMPORTANTE: a resposta anterior veio incompleta. Seja mais econômico nos textos e devolva o JSON inteiro, fechado.';
+    try {
+      const bruto = await chamarGemini(sistemaTxt + extra, pedido, schema);
+      return JSON.parse(bruto);
+    } catch (e) {
+      ultimo = e;
+    }
+  }
+  throw ultimo || new Error('Falha ao gerar');
+}
 
 module.exports = async (req, res) => {
   cors(res);
@@ -135,14 +168,16 @@ module.exports = async (req, res) => {
       : 'Este tópico cabe em uma única sessão de estudo. Cubra-o por inteiro, sem inflar: se o assunto é curto, o pacote é curto e completo.';
 
     const alvo = tamanhos(horas);
-    const bruto = await chamarGemini(
-      sistema(t.rows[0].banca || null, alvo, recorte),
-      `Disciplina: ${t.rows[0].disciplina}\nTópico: ${t.rows[0].topico}\n` +
+    const sis = sistema(t.rows[0].banca || null, alvo, recorte);
+    const cabecalho = `Disciplina: ${t.rows[0].disciplina}\nTópico: ${t.rows[0].topico}\n` +
       (partes > 1 ? `Sessão: parte ${parte} de ${partes}\n` : '') +
-      `Duração prevista da sessão: ${horas} h\n\nGere o pacote didático desta sessão.`,
-      SCHEMA
-    );
-    const pacote = JSON.parse(bruto);
+      `Duração prevista da sessão: ${horas} h\n\n`;
+
+    const [teoria, pratica] = await Promise.all([
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
+    ]);
+    const pacote = Object.assign({}, teoria, pratica);
     pacote.topico = t.rows[0].topico;
     pacote.disciplina = t.rows[0].disciplina;
     pacote.banca = t.rows[0].banca || null;

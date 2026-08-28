@@ -365,7 +365,7 @@
   .l-top .ttl{flex:1; min-width:0}
   .l-top .ttl b{font-size:.85rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .l-top .ttl small{font-size:.68rem; color:var(--muted)}
-  .iconbtn{background:none; border:1px solid var(--line); border-radius:10px; color:var(--ink); width:34px; height:34px; font:700 .9rem "Albert Sans",sans-serif; cursor:pointer; flex:none}
+  .iconbtn{background:none; border:1px solid var(--line); border-radius:10px; color:var(--ink); width:34px; height:34px; font:700 .9rem "Albert Sans",sans-serif; cursor:pointer; flex:none; display:inline-flex; align-items:center; justify-content:center}
   .l-prog{height:4px; background:var(--ring-track)}
   .l-prog i{display:block; height:100%; background:var(--accent); transition:width .3s}
   .l-body{flex:1; overflow-y:auto; padding:24px 22px 40px; font-family:Georgia,"Times New Roman",serif; line-height:1.9}
@@ -710,6 +710,19 @@
   .sit.cortesia{background:#EDE7FB; color:var(--violet)}
   .sit.expirado,.sit.bloqueado{background:var(--crit-soft); color:var(--crit)}
 
+
+  /* ===== resumo visual (infográfico) e vídeo do assunto ===== */
+  #infoPrev{width:100%; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--card2)}
+  #infoPrev svg{display:block; width:100%; height:auto}
+  .vs-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  #cine{position:fixed; inset:0; background:#05100C; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:18px}
+  #cine.show{display:flex}
+  #cineCv{max-width:min(100%,420px); max-height:72vh; width:auto; height:auto; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.5); background:#0E8F6E}
+  .cine-b{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+  .cine-b button{font:700 .85rem "Albert Sans",sans-serif; border-radius:999px; padding:10px 18px; cursor:pointer; border:1px solid rgba(255,255,255,.28); background:transparent; color:#EAF6F0}
+  .cine-b button.p{background:#2FBE92; border-color:#2FBE92; color:#062018}
+  #cineMsg{color:#9FBFB2; font-size:.78rem; text-align:center; max-width:420px}
+
 </style>
 
 <div class="app">
@@ -934,10 +947,15 @@
         <p class="eyebrow" id="hdrData">—</p>
         <h2 style="font-size:1.25rem" id="hdrOla">Olá!</h2>
       </div>
-      <span class="streak" title="12 dias seguidos de estudo">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 1s.75 2.5-1 5c-1.5 2.14-3.4 3.4-3.4 6a4.9 4.9 0 009.8 0c0-1.2-.4-2.3-.9-3.2 0 0-.5 1.7-2 2.2.6-1.6 1-4.6-2.5-10zM8 9.5S5.1 11.9 5.1 15a6.9 6.9 0 0013.8 0"/></svg>
-        <span class="num" id="streakN">0 dias</span>
-      </span>
+      <div style="display:flex; align-items:center; gap:8px">
+        <span class="streak" title="dias seguidos de estudo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 1s.75 2.5-1 5c-1.5 2.14-3.4 3.4-3.4 6a4.9 4.9 0 009.8 0c0-1.2-.4-2.3-.9-3.2 0 0-.5 1.7-2 2.2.6-1.6 1-4.6-2.5-10zM8 9.5S5.1 11.9 5.1 15a6.9 6.9 0 0013.8 0"/></svg>
+          <span class="num" id="streakN">0 dias</span>
+        </span>
+        <button class="iconbtn" onclick="sair()" title="Sair da conta" aria-label="Sair da conta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17l5-5-5-5M20 12H9M12 3H6a2 2 0 00-2 2v14a2 2 0 002 2h6"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="card ringwrap">
@@ -1013,7 +1031,7 @@
             <span class="ptime num" id="ptime">gerar áudio</span>
           </div>
           <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
-          <p class="muted" style="font-size:.72rem; margin-top:8px">Toca com a voz do seu aparelho (grátis, funciona sem internet). <a href="#" onclick="return estudio('podcast')" style="color:var(--brand)">Ouvir com voz de estúdio</a></p>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.</p>
           <p class="quote" id="podQuote">"…antes de eu responder, pensa aí: quais são os cinco princípios <b>expressos</b> no caput do art. 37? Pausa de três segundos… anotou? Então vamos conferir…"</p>
         </div></div>
       </div>
@@ -1099,6 +1117,7 @@
             <div class="fb" id="fb2"></div>
           </div>
           </div>
+          <button class="btn ghost small" style="margin-top:14px" id="btnMaisQ" onclick="gerarMais('questoes')">Quero mais questões deste assunto</button>
         </div></div>
       </div>
 
@@ -1114,6 +1133,7 @@
             <button id="fcModoHoje" class="sel" onclick="fcModo('hoje')">Assunto de hoje</button>
             <button id="fcModoRev" onclick="fcModo('revisao')">Revisões pendentes</button>
           </div>
+          <button class="btn ghost small" style="margin-bottom:12px" id="btnMaisF" onclick="gerarMais('flashcards')">Quero mais flashcards</button>
           <div class="fc" id="fc" onclick="this.classList.toggle('flip')" role="button" tabindex="0" aria-label="Virar flashcard">
             <div class="fc-in">
               <div class="fc-f" id="fcF">O que o §1º do art. 37 veda na publicidade dos órgãos públicos?</div>
@@ -1125,6 +1145,22 @@
             <button onclick="fcNext(1)">Quase<small>ver em 1 dia</small></button>
             <button onclick="fcNext(2)"><span class="f">Fácil</span><small>ver em 4 dias</small></button>
           </div>
+        </div></div>
+      </div>
+
+      <!-- RESUMO VISUAL -->
+      <div class="card task" id="t-visual">
+        <button class="task-h" onclick="tg('t-visual')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l4-4 3 3 4-5 7 7"/></svg></span>
+          <span><b>Bônus · Resumo visual</b><small>Uma página do assunto para salvar, imprimir e compartilhar</small></span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <div id="infoPrev"></div>
+          <div class="vs-btns">
+            <button class="btn small" onclick="baixarInfografico()">Baixar imagem</button>
+            <button class="btn ghost small" onclick="abrirCine()">Ver como vídeo</button>
+          </div>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">O vídeo passa os slides na voz do seu aparelho. Se a voz de estúdio deste assunto já existir, dá para gravar e salvar o vídeo no celular.</p>
         </div></div>
       </div>
 
@@ -1144,7 +1180,7 @@
             </div>
           </div>
           <audio id="audMus" preload="none" style="width:100%; margin:10px 0 0; display:none" controls></audio>
-          <p class="muted" style="font-size:.72rem; margin-top:8px">Voz do seu aparelho. <a href="#" onclick="return estudio('musica')" style="color:var(--warm)">Ouvir com voz de estúdio</a></p>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">Cantada pela voz de estúdio. O primeiro play grava o áudio do assunto.</p>
           <div class="lyrics" id="musLyr">
             ♪ É <b>L</b> de Legalidade, só faço o que a lei mandar<br>
             <b>I</b> de Impessoal, não é pra se promover<br>
@@ -1172,8 +1208,8 @@
 
       <!-- MINHA VOZ -->
       <div class="card">
-        <h2 style="font-size:.98rem">Minha Voz · sua playlist de revisão</h2>
-        <p class="muted" style="font-size:.74rem; margin-bottom:6px">As leituras que você gravou, prontas para o trajeto — eu intercalo perguntas entre as faixas.</p>
+        <h2 style="font-size:.98rem">🎙️ Minha Voz · suas gravações</h2>
+        <p class="muted" style="font-size:.74rem; margin-bottom:6px">Toda leitura em voz alta que você grava no Leitor fica aqui, no seu aparelho, pronta para reouvir no trajeto.</p>
         <div id="mvLista"><p class="muted" style="font-size:.8rem">Nenhuma gravação ainda. Leia a teoria em voz alta no Leitor e sua faixa aparece aqui.</p></div>
         <p class="muted" style="font-size:.7rem; margin-top:8px">Ouvir a matéria na própria voz é um dos reforços de memória mais fortes que existem.</p>
       </div>
@@ -1207,6 +1243,16 @@
       <h2>Minha conta</h2>
       <p class="muted" style="font-size:.8rem" id="planoConta">—</p>
       <p class="muted" style="font-size:.8rem; margin-top:4px" id="planoEdital">—</p>
+      <div id="provaBox" style="margin-top:12px">
+        <p class="optlbl" style="margin:0 0 6px">Data da prova</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input type="date" id="provaInput" aria-label="Data da prova"
+                 style="border:1.5px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:8px 10px; font:600 .9rem 'Albert Sans',sans-serif">
+          <button class="btn small" onclick="salvarProva()">Salvar data</button>
+          <button class="btn ghost small" onclick="salvarProva(true)">Ainda não tem data</button>
+        </div>
+        <p class="muted" style="font-size:.72rem; margin-top:6px" id="provaAviso"></p>
+      </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
         <button class="btn ghost small" onclick="refazerCronograma()">Refazer cronograma</button>
         <button class="btn ghost small" onclick="trocarEdital()">Trocar de edital</button>
@@ -1313,12 +1359,12 @@
   <div id="leitor" role="dialog" aria-label="Leitor de teoria">
     <div class="l-top">
       <button class="iconbtn" onclick="closeLeitor()" aria-label="Fechar leitor">←</button>
-      <div class="ttl"><b id="leitorTitle">Princípios da Administração Pública</b><small id="lMeta">Teoria · 43% lido · ~4 min restantes · <span id="lMarks" class="num">0</span> marcações</small></div>
+      <div class="ttl"><b id="leitorTitle">Princípios da Administração Pública</b><small id="lMeta">Teoria · <span id="lPct" class="num">0%</span> lido · <span id="lMarks" class="num">0</span> marcações</small></div>
       <button class="iconbtn" onclick="lFont(-1)" aria-label="Diminuir letra">A−</button>
       <button class="iconbtn" onclick="lFont(1)" aria-label="Aumentar letra">A+</button>
       <button class="iconbtn" onclick="document.getElementById('leitor').classList.toggle('sepia')" aria-label="Alternar modo sépia">◑</button>
     </div>
-    <div class="l-prog"><i id="lProg" style="width:43%"></i></div>
+    <div class="l-prog"><i id="lProg" style="width:0%"></i></div>
     <div class="l-body" id="lBody" style="font-size:1.05rem">
       <p>Os princípios do artigo 37 são o alicerce de toda a Administração Pública brasileira. O caput enumera cinco princípios expressos, que formam o acrônimo LIMPE: legalidade, impessoalidade, moralidade, publicidade e eficiência.</p>
       <p>Pela legalidade, a Administração só pode fazer o que a lei autoriza, ao contrário do particular, que pode fazer tudo o que a lei não proíbe. A impessoalidade exige atuação voltada ao interesse público, vedando a promoção pessoal de autoridades, conforme o parágrafo primeiro.</p>
@@ -1353,6 +1399,7 @@
         <button id="mTp" onclick="setLMode('tp')">Voz alta</button>
         <button id="mEco" onclick="setLMode('eco')">Eco</button>
       </div>
+      <button class="btn ghost small" id="btnOuvirTeoria" onclick="ouvirTeoria()" style="padding:6px 12px; font-size:.76rem">🔊 Ouvir o texto</button>
       <span class="rec"><i></i><span id="recTxt">REC</span></span>
       <span class="tpctl" style="display:contents">
         <button class="iconbtn tpc" id="btnPause" onclick="tpPause()" aria-label="Pausar gravação">⏸</button>
@@ -1369,7 +1416,7 @@
 
   <div id="chat" role="dialog" aria-label="Tira-dúvidas do assunto">
     <div class="c-top">
-      <button class="iconbtn" onclick="document.getElementById('chat').classList.remove('open')" aria-label="Fechar chat">←</button>
+      <button class="iconbtn" onclick="fecharChat()" aria-label="Fechar chat">←</button>
       <span class="c-ava">P</span>
       <div class="ttl"><b>Persi · tira-dúvidas</b><small>no assunto: Princípios da Administração Pública</small></div>
     </div>
@@ -1391,10 +1438,13 @@
 
   <!-- ================= ADMIN ================= -->
   <section class="screen" id="scr-admin">
-    <div class="top"><div>
-      <p class="eyebrow">Painel da gestora</p>
-      <h2 style="font-size:1.25rem">Alunos e assinaturas</h2>
-    </div></div>
+    <div class="top">
+      <div>
+        <p class="eyebrow">Painel da gestora</p>
+        <h2 style="font-size:1.25rem">Alunos e assinaturas</h2>
+      </div>
+      <button class="btn ghost small" onclick="sair()">Sair da conta</button>
+    </div>
     <div class="adm-m" id="admMetricas"></div>
     <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap">
       <input id="admBusca" type="search" placeholder="Buscar por nome ou e-mail" oninput="admFiltrar()"
@@ -1434,6 +1484,16 @@
     <button class="btn" id="lgBtn" onclick="lgEnviar()">Começar</button>
     <button class="lg-alt" id="lgAlt" onclick="lgToggle()">Já tenho conta — entrar</button>
     <button class="lg-alt" style="opacity:.7" onclick="voltarAoSite()">← Conhecer o PersisteIA antes</button>
+  </div>
+
+  <div id="cine" role="dialog" aria-label="Vídeo do assunto">
+    <canvas id="cineCv" width="1080" height="1920"></canvas>
+    <div class="cine-b">
+      <button class="p" id="cinePlay" onclick="cinePlay()">▶ Assistir</button>
+      <button id="cineRec" onclick="cineGravar()">● Gravar vídeo</button>
+      <button onclick="fecharCine()">Fechar</button>
+    </div>
+    <p id="cineMsg"></p>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
@@ -1653,6 +1713,7 @@
     $('ob'+n).classList.add('active');
   }
   function enterApp(){
+    try { history.replaceState({ tela: 'hoje' }, '', '#hoje'); } catch(e){}
     $('ob').style.display = 'none';
     $('tabbar').classList.add('show');
     $('fab').classList.add('show');
@@ -1673,13 +1734,48 @@
   }
 
   /* ---------- navigation ---------- */
-  function nav(scr, btn){
+  // O app é uma página só, mas o botão "voltar" do navegador (e o gesto no
+  // celular) precisa funcionar: cada tela e cada sobreposição vira um passo
+  // no histórico.
+  var VOLTANDO = false;
+
+  function mostrarTela(scr){
+    if(!$('scr-'+scr)) scr = 'hoje';
     document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.scr === scr); });
     $('scr-'+scr).classList.add('active');
-    btn.classList.add('active');
     window.scrollTo(0,0);
+    return scr;
   }
+  function telaAtual(){
+    var a = document.querySelector('.screen.active');
+    return a ? a.id.replace('scr-', '') : 'hoje';
+  }
+  function empilhar(estado, hash){
+    if(VOLTANDO) return;
+    try { history.pushState(estado, '', hash); } catch(e){}
+  }
+  function nav(scr, btn){
+    scr = mostrarTela(scr);
+    empilhar({ tela: scr }, '#' + scr);
+    if(scr === 'admin' && typeof admCarregar === 'function') admCarregar();
+  }
+
+  window.addEventListener('popstate', function(ev){
+    var st = ev.state || {};
+    VOLTANDO = true;
+    try {
+      // primeiro fecha o que estiver por cima
+      if($('leitor') && $('leitor').classList.contains('open') && !st.leitor){ reallyClose(); return; }
+      if($('cine') && $('cine').classList.contains('show') && !st.cine){ fecharCine(); return; }
+      if($('chat') && $('chat').classList.contains('open') && !st.chat){ $('chat').classList.remove('open'); return; }
+      if($('login') && $('login').classList.contains('show') && !TOKEN){ voltarAoSite(); return; }
+      if(st.leitor){ if(!$('leitor').classList.contains('open')) openLeitor(); return; }
+      mostrarTela(st.tela || (location.hash || '#hoje').slice(1));
+    } finally {
+      VOLTANDO = false;
+    }
+  });
 
   /* ---------- ring dos 7 verbos ---------- */
   function drawRing(feitos){
@@ -1792,6 +1888,19 @@
     obGo(2);
     window.scrollTo(0, 0);
   }
+  function salvarProva(semData){
+    var v = semData ? null : ($('provaInput').value || null);
+    if(!semData && !v){ toast('Escolha uma data primeiro'); return; }
+    apiFetch('/api/aluno', { data_prova: v, horas_dia: (REAL && REAL.horas_dia) || null, dias_semana: (REAL && REAL.dias_semana) || null })
+      .then(function(r){ return r.json(); })
+      .then(function(){
+        PROVA_ISO = v;
+        toast(v ? 'Data da prova atualizada ✓' : 'Ok — estudo contínuo, sem data de prova');
+        carregarReal();
+      })
+      .catch(function(){ toast('Não consegui salvar a data agora'); });
+  }
+
   function refazerCronograma(){
     if(!confirm('Refazer o cronograma redistribui todos os assuntos do edital pelas horas que você tem por dia. O que já foi concluído volta para a fila. Continuar?')) return;
     toast('Refazendo seu cronograma…');
@@ -1874,9 +1983,30 @@
     var p = $('ptime'); if(p && p.textContent === 'ouvindo') p.textContent = 'ouvir';
   }
 
-  // Voz do próprio aparelho: sem custo nenhum, funciona offline depois que a teoria carregou.
+  // Voz do próprio aparelho: usada só para ouvir a TEORIA no Leitor (custo zero).
+  // Podcast e música usam sempre a voz de estúdio.
+  // Lê em voz alta a teoria que está no Leitor (voz do aparelho, custo zero).
+  function ouvirTeoria(){
+    if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem leitura em voz alta'); return; }
+    if(FALA.tipo === 'teoria'){ pararFala(); $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; return; }
+    pararFala(); FALA.tipo = 'teoria';
+    $('btnOuvirTeoria').textContent = '⏸ Parar leitura';
+    var paras = [].map.call(document.querySelectorAll('#lBody p'), function(p){ return p.textContent.trim(); }).filter(Boolean);
+    if(!paras.length){ toast('Abra a teoria primeiro'); return; }
+    var vs = vozesPt();
+    paras.forEach(function(txt, i){
+      var u = new SpeechSynthesisUtterance(txt);
+      u.lang = 'pt-BR'; u.rate = 1.02;
+      if(vs[0]) u.voice = vs[0];
+      if(i === paras.length - 1){
+        u.onend = function(){ FALA.tipo = null; $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; evento('teoria_ouvida', 'ouvir', null, 'em_andamento'); };
+      }
+      window.speechSynthesis.speak(u);
+    });
+  }
+
   function falarNavegador(tipo){
-    if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem voz. Use "voz de estúdio".'); return false; }
+    if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem leitura em voz alta'); return false; }
     var texto = tipo === 'musica'
       ? String((CONT && CONT.musica ? CONT.musica.letra : '') || '')
       : String((CONT && CONT.podcast) || '');
@@ -1914,55 +2044,84 @@
     return true;
   }
 
-  // Play: usa o áudio de estúdio se ele JÁ existir no catálogo (custo zero),
-  // senão fala com a voz do aparelho. Gerar voz nova só pelo link "voz de estúdio".
+  // Play: toca a voz de estúdio. Se ela ainda não existir para este assunto,
+  // gera na hora — uma vez só, e a partir daí vale para todos os alunos.
   function tocarAudio(tipo){
     var it = itemAtivo();
     if(!it){ toast('Abra um tópico primeiro'); return; }
     var el = $(tipo === 'musica' ? 'audMus' : 'audPod');
-    if(AUD[tipo]){ pararFala(); el.style.display = 'block'; el.play(); return; }
+    if(AUD[tipo]){ el.style.display = 'block'; el.play(); return; }
 
-    apiFetch('/api/audio?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
-             '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1))
+    var q = '?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
+            '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1);
+    if(tipo === 'podcast') $('ptime').textContent = 'buscando…';
+    apiFetch('/api/audio' + q)
       .then(function(r){ return r.json(); })
       .then(function(d){
-        if(d && d.audio_base64){ aplicarAudio(tipo, d.audio_base64, el); }
-        else { falarNavegador(tipo); }
+        if(d && d.audio_base64){ aplicarAudio(tipo, d.audio_base64, el); return; }
+        gerarVoz(tipo, it, el);
       })
-      .catch(function(){ falarNavegador(tipo); });
+      .catch(function(){ gerarVoz(tipo, it, el); });
+  }
+
+  function gerarVoz(tipo, it, el){
+    if(tipo === 'podcast') $('ptime').textContent = 'gerando…';
+    toast(tipo === 'musica' ? 'Gravando a música com a voz da IA…' : 'Gravando o podcast com as vozes da IA…');
+    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64, el); }
+        else {
+          if(tipo === 'podcast') $('ptime').textContent = 'falhou';
+          toast(x.d.erro || 'Não consegui gerar a voz agora — tente de novo em instantes');
+        }
+      })
+      .catch(function(){
+        if(tipo === 'podcast') $('ptime').textContent = 'falhou';
+        toast('Sem conexão para gerar a voz');
+      });
   }
 
   function aplicarAudio(tipo, b64, el){
-    pararFala();
     AUD[tipo] = 'data:audio/wav;base64,' + b64;
     el = el || $(tipo === 'musica' ? 'audMus' : 'audPod');
     el.src = AUD[tipo]; el.style.display = 'block';
     el.play().catch(function(){});
     if(tipo === 'podcast'){
       $('ptime').textContent = 'ouvindo';
-      el.addEventListener('ended', function(){ $('ptime').textContent = 'ouvido ✓'; evento('podcast_ouvido', 'ouvir', { voz: 'estudio' }, 'concluido'); }, { once: true });
+      el.addEventListener('ended', function(){ $('ptime').textContent = 'ouvido ✓'; evento('podcast_ouvido', 'ouvir', null, 'concluido'); }, { once: true });
     } else {
-      el.addEventListener('ended', function(){ evento('musica_ouvida', 'ouvir', { voz: 'estudio' }, 'em_andamento'); }, { once: true });
+      el.addEventListener('ended', function(){ evento('musica_ouvida', 'ouvir', null, 'em_andamento'); }, { once: true });
     }
   }
 
-  // Voz de estúdio (IA): só é gerada quando o aluno pede, e uma única vez por
-  // tópico — a partir daí todo mundo ouve a mesma, sem custo novo.
-  function estudio(tipo){
+  /* ---------- quero mais: lote extra sob demanda ---------- */
+  function gerarMais(tipo){
     var it = itemAtivo();
-    if(!it){ toast('Abra um tópico primeiro'); return false; }
-    if(AUD[tipo]){ tocarAudio(tipo); return false; }
-    pararFala();
-    if(tipo === 'podcast') $('ptime').textContent = 'gerando…';
-    toast('Gerando a voz de estúdio… leva alguns segundos');
-    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
+    if(!it || !CONT){ toast('Abra um assunto primeiro'); return; }
+    var alvo = (tipo === 'flashcards') ? 'flashcards' : (Q_FMT === 'me' ? 'questoes_me' : 'questoes');
+    var btn = $(tipo === 'flashcards' ? 'btnMaisF' : 'btnMaisQ');
+    if(btn){ btn.disabled = true; btn.textContent = 'Gerando…'; }
+    apiFetch('/api/mais', { topico_id: it.topico_id, parte: it.parte || 1, partes: it.partes || 1, tipo: alvo })
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
-        if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64); }
-        else { if(tipo === 'podcast') $('ptime').textContent = 'ouvir'; toast(x.d.erro || 'Não consegui gerar a voz agora'); }
+        if(btn){ btn.disabled = false; btn.textContent = tipo === 'flashcards' ? 'Quero mais flashcards' : 'Quero mais questões deste assunto'; }
+        if(x.s !== 200 || !x.d.novos){ toast(x.d.erro || 'Não consegui gerar agora'); return; }
+        CONT[alvo] = (CONT[alvo] || []).concat(x.d.novos);
+        if(tipo === 'flashcards'){
+          fcs = CONT.flashcards.map(function(c){ return [c.frente, c.verso]; });
+          FC_HOJE = fcs.slice();
+          apiFetch('/api/flashcard', { lote: x.d.novos, topico_id: it.topico_id }).catch(function(){});
+          toast('+' + x.d.novos.length + ' flashcards ✓');
+        } else {
+          renderQuestoes();
+          toast('+' + x.d.novos.length + ' questões ✓');
+        }
       })
-      .catch(function(){ toast('Sem conexão para gerar a voz'); if(tipo === 'podcast') $('ptime').textContent = 'ouvir'; });
-    return false;
+      .catch(function(){
+        if(btn){ btn.disabled = false; btn.textContent = tipo === 'flashcards' ? 'Quero mais flashcards' : 'Quero mais questões deste assunto'; }
+        toast('Sem conexão');
+      });
   }
 
   /* ---------- expanders ---------- */
@@ -2172,9 +2331,21 @@
     if(v){ temData = true; $('dtNo').classList.remove('sel'); $('dtInput').disabled = false; $('dtInput').style.opacity = '1'; }
     calcTempo();
   }
-  function diasAte(iso){
+  // aceita 2026-04-03 e também 03/04/2026, que a IA às vezes devolve
+  function isoData(v){
+    if(!v) return null;
+    var t = String(v).trim();
+    var m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(m) return m[1] + '-' + m[2] + '-' + m[3];
+    m = t.match(/^(\d{2})[\/.-](\d{2})[\/.-](\d{4})/);
+    if(m) return m[3] + '-' + m[2] + '-' + m[1];
+    return null;
+  }
+  function diasAte(v){
+    var iso = isoData(v);
     if(!iso) return null;
-    return Math.round((Date.parse(iso + 'T12:00:00') - Date.now()) / 86400000);
+    var n = Math.round((Date.parse(iso + 'T12:00:00') - Date.now()) / 86400000);
+    return isFinite(n) ? n : null;
   }
   function pick(el){
     el.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
@@ -2237,10 +2408,25 @@
     });
   }
   var recapShown = false, rqDone = 0;
+  function progressoRolagem(){
+    var b = $('lBody'); if(!b) return;
+    var sobra = b.scrollHeight - b.clientHeight;
+    // texto que cabe inteiro na tela já está lido
+    var pc = sobra <= 8 ? 100 : Math.round(100 * Math.min(1, b.scrollTop / sobra));
+    if($('leitor').classList.contains('tpmode')) return; // no teleprompter quem manda é a voz
+    $('lProg').style.width = pc + '%';
+    if($('lPct')) $('lPct').textContent = pc + '%';
+  }
+
   function openLeitor(){
     buildReader(); recapShown = false; $('recap').classList.remove('show');
+    $('lProg').style.width = '0%'; if($('lPct')) $('lPct').textContent = '0%';
+    var _b = $('lBody');
+    if(_b && !_b.dataset.rolagem){ _b.dataset.rolagem = '1'; _b.addEventListener('scroll', progressoRolagem, { passive: true }); }
+    setTimeout(progressoRolagem, 240);
     $('leitor').classList.add('open');
-    toast('Modo foco ligado · retomando de onde você parou — 43%');
+    empilhar({ tela: telaAtual(), leitor: true }, '#leitor');
+    toast('Modo foco ligado — role para ler; eu marco seu avanço');
   }
   function closeLeitor(){
     stopTp(); stopEco();
@@ -2264,9 +2450,12 @@
   }
   function reallyClose(){
     evento('leitura_teoria', 'ler', { marcacoes: marks }, 'concluido');
+    pararFala();
+    if($('btnOuvirTeoria')) $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
     stopTp(); stopEco();
     $('recap').classList.remove('show');
     $('leitor').classList.remove('open');
+    if(!VOLTANDO && (history.state || {}).leitor){ try { history.back(); } catch(e){} }
   }
   function rqA(i, escolha){
     var rq = $('rq' + i);
@@ -2330,9 +2519,21 @@
     lFs = Math.min(1.45, Math.max(.85, lFs + d*.1));
     $('lBody').style.fontSize = lFs.toFixed(2) + 'rem';
   }
-  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '';
+  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '', RECWATCH = null;
+
+  // Religa o reconhecimento sem perder a gravação nem o ponto da leitura.
+  function religarFala(){
+    if(!RECON || !REC || REC.state !== 'recording' || tpPaused) return;
+    try { RECON.abort(); } catch(e){}
+    setTimeout(function(){
+      if(!RECON || !REC || REC.state !== 'recording' || tpPaused) return;
+      try { RECON.start(); RECON.ultimo = Date.now(); } catch(e){}
+    }, 350);
+  }
 
   function setLMode(m){
+    pararFala();
+    if($('btnOuvirTeoria')) $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
     $('mSil').classList.toggle('sel', m === 'sil');
     $('mTp').classList.toggle('sel', m === 'tp');
     $('mEco').classList.toggle('sel', m === 'eco');
@@ -2372,7 +2573,9 @@
       lWords[tpIdx].classList.add('cur');
       if(tpIdx % 5 === 0){ lWords[tpIdx].scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     }
-    $('lProg').style.width = (43 + 57 * Math.min(tpIdx / Math.max(lWords.length, 1), 1)).toFixed(1) + '%';
+    var pc = Math.round(100 * Math.min(tpIdx / Math.max(lWords.length, 1), 1));
+    $('lProg').style.width = pc + '%';
+    if($('lPct')) $('lPct').textContent = pc + '%';
   }
 
   function avancarComFala(texto){
@@ -2415,10 +2618,24 @@
           var txt = '';
           for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript + ' '; }
           TRANSCRICAO = txt.trim();
+          RECON.ultimo = Date.now();
           if(!tpPaused) avancarComFala(TRANSCRICAO);
         };
-        RECON.onerror = function(){};
-        RECON.onend = function(){ if(REC && REC.state === 'recording' && !tpPaused){ try { RECON.start(); } catch(e){} } };
+        // O reconhecimento do navegador para sozinho em silêncio, em erro de rede
+        // e a cada poucos minutos. Religa sempre, enquanto a gravação estiver ativa.
+        RECON.ultimo = Date.now();
+        RECON.onresult0 = RECON.onresult;
+        RECON.onerror = function(ev){
+          var fatal = ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed');
+          if(fatal){ toast('Preciso da permissão do microfone para acompanhar sua leitura'); return; }
+          religarFala();
+        };
+        RECON.onend = function(){ religarFala(); };
+        if(RECWATCH) clearInterval(RECWATCH);
+        RECWATCH = setInterval(function(){
+          if(!REC || REC.state !== 'recording'){ clearInterval(RECWATCH); RECWATCH = null; return; }
+          if(!tpPaused && RECON && Date.now() - (RECON.ultimo || 0) > 9000){ religarFala(); }
+        }, 3000);
         try { RECON.start(); } catch(e){}
         toast('Pode ler em voz alta — eu acompanho e gravo');
       } else {
@@ -2433,7 +2650,8 @@
 
   function pararGravacao(silencioso){
     if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
-    if(RECON){ try { RECON.onend = null; RECON.stop(); } catch(e){} RECON = null; }
+    if(RECWATCH){ clearInterval(RECWATCH); RECWATCH = null; }
+    if(RECON){ try { RECON.onend = null; RECON.onerror = null; RECON.stop(); } catch(e){} RECON = null; }
     var tinhaGravacao = !!REC;
     if(REC){
       var r = REC; REC = null;
@@ -2463,18 +2681,42 @@
     $('lDone').classList.add('show');
     $('lDone').innerHTML =
       '<b>Leitura em voz alta concluída · ' + mm + ':' + ss + ' gravados' + (ppm ? ' · fluência: ' + ppm + ' palavras/min' : '') + '</b><br>' +
-      'Sua gravação ficou salva para reouvir, e a transcrição virou material de revisão.' +
+      'Sua gravação ficou salva em <b>Minha Voz</b>, no fim da tela Hoje — dá para reouvir quando quiser.' +
       (url ? '<audio controls src="' + url + '" style="width:100%; margin-top:10px"></audio>' : '') +
-      (TRANSCRICAO ? '<p class="l-meta" style="margin-top:8px">Transcrição: "' + esc(TRANSCRICAO.slice(0, 220)) + '…"</p>' : '');
+      (TRANSCRICAO ? '<p class="l-meta" style="margin-top:8px">Transcrição: "' + esc(TRANSCRICAO.slice(0, 220)) + '…"</p>' : '') +
+      '<button class="btn small" style="margin-top:10px" onclick="irParaMinhaVoz()">Ver minhas gravações</button>';
 
     if(RECCHUNKS.length){
       var titulo = ($('leitorTitle') || {}).textContent || 'Leitura';
       var blob = new Blob(RECCHUNKS, { type: 'audio/webm' });
       vozSalvar({ id: 'g' + Date.now(), titulo: titulo, quando: Date.now(), dur: mm + ':' + ss, ppm: ppm, blob: blob })
-        .then(function(ok){ vozCarregar(); if(!ok && url) minhaVozAdd(titulo, url, mm + ':' + ss, ppm); });
+        .then(function(ok){
+          vozCarregar();
+          if(!ok){
+            if(url) minhaVozAdd(titulo, url, mm + ':' + ss, ppm);
+            toast('Gravação disponível nesta sessão — seu navegador não guardou para depois');
+          }
+        });
     }
     evento('voz_alta', 'ler', { segundos: seg, ppm: ppm, transcricao: TRANSCRICAO.slice(0, 800) }, 'concluido');
     toast('Leitura registrada · ' + (ppm ? ppm + ' ppm' : mm + ':' + ss));
+  }
+
+  function irParaMinhaVoz(){
+    reallyClose();
+    vozCarregar();
+    setTimeout(function(){
+      var el = $('mvLista');
+      if(el){
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        var cartao = el.closest('.card');
+        if(cartao){
+          cartao.style.transition = 'box-shadow .4s';
+          cartao.style.boxShadow = '0 0 0 3px var(--accent)';
+          setTimeout(function(){ cartao.style.boxShadow = ''; }, 2200);
+        }
+      }
+    }, 260);
   }
 
   /* ---------- Minha Voz: gravações guardadas no próprio aparelho ---------- */
@@ -2657,7 +2899,14 @@
     3: ['Me dá um macete para o LIMPE',
         'Imagine um <span class="mk">balde de LIMPEza</span> no hall do órgão público — a Administração precisa estar sempre "limpa": <b>L</b>egalidade, <b>I</b>mpessoalidade, <b>M</b>oralidade, <b>P</b>ublicidade, <b>E</b>ficiência. E o E chegou por último, na faxina da Emenda 19/98. Quer fixar de vez? Toca o Forró do LIMPE na tela Hoje.<br><span class="fonte-chip">Fonte: art. 37, caput, CF</span><button class="fc-btn" onclick="fcSave(this)">virar flashcard</button>']
   };
-  function openChat(){ $('chat').classList.add('open'); }
+  function openChat(){
+    $('chat').classList.add('open');
+    empilhar({ tela: telaAtual(), chat: true }, '#persi');
+  }
+  function fecharChat(){
+    $('chat').classList.remove('open');
+    if(!VOLTANDO && (history.state || {}).chat){ try { history.back(); } catch(e){} }
+  }
   function botSay(html, delay){
     var box = $('cMsgs');
     var t = document.createElement('div');
@@ -2768,7 +3017,7 @@
   }
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
   function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
-  function fmtData(iso){ return iso ? iso.split('-').reverse().join('/') : ''; }
+  function fmtData(v){ var iso = isoData(v); return iso ? iso.split('-').reverse().join('/') : (v ? String(v) : ''); }
 
   function carregarReal(){
     if(!(API && TOKEN)) return;
@@ -2907,6 +3156,7 @@
 
   function aplicarConteudoReal(c){
     desenharMapa(c.mapa);
+    try { desenharInfografico(); } catch(e){}
     $('musCard').textContent = 'Bônus · ' + ((c.musica && c.musica.estilo) ? c.musica.estilo : 'Música do assunto');
     var recorte = (Number(c.partes) > 1)
       ? ' <span class="muted">(parte ' + c.parte + ' de ' + c.partes + (c.subtitulo ? ': ' + esc(c.subtitulo) : '') + ')</span>'
@@ -3094,6 +3344,15 @@
         : est === 'teste' ? 'teste grátis · ' + ACESSO.dias_restantes + ' dias restantes'
         : 'sem assinatura';
       $('planoConta').textContent = (NOME || 'Minha conta') + ' · ' + sit;
+    }
+    if($('provaInput')){
+      var isoP = isoData(d.data_prova);
+      $('provaInput').value = isoP || '';
+      var av = $('provaAviso');
+      if(!isoP) av.textContent = 'Sem data cadastrada: o plano roda em ritmo contínuo.';
+      else if(dd !== null && dd < 0) av.innerHTML = '<b style="color:var(--crit)">Essa data já passou.</b> Coloque a data do seu concurso atual para o plano recalcular o ritmo.';
+      else if(dd !== null) av.textContent = 'Faltam ' + dd + ' dias para a prova.';
+      else av.textContent = '';
     }
     if($('planoEdital')){
       $('planoEdital').textContent = (d.edital || 'Edital carregado') +
