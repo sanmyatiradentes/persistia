@@ -268,14 +268,31 @@
   .mm text{font-family:"Albert Sans",sans-serif}
 
   /* ---------- plano ---------- */
-  .week{display:flex; gap:6px; margin:14px 0}
+  .semnav{display:flex; align-items:center; gap:8px; margin-top:14px}
+  .semnav .lbl{flex:1; text-align:center; font-size:.8rem; font-weight:700}
+  .semnav .lbl small{display:block; font-size:.68rem; color:var(--muted); font-weight:600}
+  .semnav .setinha{width:34px; height:34px; flex:none; border-radius:10px; border:1px solid var(--line);
+                   background:var(--card); color:var(--ink); font:700 1rem "Albert Sans",sans-serif; cursor:pointer}
+  .semnav .setinha:hover{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+  .semnav .hojebtn{flex:none; font-size:.7rem; font-weight:700; padding:6px 11px; border-radius:999px;
+                   border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent); cursor:pointer}
+  .week{display:flex; gap:6px; margin:10px 0 0}
   .day{
     flex:1; text-align:center; border-radius:12px; padding:8px 2px; border:1px solid var(--line);
     background:var(--card); font-size:.72rem; cursor:pointer;
   }
   .day b{display:block; font-size:.9rem; font-family:"Bricolage Grotesque",sans-serif}
+  .day{position:relative}
   .day.today{background:var(--accent); color:var(--on-accent); border-color:transparent}
   .day.done{background:var(--accent-soft); border-color:transparent; color:var(--accent)}
+  .day.sel{outline:2px solid var(--accent); outline-offset:1px}
+  .day.vazio{opacity:.45}
+  .day .pts{display:flex; gap:2px; justify-content:center; margin-top:3px; height:5px}
+  .day .pts i{width:5px; height:5px; border-radius:50%; display:block}
+  .day.today .pts i{background:var(--on-accent) !important}
+  .diahead{display:flex; align-items:center; gap:10px; margin-top:14px}
+  .diahead b{font-size:.9rem}
+  .diahead .sp{flex:1}
   .blocks{display:flex; flex-direction:column; gap:10px; margin-top:14px}
   .block{display:flex; gap:12px; align-items:flex-start}
   .block .hr{font-size:.72rem; color:var(--muted); width:44px; flex:none; padding-top:12px; text-align:right}
@@ -377,7 +394,10 @@
     width:100%; background:none; border:none; color:inherit; font:inherit; text-align:left;
     display:flex; align-items:center; gap:10px; padding:11px 2px; cursor:pointer;
   }
-  .disc-h .nm{flex:1; font-size:.86rem; font-weight:600}
+  .disc-h .nm{flex:1; min-width:0; font-size:.86rem; font-weight:600}
+  .disc-h .nm .assunto{display:block; font-weight:600; font-size:.76rem; color:var(--muted); margin-top:3px; line-height:1.45}
+  .disc-h .nm .assunto i{font-style:normal; font-weight:700}
+  .disc-h .nm .assunto s{text-decoration:none; opacity:.55}
   .disc-h .hrs{font-size:.72rem; color:var(--muted); white-space:nowrap}
   .disc-h .mini{width:64px; height:6px; border-radius:99px; background:var(--ring-track); overflow:hidden; flex:none}
   .disc-h .mini i{display:block; height:100%; background:var(--c1); border-radius:99px}
@@ -431,6 +451,15 @@
   .lcor.sel{border-color:var(--ink); transform:scale(1.14)}
   .l-tools .sep{width:1px; height:22px; background:var(--line); margin:0 2px}
   #lCanvas{position:absolute; left:0; top:0; z-index:4; pointer-events:none; touch-action:none}
+  #leitor.marcando .l-body{user-select:none; -webkit-user-select:none}
+  /* balão de marcação: selecionou o texto, escolhe a cor — como no Kindle */
+  .selpop{position:fixed; z-index:120; display:none; gap:7px; align-items:center; padding:8px 10px;
+          background:var(--card); border:1px solid var(--line); border-radius:999px;
+          box-shadow:0 8px 28px rgba(22,36,29,.22)}
+  .selpop.show{display:flex}
+  .selpop .lcor{width:24px; height:24px}
+  .selpop .apg{border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px;
+               height:26px; padding:0 11px; font:700 .72rem "Albert Sans",sans-serif; cursor:pointer}
   #leitor.pintando #lCanvas{pointer-events:auto; cursor:crosshair}
   /* lei seca */
   .lei-h{font-family:"Albert Sans",sans-serif; font-size:.72rem; font-weight:800; letter-spacing:.08em;
@@ -447,6 +476,9 @@
   .tp .w.past{opacity:.4}
   .tp .w.cur{background:var(--accent); color:var(--on-accent)}
   .tp .w.kwlit{color:var(--warm); font-weight:700; opacity:1}
+  /* karaokê da leitura do aparelho: acompanha a palavra falada */
+  .w.kread{background:var(--accent); color:var(--on-accent); border-radius:5px; box-shadow:none}
+  .w.klido{opacity:.55}
   .l-bar{
     border-top:1px solid var(--line); background:var(--card); padding:10px 14px;
     display:flex; align-items:center; gap:10px; justify-content:space-between;
@@ -1548,7 +1580,15 @@
       <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
     </div>
 
+    <div class="semnav">
+      <button class="setinha" onclick="mudarSemana(-1)" aria-label="Semana anterior">‹</button>
+      <span class="lbl" id="semLbl">—</span>
+      <button class="setinha" onclick="mudarSemana(1)" aria-label="Próxima semana">›</button>
+      <button class="hojebtn" id="semHoje" onclick="mudarSemana(0, true)" style="display:none">hoje</button>
+    </div>
     <div class="week" id="planoSemana" role="tablist" aria-label="Dias da semana"></div>
+    <div class="diahead" id="diaHead" style="display:none"><b id="diaHeadT">—</b><span class="sp"></span>
+      <button class="btn small" id="diaHeadB" style="display:none" onclick="estudarDia(DIA_SEL)">Estudar este dia</button></div>
     <div class="blocks" id="planoDia"></div>
 
     <div class="card" style="margin-top:16px">
@@ -1745,6 +1785,7 @@
         <button id="mEco" onclick="setLMode('eco')">Eco</button>
       </div>
       <button class="btn ghost small" id="btnOuvirTeoria" onclick="ouvirTeoria()" style="padding:6px 12px; font-size:.76rem">🔊 Ouvir o texto</button>
+      <button class="iconbtn velbtn" onclick="velProxima()" aria-label="Velocidade da leitura" title="Velocidade da leitura">1×</button>
       <span class="rec"><i></i><span id="recTxt">REC</span></span>
       <span class="tpctl" style="display:contents">
         <button class="iconbtn tpc" id="btnPause" onclick="tpPause()" aria-label="Pausar gravação">⏸</button>
@@ -1752,6 +1793,14 @@
       </span>
       <span class="l-meta" id="lHint">toque numa palavra para marcar</span>
     </div>
+  </div>
+
+  <div class="selpop" id="selPop" role="toolbar" aria-label="Marcar seleção">
+    <button class="lcor" style="background:#FFF08A" onclick="pintarSelecao(0)" aria-label="Marcar de amarelo"></button>
+    <button class="lcor" style="background:#A9EEC8" onclick="pintarSelecao(1)" aria-label="Marcar de verde"></button>
+    <button class="lcor" style="background:#FFC3DA" onclick="pintarSelecao(2)" aria-label="Marcar de rosa"></button>
+    <button class="lcor" style="background:#B9D9FF" onclick="pintarSelecao(3)" aria-label="Marcar de azul"></button>
+    <button class="apg" onclick="pintarSelecao(null)">tirar</button>
   </div>
 
   <!-- ================= BARALHO COMPLETO ================= -->
@@ -2507,6 +2556,7 @@
 
   function pararFala(){
     try { window.speechSynthesis.cancel(); } catch(e){}
+    if(typeof limparKaraoke === 'function') limparKaraoke();
     FALA.tipo = null;
     var p = $('ptime'); if(p && p.textContent === 'ouvindo') p.textContent = 'ouvir';
     if($('btnOuvirTeoria')) $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
@@ -2533,20 +2583,88 @@
   // Voz do próprio aparelho: usada só para ouvir a TEORIA no Leitor (custo zero).
   // Podcast e música usam sempre a voz de estúdio.
   // Lê em voz alta a teoria que está no Leitor (voz do aparelho, custo zero).
+  /* ---------- karaokê: o marcador acompanha a palavra que está sendo falada ---------- */
+  var KAR = { spans: null, i: 0, timer: null };
+
+  // Mapa posição-no-texto → palavra, para casar o charIndex que a voz devolve.
+  function mapaPalavras(par){
+    var pos = 0, lista = [];
+    (function walk(n){
+      for(var c = n.firstChild; c; c = c.nextSibling){
+        if(c.nodeType === 3) pos += c.nodeValue.length;
+        else if(c.nodeType === 1){
+          if(c.classList && c.classList.contains('w')){
+            var ini = pos; pos += c.textContent.length;
+            lista.push({ a: ini, b: pos, el: c });
+          } else walk(c);
+        }
+      }
+    })(par);
+    return lista;
+  }
+  function limparKaraoke(){
+    if(KAR.timer){ clearInterval(KAR.timer); KAR.timer = null; }
+    [].forEach.call(document.querySelectorAll('#lBody .w'), function(w){ w.classList.remove('kread','klido'); });
+    KAR.spans = null; KAR.i = 0;
+  }
+  function marcarKaraoke(lista, idx){
+    lista.forEach(function(o, k){
+      o.el.classList.toggle('kread', k === idx);
+      o.el.classList.toggle('klido', k < idx);
+    });
+    if(lista[idx] && idx % 4 === 0){
+      try { lista[idx].el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){}
+    }
+  }
+
   function ouvirTeoria(){
     if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem leitura em voz alta'); return; }
-    if(FALA.tipo === 'teoria'){ pararFala(); $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; return; }
-    pararFala(); FALA.tipo = 'teoria';
+    if(FALA.tipo === 'teoria'){ pararFala(); limparKaraoke(); $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; return; }
+    pararFala(); limparKaraoke(); FALA.tipo = 'teoria';
     $('btnOuvirTeoria').textContent = '⏸ Parar leitura';
-    var paras = [].map.call(document.querySelectorAll('#lBody p'), function(p){ return p.textContent.trim(); }).filter(Boolean);
-    if(!paras.length){ toast('Abra a teoria primeiro'); return; }
+    buildReader();
+    var pars = [].slice.call(document.querySelectorAll('#lBody p')).filter(function(p){ return p.textContent.trim(); });
+    if(!pars.length){ toast('Abra a teoria primeiro'); return; }
     var vs = vozesPt();
-    paras.forEach(function(txt, i){
+    pars.forEach(function(par, i){
+      var bruto = par.textContent;
+      var recuo = bruto.length - bruto.replace(/^\s+/, '').length;
+      var txt = bruto.trim();
+      var lista = mapaPalavras(par);
       var u = new SpeechSynthesisUtterance(txt);
-      u.lang = 'pt-BR'; u.rate = 1.02;
+      u.lang = 'pt-BR'; u.rate = 1.02 * VEL;
       if(vs[0]) u.voice = vs[0];
-      if(i === paras.length - 1){
-        u.onend = function(){ FALA.tipo = null; $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; evento('teoria_ouvida', 'ouvir', null, 'em_andamento'); };
+
+      var usouBoundary = false, k = 0;
+      u.onstart = function(){
+        limparKaraoke(); KAR.spans = lista; k = 0;
+        marcarKaraoke(lista, 0);
+        // se o navegador não avisa palavra a palavra (Safari), o marcador anda no ritmo estimado
+        KAR.timer = setTimeout(function(){
+          if(usouBoundary) return;
+          var wpm = 165 * (1.02 * VEL), ms = 60000 / wpm;
+          KAR.timer = setInterval(function(){
+            if(k >= lista.length - 1){ clearInterval(KAR.timer); KAR.timer = null; return; }
+            marcarKaraoke(lista, ++k);
+          }, ms);
+        }, 900);
+      };
+      u.onboundary = function(ev){
+        if(ev.name && ev.name !== 'word') return;
+        usouBoundary = true;
+        if(KAR.timer){ clearInterval(KAR.timer); clearTimeout(KAR.timer); KAR.timer = null; }
+        var ci = (ev.charIndex || 0) + recuo;
+        for(var j = 0; j < lista.length; j++){
+          if(ci >= lista[j].a && ci < lista[j].b){ k = j; marcarKaraoke(lista, j); return; }
+          if(ci < lista[j].a){ k = j; marcarKaraoke(lista, j); return; }
+        }
+      };
+      if(i === pars.length - 1){
+        u.onend = function(){
+          FALA.tipo = null; limparKaraoke();
+          $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
+          evento('teoria_ouvida', 'ouvir', null, 'em_andamento');
+        };
       }
       window.speechSynthesis.speak(u);
     });
@@ -2554,9 +2672,9 @@
 
   function falarNavegador(tipo){
     if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem leitura em voz alta'); return false; }
-    var texto = tipo === 'musica'
-      ? String((CONT && CONT.musica ? CONT.musica.letra : '') || '')
-      : String((CONT && CONT.podcast) || '');
+    var texto = semMd(tipo === 'musica'
+      ? ((CONT && CONT.musica ? CONT.musica.letra : '') || '')
+      : ((CONT && CONT.podcast) || ''));
     if(!texto){ toast('Gere o conteúdo do tópico primeiro'); return false; }
 
     if(FALA.tipo === tipo){ pararFala(); return true; }
@@ -2576,7 +2694,7 @@
       var u = new SpeechSynthesisUtterance(f.txt);
       u.lang = 'pt-BR';
       if(f.voz) u.voice = f.voz;
-      u.rate = tipo === 'musica' ? 0.95 : 1.02;
+      u.rate = (tipo === 'musica' ? 0.95 : 1.02) * VEL;
       u.pitch = f.dois && f.voz === vozB ? 0.9 : 1;
       if(i === falas.length - 1){
         u.onend = function(){
@@ -3021,7 +3139,7 @@
     try {
       if(window.speechSynthesis && sl.fala && !CINE.semVoz){
         var u = new SpeechSynthesisUtterance(sl.fala);
-        u.lang = 'pt-BR'; u.rate = 1.03;
+        u.lang = 'pt-BR'; u.rate = 1.03 * VEL;
         var vs = vozesPt(); if(vs[0]) u.voice = vs[0];
         u.onend = function(){ if(CINE.tocando) proximoSlide(); };
         u.onerror = function(){ if(CINE.tocando) CINE.timer = setTimeout(proximoSlide, 800); };
@@ -3247,6 +3365,18 @@
   /* ---------- lei seca gaps ---------- */
   var gapsDone = 0, gapsTotal = 5;
   function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+
+  // A IA às vezes devolve markdown (**negrito**, *itálico*). Renderiza em vez de
+  // mostrar os asteriscos crus na tela — e tira os asteriscos da leitura em voz alta.
+  function md(t){
+    return esc(String(t == null ? '' : t))
+      .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+      .replace(/__([^_]+)__/g, '<b>$1</b>')
+      .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, '$1<i>$2</i>');
+  }
+  function semMd(t){
+    return String(t == null ? '' : t).replace(/\*\*|__|\*|`|#{1,6}\s/g, '');
+  }
   function gap(inp){
     var ok = norm(inp.value) === norm(inp.dataset.ans);
     var partial = norm(inp.dataset.ans).indexOf(norm(inp.value)) === 0;
@@ -3315,6 +3445,30 @@
     ['Quais são os 5 princípios expressos do caput do art. 37?', 'LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência (este incluído pela EC 19/98).'],
     ['Cite dois princípios IMPLÍCITOS da Administração Pública.', 'Razoabilidade, proporcionalidade, autotutela, continuidade do serviço público, entre outros — não estão no caput, mas regem a Administração.']
   ];
+  /* ---------- velocidade da leitura em voz do aparelho ---------- */
+  var VEL = 1;
+  try { VEL = Number(localStorage.getItem('persisteia_velocidade')) || 1; } catch(e){}
+  var VELOCIDADES = [0.75, 1, 1.25, 1.5, 2];
+  function velProxima(){
+    var i = VELOCIDADES.indexOf(VEL);
+    VEL = VELOCIDADES[(i + 1) % VELOCIDADES.length];
+    try { localStorage.setItem('persisteia_velocidade', String(VEL)); } catch(e){}
+    marcarVelocidade();
+    // aplica na hora no que já estiver tocando
+    [].forEach.call(document.querySelectorAll('audio'), function(a){ a.playbackRate = VEL; });
+    if(FALA.tipo){
+      var t = FALA.tipo; pararFala();
+      if(t === 'teoria'){ $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; ouvirTeoria(); }
+      else falarNavegador(t);
+    } else {
+      toast('Velocidade da leitura: ' + velTxt());
+    }
+  }
+  function velTxt(){ return String(VEL).replace('.', ',') + '×'; }
+  function marcarVelocidade(){
+    [].forEach.call(document.querySelectorAll('.velbtn'), function(b){ b.textContent = velTxt(); });
+  }
+
   var fcI = 0, FC_MODO = 'hoje', FC_HOJE = null, FC_REV = [];
   var fcLabels = ['Errei — volta em 10 min', 'Quase — volta em 1 dia', 'Fácil — volta em 4 dias'];
 
@@ -3403,8 +3557,8 @@
       return '<div class="bk-item" style="--kc:' + corDoTopico(tp) + '" onclick="this.classList.toggle(\'open\')">' +
         (c.devido ? '<span class="dv">para revisar</span>' : '') +
         '<span class="tp">' + esc(tp) + '</span>' +
-        '<div class="fr">' + esc(c.frente) + '</div>' +
-        '<div class="vs">' + esc(c.verso) + '</div></div>';
+        '<div class="fr">' + md(c.frente) + '</div>' +
+        '<div class="vs">' + md(c.verso) + '</div></div>';
     }).join('');
   }
   function bkAbrirTudo(){
@@ -3423,8 +3577,8 @@
   function fcMostra(){
     var fc = $('fc'); fc.classList.remove('flip');
     if(!fcs.length) return;
-    $('fcF').textContent = fcs[fcI][0];
-    $('fcB').textContent = fcs[fcI][1];
+    $('fcF').textContent = semMd(fcs[fcI][0]);
+    $('fcB').textContent = semMd(fcs[fcI][1]);
   }
   function fcNext(grade){
     toast(fcLabels[grade]);
@@ -3585,6 +3739,35 @@
     });
     return m;
   }
+  // Conteúdo antigo (gerado antes da classificação) ainda merece cor: deduz os
+  // destaques do próprio texto — negrito, dispositivos, números, exceções e absolutos.
+  var KW_EXCECAO = ['salvo','exceto','excecao','excecoes','ressalvado','ressalvada','ressalvadas','ressalvados','vedado','vedada','veda','proibido','excepcionalmente'];
+  var KW_PEGADINHA = ['somente','apenas','sempre','nunca','jamais','obrigatoriamente','obrigatorio','facultativo','todo','todos','qualquer','nenhum'];
+  var KW_ORGAO = ['juiz','perito','peritos','delegado','tribunal','supremo','stf','stj','ministerio','autoridade','uniao','administracao','judiciario'];
+  function kwLocal(c){
+    var lista = [];
+    var texto = String((c && c.resumo) || '');
+    (texto.match(/\*\*([^*]+)\*\*/g) || []).forEach(function(x){
+      lista.push({ termo: x.replace(/\*\*/g, ''), tipo: 'conceito' });
+    });
+    (String((c && c.trecho_chave) || (c && c.lei_seca) || '').match(/\[\[(.+?)\]\]/g) || []).forEach(function(x){
+      lista.push({ termo: x.replace(/\[\[|\]\]/g, ''), tipo: 'conceito' });
+    });
+    (texto.match(/\b\d+[\.,]?\d*\s*(anos?|meses|dias?|horas?|%|\/\d)/gi) || []).forEach(function(x){
+      lista.push({ termo: x, tipo: 'prazo' });
+    });
+    (texto.match(/\b(art\.?|artigo|§|inciso|sumula|súmula)\s*[\wº°]+/gi) || []).forEach(function(x){
+      lista.push({ termo: x, tipo: 'prazo' });
+    });
+    texto.split(/\s+/).forEach(function(w){
+      var t = tokenKw(w);
+      if(KW_EXCECAO.indexOf(t) >= 0) lista.push({ termo: w, tipo: 'excecao' });
+      else if(KW_PEGADINHA.indexOf(t) >= 0) lista.push({ termo: w, tipo: 'pegadinha' });
+      else if(KW_ORGAO.indexOf(t) >= 0) lista.push({ termo: w, tipo: 'orgao' });
+    });
+    return lista;
+  }
+
   function kwDemo(){
     var m = {}; KW_DEMO.forEach(function(par){ m[tokenKw(par[0])] = par[1]; }); return m;
   }
@@ -3602,24 +3785,44 @@
   }
 
   var lWords = null, tpTimer = null, tpIdx = 0, marks = 0, lFs = 1.05;
+
+  // Envolve cada palavra num <span class="w"> SEM destruir o negrito e o itálico
+  // que vieram do markdown — por isso caminha pelos nós de texto, não pelo textContent.
+  function envolverPalavras(raiz){
+    var textos = [];
+    (function walk(n){
+      for(var c = n.firstChild; c; c = c.nextSibling){
+        if(c.nodeType === 3){ if(c.nodeValue.trim()) textos.push(c); }
+        else if(c.nodeType === 1 && !c.classList.contains('w')) walk(c);
+      }
+    })(raiz);
+    textos.forEach(function(tn){
+      var partes = tn.nodeValue.split(/(\s+)/), frag = document.createDocumentFragment();
+      partes.forEach(function(pedaco){
+        if(!pedaco) return;
+        if(/^\s+$/.test(pedaco)){ frag.appendChild(document.createTextNode(pedaco)); return; }
+        var sp = document.createElement('span');
+        var tipo = KWMAP ? KWMAP[tokenKw(pedaco)] : null;
+        sp.className = 'w' + (tipo ? ' k-' + tipo : '');
+        sp.textContent = pedaco;
+        frag.appendChild(sp);
+      });
+      tn.parentNode.replaceChild(frag, tn);
+    });
+  }
+
   function buildReader(){
     if(lWords) return;
     if(!KWMAP) KWMAP = kwDemo();
-    lWords = [];
-    document.querySelectorAll('#lBody p').forEach(function(par){
-      var words = par.textContent.split(' '), html = '';
-      words.forEach(function(w){
-        var tipo = KWMAP[tokenKw(w)];
-        html += '<span class="w' + (tipo ? ' k-' + tipo : '') + '">' + w + '</span> ';
-      });
-      par.innerHTML = html;
-    });
+    document.querySelectorAll('#lBody p, #lBody .disp p').forEach(envolverPalavras);
     lWords = Array.prototype.slice.call(document.querySelectorAll('#lBody .w'));
     lWords.forEach(function(w, i){
       w.dataset.i = i;
       w.addEventListener('click', function(){
         if($('lBody').classList.contains('tp')) return;
         if(ANOT.tool !== 'mao' && ANOT.tool !== 'marca') return;
+        var sel = window.getSelection();
+        if(sel && !sel.isCollapsed) return;   // seleção manda; o balão resolve
         pintarPalavra(w, ANOT.cor);
       });
       w.addEventListener('pointerenter', function(){
@@ -3637,15 +3840,68 @@
   var ANOT = { tool:'mao', cor:0, tracos:[], arrastando:false, chave:'demo', atual:null };
   var COR_TRACO = ['#E0B400','#12A05F','#D34F87','#2E7DBE'];
 
-  function pintarPalavra(w, cor, forcar){
-    var cls = 'mk' + (cor + 1), tinha = w.classList.contains(cls);
+  function aplicarCor(w, cor, forcar){
+    var tinha = cor != null && w.classList.contains('mk' + (cor + 1));
     for(var c = 1; c <= 4; c++) w.classList.remove('mk' + c);
     w.classList.remove('mark');
-    if(!tinha || forcar) w.classList.add(cls);
+    if(cor != null && (!tinha || forcar)) w.classList.add('mk' + (cor + 1));
+  }
+  function contarMarcas(){
     marks = document.querySelectorAll('#lBody .w[class*="mk"]').length;
     if($('lMarks')) $('lMarks').textContent = marks;
-    salvarAnot();
   }
+  function pintarPalavra(w, cor, forcar){
+    aplicarCor(w, cor, forcar); contarMarcas(); salvarAnot();
+  }
+
+  /* ---------- marcação por seleção: seleciona o trecho, escolhe a cor ---------- */
+  function selecaoNoTexto(){
+    var sel = window.getSelection();
+    if(!sel || sel.isCollapsed || !sel.rangeCount) return null;
+    var r = sel.getRangeAt(0);
+    var no = r.commonAncestorContainer;
+    if(no.nodeType === 3) no = no.parentNode;
+    var body = $('lBody');
+    if(!body || !body.contains(no)) return null;
+    return r;
+  }
+  function pintarSelecao(cor){
+    var r = selecaoNoTexto();
+    if(!r){ toast('Selecione um trecho do texto primeiro'); return false; }
+    var n = 0;
+    [].forEach.call(document.querySelectorAll('#lBody .w'), function(w){
+      if(r.intersectsNode(w)){ aplicarCor(w, cor, true); n++; }
+    });
+    try { window.getSelection().removeAllRanges(); } catch(e){}
+    esconderPop();
+    if(n){ contarMarcas(); salvarAnot(); toast(cor == null ? 'Marcação removida' : n + (n === 1 ? ' palavra marcada' : ' palavras marcadas')); }
+    return n > 0;
+  }
+  function esconderPop(){ var p = $('selPop'); if(p) p.classList.remove('show'); }
+  function mostrarPopSel(){
+    if(!$('leitor') || !$('leitor').classList.contains('open')) return esconderPop();
+    if($('lBody').classList.contains('tp')) return esconderPop();
+    var r = selecaoNoTexto();
+    if(!r) return esconderPop();
+    var rect = r.getBoundingClientRect();
+    if(!rect.width && !rect.height) return esconderPop();
+    var pop = $('selPop');
+    pop.classList.add('show');
+    var lg = pop.offsetWidth, al = pop.offsetHeight;
+    var x = rect.left + rect.width / 2 - lg / 2;
+    x = Math.max(8, Math.min(window.innerWidth - lg - 8, x));
+    var y = rect.top - al - 10;
+    if(y < 8) y = rect.bottom + 10;
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+  }
+  var popTimer = null;
+  document.addEventListener('selectionchange', function(){
+    clearTimeout(popTimer);
+    popTimer = setTimeout(mostrarPopSel, 180);
+  });
+  document.addEventListener('pointerdown', function(e){
+    if($('selPop') && !$('selPop').contains(e.target)) esconderPop();
+  }, true);
 
   function toggleAnot(){
     var on = $('leitor').classList.toggle('anot');
@@ -3659,16 +3915,18 @@
       var b = $('tl-' + x); if(b) b.classList.toggle('sel', x === t);
     });
     $('leitor').classList.toggle('pintando', t === 'caneta' || t === 'circulo' || t === 'seta' || t === 'borracha');
+    $('leitor').classList.toggle('marcando', t === 'marca');
     if($('lHint')) $('lHint').textContent = t === 'marca' ? 'arraste sobre as palavras para grifar'
       : t === 'caneta' ? 'desenhe com o dedo ou o mouse'
       : t === 'circulo' ? 'arraste para circular'
       : t === 'seta' ? 'arraste para desenhar a seta'
       : t === 'borracha' ? 'toque num traço para apagá-lo'
-      : 'toque numa palavra para marcar';
+      : 'selecione um trecho ou toque numa palavra para marcar';
   }
   function setCor(i){
     ANOT.cor = i;
     for(var k = 0; k < 4; k++){ var b = $('lc' + k); if(b) b.classList.toggle('sel', k === i); }
+    if(selecaoNoTexto()){ pintarSelecao(i); return; }   // trecho selecionado? pinta na hora
     if(ANOT.tool === 'mao') setTool('marca');
   }
 
@@ -3821,6 +4079,10 @@
     redesenhar();
   }
 
+  document.addEventListener('play', function(e){
+    if(e.target && e.target.tagName === 'AUDIO'){ try { e.target.playbackRate = VEL; } catch(err){} }
+  }, true);
+
   var recapShown = false, rqDone = 0;
   function progressoRolagem(){
     var b = $('lBody'); if(!b) return;
@@ -3852,7 +4114,7 @@
       $('recapFim').classList.remove('show');
       $('recapQs').innerHTML = qs.map(function(q, i){
         return '<div class="rq" id="rq' + i + '">' +
-          '<p>' + esc(q.enunciado) + '</p>' +
+          '<p>' + md(q.enunciado) + '</p>' +
           '<div class="q-btns">' +
             '<button class="btn ghost small" onclick="rqA(' + i + ',true)">Certo</button>' +
             '<button class="btn ghost small" onclick="rqA(' + i + ',false)">Errado</button>' +
@@ -3935,7 +4197,7 @@
     $('lBody').style.fontSize = lFs.toFixed(2) + 'rem';
     setTimeout(function(){ dimensionarCanvas(); redesenhar(); }, 60);
   }
-  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '', RECWATCH = null;
+  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '', RECWATCH = null, TP_WATCH = null;
 
   // Religa o reconhecimento sem perder a gravação nem o ponto da leitura.
   function religarFala(){
@@ -3949,6 +4211,7 @@
 
   function setLMode(m){
     pararFala();
+    if(typeof limparKaraoke === 'function') limparKaraoke();
     if(m !== 'sil' && typeof setTool === 'function') setTool('mao');
     if($('btnOuvirTeoria')) $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
     $('mSil').classList.toggle('sel', m === 'sil');
@@ -4028,6 +4291,18 @@
         REC.start();
       } catch(e){ REC = null; }
 
+      // Se o reconhecimento não devolver nada em alguns segundos (microfone mudo,
+      // permissão parcial, navegador sem suporte real), o marcador passa a andar
+      // sozinho para a leitura não ficar sem teleprompter.
+      if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
+      TP_WATCH = setTimeout(function(){
+        if(tpIdx > 0 || tpPaused) return;
+        toast('Não consegui ouvir sua voz — o marcador vai andar no ritmo médio de leitura');
+        tpTimer = setInterval(function(){
+          if(!tpPaused){ tpIdx++; marcarAtual(); if(tpIdx >= lWords.length) pararGravacao(false); }
+        }, 380 / VEL);
+      }, 7000);
+
       if(SR){
         RECON = new SR();
         RECON.lang = 'pt-BR'; RECON.continuous = true; RECON.interimResults = true;
@@ -4066,6 +4341,7 @@
   }
 
   function pararGravacao(silencioso){
+    if(TP_WATCH){ clearTimeout(TP_WATCH); TP_WATCH = null; }
     if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
     if(RECWATCH){ clearInterval(RECWATCH); RECWATCH = null; }
     if(RECON){ try { RECON.onend = null; RECON.onerror = null; RECON.stop(); } catch(e){} RECON = null; }
@@ -4595,27 +4871,23 @@
     else { $('limpeWord').textContent = 'Toque em uma letra ↑'; }
 
     var paras = String(c.resumo).split(/\n+/).filter(function(x){ return x.trim(); });
-    var corpo = paras.map(function(pp){ return '<p>' + esc(pp) + '</p>'; }).join('');
+    var corpo = paras.map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
 
     // LEI SECA: o texto integral dos dispositivos, logo depois da teoria.
     var disp = (c.dispositivos || []).filter(function(x){ return x && x.rotulo && x.texto; });
     if(disp.length){
       corpo += '<div class="lei-h">Lei seca · texto integral</div>' +
         disp.map(function(x){
-          return '<div class="disp"><span class="rot">' + esc(x.rotulo) + '</span><p>' + esc(x.texto) + '</p></div>';
+          return '<div class="disp"><span class="rot">' + esc(x.rotulo) + '</span><p>' + md(x.texto) + '</p></div>';
         }).join('') +
         '<div class="lei-nota">Transcrição para estudo. Na dúvida sobre a redação vigente, confira no texto oficial — leis mudam.</div>';
     }
     $('lBody').innerHTML = corpo;
 
     // palavras-chave coloridas por tipo, vindas da própria geração do conteúdo
-    if(c.palavras_chave && c.palavras_chave.length){
-      KWMAP = montarKw(c.palavras_chave);
-    } else {
-      // pacotes antigos: usa as lacunas do trecho-chave como palavras de destaque
-      var achadas = String(c.trecho_chave || c.lei_seca || '').match(/\[\[(.+?)\]\]/g) || [];
-      KWMAP = montarKw(achadas.map(function(x){ return { termo: x.replace(/\[\[|\]\]/g, ''), tipo: 'conceito' }; }));
-    }
+    KWMAP = (c.palavras_chave && c.palavras_chave.length)
+      ? montarKw(c.palavras_chave)
+      : montarKw(kwLocal(c));   // pacotes antigos: deduz do próprio texto
     lWords = null; ecoSents = null; marks = 0; $('lMarks').textContent = '0';
 
     var lei = esc(c.trecho_chave || c.lei_seca || ''), n = 0;
@@ -4635,16 +4907,16 @@
       fcs = c.flashcards.map(function(x){ return [x.frente, x.verso]; });
       FC_HOJE = fcs.slice(); FC_MODO = 'hoje';
       if($('fcModoHoje')){ $('fcModoHoje').classList.add('sel'); $('fcModoRev').classList.remove('sel'); }
-      fcI = 0; $('fcF').textContent = fcs[0][0]; $('fcB').textContent = fcs[0][1];
+      fcI = 0; $('fcF').textContent = semMd(fcs[0][0]); $('fcB').textContent = semMd(fcs[0][1]);
       apiFetch('/api/flashcard', { lote: c.flashcards, topico_id: itemAtivo().topico_id }).catch(function(){});
     }
     if(c.feynman && c.feynman.length){
       $('feynQ').innerHTML = 'Explique em voz alta: <b>' + esc(c.feynman[0].pergunta) + '</b>';
     }
-    $('podQuote').textContent = '"' + String(c.podcast).slice(0, 260) + '…"';
+    $('podQuote').textContent = '"' + semMd(c.podcast).slice(0, 260) + '…"';
     $('musTitle').textContent = 'Música do assunto';
     $('musSub').textContent = esc(c.musica.estilo);
-    $('musLyr').innerHTML = esc(c.musica.letra).replace(/\n/g, '<br>');
+    $('musLyr').innerHTML = md(c.musica.letra).replace(/\n/g, '<br>');
   }
 
   var Q_FMT = 'ce';
@@ -4701,7 +4973,7 @@
     var acertou = (escolha === item.correta);
     var letra = String.fromCharCode(65 + item.correta);
     fb.className = 'fb ' + (acertou ? 'ok' : 'no');
-    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('A correta é a ' + letra + ').')) + '</b>' + esc(item.comentario);
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('A correta é a ' + letra + ').')) + '</b>' + md(item.comentario);
     evento('questao', 'raciocinar', { n: q + 1, formato: 'me', respondeu_certo: acertou },
            (q + 1 >= (CONT.questoes_me || []).length) ? 'concluido' : 'em_andamento');
     var prox = $('rq_' + (q + 1));
@@ -4713,7 +4985,7 @@
     var fb = $('rfb_' + q);
     var acertou = (escolha === !!item.gabarito);
     fb.className = 'fb ' + (acertou ? 'ok' : 'no');
-    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('O gabarito é ' + (item.gabarito ? 'Certo' : 'Errado') + '.')) + '</b>' + esc(item.comentario);
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('O gabarito é ' + (item.gabarito ? 'Certo' : 'Errado') + '.')) + '</b>' + md(item.comentario);
     evento('questao', 'raciocinar', { n: q + 1, respondeu_certo: acertou }, (q + 1 >= CONT.questoes.length) ? 'concluido' : 'em_andamento');
     var prox = $('rq_' + (q + 1));
     if(prox) prox.style.display = 'block';
@@ -4726,21 +4998,9 @@
     $('planoTit').textContent = d.edital || 'Seu plano';
     $('planoCount').textContent = (dd === null) ? 'estudo contínuo' : (dd < 0 ? 'data da prova passou' : 'prova em ' + dd + ' dias');
 
-    // ----- faixa da semana -----
-    var base = new Date(); base.setHours(12,0,0,0);
-    var dow = base.getDay(), seg = new Date(base.getTime() - ((dow + 6) % 7) * 86400000);
-    var DIA = ['seg','ter','qua','qui','sex','sáb','dom'];
-    var htmlSem = '';
-    for(var i = 0; i < 7; i++){
-      var dt = new Date(seg.getTime() + i*86400000);
-      var iso = dt.toISOString().slice(0,10);
-      var doDia = itens.filter(function(x){ return x.data === iso; });
-      var todosOk = doDia.length && doDia.every(function(x){ return x.status === 'concluido'; });
-      var cls = 'day' + (iso === hojeISO ? ' today' : (todosOk ? ' done' : ''));
-      htmlSem += '<button class="' + cls + '" onclick="verDia(\'' + iso + '\')">' + DIA[i] + '<b class="num">' + dt.getDate() + '</b></button>';
-    }
-    $('planoSemana').innerHTML = htmlSem;
-    verDia(DIA_SEL || hojeISO, itens);
+    // ----- faixa da semana (navegável) -----
+    PLANO_ITENS = itens;
+    renderSemana();
 
     // ----- cronograma completo, por disciplina e tópico -----
     $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> sessões concluídas' +
@@ -4799,7 +5059,7 @@
     if($('ordDia')) $('ordDia').classList.toggle('sel', PLANO_ORD === 'dia');
     if($('planoDica')){
       $('planoDica').textContent = PLANO_ORD === 'dia'
-        ? 'Toque num dia para abrir os tópicos daquele dia. Toque em "Estudar este dia" para começar direto pela esteira dos 8 verbos.'
+        ? 'Cada dia já mostra os assuntos, na cor da disciplina — os concluídos aparecem riscados. Toque no dia para ver detalhes e o botão "Estudar este dia".'
         : 'Toque numa disciplina para abrir os tópicos. Toque num tópico para estudá-lo agora.';
     }
     if(!itens.length){ $('planoLista').innerHTML = ''; return; }
@@ -4859,14 +5119,20 @@
       var dt = new Date(iso + 'T12:00:00');
       var ehHoje = iso === hojeISO, passou = iso < hojeISO;
       var idd = 'dia_' + k2;
-      var aberto = (ehHoje || (k2 === 1 && !passou)) ? ' open' : '';
+      var aberto = ehHoje ? ' open' : '';
       var etiqueta = ehHoje ? '<span class="chip done" style="font-size:.62rem; padding:2px 8px">hoje</span>'
         : (passou && !tudoFeito ? '<span class="chip" style="font-size:.62rem; padding:2px 8px; background:var(--warm-soft); color:var(--warm); border-color:var(--warm)">atrasado</span>' : '');
       html += '<div class="disc' + aberto + '" id="' + idd + '">' +
         '<button class="disc-h" onclick="document.getElementById(\'' + idd + '\').classList.toggle(\'open\')">' +
           '<span class="dot" style="width:10px;height:10px;border-radius:50%;flex:none;background:' +
              (tudoFeito ? 'var(--good)' : (ehHoje ? 'var(--accent)' : (passou ? 'var(--warm)' : 'var(--line)'))) + '"></span>' +
-          '<span class="nm">' + dt.getDate() + '/' + (dt.getMonth()+1) + ' <span class="muted" style="font-weight:600">· ' + DIAS[dt.getDay()] + '</span> ' + etiqueta + '</span>' +
+          '<span class="nm">' + dt.getDate() + '/' + (dt.getMonth()+1) + ' <span class="muted" style="font-weight:600">· ' + DIAS[dt.getDay()] + '</span> ' + etiqueta +
+            '<span class="assunto">' + lista.map(function(x){
+              var nome = esc(x.topico) + (Number(x.partes) > 1 ? ' (parte ' + x.parte + '/' + x.partes + ')' : '');
+              var txt = '<i style="color:' + discCor[x.disciplina] + '">' + nome + '</i>';
+              return x.status === 'concluido' ? '<s>' + txt + ' ✓</s>' : txt;
+            }).join(' <span class="muted">·</span> ') + '</span>' +
+          '</span>' +
           '<span class="hrs num">' + feitos + '/' + lista.length + (horas ? ' · ' + fmtHoras(horas) : '') + '</span>' +
           '<span class="mini"><i style="width:' + Math.round(100*feitos/lista.length) + '%; background:' + (tudoFeito ? 'var(--good)' : 'var(--accent)') + '"></i></span>' +
         '</button><div class="assuntos">';
@@ -4874,9 +5140,9 @@
         var st = x.status === 'concluido' ? 'done' : (x.cron_id === (itemAtivo() || {}).cron_id ? 'now' : 'next');
         html += '<button class="a-row" style="width:100%; background:none; border:none; text-align:left; cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
           '<span class="st ' + st + '"></span>' +
-          '<span class="an"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:' + discCor[x.disciplina] + '; margin-right:7px"></span>' +
-            esc(x.topico) + (Number(x.partes) > 1 ? ' <span class="muted">· parte ' + x.parte + '/' + x.partes + '</span>' : '') +
-            '<small style="display:block; color:var(--muted); font-size:.72rem; margin-left:15px">' + esc(x.disciplina) + (x.horas ? ' · ' + fmtHoras(x.horas) : '') + '</small></span>' +
+          '<span class="an">' + esc(x.topico) + (Number(x.partes) > 1 ? ' <span class="muted">· parte ' + x.parte + '/' + x.partes + '</span>' : '') +
+            '<small style="display:block; font-size:.72rem; font-weight:700; color:' + discCor[x.disciplina] + '">' +
+              esc(x.disciplina) + (x.horas ? ' <span class="muted" style="font-weight:600">· ' + fmtHoras(x.horas) + '</span>' : '') + '</small></span>' +
           '</button>';
       });
       if(!tudoFeito){
@@ -4887,26 +5153,100 @@
     return html;
   }
 
+  /* ---------- faixa de semanas navegável ---------- */
+  var SEM_OFF = 0;
+  var MES_CURTO = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  function segundaDe(d){
+    var b = new Date(d.getTime()); b.setHours(12,0,0,0);
+    return new Date(b.getTime() - ((b.getDay() + 6) % 7) * 86400000);
+  }
+  function mudarSemana(passo, irHoje){
+    SEM_OFF = irHoje ? 0 : SEM_OFF + passo;
+    renderSemana();
+    if(irHoje) verDia(new Date().toISOString().slice(0,10));
+  }
+  function offsetSemana(iso){
+    var a = segundaDe(new Date()), b = segundaDe(new Date(iso + 'T12:00:00'));
+    return Math.round((b.getTime() - a.getTime()) / (7 * 86400000));
+  }
+  function renderSemana(semEscolher){
+    var itens = PLANO_ITENS || [];
+    var hojeISO = new Date().toISOString().slice(0,10);
+    var seg = segundaDe(new Date());
+    seg = new Date(seg.getTime() + SEM_OFF * 7 * 86400000);
+    var DIA = ['seg','ter','qua','qui','sex','sáb','dom'];
+    var discCor = {}, kc = 0;
+    itens.forEach(function(x){ if(discCor[x.disciplina] === undefined){ discCor[x.disciplina] = PAL[kc % PAL.length]; kc++; } });
+
+    var html = '';
+    for(var i = 0; i < 7; i++){
+      var dt = new Date(seg.getTime() + i * 86400000);
+      var iso = dt.toISOString().slice(0,10);
+      var doDia = itens.filter(function(x){ return x.data === iso; });
+      var todosOk = doDia.length && doDia.every(function(x){ return x.status === 'concluido'; });
+      var cls = 'day' + (iso === hojeISO ? ' today' : (todosOk ? ' done' : (doDia.length ? '' : ' vazio'))) +
+                (iso === DIA_SEL ? ' sel' : '');
+      var pontos = doDia.slice(0, 4).map(function(x){
+        return '<i style="background:' + (x.status === 'concluido' ? 'var(--good)' : discCor[x.disciplina]) + '"></i>';
+      }).join('');
+      html += '<button class="' + cls + '" onclick="verDia(\'' + iso + '\')">' + DIA[i] +
+              '<b class="num">' + dt.getDate() + '</b><span class="pts">' + pontos + '</span></button>';
+    }
+    $('planoSemana').innerHTML = html;
+
+    var fim = new Date(seg.getTime() + 6 * 86400000);
+    $('semLbl').innerHTML = seg.getDate() + ' de ' + MES_CURTO[seg.getMonth()] + ' – ' + fim.getDate() + ' de ' + MES_CURTO[fim.getMonth()] +
+      '<small>' + (SEM_OFF === 0 ? 'esta semana' : (SEM_OFF === 1 ? 'próxima semana' : (SEM_OFF === -1 ? 'semana passada' :
+        (SEM_OFF > 0 ? 'daqui a ' + SEM_OFF + ' semanas' : 'há ' + Math.abs(SEM_OFF) + ' semanas')))) + '</small>';
+    $('semHoje').style.display = SEM_OFF === 0 ? 'none' : 'inline-block';
+
+    if(semEscolher) return;
+    // mantém o dia escolhido; se ele não está nesta semana, mostra o primeiro dia dela com estudo
+    var isosDaSemana = [];
+    for(var k = 0; k < 7; k++) isosDaSemana.push(new Date(seg.getTime() + k * 86400000).toISOString().slice(0,10));
+    if(!DIA_SEL || isosDaSemana.indexOf(DIA_SEL) < 0){
+      var comEstudo = isosDaSemana.filter(function(iso){ return itens.some(function(x){ return x.data === iso; }); });
+      verDia(isosDaSemana.indexOf(hojeISO) >= 0 ? hojeISO : (comEstudo[0] || isosDaSemana[0]));
+    } else {
+      verDia(DIA_SEL);
+    }
+  }
+
   function verDia(iso, itens){
     DIA_SEL = iso;
-    itens = itens || (REAL && REAL.itens) || [];
+    itens = itens || PLANO_ITENS || (REAL && REAL.itens) || [];
+    // se o dia escolhido está em outra semana, a faixa acompanha
+    var off = offsetSemana(iso);
+    if(off !== SEM_OFF){ SEM_OFF = off; renderSemana(true); }
     document.querySelectorAll('#planoSemana .day').forEach(function(b){
-      b.classList.toggle('today', b.textContent.indexOf(String(new Date(iso + 'T12:00:00').getDate())) > -1 && b.textContent.slice(3) === String(new Date(iso + 'T12:00:00').getDate()));
+      b.classList.toggle('sel', b.getAttribute('onclick').indexOf(iso) > -1);
     });
     var doDia = itens.filter(function(x){ return x.data === iso; });
+    var pend = doDia.filter(function(x){ return x.status !== 'concluido'; }).length;
+    var horas = doDia.reduce(function(n, x){ return n + (Number(x.horas) || 0); }, 0);
+    if($('diaHead')){
+      $('diaHead').style.display = 'flex';
+      $('diaHeadT').innerHTML = fmtData(iso) +
+        (doDia.length ? ' <span class="muted" style="font-weight:600; font-size:.78rem">· ' + doDia.length +
+          (doDia.length === 1 ? ' assunto' : ' assuntos') + (horas ? ' · ' + fmtHoras(horas) : '') + '</span>'
+        : ' <span class="muted" style="font-weight:600; font-size:.78rem">· dia livre</span>');
+      $('diaHeadB').style.display = pend ? 'inline-flex' : 'none';
+    }
     if(!doDia.length){
-      $('planoDia').innerHTML = '<p class="muted" style="font-size:.85rem">Nenhum tópico agendado para ' + fmtData(iso) + '. Dia livre — ou aproveite para adiantar um tópico da lista abaixo.</p>';
+      $('planoDia').innerHTML = '<p class="muted" style="font-size:.85rem">Nenhum tópico agendado para este dia. Dia livre — ou aproveite para adiantar um assunto da lista abaixo.</p>';
       return;
     }
     $('planoDia').innerHTML = doDia.map(function(x){
       var feito = x.status === 'concluido';
-      return '<div class="block"><span class="hr num">' + (x.horas ? fmtHoras(x.horas) : fmtData(x.data).slice(0,5)) + '</span>' +
-        '<button class="card" style="text-align:left; border:1px solid var(--line); cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
+      return '<div class="block"><span class="hr num">' + (x.horas ? fmtHoras(x.horas) : '—') + '</span>' +
+        '<button class="card" style="text-align:left; border:1px solid ' + (feito ? 'var(--line)' : 'var(--accent)') + '; cursor:pointer; font:inherit; color:inherit" onclick="estudarTopico(\'' + x.cron_id + '\')">' +
           '<b>' + esc(x.topico) + (Number(x.partes) > 1 ? ' <span class="muted">· parte ' + x.parte + ' de ' + x.partes + '</span>' : '') + '</b><small>' + esc(x.disciplina) + '</small>' +
-          '<div class="vtags"><span class="vtag' + (feito ? '' : ' w') + '">' + (feito ? 'concluído ✓' : 'esteira dos 8 verbos') + '</span></div>' +
+          '<div class="vtags"><span class="vtag' + (feito ? '' : ' w') + '">' + (feito ? 'concluído ✓' : 'abrir a esteira dos 8 verbos') + '</span></div>' +
         '</button></div>';
     }).join('');
   }
+
 
   function aplicarDashReal(dd){
     var hoje = new Date();
@@ -4992,6 +5332,8 @@
     $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano reforça a seguir.';
     radarDrawn = false; drawRadar(vals);
   }
+
+  marcarVelocidade();
 
   /* keyboard access for flashcard */
   $('fc') && $('fc').addEventListener('keydown', function(e){
