@@ -875,7 +875,11 @@
   <!-- ================= ONBOARDING ================= -->
   <div id="ob">
     <div class="ob-step active" id="ob1">
-      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div style="display:flex; align-items:center; gap:10px; width:100%">
+        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
+      </div>
       <div class="ob-hero">
         <h1>Envie seu edital.<br><em>O resto é com a gente.</em></h1>
         <p>A PersisteIA transforma qualquer edital em um plano diário que faz você ouvir, ler, falar, digitar, escrever, raciocinar, treinar e perguntar — até a aprovação.</p>
@@ -884,7 +888,11 @@
     </div>
 
     <div class="ob-step" id="ob2">
-      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div style="display:flex; align-items:center; gap:10px; width:100%">
+        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
+      </div>
       <div class="ob-hero">
         <p class="eyebrow">Passo 1 de 2</p>
         <h1 style="font-size:1.5rem">Envie o edital do seu concurso</h1>
@@ -901,6 +909,7 @@
             <input type="file" id="edArquivo" accept=".pdf,application/pdf,.txt,text/plain" style="display:none" onchange="lerArquivo(this)">
           </div>
           <button class="btn" style="margin-top:12px" onclick="analisarEdital()">Analisar meu edital</button>
+          <button class="lg-alt" style="margin-top:10px" id="obVoltarApp" onclick="voltarAoApp()">Já tenho um edital — voltar para os estudos</button>
           <p class="muted" style="font-size:.75rem; margin-top:8px" id="edStatus"></p>
           <div id="cargoBox" style="display:none; margin-top:16px">
             <p class="optlbl" style="margin-top:0">Este edital tem vários cargos. Qual é o seu?</p>
@@ -917,7 +926,11 @@
     </div>
 
     <div class="ob-step" id="ob3">
-      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div style="display:flex; align-items:center; gap:10px; width:100%">
+        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
+      </div>
       <div class="ob-hero">
         <p class="eyebrow">Edital mapeado</p>
         <h1><span id="edTitulo">Seu edital</span><br><span class="muted" id="edSub" style="font-size:1.1rem; font-weight:600">mapeado com sucesso</span></h1>
@@ -933,7 +946,11 @@
     </div>
 
     <div class="ob-step" id="ob4">
-      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div style="display:flex; align-items:center; gap:10px; width:100%">
+        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
+      </div>
       <div class="ob-hero">
         <p class="eyebrow">Passo 2 de 2 · seu ritmo</p>
         <div class="datecard">
@@ -1607,6 +1624,7 @@
           if(d.edital_titulo){ $('edTitulo').textContent = d.edital_titulo; }
           var dataCfg = (d.config && d.config.data_prova) || d.edital_data_prova || null;
           if(dataCfg){ PROVA_ISO = dataCfg; temData = true; if($('dtInput')) $('dtInput').value = dataCfg; }
+          if($('obVoltarApp')) $('obVoltarApp').style.display = d.tem_edital ? 'block' : 'none';
           if(d.config && d.tem_edital){ JA_CONFIG = true; enterApp(); }
           else if(d.tem_edital){ obGo(4); calcTempo(); }
           else { obGo(2); }
@@ -1634,7 +1652,11 @@
       '<button class="btn" onclick="location.reload()">Tentar de novo</button>';
   }
   function voltarAoSite(){ $('login').classList.remove('show'); mostrarSite(); }
-  function fecharSite(){ document.body.classList.remove('sitemode'); $('site').classList.remove('show'); }
+  function fecharSite(){
+    document.body.classList.remove('sitemode');
+    $('site').classList.remove('show');
+    if($('ob')) $('ob').style.display = '';   // o onboarding volta a existir
+  }
   function lgToggle(){
     lgModo = (lgModo === 'cadastro') ? 'login' : 'cadastro';
     $('lgTitle').textContent = lgModo === 'cadastro' ? 'Criar minha conta' : 'Entrar';
@@ -1718,8 +1740,12 @@
           toast(x.d.n_disciplinas + ' disciplinas e ' + x.d.n_topicos + ' tópicos salvos no seu banco');
           setTimeout(function(){ obGo(3); }, 500);
         } else {
-          $('edStatus').textContent = x.d.erro || 'Não consegui analisar — tente colar só o conteúdo programático.';
           lis.forEach(function(l){ l.classList.remove('on','done'); });
+          $('edStatus').innerHTML = '<b style="color:var(--crit)">' +
+            esc(x.d.erro || 'Não consegui analisar este edital agora.') + '</b><br>' +
+            'Seu texto continua aqui — toque em "Analisar meu edital" para tentar de novo, ' +
+            'ou cole apenas o anexo do conteúdo programático.' +
+            (x.d.detalhe ? '<br><span style="font-size:.68rem; opacity:.7">' + esc(x.d.detalhe) + '</span>' : '');
         }
       })
       .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor. Tente de novo.'; });
@@ -1876,9 +1902,22 @@
   initReal();
 
   /* ---------- onboarding ---------- */
+  // Saída de emergência: quem entrou no envio do edital sem querer volta ao app.
+  function voltarAoApp(){
+    if(!(API && TOKEN)){ mostrarSite(); return; }
+    apiFetch('/api/aluno').then(function(r){ return r.json(); }).then(function(d){
+      if(d && d.tem_edital){ enterApp(); carregarReal(); }
+      else { toast('Você ainda não tem edital cadastrado — envie o PDF ou cole o texto'); }
+    }).catch(function(){ toast('Sem conexão com o servidor'); });
+  }
+
   function obGo(n){
+    document.body.classList.remove('sitemode');
+    $('site').classList.remove('show');
+    $('ob').style.display = '';
     document.querySelectorAll('.ob-step').forEach(function(s){ s.classList.remove('active'); });
     $('ob'+n).classList.add('active');
+    window.scrollTo(0, 0);
   }
   function enterApp(){
     try { history.replaceState({ tela: 'hoje' }, '', '#hoje'); } catch(e){}

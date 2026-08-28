@@ -36,6 +36,19 @@ Regras:
   6 a 10 h = bloco muito amplo, que na prática vira várias aulas (ex.: "Direito Penal: parte geral").
   Seja honesto: NÃO padronize as horas. Tópicos curtos devem receber horas baixas e tópicos amplos, horas altas.`;
 
+const SYS_DISCIPLINAS = `Você lê editais de concurso público brasileiros e identifica as disciplinas do conteúdo programático de um cargo.
+Devolva apenas os nomes das disciplinas que têm programa para o cargo indicado (conhecimentos gerais/básicos + específicos), na ordem em que aparecem. Não invente disciplinas.`;
+
+const SCHEMA_DISCIPLINAS = {
+  type: 'object',
+  properties: {
+    titulo: { type: 'string' },
+    data_prova: { type: 'string', nullable: true },
+    disciplinas: { type: 'array', items: { type: 'string' } }
+  },
+  required: ['titulo', 'disciplinas']
+};
+
 const SCHEMA_PROGRAMA = {
   type: 'object',
   properties: {
@@ -78,6 +91,30 @@ function normalizarData(v) {
   return `${a}-${mes}-${d}`;
 }
 
+// Edital inteiro tem 120 páginas de burocracia e 6 de programa. Se der para
+// achar onde começa o programa, manda só dali para frente: mais barato, mais
+// rápido e com muito menos chance de a resposta vir truncada.
+function recorteProgramatico(texto) {
+  if (!texto || texto.length < 12000) return texto;
+  const marcas = [
+    /conte[úu]do\s+program[áa]tico/gi,
+    /programa\s+das?\s+provas?/gi,
+    /objetos?\s+de\s+avalia[çc][ãa]o/gi,
+    /anexo\s+[ivx0-9]+\s*[-–—:]?\s*(do\s+)?conte[úu]do/gi
+  ];
+  let melhor = -1;
+  for (const re of marcas) {
+    let m;
+    while ((m = re.exec(texto)) !== null) {
+      // a última ocorrência costuma ser o anexo em si, não o sumário
+      if (m.index > melhor && texto.length - m.index > 1500) melhor = m.index;
+    }
+  }
+  if (melhor < 0) return texto;
+  const corte = texto.slice(Math.max(0, melhor - 400));
+  return corte.length > 1500 ? corte : texto;
+}
+
 function partesDe(pdf, texto, instrucao, paginas) {
   if (pdf) return [{ inlineData: { mimeType: 'application/pdf', data: pdf } }, { text: instrucao }];
   // edital digitalizado: as páginas chegam como imagem, lidas no aparelho do aluno
@@ -85,6 +122,18 @@ function partesDe(pdf, texto, instrucao, paginas) {
     return paginas.map(p => ({ inlineData: { mimeType: 'image/jpeg', data: p } })).concat([{ text: instrucao }]);
   }
   return [{ text: instrucao + '\n\nTexto do edital:\n\n' + texto }];
+}
+
+// Resposta truncada devolve JSON quebrado. Tenta de novo pedindo menos.
+async function tentar(sistema, partes, schema, vezes) {
+  let erro = null;
+  for (let n = 0; n < (vezes || 2); n++) {
+    try {
+      const extra = n === 0 ? '' : '\n\nA resposta anterior veio incompleta. Seja mais enxuto e devolva o JSON inteiro, fechado.';
+      return JSON.parse(await chamarGeminiPartes(sistema + extra, partes, schema));
+    } catch (e) { erro = e; }
+  }
+  throw erro || new Error('falha');
 }
 
 module.exports = async (req, res) => {
@@ -113,17 +162,18 @@ module.exports = async (req, res) => {
     return res.status(413).json({ erro: 'Este PDF é grande demais para enviar inteiro. Envie só o anexo do conteúdo programático, ou cole o texto.' });
   }
 
+  const textoBase = recorteProgramatico(texto);
+
   try {
     let titulo = '', dataProva = null, cargos = [], banca = String(body.banca || '') || null;
 
     // Etapa 1 — descobrir os cargos (só quando o aluno ainda não escolheu)
     if (!cargoEscolhido) {
-      const bruto = await chamarGeminiPartes(
+      const info = await tentar(
         SYS_CARGOS,
-        partesDe(pdf, texto, 'Liste o órgão, a data da prova objetiva e os cargos com conteúdo programático neste edital.', paginas),
+        partesDe(pdf, textoBase, 'Liste o órgão, a data da prova objetiva e os cargos com conteúdo programático neste edital.', paginas),
         SCHEMA_CARGOS
       );
-      const info = JSON.parse(bruto);
       titulo = info.titulo || 'Meu edital';
       dataProva = normalizarData(info.data_prova);
       cargos = Array.isArray(info.cargos) ? info.cargos.filter(Boolean) : [];
@@ -140,10 +190,32 @@ module.exports = async (req, res) => {
       ? `Extraia o conteúdo programático completo do cargo "${alvo}" (conhecimentos gerais/básicos + específicos), além do título e da data da prova objetiva.`
       : 'Extraia todo o conteúdo programático deste documento, além do título e da data da prova objetiva.';
 
-    const bruto2 = await chamarGeminiPartes(SYS_PROGRAMA, partesDe(pdf, texto, instrucao, paginas), SCHEMA_PROGRAMA);
-    const dados = JSON.parse(bruto2);
-    if (!Array.isArray(dados.disciplinas) || !dados.disciplinas.length) {
+    // Passo A: só os nomes das disciplinas (resposta curta, nunca trunca).
+    const lista = await tentar(
+      SYS_DISCIPLINAS,
+      partesDe(pdf, textoBase, instrucao + ' Liste apenas os NOMES das disciplinas, na ordem do edital.', paginas),
+      SCHEMA_DISCIPLINAS
+    );
+    const nomes = (lista.disciplinas || []).map(x => String(x).trim()).filter(Boolean).slice(0, 30);
+    if (!nomes.length) {
       return res.status(422).json({ erro: 'Não encontrei conteúdo programático — envie as páginas do programa do seu cargo' });
+    }
+
+    // Passo B: os tópicos, em lotes de 3 disciplinas — cada resposta cabe folgada.
+    const dados = { titulo: lista.titulo || titulo, data_prova: lista.data_prova || null, disciplinas: [] };
+    for (let i = 0; i < nomes.length; i += 3) {
+      const lote = nomes.slice(i, i + 3);
+      const r = await tentar(
+        SYS_PROGRAMA,
+        partesDe(pdf, textoBase,
+          instrucao + ` Extraia agora SOMENTE os tópicos destas disciplinas: ${lote.join(' | ')}. Mantenha exatamente esses nomes.`,
+          paginas),
+        SCHEMA_PROGRAMA
+      );
+      (r.disciplinas || []).forEach(d => { if (d && d.nome) dados.disciplinas.push(d); });
+    }
+    if (!dados.disciplinas.length) {
+      return res.status(422).json({ erro: 'Não consegui ler os tópicos — envie só as páginas do programa do seu cargo' });
     }
 
     const tituloFinal = (titulo || dados.titulo || 'Meu edital') + (alvo ? ' — ' + alvo : '');
