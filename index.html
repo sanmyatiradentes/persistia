@@ -1072,7 +1072,8 @@
           <div class="player">
             <button class="play" id="playBtn" onclick="tocarAudio('podcast')" aria-label="Reproduzir podcast"><svg id="playIc" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
             <div class="wave" id="wave" aria-hidden="true"></div>
-            <span class="ptime num" id="ptime">gerar áudio</span>
+            <span class="ptime num" id="ptime">ouvir</span>
+            <button class="iconbtn" onclick="pararTodosOsSons()" title="Parar tudo" aria-label="Parar o áudio" style="width:30px;height:30px">■</button>
           </div>
           <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
           <p class="muted" style="font-size:.72rem; margin-top:8px">Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.</p>
@@ -1224,7 +1225,7 @@
             </div>
           </div>
           <audio id="audMus" preload="none" style="width:100%; margin:10px 0 0; display:none" controls></audio>
-          <p class="muted" style="font-size:.72rem; margin-top:8px">Cantada pela voz de estúdio. O primeiro play grava o áudio do assunto.</p>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">A letra é <b>recitada</b> pela voz de estúdio, no ritmo do estilo sugerido — ainda sem instrumental. O primeiro play grava o áudio do assunto.</p>
           <div class="lyrics" id="musLyr">
             ♪ É <b>L</b> de Legalidade, só faço o que a lei mandar<br>
             <b>I</b> de Impessoal, não é pra se promover<br>
@@ -1947,6 +1948,7 @@
   var VOLTANDO = false;
 
   function mostrarTela(scr){
+    try { pararTodosOsSons(); } catch(e){}
     if(!$('scr-'+scr)) scr = 'hoje';
     document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
     document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.scr === scr); });
@@ -2189,7 +2191,26 @@
     try { window.speechSynthesis.cancel(); } catch(e){}
     FALA.tipo = null;
     var p = $('ptime'); if(p && p.textContent === 'ouvindo') p.textContent = 'ouvir';
+    if($('btnOuvirTeoria')) $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
   }
+
+  // Nada toca sobreposto: antes de qualquer som, tudo o que estava tocando para.
+  function pararTodosOsSons(){
+    pararFala();
+    ['audPod', 'audMus'].forEach(function(id){
+      var el = $(id);
+      if(el){ try { el.pause(); el.currentTime = 0; } catch(e){} }
+    });
+    if(typeof CINE !== 'undefined'){
+      if(CINE.som){ try { CINE.som.pause(); } catch(e){} CINE.som = null; }
+      CINE.tocando = false;
+      clearTimeout(CINE.timer);
+      if($('cinePlay')) $('cinePlay').textContent = '▶ Assistir';
+    }
+    document.querySelectorAll('audio').forEach(function(a){ try { a.pause(); } catch(e){} });
+    if(SOM_AVULSO){ try { SOM_AVULSO.pause(); } catch(e){} SOM_AVULSO = null; }
+  }
+  var SOM_AVULSO = null;
 
   // Voz do próprio aparelho: usada só para ouvir a TEORIA no Leitor (custo zero).
   // Podcast e música usam sempre a voz de estúdio.
@@ -2258,7 +2279,8 @@
     var it = itemAtivo();
     if(!it){ toast('Abra um tópico primeiro'); return; }
     var el = $(tipo === 'musica' ? 'audMus' : 'audPod');
-    if(AUD[tipo]){ el.style.display = 'block'; el.play(); return; }
+    if(AUD[tipo]){ pararTodosOsSons(); el.style.display = 'block'; el.play(); return; }
+    if(GERANDO_VOZ){ toast('Já estou gerando um áudio — espere ele ficar pronto'); return; }
 
     var q = '?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
             '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1);
@@ -2272,25 +2294,49 @@
       .catch(function(){ gerarVoz(tipo, it, el); });
   }
 
+  var GERANDO_VOZ = false, VOZ_TIMER = null;
+
+  function estadoVoz(tipo, txt){
+    if(tipo === 'podcast' && $('ptime')) $('ptime').textContent = txt;
+    if(tipo === 'musica' && $('musDur')) $('musDur').textContent = txt;
+  }
+
   function gerarVoz(tipo, it, el){
-    if(tipo === 'podcast') $('ptime').textContent = 'gerando…';
-    toast(tipo === 'musica' ? 'Gravando a música com a voz da IA…' : 'Gravando o podcast com as vozes da IA…');
+    GERANDO_VOZ = true;
+    pararTodosOsSons();
+    estadoVoz(tipo, 'gerando…');
+    toast(tipo === 'musica'
+      ? 'Gravando a música com a voz da IA — leva até 2 minutos, só na primeira vez'
+      : 'Gravando o podcast com as vozes da IA — leva até 2 minutos, só na primeira vez');
+
+    // se passar de 3 minutos, avisa em vez de ficar rodando para sempre
+    clearTimeout(VOZ_TIMER);
+    VOZ_TIMER = setTimeout(function(){
+      if(!GERANDO_VOZ) return;
+      GERANDO_VOZ = false;
+      estadoVoz(tipo, 'ouvir');
+      toast('A gravação está demorando demais. Tente de novo em instantes.');
+    }, 180000);
+
     apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
+        GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
         if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64, el); }
         else {
-          if(tipo === 'podcast') $('ptime').textContent = 'falhou';
+          estadoVoz(tipo, 'ouvir');
           toast(x.d.erro || 'Não consegui gerar a voz agora — tente de novo em instantes');
         }
       })
       .catch(function(){
-        if(tipo === 'podcast') $('ptime').textContent = 'falhou';
+        GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
+        estadoVoz(tipo, 'ouvir');
         toast('Sem conexão para gerar a voz');
       });
   }
 
   function aplicarAudio(tipo, b64, el){
+    pararTodosOsSons();
     AUD[tipo] = 'data:audio/wav;base64,' + b64;
     el = el || $(tipo === 'musica' ? 'audMus' : 'audPod');
     el.src = AUD[tipo]; el.style.display = 'block';
@@ -2615,12 +2661,12 @@
     empilhar({ tela: telaAtual(), cine: true }, '#video');
     pintarSlide(CINE.slides[0]);
     $('cineRec').style.display = (window.MediaRecorder && $('cineCv').captureStream) ? '' : 'none';
-    $('cineMsg').textContent = AUD.podcast
-      ? 'Os slides passam com o podcast do assunto como trilha.'
-      : 'Toque o podcast uma vez no cartão Ouvir e ele entra como trilha do vídeo.';
+    $('cineMsg').textContent = 'A narração é a voz do seu aparelho, feita para estes slides. ' +
+      'O vídeo salvo sai sem som (o aparelho não deixa gravar a própria voz) — serve para revisar lendo.';
   }
   function fecharCine(){
     cineParar();
+    pararTodosOsSons();
     $('cine').classList.remove('show');
     if(!VOLTANDO && (history.state || {}).cine){ try { history.back(); } catch(e){} }
   }
@@ -2635,11 +2681,9 @@
 
   function cinePlay(){
     if(CINE.tocando){ cineParar(); return; }
+    pararTodosOsSons();
     CINE.tocando = true; CINE.i = 0;
     $('cinePlay').textContent = '⏸ Parar';
-    if(AUD.podcast && !CINE.rec){
-      try { CINE.som = new Audio(AUD.podcast); CINE.som.play().catch(function(){}); } catch(e){}
-    }
     proximoSlide();
   }
   function proximoSlide(){
@@ -2653,7 +2697,21 @@
     var sl = CINE.slides[CINE.i++];
     pintarSlide(sl);
     var dur = Math.max(2600, Math.min(9000, String(sl.fala || '').length * 62));
-    CINE.timer = setTimeout(proximoSlide, dur);
+    // A narração do vídeo é a voz do aparelho, escrita para os slides — nada a
+    // ver com o podcast, que é uma conversa e ficava fora de sincronia.
+    var narrou = false;
+    try {
+      if(window.speechSynthesis && sl.fala && !CINE.semVoz){
+        var u = new SpeechSynthesisUtterance(sl.fala);
+        u.lang = 'pt-BR'; u.rate = 1.03;
+        var vs = vozesPt(); if(vs[0]) u.voice = vs[0];
+        u.onend = function(){ if(CINE.tocando) proximoSlide(); };
+        u.onerror = function(){ if(CINE.tocando) CINE.timer = setTimeout(proximoSlide, 800); };
+        window.speechSynthesis.speak(u);
+        narrou = true;
+      }
+    } catch(e){}
+    if(!narrou){ CINE.timer = setTimeout(proximoSlide, dur); }
   }
 
   // Gravação: o canvas vira vídeo; se houver voz de estúdio, ela entra como trilha.
@@ -2662,17 +2720,6 @@
     if(!(window.MediaRecorder && cv.captureStream)){ toast('Este navegador não grava vídeo'); return; }
     cineParar();
     var stream = cv.captureStream(30);
-    var audioEl = null;
-    if(AUD.podcast){
-      try {
-        audioEl = new Audio(AUD.podcast);
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
-        var src = ctx.createMediaElementSource(audioEl);
-        var dest = ctx.createMediaStreamDestination();
-        src.connect(dest); src.connect(ctx.destination);
-        dest.stream.getAudioTracks().forEach(function(t){ stream.addTrack(t); });
-      } catch(e){ audioEl = null; }
-    }
     var tipos = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
     var mime = tipos.filter(function(t){ try { return MediaRecorder.isTypeSupported(t); } catch(e){ return false; } })[0];
     CINE.pedacos = [];
@@ -2687,15 +2734,15 @@
       a.download = 'persisteia-' + norm(d.topico).replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.' + ext;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function(){ URL.revokeObjectURL(a.href); }, 6000);
-      CINE.rec = null;
+      CINE.rec = null; CINE.semVoz = false;
       $('cineRec').textContent = '● Gravar vídeo';
       $('cineMsg').textContent = 'Vídeo salvo no seu aparelho ✓';
       evento('video_assunto', 'ouvir', { formato: ext, gravado: true }, 'concluido');
     };
+    CINE.semVoz = true;
     CINE.rec.start();
     $('cineRec').textContent = '■ Gravando…';
     $('cineMsg').textContent = 'Gravando — deixe a tela aberta até o fim.';
-    if(audioEl){ audioEl.play().catch(function(){}); }
     CINE.tocando = true; CINE.i = 0; $('cinePlay').textContent = '⏸ Parar';
     proximoSlide();
   }
@@ -2841,6 +2888,7 @@
 
   var VISOR = null, BIB_ITEM = null;
   function fecharVisor(){
+    pararTodosOsSons();
     $('visor').classList.remove('show');
     if(!VOLTANDO && (history.state || {}).visor){ try { history.back(); } catch(e){} }
   }

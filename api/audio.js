@@ -31,6 +31,27 @@ function pcmParaWav(pcmBase64, taxa) {
   return Buffer.concat([cab, pcm]).toString('base64');
 }
 
+// Quebra o roteiro em pedaços que cabem numa chamada, sem cortar fala no meio.
+function pedacos(texto, max) {
+  const linhas = String(texto).split(/\n+/);
+  const saida = [];
+  let atual = '';
+  for (const l of linhas) {
+    if ((atual + '\n' + l).length > max && atual) { saida.push(atual); atual = l; }
+    else { atual = atual ? atual + '\n' + l : l; }
+  }
+  if (atual) saida.push(atual);
+  return saida;
+}
+
+// Junta vários WAV de mesma taxa num só (concatena o PCM e refaz o cabeçalho).
+function juntarWav(lista) {
+  const pcms = lista.map(b64 => Buffer.from(b64, 'base64').slice(44));
+  const taxa = lista.length ? Buffer.from(lista[0], 'base64').readUInt32LE(24) : 24000;
+  const pcm = Buffer.concat(pcms);
+  return pcmParaWav(pcm.toString('base64'), taxa);
+}
+
 async function falar(texto, doisLocutores) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY não configurada');
@@ -131,7 +152,7 @@ module.exports = async (req, res) => {
     let texto, dois;
     if (kind === 'podcast') {
       dois = true;
-      const roteiro = String(pacote.podcast || '').slice(0, 3500)
+      const roteiro = String(pacote.podcast || '').slice(0, 9000)
         .replace(/L[ÉE]O/g, 'LEO')
         .replace(/^\s*[-–]\s*/gm, '');
       texto = 'Leia este roteiro de podcast de estudos em português do Brasil, com naturalidade e ritmo de conversa:\n\n' + roteiro;
@@ -143,7 +164,13 @@ module.exports = async (req, res) => {
               estilo + ', marcando bem o refrão:\n\n' + letra;
     }
 
-    const wav = await falar(texto, dois);
+    // roteiro grande vira 2 ou 3 chamadas e volta como um áudio só
+    const blocos = pedacos(texto, 2600).slice(0, 4);
+    const wavs = [];
+    for (const bloco of blocos) {
+      wavs.push(await falar(bloco, dois));
+    }
+    const wav = wavs.length > 1 ? juntarWav(wavs) : wavs[0];
 
     // cache best-effort (áudio grande pode não caber numa linha)
     try {
