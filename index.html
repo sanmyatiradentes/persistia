@@ -3,9 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="PersisteIA — envie seu edital; o resto é com a gente. Demonstração navegável do sistema de estudos para concursos.">
+<meta name="description" content="PersisteIA — envie seu edital; o resto e com a gente. Cronograma proporcional e conteudo de estudo nos 8 verbos, para concursos publicos.">
 <meta name="theme-color" content="#0E8F6E">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+<meta property="og:title" content="PersisteIA — Aprovacao nao e sorte. E metodo.">
+<meta property="og:description" content="Envie o edital do seu concurso e receba cronograma proporcional e material de estudo em 8 formatos. 7 dias gratis, sem cartao.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://persisteia.com.br">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2226%22 fill=%22%230E8F6E%22/><path d=%22M34 78V25h19a16 16 0 0 1 0 32H34%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-width=%2212%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M58 74l10-11 10 11%22 fill=%22none%22 stroke=%22%23FFC960%22 stroke-width=%229%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="apple-touch-icon" href="icone-180.png">
 </head>
 <body>
 <title>PersisteIA</title>
@@ -84,8 +89,14 @@
   .ob-step{display:none; flex:1; flex-direction:column; padding:28px 24px 32px; min-height:100dvh}
   @media(min-width:520px){.ob-step{min-height:calc(100dvh - 48px)}}
   .ob-step.active{display:flex}
-  .brand{font-weight:800; font-size:1.35rem; letter-spacing:-.02em}
+  .brand{font-weight:800; font-size:1.35rem; letter-spacing:-.02em; display:flex; align-items:center; gap:.42em}
   .brand .ia{color:var(--accent)}
+  .mk{width:1.5em; height:1.5em; flex:none; display:block}
+  .mk .bgm{fill:var(--accent)}
+  .mk .pm{stroke:var(--on-accent)}
+  .mk .cm{stroke:#FFC960}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .mk .cm{stroke:#08130E; opacity:.55} }
+  :root[data-theme="dark"] .mk .cm{stroke:#08130E; opacity:.55}
   .ob-hero{flex:1; display:flex; flex-direction:column; justify-content:center; gap:18px}
   .ob-hero h1{font-size:2rem; line-height:1.12; font-weight:800; letter-spacing:-.025em; text-wrap:balance}
   .ob-hero h1 em{font-style:normal; color:var(--accent)}
@@ -685,7 +696,64 @@
   .st-pessoa .cargo{color:var(--accent); font-size:.8rem; font-weight:700; margin-bottom:8px; display:block}
   .st-pessoa p{font-size:.85rem; color:var(--muted); line-height:1.55}
   .st-rod{text-align:center; padding:28px 20px; color:var(--muted); font-size:.78rem; border-top:1px solid var(--line); margin-top:20px}
+  .st-rod b{color:var(--ink)}
+  .st-rod a{color:var(--accent); text-decoration:none; font-weight:600}
   @media(min-width:900px){ .st-hero h1{font-size:2.8rem} .st-hero{padding-top:64px} }
+
+  /* ---- blocos ricos da apresentação ---- */
+  .st-trust{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:18px}
+  .st-trust span{font-size:.75rem; color:var(--muted); background:var(--card); border:1px solid var(--line);
+                 border-radius:999px; padding:5px 11px; font-weight:600}
+  .st-faixa{background:var(--accent-soft); padding:30px 20px; margin-top:6px}
+  .st-quote{max-width:720px; margin:0 auto; text-align:center}
+  .st-quote p{font-family:"Bricolage Grotesque",sans-serif; font-size:1.12rem; line-height:1.5; letter-spacing:-.01em; color:var(--ink)}
+  .st-quote p em{font-style:normal; color:var(--accent)}
+  .st-quote .aut{display:block; margin-top:12px; font-size:.78rem; color:var(--muted); font-weight:700; letter-spacing:.04em; text-transform:uppercase}
+  .st-fonte{display:block; margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
+            font-size:.72rem; color:var(--muted); font-style:italic; line-height:1.45}
+  .st-card.warn{border-color:var(--warm); background:var(--warm-soft)}
+  .st-fase{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:var(--shadow); margin-bottom:14px}
+  .st-fase .tag{display:inline-block; background:var(--accent); color:var(--on-accent); border-radius:999px;
+                padding:4px 12px; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px}
+  .st-fase h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.12rem; letter-spacing:-.02em; margin-bottom:8px}
+  .st-fase p{font-size:.88rem; color:var(--muted); line-height:1.6}
+  .st-fase ul{list-style:none; margin-top:12px; display:grid; gap:9px}
+  .st-fase li{font-size:.86rem; line-height:1.5; display:flex; gap:9px; align-items:flex-start}
+  .st-fase li:before{content:"▸"; color:var(--accent); font-weight:800; flex:none}
+  .st-fase li b{font-weight:700}
+  .st-passos{display:grid; gap:12px; counter-reset:pp}
+  .st-passo{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 18px;
+            display:flex; gap:14px; align-items:flex-start; box-shadow:var(--shadow)}
+  .st-passo:before{counter-increment:pp; content:counter(pp); flex:none; width:32px; height:32px; border-radius:50%;
+                   background:var(--accent); color:var(--on-accent); display:flex; align-items:center; justify-content:center;
+                   font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:.95rem}
+  .st-passo b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:.98rem; margin-bottom:3px}
+  .st-passo p{font-size:.85rem; color:var(--muted); line-height:1.5}
+  .st-eixo{background:var(--card2); border:1px solid var(--line); border-radius:16px; padding:18px}
+  .st-eixo b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:.98rem; margin-bottom:8px; color:var(--accent)}
+  .st-eixo ul{list-style:none; display:grid; gap:7px}
+  .st-eixo li{font-size:.82rem; color:var(--muted); line-height:1.45; display:flex; gap:7px; align-items:flex-start}
+  .st-eixo li:before{content:"·"; color:var(--accent); font-weight:800; flex:none}
+  .st-chip{display:inline-block; background:var(--accent-soft); color:var(--accent); border-radius:8px;
+           padding:4px 10px; font-size:.72rem; font-weight:700; margin:0 5px 6px 0}
+  .st-pessoa{text-align:left}
+  .st-pessoa .st-foto,.st-pessoa .st-ini{margin-left:auto; margin-right:auto}
+  .st-pessoa b,.st-pessoa .cargo{text-align:center}
+  .st-pessoa .cargo{text-align:center}
+  .st-pessoa .nome{text-align:center; display:block}
+  .st-cred{list-style:none; margin:12px 0 0; display:grid; gap:7px}
+  .st-cred li{font-size:.8rem; color:var(--muted); line-height:1.45; display:flex; gap:8px; align-items:flex-start}
+  .st-cred li:before{content:"✦"; color:var(--accent); flex:none}
+  .st-frase{margin-top:14px; padding:12px 14px; background:var(--accent-soft); border-radius:12px;
+            font-size:.83rem; line-height:1.5; color:var(--ink); font-style:italic}
+  .st-lgpd{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:var(--shadow)}
+  .st-lgpd p{font-size:.86rem; color:var(--muted); line-height:1.6; margin-bottom:10px}
+  .st-lgpd p:last-child{margin-bottom:0}
+  .st-lgpd a{color:var(--accent); font-weight:600}
+  .st-final{background:var(--accent); color:var(--on-accent); padding:44px 20px; text-align:center; margin-top:10px}
+  .st-final h2{font-family:"Bricolage Grotesque",sans-serif; font-size:1.6rem; letter-spacing:-.02em; margin-bottom:8px}
+  .st-final p{font-size:.92rem; opacity:.9; max-width:520px; margin:0 auto 20px}
+  .st-final .btn{background:var(--card); color:var(--accent)}
 
   /* ===== faixa de teste e paywall ===== */
   .trial{display:none; align-items:center; gap:10px; background:var(--warm-soft); color:var(--warm); border:1px solid var(--warm);
@@ -760,7 +828,7 @@
   <!-- ================= SITE (quem somos / apresentação) ================= -->
   <div id="site">
     <div class="st-nav">
-      <div class="brand">Persiste<span class="ia">IA</span></div>
+      <div class="brand"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
       <div class="sp"></div>
       <button class="lg-alt" style="margin:0" onclick="abrirConta('login')">Entrar</button>
       <button class="btn small" onclick="abrirConta('cadastro')">Testar grátis</button>
@@ -768,28 +836,79 @@
 
     <div class="st-hero">
       <p class="eyebrow">7 dias grátis · sem cartão</p>
-      <h1>Envie seu edital.<br><em>O resto é com a gente.</em></h1>
-      <p class="lead">A PersisteIA lê o edital do seu concurso, mede o tamanho real de cada assunto e devolve um plano diário em que você ouve, lê, fala, digita, escreve, raciocina, treina e pergunta — os oito verbos que fazem o conteúdo grudar.</p>
+      <h1>Aprovação não é sorte.<br><em>É método.</em></h1>
+      <p class="lead">A PersisteIA lê o edital do seu concurso, mede o tamanho real de cada assunto e devolve um plano diário em que você ouve, lê, fala, digita, escreve, raciocina, treina e pergunta — os oito verbos que fazem o conteúdo grudar. Você não precisa montar cronograma, caçar material nem decidir por onde começar: envie o edital e comece a estudar hoje.</p>
       <div class="st-cta">
         <button class="btn" onclick="abrirConta('cadastro')">Começar meus 7 dias grátis</button>
         <button class="btn ghost" onclick="document.getElementById('stComo').scrollIntoView({behavior:'smooth'})">Ver como funciona</button>
       </div>
+      <div class="st-trust">
+        <span>Cronograma proporcional ao edital</span>
+        <span>Conteúdo gerado por IA, revisado por método</span>
+        <span>Cancele quando quiser</span>
+      </div>
+    </div>
+
+    <div class="st-faixa">
+      <div class="st-quote">
+        <p>“Ninguém é aprovado porque estudou <em>mais</em>. É aprovado porque estudou <em>do jeito que o cérebro aprende</em> — e sustentou isso todo dia.”</p>
+        <span class="aut">Manifesto PersisteIA</span>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>O problema real</h2>
+      <p class="sub">Por que candidatos capacitados, dedicados e inteligentes continuam reprovando?</p>
+      <div class="st-grid">
+        <div class="st-card"><b>Estuda tudo com o mesmo peso</b><p>O edital não é democrático. Uma minoria dos tópicos responde pela maioria das questões — mas sem esse mapa o candidato gasta o mesmo tempo no que cai sempre e no que quase nunca cai.<span class="st-fonte">Princípio de Pareto aplicado a editais: poucos temas concentram a maior parte da pontuação.</span></p></div>
+        <div class="st-card"><b>Ignora a impressão digital da banca</b><p>Cada banca tem manias: o tipo de pegadinha, o recorte que prefere, o jeito de escrever a assertiva. Quem estuda só a teoria chega à prova sem reconhecer o padrão da casa.<span class="st-fonte">Engenharia reversa de provas anteriores: o histórico da banca prevê o formato da próxima prova.</span></p></div>
+        <div class="st-card warn"><b>Confunde reconhecer com saber</b><p>Reler o resumo dá a sensação boa de domínio — e é justamente essa sensação que engana. Você reconhece o texto; não consegue produzi-lo na hora da prova.<span class="st-fonte">Efeito de Fluência (illusion of competence): familiaridade com o material é confundida com aprendizado real.</span></p></div>
+        <div class="st-card"><b>Esquece no ritmo natural</b><p>Sem revisão programada, boa parte do que se estuda hoje evapora em poucos dias. O candidato refaz o mesmo caminho várias vezes e chama isso de revisar.<span class="st-fonte">Curva do Esquecimento — Hermann Ebbinghaus, 1885.</span></p></div>
+        <div class="st-card"><b>Usa um canal só</b><p>Só ler é usar um décimo da capacidade de memória. Ouvir, falar, escrever à mão e visualizar criam rotas diferentes para o mesmo conteúdo — e cada rota é uma chance a mais de lembrar.<span class="st-fonte">Teoria da Codificação Dupla — Allan Paivio: memória verbal e visual somam-se.</span></p></div>
+        <div class="st-card"><b>Perde a motivação no meio</b><p>Cronograma que não se adapta vira dívida. Duas semanas atrasado, o candidato desiste do plano — e, pouco depois, do concurso.<span class="st-fonte">Teoria da Autodeterminação — Deci &amp; Ryan: autonomia, competência e progresso visível sustentam a motivação.</span></p></div>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>A metodologia</h2>
+      <p class="sub">Duas fases: primeiro o mapa, depois a esteira. Nada de improviso.</p>
+      <div class="st-fase">
+        <span class="tag">Fase 1 · Diagnóstico</span>
+        <h3>Cronograma e Raio-X do edital</h3>
+        <p>Você envia o PDF do edital. O sistema separa disciplinas e tópicos, estima o peso real de cada assunto e distribui o conteúdo pelos dias e horas que você tem até a prova — sem planilha, sem chute e sem aquele domingo inteiro montando plano de estudo.</p>
+        <ul>
+          <li><b>Peso por tópico:</b> assunto grande ocupa mais dias; assunto pequeno se junta a outros para fechar a sessão.</li>
+          <li><b>Ajuste automático:</b> atrasou, o plano se reorganiza; adiantou, é só abrir o próximo.</li>
+          <li><b>Painel de progresso:</b> por disciplina, por tema e por verbo, para você ver onde está a lacuna.</li>
+        </ul>
+      </div>
+      <div class="st-fase">
+        <span class="tag">Fase 2 · Execução</span>
+        <h3>A Esteira de Aprendizado Ativo</h3>
+        <p>Cada assunto do cronograma passa por oito formas diferentes de usar o mesmo conteúdo. É a repetição com variação — o cérebro guarda o que ele precisou processar de vários jeitos, não o que ele apenas leu.</p>
+        <ul>
+          <li><b>Cinema Mental:</b> a teoria contada em cena, com imagem e analogia, para o conteúdo abstrato virar memória visual.</li>
+          <li><b>Oratória Acadêmica:</b> você lê em voz alta com teleprompter, que acompanha sua fala e destaca as palavras-chave.</li>
+          <li><b>Escrita Cinestésica:</b> digitar e escrever à mão o que acabou de estudar — produzir o conteúdo, não reconhecê-lo.</li>
+          <li><b>Simulado com engenharia reversa:</b> questões no estilo da sua banca, com comentário item a item.</li>
+        </ul>
+      </div>
     </div>
 
     <div class="st-sec" id="stComo">
-      <h2>A Esteira de Aprendizado Ativo</h2>
-      <p class="sub">Ler e reler é o jeito mais lento de aprender. Cada assunto do seu edital passa por oito formas diferentes de usar o mesmo conteúdo — e é isso que transforma leitura em memória.</p>
+      <h2>Os oito verbos</h2>
+      <p class="sub">Ler e reler é o jeito mais lento de aprender. Cada tópico do seu edital vira oito experiências diferentes com o mesmo conteúdo.</p>
       <div style="text-align:center; margin-bottom:20px">
         <span class="st-verb">Ouvir</span><span class="st-verb">Ler</span><span class="st-verb">Falar</span><span class="st-verb">Digitar</span>
         <span class="st-verb">Escrever</span><span class="st-verb">Raciocinar</span><span class="st-verb">Treinar</span><span class="st-verb">Perguntar</span>
       </div>
       <div class="st-grid">
         <div class="st-card"><b>Leitor sem distração</b><p>A teoria completa em tela limpa, com marca-texto. Na leitura em voz alta, o teleprompter acompanha sua fala e destaca as palavras-chave enquanto você lê.</p></div>
-        <div class="st-card"><b>Podcast e música do assunto</b><p>Um diálogo de estudo com pausas de recuperação e uma letra mnemônica para o trajeto, o treino, a fila do banco.</p></div>
-        <div class="st-card"><b>Questões no estilo da sua banca</b><p>Certo/Errado ou múltipla escolha, com comentário em cada item. Você troca o formato quando quiser.</p></div>
-        <div class="st-card"><b>Flashcards que voltam na hora certa</b><p>Repetição espaçada: o que você erra volta amanhã, o que você acerta volta daqui a um mês.</p></div>
-        <div class="st-card"><b>Mapa mental automático</b><p>Cada assunto vira um mapa visual do conceito central e seus ramos — memória visual trabalhando junto com a verbal.</p></div>
-        <div class="st-card"><b>Persi, o tira-dúvidas</b><p>Dúvida no meio do estudo? Pergunte ali mesmo, com a fonte citada, sem sair do assunto e sem perder o ritmo.</p></div>
+        <div class="st-card"><b>Podcast e música do assunto</b><p>Um diálogo de estudo com pausas de recuperação e uma letra mnemônica para o trajeto, o treino, a fila do banco. O tempo morto do seu dia vira revisão.</p></div>
+        <div class="st-card"><b>Questões no estilo da sua banca</b><p>Certo/Errado ou múltipla escolha, com comentário em cada item explicando por que a alternativa está certa ou errada. Você troca o formato quando quiser.</p></div>
+        <div class="st-card"><b>Flashcards que voltam na hora certa</b><p>Repetição espaçada: o que você erra volta amanhã, o que você acerta volta daqui a um mês. A revisão deixa de ser uma decisão sua.</p></div>
+        <div class="st-card"><b>Mapa mental automático</b><p>Cada assunto vira um mapa visual do conceito central e seus ramos — memória visual trabalhando junto com a verbal, sem você gastar uma hora desenhando.</p></div>
+        <div class="st-card"><b>Persi, o tira-dúvidas</b><p>Dúvida no meio do estudo? Pergunte ali mesmo, com a fonte citada, sem sair do assunto, sem abrir dez abas e sem perder o ritmo.</p></div>
       </div>
     </div>
 
@@ -797,15 +916,63 @@
       <h2>Proporcional ao seu edital, não a um modelo pronto</h2>
       <p class="sub">Na leitura do edital, cada tópico recebe o tempo de estudo que ele realmente exige.</p>
       <div class="st-grid">
-        <div class="st-card"><b>Assunto curto, sessão curta</b><p>"Conceito de ato administrativo" não ocupa o mesmo dia que "Licitações: modalidades e procedimento". Tópicos pequenos se juntam até fechar as suas horas.</p></div>
-        <div class="st-card"><b>Assunto grande, várias partes</b><p>O que não cabe num dia vira parte 1, 2 e 3 em dias diferentes — com o conteúdo de cada parte escrito para continuar o anterior.</p></div>
-        <div class="st-card"><b>Plano que se replaneja</b><p>Atrasou? O cronograma se reorganiza. Adiantou? É só abrir o próximo. Nenhuma planilha, nenhuma decisão difícil.</p></div>
+        <div class="st-card"><b>Assunto curto, sessão curta</b><p>“Conceito de ato administrativo” não ocupa o mesmo dia que “Licitações: modalidades e procedimento”. Tópicos pequenos se juntam até fechar as suas horas.</p></div>
+        <div class="st-card"><b>Assunto grande, várias partes</b><p>O que não cabe num dia vira parte 1, 2 e 3 em dias diferentes — com o conteúdo de cada parte escrito para continuar o anterior, sem repetir e sem deixar buraco.</p></div>
+        <div class="st-card"><b>Plano que se replaneja</b><p>Atrasou? O cronograma se reorganiza. Adiantou? É só abrir o próximo. Nenhuma planilha, nenhuma decisão difícil, nenhuma culpa.</p></div>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>Como funciona na prática</h2>
+      <p class="sub">Do PDF do edital ao primeiro dia de estudo em poucos minutos.</p>
+      <div class="st-passos">
+        <div class="st-passo"><div><b>Envie o edital</b><p>O PDF que você baixou do site da banca. O sistema extrai o conteúdo programático e reconhece disciplinas e tópicos.</p></div></div>
+        <div class="st-passo"><div><b>Diga seu tempo</b><p>Quantas horas por dia, quais dias da semana e quando é a prova. É a única configuração que você precisa fazer.</p></div></div>
+        <div class="st-passo"><div><b>Receba o cronograma</b><p>O plano diário aparece pronto, com cada tópico dimensionado pelo peso real e distribuído até a data da prova.</p></div></div>
+        <div class="st-passo"><div><b>Estude na esteira</b><p>Abra o dia de hoje e siga os oito verbos. O conteúdo é gerado para aquele tópico, no seu nível, com a cara da sua banca.</p></div></div>
+      </div>
+    </div>
+
+    <div class="st-sec">
+      <h2>Fundamentos científicos</h2>
+      <p class="sub">Cada recurso do sistema existe porque há evidência de que ele funciona — não porque ficou bonito na tela.</p>
+      <div class="st-grid">
+        <div class="st-eixo"><b>Memorização e retenção</b><ul>
+          <li>Curva do Esquecimento (Ebbinghaus) aplicada ao calendário de revisões</li>
+          <li>Repetição espaçada: o intervalo cresce conforme você acerta</li>
+          <li>Prática de recuperação: lembrar sem olhar fixa mais do que reler</li>
+          <li>Codificação dupla (Paivio): palavra e imagem no mesmo tópico</li>
+        </ul></div>
+        <div class="st-eixo"><b>Aprendizado ativo</b><ul>
+          <li>Efeito de produção: falar e escrever grava mais do que ler</li>
+          <li>Efeito Feynman: explicar com suas palavras expõe o que você não sabe</li>
+          <li>Interleaving: alternar temas melhora a discriminação entre conceitos</li>
+          <li>Escrita à mão como âncora motora da memória</li>
+        </ul></div>
+        <div class="st-eixo"><b>Neurociência do estudo</b><ul>
+          <li>Sessões dimensionadas ao limite real de atenção sustentada</li>
+          <li>Multissensorialidade: áudio, texto, voz, imagem e escrita</li>
+          <li>Carga cognitiva controlada: um tópico por vez, sem excesso de decisão</li>
+          <li>Progresso visível como combustível de motivação (Deci &amp; Ryan)</li>
+        </ul></div>
+        <div class="st-eixo"><b>Estratégia de prova</b><ul>
+          <li>Engenharia reversa do estilo da banca a partir do histórico</li>
+          <li>Pareto do edital: prioridade para o que concentra pontuação</li>
+          <li>Simulados no formato real, com comentário por assertiva</li>
+          <li>Diagnóstico por disciplina, tema e verbo para corrigir a rota</li>
+        </ul></div>
+      </div>
+      <div style="text-align:center; margin-top:22px">
+        <span class="st-chip">Cronograma proporcional</span><span class="st-chip">Raio-X do edital</span><span class="st-chip">Teoria completa</span>
+        <span class="st-chip">Podcast de estudo</span><span class="st-chip">Música mnemônica</span><span class="st-chip">Mapa mental</span>
+        <span class="st-chip">Flashcards espaçados</span><span class="st-chip">Simulados da banca</span><span class="st-chip">Teleprompter de leitura</span>
+        <span class="st-chip">Ditado e escrita</span><span class="st-chip">Tira-dúvidas com fonte</span><span class="st-chip">Painel de desempenho</span>
       </div>
     </div>
 
     <div class="st-sec">
       <h2>Quanto custa</h2>
-      <p class="sub">Sem fidelidade, sem multa, cancela quando quiser.</p>
+      <p class="sub">Menos que uma apostila por mês. Sem fidelidade, sem multa, cancela quando quiser.</p>
       <div class="st-preco">
         <p class="eyebrow" style="margin-bottom:4px">Assinatura mensal</p>
         <div class="val">R$ 59,90<small> /mês</small></div>
@@ -814,6 +981,7 @@
           <li>Edital inteiro mapeado e cronometrado</li>
           <li>Os 8 verbos em todos os assuntos</li>
           <li>Podcast, música, mapa mental e flashcards</li>
+          <li>Simulados no estilo da sua banca</li>
           <li>Persi tira-dúvidas ilimitado</li>
           <li>Dashboard por disciplina, tema e verbo</li>
         </ul>
@@ -830,33 +998,60 @@
           <img class="st-foto" src="foto-sanmya.jpg" alt="Sanmya Beatriz Tiradentes Leite"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="st-ini">SL</div>
-          <b>Sanmya Beatriz Tiradentes Leite</b>
-          <span class="cargo">cofundadora</span>
-          <p>Apaixonada por desburocratizar o serviço público. Une gestão enxuta, tecnologia e neurociência aplicada à aprendizagem — a base do método por trás da Esteira dos 8 verbos.</p>
+          <b class="nome">Sanmya Beatriz Tiradentes Leite</b>
+          <span class="cargo">idealizadora e cofundadora</span>
+          <p>Perita Odontolegista da Polícia Civil do Amazonas e dirigente da Polícia Científica do Estado. Capitão-Dentista do Corpo de Bombeiros Militar do Amazonas e, antes disso, odontóloga efetiva da SUFRAMA — mais de quinze anos de serviço público construídos, cada um deles, por aprovação em concurso. Apaixonada por desburocratizar o Estado, une gestão enxuta, tecnologia e neurociência aplicada à aprendizagem: é dela o método por trás da Esteira dos oito verbos.</p>
+          <ul class="st-cred">
+            <li>Especialização em Odontologia Legal — FOP/Unicamp</li>
+            <li>Master Black Belt em Lean Six Sigma</li>
+            <li>MBA em Metodologias Ágeis</li>
+            <li>Especialização em Inteligência e Inovação Aplicadas ao Enfrentamento ao Crime Organizado — UFSC</li>
+            <li>Formação em liderança pública — RenovaBR</li>
+          </ul>
+          <div class="st-frase">“A aprovação em concurso público não é um destino — é o resultado natural de quem transformou o método em identidade.”</div>
         </div>
         <div class="st-pessoa">
           <img class="st-foto" src="foto-jane.jpg" alt="Jane De Maria Alves Sousa"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="st-ini">JS</div>
-          <b>Jane De Maria Alves Sousa</b>
+          <b class="nome">Jane De Maria Alves Sousa</b>
           <span class="cargo">cofundadora</span>
-          <p>Cuida para que cada detalhe do sistema respeite o tempo de quem estuda: menos cliques, menos burocracia, mais estudo de verdade.</p>
+          <p>Bacharel em Serviço Social e servidora do Departamento de Polícia Técnico-Científica do Amazonas, onde atua na elaboração e execução de planos e programas institucionais com interface em Criminalística e Medicina Legal. Traz para a PersisteIA o olhar de quem organiza processos complexos para pessoas reais: cuida para que cada detalhe do sistema respeite o tempo de quem estuda — menos cliques, menos burocracia, mais estudo de verdade.</p>
+          <ul class="st-cred">
+            <li>Bacharelado em Serviço Social — UNINORTE Laureate (2019)</li>
+            <li>Pós-graduação em Saúde e Segurança do Trabalho — UEA</li>
+            <li>Planejamento institucional no DPTC/AM</li>
+          </ul>
+          <div class="st-frase">“Persistir é uma escolha diária. E toda escolha sustentada pelo método certo gera frutos — a aprovação é apenas o começo.”</div>
         </div>
       </div>
     </div>
 
-    <div class="st-sec" style="text-align:center">
+    <div class="st-sec">
+      <h2>Privacidade e seus dados</h2>
+      <p class="sub">Transparência total sobre o que guardamos e por quê.</p>
+      <div class="st-lgpd">
+        <p>A PersisteIA trata seus dados pessoais em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018). Coletamos apenas o necessário para o serviço funcionar: seu nome e e-mail para manter a conta, o edital que você envia para gerar o cronograma e o registro do seu progresso de estudo para calcular revisões e desempenho.</p>
+        <p>Seus dados não são vendidos, alugados nem compartilhados com terceiros para fins publicitários. O conteúdo do seu edital é usado exclusivamente para produzir o seu plano e o seu material de estudo. Você pode, a qualquer momento, solicitar acesso, correção ou exclusão dos seus dados — inclusive o encerramento definitivo da conta.</p>
+        <p>Dúvidas, pedidos ou exercício de direitos: <a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a>.</p>
+      </div>
+    </div>
+
+    <div class="st-final">
       <h2>Persistir é o método</h2>
-      <p class="sub">O nome não é enfeite: aprovação é o que sobra de quem manteve a constância — e o sistema existe para tornar a constância fácil.</p>
+      <p>O nome não é enfeite: aprovação é o que sobra de quem manteve a constância — e o sistema existe para tornar a constância fácil.</p>
       <button class="btn" onclick="abrirConta('cadastro')">Enviar meu edital agora</button>
     </div>
 
-    <div class="st-rod">PersisteIA · persisteia.com.br · feito no Amazonas para concurseiros do Brasil inteiro</div>
+    <div class="st-rod">
+      <p style="margin-bottom:6px">Criada com <b>propósito</b> e com <b>determinação</b> por <b>Sanmya Tiradentes</b> &amp; <b>Jane De Maria</b> 🎯</p>
+      <p><a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a> · persisteia.com.br · feito no Amazonas para concurseiros do Brasil inteiro</p>
+    </div>
   </div>
 
   <!-- ================= PAYWALL ================= -->
   <div id="paywall">
-    <div class="brand" style="justify-content:center; margin-bottom:10px">Persiste<span class="ia">IA</span></div>
+    <div class="brand" style="justify-content:center; margin-bottom:10px"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
     <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.5rem; letter-spacing:-.02em; margin-bottom:6px">Seus 7 dias de teste terminaram</h2>
     <p class="muted" style="font-size:.9rem; max-width:420px; margin:0 auto 20px">Seu edital, seu cronograma e todo o seu progresso continuam guardados. Assine para seguir de onde parou.</p>
     <div class="st-preco">
@@ -876,7 +1071,7 @@
   <div id="ob">
     <div class="ob-step active" id="ob1">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -889,7 +1084,7 @@
 
     <div class="ob-step" id="ob2">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -927,7 +1122,7 @@
 
     <div class="ob-step" id="ob3">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -947,7 +1142,7 @@
 
     <div class="ob-step" id="ob4">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0">Persiste<span class="ia">IA</span></div>
+        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -1550,7 +1745,7 @@
 
   <!-- ================= LOGIN (modo real) ================= -->
   <div id="login" role="dialog" aria-label="Entrar na sua conta">
-    <div class="brand" style="margin-bottom:8px">Persiste<span class="ia">IA</span></div>
+    <div class="brand" style="margin-bottom:8px"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
     <h2 style="font-size:1.3rem" id="lgTitle">Criar minha conta</h2>
     <p class="muted" style="font-size:.85rem">Seu progresso fica salvo e sincronizado — é rapidinho.</p>
     <input id="lgNome" type="text" placeholder="Seu nome" autocomplete="name">
