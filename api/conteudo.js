@@ -35,7 +35,8 @@ Regras:
 - Baseie-se no conhecimento consolidado da matéria; quando afirmar regra jurídica, cite o dispositivo (artigo/lei, súmula). Se não tiver certeza da fonte exata, não a invente — omita a citação.
 - "subtitulo": em até 8 palavras, o recorte exato que este pacote cobre (ex.: "Conceito, fontes e princípios" ou "Modalidades de licitação"). Se o pacote cobre o tópico inteiro, resuma o tópico.
 - "resumo": ${t.paragrafos} parágrafos densos — conceito, fundamentos, classificações, exceções, pegadinhas de prova e exemplos concretos. Escreva como um professor experiente escreveria a teoria: sem encher linguiça e sem deixar buraco. Separe os parágrafos com uma linha em branco. Se o assunto for curto, prefira parágrafos mais enxutos a inventar conteúdo que não existe.
-- "acronimo": um mnemônico ÚTIL (sigla + o que cada letra significa). Se não couber mnemônico, crie um macete curto no campo sigla e explique nos itens.
+- "acronimo": um mnemônico ÚTIL. "sigla" é a palavra-chave (ex.: "LIMPE"). "itens" tem UM item por letra, na ordem, no formato "L — Legalidade: só se pode fazer o que a lei autoriza" — a letra, o que ela significa e uma explicação de até 12 palavras. Quem lê os itens tem de entender o mnemônico inteiro sem precisar de mais nada. Se não couber mnemônico, crie um macete curto na sigla e explique cada parte nos itens no mesmo formato.
+- "explicacao_simples": explique este assunto COMO SE O ALUNO TIVESSE 12 ANOS — e faça isso a fundo, não por cima. Escreva de 4 a 6 parágrafos, em linguagem do dia a dia, cada parágrafo separado por linha em branco. Regras: (a) comece dizendo, em uma frase, para que serve isso no mundo real; (b) sempre que aparecer um termo técnico ou uma palavra difícil do assunto — inclusive os termos em latim e o "juridiquês" —, PARE e explique o que ela significa em palavras simples, entre travessões, antes de seguir; (c) use pelo menos duas analogias concretas do cotidiano (escola, casa, jogo, fila, futebol) para os conceitos centrais; (d) mostre um exemplo real, com nomes e situação, de como isso aparece na prática; (e) termine com o "resumo da ópera" em duas ou três frases. NÃO repita o texto do "resumo" com outras palavras: aqui o compromisso é fazer entender, não cobrir o edital.
 - "trecho_chave": o trecho essencial para memorizar — lei seca, definição canônica, súmula, fórmula ou regra central — com 40 a 90 palavras, completo o bastante para o aluno digitar de memória e sair sabendo. Marque ${t.chaves} palavras-chave entre colchetes duplos, ex.: "obedecerá aos princípios de [[legalidade]], [[impessoalidade]]...". Se o assunto tiver mais de um dispositivo central, junte-os no mesmo trecho separando por " // ".
 - "questoes": ${t.questoes} itens inéditos no formato Certo/Errado, atacando armadilhas clássicas e cobrindo pontos diferentes; "gabarito" true = Certo; "comentario" explica em até 45 palavras.
 - "questoes_me": ${t.me} questões inéditas de MÚLTIPLA ESCOLHA, cada uma com "enunciado", 5 "alternativas" (texto puro, sem letras A) B) etc.), "correta" (índice de 0 a 4) e "comentario" de até 45 palavras.
@@ -57,6 +58,7 @@ const S_TEORIA = {
     subtitulo: { type: 'string' },
     resumo: { type: 'string' },
     acronimo: { type: 'object', properties: { sigla: { type: 'string' }, itens: { type: 'array', items: { type: 'string' } } }, required: ['sigla', 'itens'] },
+    explicacao_simples: { type: 'string' },
     trecho_chave: { type: 'string' },
     mapa: {
       type: 'object',
@@ -89,7 +91,7 @@ const S_TEORIA = {
     podcast: { type: 'string' },
     musica: { type: 'object', properties: { estilo: { type: 'string' }, letra: { type: 'string' } }, required: ['estilo', 'letra'] }
   },
-  required: ['subtitulo', 'resumo', 'acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas', 'podcast', 'musica']
+  required: ['subtitulo', 'resumo', 'explicacao_simples', 'acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas', 'podcast', 'musica']
 };
 
 const S_PRATICA = {
@@ -217,14 +219,14 @@ module.exports = async (req, res) => {
     // antes de mostrar — e, se ainda assim vier truncada, não vai para o cache.
     let teoria = null, pratica = null;
     [teoria, pratica] = await Promise.all([
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, explicacao_simples, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
       gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
     ]);
     if (!pacoteCompleto(teoria, alvo.paragrafos)) {
       try {
         teoria = await gerar(
           sis,
-          cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.\n\n' +
+          cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, explicacao_simples, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.\n\n' +
           'ATENÇÃO: a tentativa anterior foi cortada no meio. Escreva parágrafos mais curtos e um roteiro de podcast mais enxuto, mas TERMINE todas as frases e feche o JSON.',
           S_TEORIA, 2
         );

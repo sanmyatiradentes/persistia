@@ -315,19 +315,21 @@
                   border-radius:16px; font:700 1.2rem "Albert Sans",sans-serif; cursor:pointer}
   .hoje-nav .seta:hover:not(:disabled){background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
   .hoje-nav .seta:disabled{opacity:.35; cursor:default}
-  .hn-c{flex:1; min-width:0; background:var(--card); border:1px solid var(--line); border-left:5px solid var(--accent);
-        border-radius:16px; padding:13px 16px; box-shadow:var(--shadow)}
+  .hn-c{flex:1; min-width:0; background:var(--card); border:1px solid var(--line); border-left:6px solid var(--accent);
+        border-radius:16px; padding:15px 18px 16px; box-shadow:var(--shadow)}
   .hn-dia{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px}
   .hn-dia .d{font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
   .hn-dia .tag{font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
                padding:2px 8px; border-radius:999px; background:var(--accent); color:var(--on-accent)}
   .hn-dia .tag.atr{background:var(--warm-soft); color:var(--warm)}
   .hn-dia .tag.fut{background:var(--accent-soft); color:var(--accent)}
-  .hn-c h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; line-height:1.25; letter-spacing:-.02em}
-  .hn-c .sub{font-size:.78rem; color:var(--muted); margin-top:3px}
+  .hn-c h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.42rem; line-height:1.2; letter-spacing:-.03em; color:var(--ink)}
+  .hn-c .sub{font-size:.8rem; color:var(--accent); font-weight:700; margin-top:5px; letter-spacing:.02em}
+  .hn-c .rot{display:block; font-size:.64rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+             color:var(--muted); margin-bottom:2px}
   .hn-hoje{background:none; border:none; color:var(--accent); font:700 .74rem "Albert Sans",sans-serif;
            cursor:pointer; padding:0; margin-top:6px; text-decoration:underline}
-  @media(min-width:900px){ .hn-c h3{font-size:1.35rem} }
+  @media(min-width:900px){ .hn-c h3{font-size:1.72rem} }
   .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px}
   .tile{position:relative; overflow:hidden; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 14px 12px 18px; box-shadow:var(--shadow)}
   .tile:before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--tc,var(--accent))}
@@ -364,6 +366,29 @@
   .sit.atr{background:var(--warm-soft); color:var(--warm)}
   .sit.hj{background:var(--accent); color:var(--on-accent)}
   .sit.fim{background:var(--accent-soft); color:var(--accent)}
+  /* explicação para leigos e mnemônico aberto */
+  .simples{background:var(--warm-soft); border:1px solid var(--warm); border-radius:16px; padding:16px 18px}
+  .simples h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem; color:var(--warm); margin-bottom:8px;
+              display:flex; align-items:center; gap:8px}
+  .simples p{font-size:.92rem; line-height:1.7; margin-bottom:12px}
+  .simples p:last-child{margin-bottom:0}
+  .simples em{font-style:normal; background:rgba(255,255,255,.5); border-radius:4px; padding:0 3px}
+  .mnem{background:var(--card2); border:1px solid var(--line); border-radius:16px; padding:16px 18px}
+  .mnem .sig{font-family:"Bricolage Grotesque",sans-serif; font-size:1.9rem; font-weight:800; letter-spacing:.12em;
+             color:var(--accent); display:block; margin-bottom:10px}
+  .mnem ul{list-style:none; display:grid; gap:8px}
+  .mnem li{display:flex; gap:10px; align-items:flex-start; font-size:.9rem; line-height:1.5}
+  .mnem li .let{flex:none; width:26px; height:26px; border-radius:8px; background:var(--accent); color:var(--on-accent);
+                display:flex; align-items:center; justify-content:center; font-family:"Bricolage Grotesque",sans-serif;
+                font-weight:800; font-size:.9rem}
+  .mnem li b{font-weight:700}
+  .pod-tx{max-height:260px; overflow-y:auto; background:var(--card2); border:1px solid var(--line); border-radius:14px;
+          padding:14px 16px; margin-top:10px; font-size:.88rem; line-height:1.65}
+  .pod-tx.aberto{max-height:none}
+  .pod-tx .fala{margin-bottom:9px}
+  .pod-tx .fala b{display:inline-block; min-width:44px; color:var(--accent); font-weight:800; font-size:.76rem;
+                  letter-spacing:.04em; text-transform:uppercase}
+  .pod-tx .fala.leo b{color:var(--violet)}
   .dia-leg{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; font-size:.66rem; color:var(--muted)}
   .dia-leg span{display:inline-flex; align-items:center; gap:4px}
   .dia-leg i{width:9px; height:9px; border-radius:3px; display:block}
@@ -731,6 +756,8 @@
     width:44px; height:44px; border-radius:50%; border:none; background:var(--accent); color:var(--on-accent);
     cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
   }
+  .c-in button.mic{background:var(--card); color:var(--ink); border:1.5px solid var(--line)}
+  .c-in button.mic.ouvindo{background:var(--crit); color:#fff; border-color:var(--crit); animation:pulse 1.2s infinite}
 
   /* ---------- login (modo real) ---------- */
   #login{
@@ -1389,6 +1416,7 @@
       <button class="seta" id="hnAnt" onclick="mudarDiaEstudo(-1)" aria-label="Dia anterior do cronograma" title="Dia anterior">‹</button>
       <div class="hn-c">
         <div class="hn-dia"><span class="d" id="hnData">—</span><span class="tag" id="hnTag" style="display:none"></span></div>
+        <span class="rot">Assunto do dia</span>
         <h3 id="hdrAssunto">Princípios da Administração Pública</h3>
         <p class="sub" id="hdrAssuntoSub">—</p>
         <button class="hn-hoje" id="hnVoltarHoje" style="display:none" onclick="voltarParaHoje()">← voltar para o assunto de hoje</button>
@@ -1417,19 +1445,6 @@
       <div id="sessoesLista" style="display:flex; flex-wrap:wrap; gap:8px"></div>
     </div>
 
-    <p class="eyebrow" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
-    <div class="revchips" id="revChips">
-      <div class="rev"><span>24 h</span><b>Atos administrativos</b>5 flashcards · 4 min</div>
-      <div class="rev"><span>7 dias</span><b>Crase</b>ditado relâmpago · 3 min</div>
-      <div class="rev"><span>30 dias</span><b>Cadeia de custódia</b>3 questões · 5 min</div>
-    </div>
-
-    <button class="nextcard" onclick="openLeitor()">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" style="flex:none"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg>
-      <span><b id="nextT">Continuar: Teoria no Leitor</b><small id="nextS">faltam ~4 min · depois eu te levo ao próximo verbo</small></span>
-      <span class="go">→</span>
-    </button>
-
     <div class="sess">
 
       <!-- LER -->
@@ -1440,20 +1455,42 @@
           <span class="stbadge now num" id="sbLer">agora</span>
         </button>
         <div class="task-b"><div class="inner">
-          <p style="font-size:.88rem" id="lerIntro">Os cinco princípios expressos do art. 37 formam o acrônimo <b>LIMPE</b> — toque em cada letra:</p>
-          <div class="limpe" id="limpeBox">
-            <b onclick="limpe('Legalidade — a Administração só faz o que a lei autoriza')">L</b>
-            <b onclick="limpe('Impessoalidade — interesse público, sem promoção pessoal (§1º)')">I</b>
-            <b onclick="limpe('Moralidade — honestidade e boa-fé administrativa')">M</b>
-            <b onclick="limpe('Publicidade — transparência como regra; sigilo é exceção')">P</b>
-            <b onclick="limpe('Eficiência — resultados com economicidade (EC 19/98)')">E</b>
-          </div>
-          <p id="limpeWord" aria-live="polite">Toque em uma letra ↑</p>
+          <p style="font-size:.88rem" id="lerIntro">O essencial do assunto de hoje:</p>
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
             <button class="btn small" style="margin:0" onclick="openLeitor()">Abrir a teoria completa no Leitor</button>
             <button class="btn ghost small" style="margin:0" onclick="refazerConteudo()" title="Refaz a teoria, as questões e o áudio deste assunto">↻ Gerar de novo</button>
           </div>
           <p class="muted" style="font-size:.72rem; margin-top:6px">Leitura silenciosa ou em voz alta com teleprompter — a teoria vem antes da prática.</p>
+        </div></div>
+      </div>
+
+      <!-- EXPLICANDO COMO SE VOCÊ TIVESSE 12 ANOS -->
+      <div class="card task" id="t-simples">
+        <button class="task-h" onclick="tg('t-simples')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M7 10.5V15c0 1.7 2.2 3 5 3s5-1.3 5-3v-4.5"/></svg></span>
+          <span><b>Entender antes de decorar</b><small>O assunto explicado como se você tivesse 12 anos</small></span>
+          <span class="stbadge wait num" id="sbSimples">leia primeiro</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <div class="simples" id="simplesBox">
+            <h3>👦 Explicando como se você tivesse 12 anos</h3>
+            <p class="muted">Assim que a teoria carregar, a explicação simples aparece aqui.</p>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- O MACETE DO ASSUNTO -->
+      <div class="card task" id="t-mnemo">
+        <button class="task-h" onclick="tg('t-mnemo')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.3.2.5.6.5 1V15h6v-.1c0-.4.2-.8.5-1A6 6 0 0012 3z"/></svg></span>
+          <span><b>O macete do assunto</b><small>O mnemônico com o significado de cada letra</small></span>
+          <span class="stbadge wait num" id="sbMnemo">macete</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <div class="mnem" id="mnemBox">
+            <span class="sig">—</span>
+            <p class="muted" style="font-size:.85rem">O mnemônico deste assunto aparece aqui.</p>
+          </div>
         </div></div>
       </div>
 
@@ -1473,7 +1510,12 @@
           </div>
           <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
           <p class="muted" style="font-size:.72rem; margin-top:8px">Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.</p>
-          <p class="quote" id="podQuote">"…antes de eu responder, pensa aí: quais são os cinco princípios <b>expressos</b> no caput do art. 37? Pausa de três segundos… anotou? Então vamos conferir…"</p>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap">
+            <p class="eyebrow" style="margin:0">Transcrição do episódio</p>
+            <button class="lg-alt" style="margin:0; padding:0; font-size:.74rem" onclick="podExpandir(this)">expandir</button>
+            <span class="muted" style="font-size:.72rem">acompanhe lendo enquanto ouve</span>
+          </div>
+          <div class="pod-tx" id="podTx"><p class="muted" style="font-size:.85rem">A transcrição aparece assim que o episódio for gerado.</p></div>
         </div></div>
       </div>
 
@@ -1649,6 +1691,27 @@
           <p class="muted" style="font-size:.72rem; margin-top:6px">As perguntas feitas no chat contam sozinhas para este verbo.</p>
         </div></div>
       </div>
+
+      <!-- FECHO DO DIA -->
+      <div class="card" style="border:2px solid var(--accent)">
+        <h2 style="font-size:1rem">Terminou o assunto de hoje?</h2>
+        <p class="muted" style="font-size:.78rem; margin-bottom:10px">Retome a teoria quando quiser. Quando marcar como concluído, eu puxo o próximo assunto do cronograma.</p>
+        <button class="nextcard" onclick="openLeitor()">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" style="flex:none"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg>
+      <span><b id="nextT">Continuar: Teoria no Leitor</b><small id="nextS">faltam ~4 min · depois eu te levo ao próximo verbo</small></span>
+      <span class="go">→</span>
+        </button>
+
+        <div id="slotConcluir"></div>
+      </div>
+
+      <p class="eyebrow" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
+      <div class="revchips" id="revChips">
+      <div class="rev"><span>24 h</span><b>Atos administrativos</b>5 flashcards · 4 min</div>
+      <div class="rev"><span>7 dias</span><b>Crase</b>ditado relâmpago · 3 min</div>
+      <div class="rev"><span>30 dias</span><b>Cadeia de custódia</b>3 questões · 5 min</div>
+      </div>
+
 
       <!-- MINHA VOZ -->
       <div class="card">
@@ -1986,7 +2049,10 @@
       <button onclick="ask(3)">Me dá um macete pro LIMPE</button>
     </div>
     <div class="c-in">
-      <input id="cInput" type="text" placeholder="Escreva sua dúvida…" aria-label="Escreva sua dúvida" onkeydown="if(event.key==='Enter')askFree()">
+      <input id="cInput" type="text" placeholder="Escreva ou fale sua dúvida…" aria-label="Escreva sua dúvida" onkeydown="if(event.key==='Enter')askFree()">
+      <button class="mic" id="cMic" onclick="perguntarFalando()" aria-label="Perguntar falando" title="Perguntar falando">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>
+      </button>
       <button onclick="askFree()" aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg></button>
     </div>
   </div>
@@ -2095,6 +2161,7 @@
     <canvas id="cineCv" width="1080" height="1920"></canvas>
     <div class="cine-b">
       <button class="p" id="cinePlay" onclick="cinePlay()">▶ Assistir</button>
+      <button class="velbtn" onclick="velProxima()" title="Velocidade da narração">1×</button>
       <button id="cineRec" onclick="cineGravar()">● Gravar vídeo</button>
       <button onclick="fecharCine()">Fechar</button>
     </div>
@@ -2448,13 +2515,12 @@
     $('scr-hoje').classList.add('active');
     drawRing(); drawWave(); vozCarregar();
     $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
-    $('limpeBox').innerHTML = '';
-    $('limpeWord').textContent = '';
+
     $('leiBox').innerHTML = '<span class="muted">Carregando o trecho para você completar de memória…</span>';
     $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões inéditas no estilo da banca…</p>';
     $('lBody').innerHTML = '<p>Carregando…</p>';
     $('musLyr').innerHTML = '<span class="muted">Gerando a letra mnemônica…</span>';
-    $('podQuote').textContent = 'Preparando o roteiro do episódio…';
+if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro do episódio…</p>';
     if(!JA_CONFIG){
       apiFetch('/api/aluno', { data_prova: (temData && PROVA_ISO) ? PROVA_ISO : null, horas_dia: selVal('gH'), dias_semana: selVal('gD') }).catch(function(){});
     }
@@ -3287,7 +3353,7 @@
     }
     var sl = CINE.slides[CINE.i++];
     pintarSlide(sl);
-    var dur = Math.max(2600, Math.min(9000, String(sl.fala || '').length * 62));
+    var dur = Math.max(2600, Math.min(9000, String(sl.fala || '').length * 62)) / VEL;
     // A narração do vídeo é a voz do aparelho, escrita para os slides — nada a
     // ver com o podcast, que é uma conversa e ficava fora de sincronia.
     var narrou = false;
@@ -3303,6 +3369,7 @@
       }
     } catch(e){}
     if(!narrou){ CINE.timer = setTimeout(proximoSlide, dur); }
+    CINE.vel = VEL;
   }
 
   // Gravação: o canvas vira vídeo; se houver voz de estúdio, ela entra como trilha.
@@ -3436,8 +3503,10 @@
     vozListar().then(function(regs){
       var r = (regs || []).filter(function(x){ return x.id === id; })[0];
       if(!r){ toast('Gravação não encontrada neste aparelho'); return; }
-      var a = new Audio(URL.createObjectURL(r.blob));
-      a.play().catch(function(){ toast('Não consegui tocar aqui'); });
+      var blob = r.blob instanceof Blob ? r.blob : new Blob([r.blob], { type: r.mime || 'audio/webm' });
+      var a = new Audio(URL.createObjectURL(blob));
+      a.playbackRate = VEL;
+      a.play().catch(function(){ toast('Não consegui tocar aqui — abra em Minha Voz e baixe a faixa'); });
       btn.textContent = '❚❚';
       a.onended = function(){ btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; };
     });
@@ -3512,10 +3581,67 @@
   }
 
   /* ---------- expanders ---------- */
-  function tg(id){ $(id).classList.toggle('open'); }
+  function tg(id, abrir){ var el = $(id); if(!el) return; if(abrir) el.classList.add('open'); else el.classList.toggle('open'); }
 
   /* ---------- LIMPE ---------- */
-  function limpe(txt){ $('limpeWord').textContent = txt; }
+  function limpe(txt){ if($('limpeWord')) $('limpeWord').textContent = txt; }
+
+  /* ---------- macete: todas as letras e significados à mostra ---------- */
+  function renderMnemonico(a){
+    var box = $('mnemBox'); if(!box) return;
+    a = a || {};
+    var sigla = String(a.sigla || '').trim();
+    var itens = (a.itens || []).map(function(x){ return String(x || '').trim(); }).filter(Boolean);
+    if(!sigla && !itens.length){
+      box.innerHTML = '<p class="muted" style="font-size:.85rem">Este assunto não rendeu mnemônico.</p>';
+      return;
+    }
+    var html = '<span class="sig">' + esc(sigla) + '</span>';
+    html += '<ul>' + itens.map(function(t){
+      // "L — Legalidade: só se pode fazer o que a lei autoriza"
+      var m = t.match(/^\s*([A-Za-zÀ-ú0-9])\s*[—\-–:.)]\s*(.+)$/);
+      var letra = m ? m[1].toUpperCase() : '•';
+      var resto = m ? m[2] : t;
+      var m2 = resto.match(/^([^:—–]{2,40})[:—–]\s*(.+)$/);
+      var corpo = m2 ? '<b>' + esc(m2[1].trim()) + '</b> — ' + esc(m2[2].trim()) : esc(resto);
+      return '<li><span class="let">' + esc(letra) + '</span><span>' + corpo + '</span></li>';
+    }).join('') + '</ul>';
+    box.innerHTML = html;
+  }
+
+  /* ---------- explicação para quem está começando do zero ---------- */
+  function renderSimples(txt){
+    var box = $('simplesBox'); if(!box) return;
+    var t = String(txt || '').trim();
+    if(!t){
+      box.innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3>' +
+        '<p class="muted">Este assunto foi gerado antes desta explicação existir. Toque em <b>↻ Gerar de novo</b> no card Ler para criá-la.</p>';
+      if($('sbSimples')) $('sbSimples').textContent = 'refaça o assunto';
+      return;
+    }
+    box.innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3>' +
+      t.split(/\n+/).filter(function(x){ return x.trim(); })
+       .map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
+    if($('sbSimples')) $('sbSimples').textContent = 'antes de decorar';
+  }
+
+  /* ---------- transcrição do podcast, para ouvir acompanhando ---------- */
+  function renderTranscricao(roteiro){
+    var box = $('podTx'); if(!box) return;
+    var t = semMd(roteiro || '').trim();
+    if(!t){ box.innerHTML = '<p class="muted" style="font-size:.85rem">Sem transcrição para este episódio.</p>'; return; }
+    box.innerHTML = t.split(/\n+/).filter(function(l){ return l.trim(); }).map(function(l){
+      var m = l.match(/^\s*(ANA|LEO|LÉO)\s*:\s*(.*)$/i);
+      if(!m) return '<p class="fala">' + esc(l) + '</p>';
+      var quem = m[1].toUpperCase().replace('LÉO', 'LEO');
+      return '<p class="fala' + (quem === 'LEO' ? ' leo' : '') + '"><b>' + (quem === 'LEO' ? 'Léo' : 'Ana') + '</b> ' + esc(m[2]) + '</p>';
+    }).join('');
+  }
+  function podExpandir(btn){
+    var box = $('podTx'); if(!box) return;
+    var aberto = box.classList.toggle('aberto');
+    btn.textContent = aberto ? 'recolher' : 'expandir';
+  }
 
   /* ---------- lei seca gaps ---------- */
   var gapsDone = 0, gapsTotal = 5;
@@ -3609,6 +3735,15 @@
     VEL = VELOCIDADES[(i + 1) % VELOCIDADES.length];
     try { localStorage.setItem('persisteia_velocidade', String(VEL)); } catch(e){}
     marcarVelocidade();
+    if(typeof CINE !== 'undefined' && CINE.tocando){
+      // refaz o slide atual já na velocidade nova
+      try { window.speechSynthesis.cancel(); } catch(e){}
+      if(CINE.timer){ clearTimeout(CINE.timer); CINE.timer = null; }
+      CINE.i = Math.max(0, CINE.i - 1);
+      proximoSlide();
+      toast('Narração em ' + velTxt());
+      return;
+    }
     // aplica na hora no que já estiver tocando
     [].forEach.call(document.querySelectorAll('audio'), function(a){ a.playbackRate = VEL; });
     if(FALA.tipo){
@@ -4379,7 +4514,7 @@
     $('lBody').style.fontSize = lFs.toFixed(2) + 'rem';
     setTimeout(function(){ dimensionarCanvas(); redesenhar(); }, 60);
   }
-  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '', RECWATCH = null, TP_WATCH = null;
+  var REC = null, RECON = null, RECCHUNKS = [], RECT0 = 0, PALAVRAS_OUVIDAS = 0, TRANSCRICAO = '', RECWATCH = null, TP_WATCH = null, REC_MIME = 'audio/webm';
 
   // Religa o reconhecimento sem perder a gravação nem o ponto da leitura.
   function religarFala(){
@@ -4467,10 +4602,18 @@
     }
     navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
       try {
-        REC = new MediaRecorder(stream);
+        // formato que ESTE navegador realmente sabe gravar e tocar
+        REC_MIME = '';
+        ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus',''].some(function(t){
+          if(!t || (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t))){ REC_MIME = t; return true; }
+          return false;
+        });
+        REC = REC_MIME ? new MediaRecorder(stream, { mimeType: REC_MIME }) : new MediaRecorder(stream);
+        if(!REC_MIME) REC_MIME = REC.mimeType || 'audio/webm';
         REC.ondataavailable = function(e){ if(e.data && e.data.size) RECCHUNKS.push(e.data); };
         REC.onstop = function(){ stream.getTracks().forEach(function(t){ t.stop(); }); };
-        REC.start();
+        // pedaços de 1 s: se algo der errado no fim, o que já foi falado não se perde
+        REC.start(1000);
       } catch(e){ REC = null; }
 
       // Se o reconhecimento não devolver nada em alguns segundos (microfone mudo,
@@ -4550,7 +4693,7 @@
     var seg = Math.max(1, Math.round((Date.now() - RECT0) / 1000));
     var palavras = PALAVRAS_OUVIDAS || tpIdx;
     var ppm = Math.round(palavras / (seg / 60));
-    var url = RECCHUNKS.length ? URL.createObjectURL(new Blob(RECCHUNKS, { type: 'audio/webm' })) : null;
+    var url = RECCHUNKS.length ? URL.createObjectURL(new Blob(RECCHUNKS, { type: REC_MIME })) : null;
     var mm = Math.floor(seg / 60), ss = ('0' + (seg % 60)).slice(-2);
 
     $('lDone').classList.add('show');
@@ -4563,8 +4706,8 @@
 
     if(RECCHUNKS.length){
       var titulo = ($('leitorTitle') || {}).textContent || 'Leitura';
-      var blob = new Blob(RECCHUNKS, { type: 'audio/webm' });
-      vozSalvar({ id: 'g' + Date.now(), titulo: titulo, quando: Date.now(), dur: mm + ':' + ss, ppm: ppm, blob: blob })
+      var blob = new Blob(RECCHUNKS, { type: REC_MIME });
+      vozSalvar({ id: 'g' + Date.now(), titulo: titulo, quando: Date.now(), dur: mm + ':' + ss, ppm: ppm, mime: REC_MIME, blob: blob })
         .then(function(ok){
           vozCarregar();
           if(!ok){
@@ -4651,15 +4794,26 @@
       }
       pai.innerHTML = '';
       regs.slice(0, 30).forEach(function(r){
-        var url = URL.createObjectURL(r.blob);
+        var blob = r.blob instanceof Blob ? r.blob : new Blob([r.blob], { type: r.mime || 'audio/webm' });
+        var url = URL.createObjectURL(blob);
         var div = document.createElement('div');
         div.className = 'mv-row';
-        div.innerHTML = '<button class="mv-play" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
-          '<span class="mi"><b>' + esc(r.titulo) + '</b><small class="num">' + vozQuando(r.quando) + ' · ' + r.dur + (r.ppm ? ' · ' + r.ppm + ' ppm' : '') + '</small></span>' +
+        div.style.flexWrap = 'wrap';
+        div.innerHTML =
+          '<span class="mi" style="flex:1; min-width:160px"><b>' + esc(r.titulo) + '</b><small class="num">' +
+            vozQuando(r.quando) + ' · ' + r.dur + (r.ppm ? ' · ' + r.ppm + ' ppm' : '') + '</small></span>' +
+          '<a class="iconbtn" style="width:30px;height:30px;font-size:.8rem;text-decoration:none" download="' +
+            esc(r.titulo).replace(/[^\w ]/g,'').slice(0,40) + '.webm" href="' + url + '" title="Baixar" aria-label="Baixar gravação">⭳</a>' +
           '<button class="iconbtn" style="width:30px;height:30px;font-size:.8rem" title="Apagar" aria-label="Apagar gravação">✕</button>' +
-          '<audio src="' + url + '" style="display:none"></audio>';
-        div.querySelector('.mv-play').onclick = function(){ div.querySelector('audio').play(); };
-        div.querySelector('.iconbtn').onclick = function(){ vozApagar(r.id).then(vozCarregar); };
+          '<audio controls preload="metadata" src="' + url + '" style="width:100%; margin-top:8px; height:36px"></audio>';
+        var au = div.querySelector('audio');
+        au.onerror = function(){
+          var av = document.createElement('small');
+          av.className = 'num'; av.style.color = 'var(--warm)'; av.style.width = '100%';
+          av.textContent = 'Este navegador não consegue tocar esta gravação — use ⭳ para baixar e ouvir no aparelho.';
+          div.appendChild(av);
+        };
+        div.querySelector('button.iconbtn').onclick = function(){ vozApagar(r.id).then(vozCarregar); };
         pai.appendChild(div);
       });
     });
@@ -5086,6 +5240,93 @@
     }
     box.appendChild(m); box.scrollTop = box.scrollHeight;
   }
+  /* ---------- perguntar ao Persi falando ---------- */
+  var MIC = { rec: null, chunks: [], sr: null, ativo: false, mime: 'audio/webm' };
+
+  function micEstado(ligado){
+    MIC.ativo = ligado;
+    var b = $('cMic'); if(b) b.classList.toggle('ouvindo', ligado);
+    var inp = $('cInput');
+    if(inp) inp.placeholder = ligado ? 'Ouvindo… fale sua dúvida' : 'Escreva ou fale sua dúvida…';
+  }
+
+  function perguntarFalando(){
+    if(MIC.ativo){ pararDeOuvir(); return; }
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(SR){
+      // o próprio navegador transcreve: é instantâneo e não custa nada
+      try {
+        var r = new SR();
+        r.lang = 'pt-BR'; r.continuous = false; r.interimResults = true;
+        MIC.sr = r; micEstado(true);
+        r.onresult = function(ev){
+          var txt = '';
+          for(var i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+          $('cInput').value = txt.trim();
+        };
+        r.onend = function(){
+          MIC.sr = null; micEstado(false);
+          if(($('cInput').value || '').trim()) askFree();
+        };
+        r.onerror = function(){ MIC.sr = null; micEstado(false); toast('Não consegui ouvir — tente de novo'); };
+        r.start();
+        toast('Pode falar — eu paro sozinha quando você terminar');
+        return;
+      } catch(e){ MIC.sr = null; micEstado(false); }
+    }
+    gravarPergunta();
+  }
+
+  // Sem reconhecimento no navegador (iPhone, por exemplo): grava e manda transcrever.
+  function gravarPergunta(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      toast('Seu navegador não deixa gravar áudio aqui'); return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      MIC.chunks = [];
+      MIC.mime = '';
+      ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus',''].some(function(t){
+        if(!t || (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t))){ MIC.mime = t; return true; }
+        return false;
+      });
+      var rec = MIC.mime ? new MediaRecorder(stream, { mimeType: MIC.mime }) : new MediaRecorder(stream);
+      MIC.mime = MIC.mime || rec.mimeType || 'audio/webm';
+      MIC.rec = rec; micEstado(true);
+      rec.ondataavailable = function(e){ if(e.data && e.data.size) MIC.chunks.push(e.data); };
+      rec.onstop = function(){
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        micEstado(false); MIC.rec = null;
+        if(!MIC.chunks.length){ toast('Não gravou nada'); return; }
+        var blob = new Blob(MIC.chunks, { type: MIC.mime });
+        if(blob.size > 2400000){ toast('Áudio longo demais — fale por até um minuto'); return; }
+        var fr = new FileReader();
+        fr.onload = function(){
+          var b64 = String(fr.result).split(',')[1] || '';
+          $('cInput').placeholder = 'Transcrevendo sua pergunta…';
+          apiFetch('/api/transcrever', { audio_base64: b64, mime: MIC.mime.split(';')[0] })
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+              $('cInput').placeholder = 'Escreva ou fale sua dúvida…';
+              if(d && d.texto){ $('cInput').value = d.texto; askFree(); }
+              else toast((d && d.erro) || 'Não entendi o áudio — tente falar mais perto');
+            })
+            .catch(function(){ $('cInput').placeholder = 'Escreva ou fale sua dúvida…'; toast('Sem conexão'); });
+        };
+        fr.readAsDataURL(blob);
+      };
+      rec.start();
+      toast('Gravando sua pergunta — toque no microfone de novo para enviar');
+      // trava de segurança: um minuto é o suficiente para uma dúvida
+      setTimeout(function(){ if(MIC.rec) pararDeOuvir(); }, 60000);
+    }).catch(function(){ toast('Preciso da permissão do microfone'); });
+  }
+
+  function pararDeOuvir(){
+    if(MIC.sr){ try { MIC.sr.stop(); } catch(e){} MIC.sr = null; micEstado(false); return; }
+    if(MIC.rec){ try { MIC.rec.stop(); } catch(e){} return; }
+    micEstado(false);
+  }
+
   function askFree(){
     var inp = $('cInput');
     var q = inp.value.trim();
@@ -5191,13 +5432,14 @@
   }
   function enterLoading(){
     $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
-    $('limpeBox').innerHTML = ''; $('limpeWord').textContent = '';
+    if($('mnemBox')) $('mnemBox').innerHTML = '<p class="muted" style="font-size:.85rem">Montando o macete…</p>';
+    if($('simplesBox')) $('simplesBox').innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3><p class="muted">Escrevendo a explicação simples…</p>';
     $('leiBox').innerHTML = '<span class="muted">Carregando…</span>';
     $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões…</p>';
     $('lBody').innerHTML = '<p>Carregando…</p>';
     $('musLyr').innerHTML = '<span class="muted">Gerando a letra…</span>';
     if($('mapaBox')) $('mapaBox').innerHTML = '<p class="muted" style="font-size:.85rem">Desenhando o mapa mental do assunto…</p>';
-    $('podQuote').textContent = 'Preparando o roteiro…';
+if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
   function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
@@ -5320,8 +5562,10 @@
           FEITOS = {}; CONT = null; enterLoading(); carregarReal();
         }).catch(function(){});
       };
-      var next = document.querySelector('.nextcard');
-      next.parentNode.insertBefore(b, next.nextSibling);
+      b.style.margin = '4px 0 0';
+      var slot = $('slotConcluir');
+      if(slot) slot.appendChild(b);
+      else { var next = document.querySelector('.nextcard'); next.parentNode.insertBefore(b, next.nextSibling); }
     }
   }
 
@@ -5365,18 +5609,12 @@
     var recorte = (Number(c.partes) > 1)
       ? ' <span class="muted">(parte ' + c.parte + ' de ' + c.partes + (c.subtitulo ? ': ' + esc(c.subtitulo) : '') + ')</span>'
       : (c.subtitulo ? ' <span class="muted">(' + esc(c.subtitulo) + ')</span>' : '');
-    $('lerIntro').innerHTML = 'O essencial de <b>' + esc(c.topico) + '</b>' + recorte + ' — e o mnemônico do assunto (toque nas letras):';
-    var sigla = String(c.acronimo.sigla || '').replace(/[^A-Za-zÀ-ú]/g, '').slice(0, 6).toUpperCase();
-    var box = $('limpeBox'); box.innerHTML = '';
-    for(var i = 0; i < sigla.length; i++){
-      (function(i){
-        var bl = document.createElement('b'); bl.textContent = sigla[i];
-        bl.onclick = function(){ limpe(c.acronimo.itens[i] || c.acronimo.itens.join(' · ')); };
-        box.appendChild(bl);
-      })(i);
-    }
-    if(!sigla.length){ $('limpeWord').textContent = c.acronimo.itens.join(' · '); }
-    else { $('limpeWord').textContent = 'Toque em uma letra ↑'; }
+    $('lerIntro').innerHTML = 'A teoria completa de <b>' + esc(c.topico) + '</b>' + recorte +
+      ', com a lei seca e as palavras-chave em cores. Se o assunto for novo para você, comece por ' +
+      '<a href="#" onclick="event.preventDefault(); tg(\'t-simples\', true); document.getElementById(\'t-simples\').scrollIntoView({behavior:\'smooth\'});" style="color:var(--warm); font-weight:700">Entender antes de decorar</a>.';
+    renderMnemonico(c.acronimo);
+    renderSimples(c.explicacao_simples);
+    renderTranscricao(c.podcast);
 
     var paras = String(c.resumo).split(/\n+/).filter(function(x){ return x.trim(); });
     var corpo = '';
@@ -5427,7 +5665,7 @@
     if(c.feynman && c.feynman.length){
       $('feynQ').innerHTML = 'Explique em voz alta: <b>' + esc(c.feynman[0].pergunta) + '</b>';
     }
-    $('podQuote').textContent = '"' + semMd(c.podcast).slice(0, 260) + '…"';
+
     $('musTitle').textContent = 'Música do assunto';
     $('musSub').textContent = esc(c.musica.estilo);
     $('musLyr').innerHTML = md(c.musica.letra).replace(/\n/g, '<br>');
