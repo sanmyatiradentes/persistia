@@ -309,6 +309,25 @@
   .cov .bar i{display:block; height:100%; border-radius:99px; background:var(--c1)}
 
   /* ---------- evolução ---------- */
+  /* barra do dia na tela Hoje: assunto grande e navegação entre os dias */
+  .hoje-nav{display:flex; align-items:stretch; gap:8px; margin-bottom:14px}
+  .hoje-nav .seta{flex:none; width:42px; border:1px solid var(--line); background:var(--card); color:var(--ink);
+                  border-radius:16px; font:700 1.2rem "Albert Sans",sans-serif; cursor:pointer}
+  .hoje-nav .seta:hover:not(:disabled){background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+  .hoje-nav .seta:disabled{opacity:.35; cursor:default}
+  .hn-c{flex:1; min-width:0; background:var(--card); border:1px solid var(--line); border-left:5px solid var(--accent);
+        border-radius:16px; padding:13px 16px; box-shadow:var(--shadow)}
+  .hn-dia{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px}
+  .hn-dia .d{font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+  .hn-dia .tag{font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+               padding:2px 8px; border-radius:999px; background:var(--accent); color:var(--on-accent)}
+  .hn-dia .tag.atr{background:var(--warm-soft); color:var(--warm)}
+  .hn-dia .tag.fut{background:var(--accent-soft); color:var(--accent)}
+  .hn-c h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; line-height:1.25; letter-spacing:-.02em}
+  .hn-c .sub{font-size:.78rem; color:var(--muted); margin-top:3px}
+  .hn-hoje{background:none; border:none; color:var(--accent); font:700 .74rem "Albert Sans",sans-serif;
+           cursor:pointer; padding:0; margin-top:6px; text-decoration:underline}
+  @media(min-width:900px){ .hn-c h3{font-size:1.35rem} }
   .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px}
   .tile{position:relative; overflow:hidden; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 14px 12px 18px; box-shadow:var(--shadow)}
   .tile:before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--tc,var(--accent))}
@@ -1334,11 +1353,21 @@
       </div>
     </div>
 
+    <div class="hoje-nav">
+      <button class="seta" id="hnAnt" onclick="mudarDiaEstudo(-1)" aria-label="Dia anterior do cronograma" title="Dia anterior">‹</button>
+      <div class="hn-c">
+        <div class="hn-dia"><span class="d" id="hnData">—</span><span class="tag" id="hnTag" style="display:none"></span></div>
+        <h3 id="hdrAssunto">Princípios da Administração Pública</h3>
+        <p class="sub" id="hdrAssuntoSub">—</p>
+        <button class="hn-hoje" id="hnVoltarHoje" style="display:none" onclick="voltarParaHoje()">← voltar para o assunto de hoje</button>
+      </div>
+      <button class="seta" id="hnProx" onclick="mudarDiaEstudo(1)" aria-label="Próximo dia do cronograma" title="Próximo dia">›</button>
+    </div>
+
     <div class="card ringwrap">
       <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia"></svg>
       <div class="ringlbl">
         <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">0 de 8 verbos hoje</b>
-        <p class="muted" style="font-size:.8rem">Assunto do dia: <b style="color:var(--accent)" id="hdrAssunto">Princípios da Administração Pública</b><span id="hdrAssuntoSub"> (art. 37, CF)</span></p>
         <div class="verbs">
           <span class="chip now">Ler</span><span class="chip">Ouvir</span><span class="chip">Treinar</span>
           <span class="chip">Falar</span><span class="chip">Digitar</span><span class="chip">Escrever</span><span class="chip">Raciocinar</span><span class="chip">Perguntar</span>
@@ -4864,11 +4893,44 @@
   function itemAtivo(){
     if(!REAL) return null;
     if(ESCOLHIDO){
+      // se você escolheu um assunto — inclusive de um dia passado, já concluído —
+      // é ele que fica na tela até você voltar para hoje
       var it = (REAL.itens || []).filter(function(x){ return x.cron_id === ESCOLHIDO; })[0];
-      if(it && it.status !== 'concluido') return it;
+      if(it) return it;
     }
     return REAL.hoje;
   }
+  /* ---------- navegar pelos dias do cronograma na tela Hoje ---------- */
+  function diasDoCronograma(){
+    var itens = (REAL && REAL.itens) || [];
+    var set = {};
+    itens.forEach(function(x){ if(x.data) set[x.data] = true; });
+    return Object.keys(set).sort();
+  }
+  function mudarDiaEstudo(passo){
+    var it = itemAtivo();
+    if(!it){ toast('Seu cronograma ainda está carregando'); return; }
+    var dias = diasDoCronograma();
+    var i = dias.indexOf(it.data);
+    if(i < 0){
+      // o assunto ativo não está num dia do cronograma: parte do dia de hoje
+      var hoje = new Date().toISOString().slice(0,10);
+      i = dias.findIndex(function(d){ return d >= hoje; });
+      if(i < 0) i = dias.length - 1;
+    }
+    var alvo = dias[i + passo];
+    if(!alvo){ toast(passo > 0 ? 'Esse é o último dia do seu cronograma' : 'Esse é o primeiro dia do seu cronograma'); return; }
+    var doDia = (REAL.itens || []).filter(function(x){ return x.data === alvo; });
+    var escolhido = doDia.filter(function(x){ return x.status !== 'concluido'; })[0] || doDia[0];
+    if(!escolhido){ toast('Nenhum assunto neste dia'); return; }
+    estudarTopico(escolhido.cron_id);
+  }
+  function voltarParaHoje(){
+    ESCOLHIDO = null;
+    try { localStorage.removeItem('persisteia_topico'); } catch(e){}
+    FEITOS = {}; CONT = null; enterLoading(); carregarReal();
+  }
+
   function estudarTopico(cronId){
     ESCOLHIDO = cronId;
     try { localStorage.setItem('persisteia_topico', cronId); } catch(e){}
@@ -4977,9 +5039,24 @@
     var parteTxt = (Number(it.partes) > 1) ? ' · parte ' + it.parte + ' de ' + it.partes : '';
     ASSUNTO = it.topico + (Number(it.partes) > 1 ? ' (parte ' + it.parte + ')' : '') + ' — ' + it.disciplina;
     $('hdrAssunto').textContent = it.topico;
-    $('hdrAssuntoSub').textContent = ' · ' + it.disciplina + parteTxt +
-      (it.horas ? ' · ' + fmtHoras(it.horas) : '') +
-      (it.data < new Date().toISOString().slice(0,10) ? ' · retomando atraso' : '');
+    $('hdrAssuntoSub').textContent = it.disciplina + parteTxt + (it.horas ? ' · ' + fmtHoras(it.horas) : '');
+
+    // barra do dia: data por extenso, situação e setas de navegação
+    var hojeISO = new Date().toISOString().slice(0,10);
+    var MESX = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    var DIAX = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+    if(it.data && $('hnData')){
+      var dtx = new Date(it.data + 'T12:00:00');
+      $('hnData').textContent = DIAX[dtx.getDay()] + ', ' + dtx.getDate() + ' de ' + MESX[dtx.getMonth()];
+      var tag = $('hnTag');
+      if(it.data === hojeISO){ tag.textContent = 'hoje'; tag.className = 'tag'; tag.style.display = 'inline-block'; }
+      else if(it.data < hojeISO){ tag.textContent = 'atrasado'; tag.className = 'tag atr'; tag.style.display = 'inline-block'; }
+      else { tag.textContent = 'adiantando'; tag.className = 'tag fut'; tag.style.display = 'inline-block'; }
+      $('hnVoltarHoje').style.display = (it.data === hojeISO) ? 'none' : 'block';
+      var dias = diasDoCronograma(), i = dias.indexOf(it.data);
+      if($('hnAnt')) $('hnAnt').disabled = (i <= 0);
+      if($('hnProx')) $('hnProx').disabled = (i < 0 || i >= dias.length - 1);
+    }
     desenharSessoesDia(d, it);
     $('nextT').textContent = 'Continuar: ' + it.topico + parteTxt;
     $('nextS').textContent = 'teoria no Leitor · depois eu te levo aos outros verbos';
