@@ -8,7 +8,11 @@ const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGem
 function tamanhos(h) {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
   return {
-    paragrafos: clamp(3 + h * 3, 4, 10),
+    // a teoria acompanha o tamanho real do tópico: uma sessão de 2 h pede
+    // cerca de 1.400 palavras — apostila de verdade, não resumo de resumo
+    palavras_teoria: clamp(500 + h * 450, 700, 2600),
+    palavras_simples: clamp(300 + h * 160, 380, 900),
+    paragrafos: clamp(4 + h * 2.5, 6, 14),
     questoes: clamp(4 + h * 4, 6, 14),
     me: clamp(3 + h * 2, 4, 8),
     flashcards: clamp(5 + h * 4, 6, 14),
@@ -34,9 +38,9 @@ ${recorte}
 Regras:
 - Baseie-se no conhecimento consolidado da matéria; quando afirmar regra jurídica, cite o dispositivo (artigo/lei, súmula). Se não tiver certeza da fonte exata, não a invente — omita a citação.
 - "subtitulo": em até 8 palavras, o recorte exato que este pacote cobre (ex.: "Conceito, fontes e princípios" ou "Modalidades de licitação"). Se o pacote cobre o tópico inteiro, resuma o tópico.
-- "resumo": ${t.paragrafos} parágrafos densos — conceito, fundamentos, classificações, exceções, pegadinhas de prova e exemplos concretos. Escreva como um professor experiente escreveria a teoria: sem encher linguiça e sem deixar buraco. Separe os parágrafos com uma linha em branco. Se o assunto for curto, prefira parágrafos mais enxutos a inventar conteúdo que não existe.
+- "resumo": a AULA ESCRITA do assunto, com cerca de ${t.palavras_teoria} palavras distribuídas em ${t.paragrafos} parágrafos (separados por linha em branco), cada parágrafo com 100 a 170 palavras. Este é o material principal do aluno: ele estuda por aqui e não vai abrir outro livro. Desenvolva, não resuma. Percorra, na ordem que fizer sentido didático e SEM usar títulos ou marcadores: (1) conceito e para que serve; (2) fundamento normativo ou teórico, com o dispositivo citado; (3) TODAS as classificações e espécies, nomeando uma a uma e explicando o que diferencia cada uma das outras; (4) requisitos, elementos ou pressupostos, um por um; (5) prazos, quóruns, percentuais e competências, com o número exato; (6) exceções e ressalvas, dizendo em que hipótese a regra não vale; (7) o entendimento consolidado dos tribunais ou da doutrina majoritária, quando houver; (8) pelo menos dois exemplos concretos, com situação e desfecho; (9) os erros que a banca explora neste ponto. Escreva como um professor experiente escreve a apostila: denso, específico e sem encher linguiça. Se o assunto realmente for pequeno, cubra-o inteiro com profundidade em vez de inventar conteúdo que não existe — mas não devolva menos do que o tópico comporta.
 - "acronimo": um mnemônico ÚTIL. "sigla" é a palavra-chave (ex.: "LIMPE"). "itens" tem UM item por letra, na ordem, no formato "L — Legalidade: só se pode fazer o que a lei autoriza" — a letra, o que ela significa e uma explicação de até 12 palavras. Quem lê os itens tem de entender o mnemônico inteiro sem precisar de mais nada. Se não couber mnemônico, crie um macete curto na sigla e explique cada parte nos itens no mesmo formato.
-- "explicacao_simples": explique este assunto COMO SE O ALUNO TIVESSE 12 ANOS — e faça isso a fundo, não por cima. Escreva de 4 a 6 parágrafos, em linguagem do dia a dia, cada parágrafo separado por linha em branco. Regras: (a) comece dizendo, em uma frase, para que serve isso no mundo real; (b) sempre que aparecer um termo técnico ou uma palavra difícil do assunto — inclusive os termos em latim e o "juridiquês" —, PARE e explique o que ela significa em palavras simples, entre travessões, antes de seguir; (c) use pelo menos duas analogias concretas do cotidiano (escola, casa, jogo, fila, futebol) para os conceitos centrais; (d) mostre um exemplo real, com nomes e situação, de como isso aparece na prática; (e) termine com o "resumo da ópera" em duas ou três frases. NÃO repita o texto do "resumo" com outras palavras: aqui o compromisso é fazer entender, não cobrir o edital.
+- "explicacao_simples": cerca de ${t.palavras_simples} palavras. Explique este assunto COMO SE O ALUNO TIVESSE 12 ANOS — e faça isso a fundo, não por cima. Escreva de 4 a 6 parágrafos, em linguagem do dia a dia, cada parágrafo separado por linha em branco. Regras: (a) comece dizendo, em uma frase, para que serve isso no mundo real; (b) sempre que aparecer um termo técnico ou uma palavra difícil do assunto — inclusive os termos em latim e o "juridiquês" —, PARE e explique o que ela significa em palavras simples, entre travessões, antes de seguir; (c) use pelo menos duas analogias concretas do cotidiano (escola, casa, jogo, fila, futebol) para os conceitos centrais; (d) mostre um exemplo real, com nomes e situação, de como isso aparece na prática; (e) termine com o "resumo da ópera" em duas ou três frases. NÃO repita o texto do "resumo" com outras palavras: aqui o compromisso é fazer entender, não cobrir o edital.
 - "trecho_chave": o trecho essencial para memorizar — lei seca, definição canônica, súmula, fórmula ou regra central — com 40 a 90 palavras, completo o bastante para o aluno digitar de memória e sair sabendo. Marque ${t.chaves} palavras-chave entre colchetes duplos, ex.: "obedecerá aos princípios de [[legalidade]], [[impessoalidade]]...". Se o assunto tiver mais de um dispositivo central, junte-os no mesmo trecho separando por " // ".
 - "questoes": ${t.questoes} itens inéditos no formato Certo/Errado, atacando armadilhas clássicas e cobrindo pontos diferentes; "gabarito" true = Certo; "comentario" explica em até 45 palavras.
 - "questoes_me": ${t.me} questões inéditas de MÚLTIPLA ESCOLHA, cada uma com "enunciado", 5 "alternativas" (texto puro, sem letras A) B) etc.), "correta" (índice de 0 a 4) e "comentario" de até 45 palavras.
@@ -52,13 +56,31 @@ Regras:
 ${estilo}`;
 }
 
-const S_TEORIA = {
+// Quanto maior a resposta, maior o risco de ela vir cortada. A teoria longa vai
+// sozinha numa chamada; o resto se divide em blocos pequenos, todos em paralelo.
+const S_TEXTO = {
   type: 'object',
   properties: {
     subtitulo: { type: 'string' },
     resumo: { type: 'string' },
+    explicacao_simples: { type: 'string' }
+  },
+  required: ['subtitulo', 'resumo', 'explicacao_simples']
+};
+
+const S_MIDIA = {
+  type: 'object',
+  properties: {
+    podcast: { type: 'string' },
+    musica: { type: 'object', properties: { estilo: { type: 'string' }, letra: { type: 'string' } }, required: ['estilo', 'letra'] }
+  },
+  required: ['podcast', 'musica']
+};
+
+const S_APOIO = {
+  type: 'object',
+  properties: {
     acronimo: { type: 'object', properties: { sigla: { type: 'string' }, itens: { type: 'array', items: { type: 'string' } } }, required: ['sigla', 'itens'] },
-    explicacao_simples: { type: 'string' },
     trecho_chave: { type: 'string' },
     mapa: {
       type: 'object',
@@ -87,11 +109,9 @@ const S_TEORIA = {
       type: 'array',
       items: { type: 'object', properties: { valor: { type: 'string' }, rotulo: { type: 'string' } }, required: ['valor', 'rotulo'] }
     },
-    pegadinhas: { type: 'array', items: { type: 'string' } },
-    podcast: { type: 'string' },
-    musica: { type: 'object', properties: { estilo: { type: 'string' }, letra: { type: 'string' } }, required: ['estilo', 'letra'] }
+    pegadinhas: { type: 'array', items: { type: 'string' } }
   },
-  required: ['subtitulo', 'resumo', 'explicacao_simples', 'acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas', 'podcast', 'musica']
+  required: ['acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas']
 };
 
 const S_PRATICA = {
@@ -217,22 +237,27 @@ module.exports = async (req, res) => {
 
     // A teoria é o texto grande e o que mais corta: se vier pela metade, refaz
     // antes de mostrar — e, se ainda assim vier truncada, não vai para o cache.
-    let teoria = null, pratica = null;
-    [teoria, pratica] = await Promise.all([
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, explicacao_simples, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
+    const PEDIDO_TEXTO = 'Gere APENAS estes campos: subtitulo, resumo e explicacao_simples. O "resumo" é o material principal do aluno — desenvolva-o na extensão pedida, sem economizar.';
+    let [texto, apoio, midia, pratica] = await Promise.all([
+      gerar(sis, cabecalho + PEDIDO_TEXTO, S_TEXTO),
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros e pegadinhas.', S_APOIO),
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: podcast e musica.', S_MIDIA),
       gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
     ]);
-    if (!pacoteCompleto(teoria, alvo.paragrafos)) {
+    // a aula escrita é a parte longa: se vier cortada, refaz só ela
+    if (!terminaInteiro(texto && texto.resumo)) {
       try {
-        teoria = await gerar(
+        texto = await gerar(
           sis,
-          cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, explicacao_simples, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.\n\n' +
-          'ATENÇÃO: a tentativa anterior foi cortada no meio. Escreva parágrafos mais curtos e um roteiro de podcast mais enxuto, mas TERMINE todas as frases e feche o JSON.',
-          S_TEORIA, 2
+          cabecalho + PEDIDO_TEXTO + '\n\nATENÇÃO: a tentativa anterior foi cortada no meio. ' +
+          'Mantenha a profundidade, mas TERMINE todas as frases e feche o JSON.',
+          S_TEXTO, 2
         );
       } catch (_) {}
     }
+    const teoria = Object.assign({}, texto, apoio, midia);
     const pacote = Object.assign({}, teoria, pratica);
+    pacote.palavras_resumo = String(pacote.resumo || '').split(/\s+/).filter(Boolean).length;
     pacote.topico = t.rows[0].topico;
     pacote.disciplina = t.rows[0].disciplina;
     pacote.banca = t.rows[0].banca || null;

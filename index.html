@@ -367,7 +367,13 @@
   .sit.hj{background:var(--accent); color:var(--on-accent)}
   .sit.fim{background:var(--accent-soft); color:var(--accent)}
   /* explicação para leigos e mnemônico aberto */
-  .simples{background:var(--warm-soft); border:1px solid var(--warm); border-radius:16px; padding:16px 18px}
+  .simples{background:var(--warm-soft); border:1px solid var(--warm); border-radius:16px; padding:16px 18px;
+           max-height:230px; overflow-y:auto; position:relative}
+  .simples.aberto{max-height:none}
+  .simples:not(.aberto):after{content:""; position:sticky; display:block; bottom:-16px; height:38px; margin:-38px -18px -16px;
+    background:linear-gradient(transparent, var(--warm-soft)); pointer-events:none}
+  .bloco-ctl{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px}
+  .bloco-ctl .lg-alt{margin:0; padding:0; font-size:.76rem}
   .simples h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem; color:var(--warm); margin-bottom:8px;
               display:flex; align-items:center; gap:8px}
   .simples p{font-size:.92rem; line-height:1.7; margin-bottom:12px}
@@ -382,7 +388,7 @@
                 display:flex; align-items:center; justify-content:center; font-family:"Bricolage Grotesque",sans-serif;
                 font-weight:800; font-size:.9rem}
   .mnem li b{font-weight:700}
-  .pod-tx{max-height:260px; overflow-y:auto; background:var(--card2); border:1px solid var(--line); border-radius:14px;
+  .pod-tx{max-height:230px; overflow-y:auto; background:var(--card2); border:1px solid var(--line); border-radius:14px;
           padding:14px 16px; margin-top:10px; font-size:.88rem; line-height:1.65}
   .pod-tx.aberto{max-height:none}
   .pod-tx .fala{margin-bottom:9px}
@@ -1476,6 +1482,13 @@
             <h3>👦 Explicando como se você tivesse 12 anos</h3>
             <p class="muted">Assim que a teoria carregar, a explicação simples aparece aqui.</p>
           </div>
+          <div class="bloco-ctl">
+            <button class="btn ghost small" style="margin:0; padding:6px 12px; font-size:.76rem" id="btnOuvirSimples"
+                    onclick="ouvirBloco('simplesBox','simples',this)">🔊 Ouvir</button>
+            <button class="iconbtn velbtn" onclick="velProxima()" title="Velocidade da leitura">1×</button>
+            <button class="lg-alt" onclick="expandirBloco('simplesBox', this)">expandir</button>
+            <span class="muted" style="font-size:.72rem">role dentro da caixa para ler tudo</span>
+          </div>
         </div></div>
       </div>
 
@@ -1510,12 +1523,15 @@
           </div>
           <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
           <p class="muted" style="font-size:.72rem; margin-top:8px">Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.</p>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap">
-            <p class="eyebrow" style="margin:0">Transcrição do episódio</p>
-            <button class="lg-alt" style="margin:0; padding:0; font-size:.74rem" onclick="podExpandir(this)">expandir</button>
-            <span class="muted" style="font-size:.72rem">acompanhe lendo enquanto ouve</span>
-          </div>
+          <p class="eyebrow" style="margin:12px 0 6px">Transcrição do episódio</p>
           <div class="pod-tx" id="podTx"><p class="muted" style="font-size:.85rem">A transcrição aparece assim que o episódio for gerado.</p></div>
+          <div class="bloco-ctl">
+            <button class="btn ghost small" style="margin:0; padding:6px 12px; font-size:.76rem" id="btnOuvirTx"
+                    onclick="ouvirBloco('podTx','transcricao',this)">🔊 Ler a transcrição</button>
+            <button class="iconbtn velbtn" onclick="velProxima()" title="Velocidade da leitura">1×</button>
+            <button class="lg-alt" onclick="expandirBloco('podTx', this)">expandir</button>
+            <span class="muted" style="font-size:.72rem">role dentro da caixa para acompanhar</span>
+          </div>
         </div></div>
       </div>
 
@@ -2779,6 +2795,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     try { window.speechSynthesis.cancel(); } catch(e){}
     if(typeof limparKaraoke === 'function') limparKaraoke();
     FALA.tipo = null;
+    ['btnOuvirSimples','btnOuvirTx'].forEach(function(b){
+      var el = $(b); if(el && el.dataset.rotulo) el.textContent = el.dataset.rotulo;
+    });
     var p = $('ptime'); if(p && p.textContent === 'ouvindo') p.textContent = 'ouvir';
     if($('btnOuvirTeoria')) $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto';
   }
@@ -3619,6 +3638,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       if($('sbSimples')) $('sbSimples').textContent = 'refaça o assunto';
       return;
     }
+    box.classList.remove('aberto');
+    box.scrollTop = 0;
     box.innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3>' +
       t.split(/\n+/).filter(function(x){ return x.trim(); })
        .map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
@@ -3637,10 +3658,40 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       return '<p class="fala' + (quem === 'LEO' ? ' leo' : '') + '"><b>' + (quem === 'LEO' ? 'Léo' : 'Ana') + '</b> ' + esc(m[2]) + '</p>';
     }).join('');
   }
-  function podExpandir(btn){
-    var box = $('podTx'); if(!box) return;
+  function expandirBloco(id, btn){
+    var box = $(id); if(!box) return;
     var aberto = box.classList.toggle('aberto');
     btn.textContent = aberto ? 'recolher' : 'expandir';
+  }
+  function podExpandir(btn){ expandirBloco('podTx', btn); }
+
+  /* ---------- o navegador lê um bloco de texto em voz alta ---------- */
+  function ouvirBloco(id, tipo, btn){
+    if(!('speechSynthesis' in window)){ toast('Seu aparelho não tem leitura em voz alta'); return; }
+    var rotulo = btn ? (btn.dataset.rotulo || btn.textContent) : '';
+    if(btn && !btn.dataset.rotulo) btn.dataset.rotulo = rotulo;
+    if(FALA.tipo === tipo){ pararFala(); if(btn) btn.textContent = btn.dataset.rotulo; return; }
+    pararFala();
+    var box = $(id); if(!box) return;
+    var paras = [].map.call(box.querySelectorAll('p'), function(p){ return semMd(p.textContent).trim(); })
+                   .filter(function(t){ return t.length > 1; });
+    if(!paras.length){ toast('Nada para ler ainda'); return; }
+    FALA.tipo = tipo;
+    if(btn) btn.textContent = '⏸ Parar';
+    var vs = vozesPt();
+    paras.forEach(function(txt, i){
+      var u = new SpeechSynthesisUtterance(txt);
+      u.lang = 'pt-BR'; u.rate = 1.02 * VEL;
+      if(vs[0]) u.voice = vs[0];
+      if(i === paras.length - 1){
+        u.onend = function(){
+          FALA.tipo = null;
+          if(btn) btn.textContent = btn.dataset.rotulo;
+          if(tipo === 'simples') evento('explicacao_simples_ouvida', 'ouvir', null, 'em_andamento');
+        };
+      }
+      window.speechSynthesis.speak(u);
+    });
   }
 
   /* ---------- lei seca gaps ---------- */
@@ -3749,6 +3800,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(FALA.tipo){
       var t = FALA.tipo; pararFala();
       if(t === 'teoria'){ $('btnOuvirTeoria').textContent = '🔊 Ouvir o texto'; ouvirTeoria(); }
+      else if(t === 'simples'){ ouvirBloco('simplesBox', 'simples', $('btnOuvirSimples')); }
+      else if(t === 'transcricao'){ ouvirBloco('podTx', 'transcricao', $('btnOuvirTx')); }
       else falarNavegador(t);
     } else {
       toast('Velocidade da leitura: ' + velTxt());
