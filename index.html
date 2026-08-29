@@ -3825,11 +3825,7 @@
         if(sel && !sel.isCollapsed) return;   // seleção manda; o balão resolve
         pintarPalavra(w, ANOT.cor);
       });
-      w.addEventListener('pointerenter', function(){
-        if(!ANOT.arrastando || ANOT.tool !== 'marca') return;
-        if($('lBody').classList.contains('tp')) return;
-        if(!w.classList.contains('mk' + (ANOT.cor + 1))) pintarPalavra(w, ANOT.cor, true);
-      });
+
     });
     renderLegenda();
     montarCanvas();
@@ -3930,6 +3926,18 @@
     if(ANOT.tool === 'mao') setTool('marca');
   }
 
+  // Pinta a palavra que estiver sob o dedo/cursor — independe de o navegador
+  // avisar a entrada em cada span, o que não acontece no toque.
+  function pintarNoPonto(e){
+    if($('lBody').classList.contains('tp')) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    if(!el || !el.classList || !el.classList.contains('w')) return;
+    if(el.classList.contains('mk' + (ANOT.cor + 1))) return;
+    aplicarCor(el, ANOT.cor, true);
+    ANOT.pintou++;
+    contarMarcas();
+  }
+
   function montarCanvas(){
     var body = $('lBody'); if(!body) return;
     var cv = $('lCanvas');
@@ -3940,13 +3948,30 @@
       cv.addEventListener('pointermove', anotMove);
       cv.addEventListener('pointerup', anotUp);
       cv.addEventListener('pointercancel', anotUp);
-      body.addEventListener('pointerdown', function(){ ANOT.arrastando = true; });
-      window.addEventListener('pointerup', function(){ ANOT.arrastando = false; });
+      if(!body.dataset.anotOn){ body.dataset.anotOn = '1';
+      body.addEventListener('pointerdown', function(e){
+        ANOT.arrastando = true; ANOT.pintou = 0;
+        // no toque o navegador prende o ponteiro no primeiro elemento; soltando,
+        // conseguimos saber por onde o dedo passa depois
+        try { if(e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId); } catch(err){}
+        if(ANOT.tool === 'marca') pintarNoPonto(e);
+      });
+      body.addEventListener('pointermove', function(e){
+        if(!ANOT.arrastando || ANOT.tool !== 'marca') return;
+        e.preventDefault();
+        pintarNoPonto(e);
+      });
+      window.addEventListener('pointerup', function(){
+        if(ANOT.arrastando && ANOT.pintou){ contarMarcas(); salvarAnot(); }
+        ANOT.arrastando = false; ANOT.pintou = 0;
+      });
       window.addEventListener('resize', function(){ dimensionarCanvas(); redesenhar(); });
+      }
     }
     dimensionarCanvas();
     redesenhar();
   }
+  var OBS_LEITOR = null;
   function dimensionarCanvas(){
     var body = $('lBody'), cv = $('lCanvas');
     if(!body || !cv) return;
@@ -3981,8 +4006,10 @@
   function anotUp(){
     if(!ANOT.atual) return;
     var t = ANOT.atual; ANOT.atual = null;
-    var dx = (t.p[t.p.length-1][0] - t.p[0][0]), dy = (t.p[t.p.length-1][1] - t.p[0][1]);
-    if(t.p.length > 2 || Math.abs(dx) > .01 || Math.abs(dy) > .004){ ANOT.tracos.push(t); salvarAnot(); }
+    var cv = $('lCanvas'), W = cv ? cv.clientWidth : 1, H = cv ? cv.clientHeight : 1;
+    var dx = (t.p[t.p.length-1][0] - t.p[0][0]) * W, dy = (t.p[t.p.length-1][1] - t.p[0][1]) * H;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    if(t.p.length > 2 || dist > 6){ ANOT.tracos.push(t); salvarAnot(); }
     redesenhar();
   }
   function apagarEm(p){
