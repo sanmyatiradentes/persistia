@@ -325,7 +325,7 @@
   .dia-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line)}
   .dia-row:first-child{border-top:none}
   .dia-row.vazio{opacity:.45}
-  .dia-row .dt{width:62px; flex:none; font-size:.76rem; font-weight:700; font-variant-numeric:tabular-nums}
+  .dia-row .dt{width:74px; flex:none; font-size:.76rem; font-weight:700; font-variant-numeric:tabular-nums; align-self:flex-start}
   .dia-row .dt small{display:block; font-size:.64rem; color:var(--muted); font-weight:600; text-transform:capitalize}
   .dia-row .barra{flex:1; min-width:0}
   .dia-row .vb{display:flex; gap:3px; flex-wrap:wrap}
@@ -334,6 +334,17 @@
   .dia-row .met b{color:var(--ink)}
   .dia-row .qt{flex:none; text-align:right; font-size:.78rem; font-weight:700; font-variant-numeric:tabular-nums; width:52px}
   .dia-row .qt small{display:block; font-size:.62rem; color:var(--muted); font-weight:600}
+  .dia-row .assd{display:block; width:100%; text-align:left; background:none; border:none; font:inherit; color:inherit;
+                 cursor:pointer; padding:3px 6px; margin:0 0 2px -6px; border-radius:8px; font-size:.82rem; line-height:1.35}
+  .dia-row .assd:hover{background:var(--accent-soft)}
+  .dia-row .assd .pt{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:7px; vertical-align:middle}
+  .dia-row .assd .ok{color:var(--muted); text-decoration:line-through}
+  .dia-row.hoje{background:var(--accent-soft); border-radius:12px; padding-left:8px; padding-right:8px}
+  .dia-row .sit{display:inline-block; margin-top:4px; font-size:.6rem; font-weight:800; text-transform:uppercase;
+                letter-spacing:.03em; padding:1px 7px; border-radius:999px}
+  .sit.atr{background:var(--warm-soft); color:var(--warm)}
+  .sit.hj{background:var(--accent); color:var(--on-accent)}
+  .sit.fim{background:var(--accent-soft); color:var(--accent)}
   .dia-leg{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; font-size:.66rem; color:var(--muted)}
   .dia-leg span{display:inline-flex; align-items:center; gap:4px}
   .dia-leg i{width:9px; height:9px; border-radius:3px; display:block}
@@ -1685,9 +1696,17 @@
 
       <div class="dv" id="dv-dia">
         <div class="dia-resumo" id="diaResumo">—</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px">
+          <div class="lmode" style="width:fit-content">
+            <button id="fdTudo" class="sel" onclick="filtroDia('tudo')">Cronograma inteiro</button>
+            <button id="fdFeito" onclick="filtroDia('feito')">Só o que estudei</button>
+            <button id="fdFalta" onclick="filtroDia('falta')">Só o que falta</button>
+          </div>
+          <button class="btn ghost small" style="margin:0; padding:6px 12px; font-size:.74rem" onclick="irParaHoje()">Ir para hoje</button>
+        </div>
         <div class="dia-leg" id="diaLeg"></div>
         <div id="dvDiaList"></div>
-        <p class="muted" style="font-size:.7rem; margin-top:10px">Últimos 30 dias. Cada quadradinho é um dos oito verbos: aceso, você usou aquele verbo naquele dia.</p>
+        <p class="muted" style="font-size:.7rem; margin-top:10px">Cada dia do seu cronograma, com o assunto agendado e os oito verbos: o quadradinho aceso é o verbo que você usou naquele dia. Toque no assunto para abrir a esteira dele.</p>
       </div>
 
       <div class="dv" id="dv-tema">
@@ -4565,8 +4584,29 @@
   var COR_VERBO = { ouvir:'var(--d5)', ler:'var(--d1)', falar:'var(--d7)', digitar:'var(--d3)',
                     escrever:'var(--d2)', raciocinar:'var(--d4)', treinar:'var(--d6)', perguntar:'#2E9BA8' };
 
+  var DASH_DIA = [], FILTRO_DIA = 'tudo';
+
+  function filtroDia(f){
+    FILTRO_DIA = f;
+    ['tudo','feito','falta'].forEach(function(x){
+      var b = $('fd' + x.charAt(0).toUpperCase() + x.slice(1));
+      if(b) b.classList.toggle('sel', x === f);
+    });
+    renderPorDia();
+  }
+  function irParaHoje(){
+    var el = document.querySelector('#dvDiaList .dia-row.hoje') || document.querySelector('#dvDiaList .dia-row');
+    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Junta duas fontes: o cronograma inteiro (o que está agendado, do primeiro ao
+  // último dia) e o registro de atividade (o que você realmente fez em cada dia).
   function renderPorDia(lista){
     if(!$('dvDiaList')) return;
+    if(lista) DASH_DIA = lista;
+    var ativ = {}; (DASH_DIA || []).forEach(function(d){ ativ[d.dia] = d; });
+    var itens = (PLANO_ITENS && PLANO_ITENS.length) ? PLANO_ITENS : ((REAL && REAL.itens) || []);
+
     var DIA = ['dom','seg','ter','qua','qui','sex','sáb'];
     var hojeISO = new Date().toISOString().slice(0,10);
 
@@ -4574,44 +4614,87 @@
       return '<span><i style="background:' + COR_VERBO[v] + '"></i>' + v + '</span>';
     }).join('');
 
-    var ativos = lista.filter(function(d){ return d.eventos > 0; });
-    var qTot = lista.reduce(function(n, d){ return n + d.questoes; }, 0);
-    var qCer = lista.reduce(function(n, d){ return n + d.certas; }, 0);
-    var melhor = ativos.slice().sort(function(a, b){ return b.eventos - a.eventos; })[0];
-    $('diaResumo').innerHTML = ativos.length
-      ? 'Você estudou em <b>' + ativos.length + ' dos últimos 30 dias</b>' +
-        (qTot ? ' · <b>' + qTot + '</b> questões, <b>' + Math.round(100*qCer/qTot) + '%</b> de acerto' : '') +
-        (melhor ? ' · dia mais forte: <b>' + fmtData(melhor.dia) + '</b>' : '')
-      : 'Assim que você estudar, cada dia aparece aqui com os verbos que usou e o seu acerto nas questões.';
+    var discCor = {}, kc = 0;
+    itens.forEach(function(x){ if(discCor[x.disciplina] === undefined){ discCor[x.disciplina] = PAL[kc % PAL.length]; kc++; } });
 
-    // do mais recente para o mais antigo, sem arrastar a fila de dias vazios do começo
-    var ordenada = lista.slice().reverse();
-    var ultimo = ordenada.length - 1;
-    while(ultimo > 6 && !ordenada[ultimo].eventos) ultimo--;
-    ordenada = ordenada.slice(0, ultimo + 1);
+    // todos os dias: os do cronograma + os que tiveram estudo
+    var porDia = {};
+    itens.forEach(function(x){
+      if(!x.data) return;
+      (porDia[x.data] = porDia[x.data] || { dia: x.data, topicos: [] }).topicos.push(x);
+    });
+    Object.keys(ativ).forEach(function(iso){
+      if(ativ[iso].eventos && !porDia[iso]) porDia[iso] = { dia: iso, topicos: [] };
+    });
+    var dias = Object.keys(porDia).sort();
 
-    $('dvDiaList').innerHTML = ordenada.map(function(d){
-      var dt = new Date(d.dia + 'T12:00:00');
+    // resumo do período
+    var comEstudo = (DASH_DIA || []).filter(function(d){ return d.eventos > 0; }).length;
+    var qTot = (DASH_DIA || []).reduce(function(n, d){ return n + d.questoes; }, 0);
+    var qCer = (DASH_DIA || []).reduce(function(n, d){ return n + d.certas; }, 0);
+    var feitos = itens.filter(function(x){ return x.status === 'concluido'; }).length;
+    $('diaResumo').innerHTML = dias.length
+      ? '<b>' + feitos + '</b> de <b>' + itens.length + '</b> sessões concluídas em <b>' + dias.length + ' dias</b> de cronograma' +
+        (comEstudo ? ' · estudou em <b>' + comEstudo + '</b> dos últimos 30 dias' : '') +
+        (qTot ? ' · <b>' + Math.round(100*qCer/qTot) + '%</b> de acerto nas questões' : '')
+      : 'Assim que o cronograma existir, cada dia aparece aqui com o assunto e os verbos que você usou.';
+
+    var mostrados = dias.filter(function(iso){
+      var t = porDia[iso].topicos, a = ativ[iso];
+      if(FILTRO_DIA === 'feito') return (a && a.eventos) || t.some(function(x){ return x.status === 'concluido'; });
+      if(FILTRO_DIA === 'falta') return t.some(function(x){ return x.status !== 'concluido'; });
+      return true;
+    });
+    if(!mostrados.length){
+      $('dvDiaList').innerHTML = '<p class="muted" style="font-size:.85rem">Nenhum dia com esse filtro.</p>';
+      return;
+    }
+
+    $('dvDiaList').innerHTML = mostrados.map(function(iso){
+      var t = porDia[iso].topicos, a = ativ[iso] || { verbos: [], questoes: 0, pct: null, eventos: 0 };
+      var dt = new Date(iso + 'T12:00:00');
+      var ehHoje = iso === hojeISO, passou = iso < hojeISO;
+      var pendentes = t.filter(function(x){ return x.status !== 'concluido'; }).length;
+      var etq = ehHoje ? '<span class="sit hj">hoje</span>'
+        : (passou && pendentes ? '<span class="sit atr">atrasado</span>'
+        : (t.length && !pendentes ? '<span class="sit fim">✓</span>' : ''));
+
+      var assuntos = t.map(function(x){
+        var feito = x.status === 'concluido';
+        return '<button class="assd" onclick="estudarTopico(\'' + x.cron_id + '\')" title="Abrir a esteira deste assunto">' +
+          '<span class="pt" style="background:' + discCor[x.disciplina] + '"></span>' +
+          '<span' + (feito ? ' class="ok"' : '') + '>' + esc(x.topico) +
+            (Number(x.partes) > 1 ? ' <span class="muted">· parte ' + x.parte + '/' + x.partes + '</span>' : '') + '</span>' +
+          '<small style="display:block; color:var(--muted); font-size:.7rem; margin-left:15px">' +
+            esc(x.disciplina) + (x.horas ? ' · ' + fmtHoras(x.horas) : '') + '</small></button>';
+      }).join('');
+
       var quadros = VERBOS_ORDEM.map(function(v){
-        var fez = d.verbos.indexOf(v) >= 0;
+        var fez = a.verbos.indexOf(v) >= 0;
         return '<i title="' + v + '"' + (fez ? ' style="background:' + COR_VERBO[v] + '"' : '') + '></i>';
       }).join('');
+
       var partes = [];
-      if(d.sessoes) partes.push('<b>' + d.sessoes + '</b> ' + (d.sessoes === 1 ? 'sessão concluída' : 'sessões concluídas'));
-      if(d.verbos.length) partes.push('<b>' + d.verbos.length + '</b> de 8 verbos');
-      if(d.questoes) partes.push('<b>' + d.questoes + '</b> ' + (d.questoes === 1 ? 'questão' : 'questões'));
-      return '<div class="dia-row' + (d.eventos ? '' : ' vazio') + '">' +
+      if(a.verbos.length) partes.push('<b>' + a.verbos.length + '</b> de 8 verbos');
+      if(a.questoes) partes.push('<b>' + a.questoes + '</b> ' + (a.questoes === 1 ? 'questão' : 'questões'));
+      if(!partes.length) partes.push(passou ? 'sem estudo registrado' : 'ainda não estudado');
+
+      return '<div class="dia-row' + (a.eventos ? '' : ' vazio') + (ehHoje ? ' hoje' : '') + '">' +
         '<span class="dt">' + dt.getDate() + '/' + (dt.getMonth()+1) +
-          '<small>' + (d.dia === hojeISO ? 'hoje' : DIA[dt.getDay()]) + '</small></span>' +
-        '<span class="barra"><span class="vb">' + quadros + '</span>' +
-          '<small class="met">' + (partes.length ? partes.join(' · ') : 'sem estudo registrado') + '</small></span>' +
-        '<span class="qt">' + (d.pct == null ? '—' : d.pct + '%') + '<small>acerto</small></span>' +
+          '<small>' + DIA[dt.getDay()] + '</small>' + etq + '</span>' +
+        '<span class="barra">' +
+          (assuntos || '<span class="muted" style="font-size:.82rem">revisão · estudo avulso</span>') +
+          '<span class="vb" style="margin-top:4px">' + quadros + '</span>' +
+          '<small class="met">' + partes.join(' · ') + '</small></span>' +
+        '<span class="qt">' + (a.pct == null ? '—' : a.pct + '%') + '<small>acerto</small></span>' +
         '</div>';
     }).join('');
+
   }
 
   /* ---------- dashboard: visões ---------- */
   function dvShow(k, btn){
+    if(k === 'dia'){ renderPorDia(); setTimeout(irParaHoje, 250); }
     document.querySelectorAll('.dv').forEach(function(d){ d.classList.remove('sel'); });
     btn.parentNode.querySelectorAll('button').forEach(function(b){ b.classList.remove('sel'); });
     $('dv-'+k).classList.add('sel');
@@ -5113,6 +5196,7 @@
 
     PLANO_ITENS = itens;
     renderPlanoLista();
+    if(typeof renderPorDia === 'function') renderPorDia();
     if($('planoConta')){
       var est = ACESSO ? ACESSO.estado : '';
       var sit = est === 'ativa' ? 'assinatura ativa'
