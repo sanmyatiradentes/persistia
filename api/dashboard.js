@@ -81,6 +81,40 @@ module.exports = async (req, res) => {
       semanas.push({ semana: 8 - w, total: t, pct: t ? Math.round(100 * c / t) : null });
     }
 
+    // ----- evolução dia a dia (últimos 30 dias) -----
+    const ev30 = await db.execute({
+      sql: `SELECT substr(criado_em,1,10) AS dia, tipo, verbo, detalhe FROM eventos
+            WHERE aluno_id = ? AND criado_em >= ? ORDER BY criado_em`,
+      args: [aluno.id, new Date(Date.now() - 30 * 86400000).toISOString()]
+    });
+    const mapaDia = {};
+    for (const r of ev30.rows) {
+      const d = mapaDia[r.dia] || (mapaDia[r.dia] = { dia: r.dia, eventos: 0, verbos: {}, questoes: 0, certas: 0, sessoes: 0 });
+      d.eventos++;
+      if (r.verbo) d.verbos[r.verbo] = (d.verbos[r.verbo] || 0) + 1;
+      if (r.tipo === 'questao') {
+        try {
+          const x = JSON.parse(r.detalhe || '{}');
+          if (typeof x.respondeu_certo === 'boolean') { d.questoes++; if (x.respondeu_certo) d.certas++; }
+        } catch (_) {}
+      }
+      if (r.tipo === 'sessao_concluida' || r.tipo === 'topico_concluido') d.sessoes++;
+    }
+    const porDia = [];
+    for (let i = 29; i >= 0; i--) {
+      const iso = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const d = mapaDia[iso];
+      porDia.push({
+        dia: iso,
+        eventos: d ? d.eventos : 0,
+        verbos: d ? Object.keys(d.verbos).sort() : [],
+        questoes: d ? d.questoes : 0,
+        certas: d ? d.certas : 0,
+        pct: d && d.questoes ? Math.round(100 * d.certas / d.questoes) : null,
+        sessoes: d ? d.sessoes : 0
+      });
+    }
+
     const primeiro = await db.execute({
       sql: 'SELECT MIN(criado_em) AS d FROM eventos WHERE aluno_id = ?', args: [aluno.id]
     });
@@ -104,6 +138,7 @@ module.exports = async (req, res) => {
       constancia_dias: streak,
       flashcards_devidos: Number(fc.rows[0].n),
       dias_ativos: dias.rows.map(r => r.dia),
+      por_dia: porDia,
       semanas,
       dia_jornada: diaJornada,
       revisoes: devidos.rows.map(r => ({ frente: r.frente, origem: r.origem }))

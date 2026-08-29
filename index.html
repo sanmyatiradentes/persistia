@@ -321,6 +321,24 @@
   .tile .d{font-size:.68rem; font-weight:700; display:block; margin-top:2px}
   .tile .up{color:var(--good)} .tile .dn{color:var(--crit)}
   .chart-card{margin-bottom:14px}
+  /* evolução dia a dia */
+  .dia-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line)}
+  .dia-row:first-child{border-top:none}
+  .dia-row.vazio{opacity:.45}
+  .dia-row .dt{width:62px; flex:none; font-size:.76rem; font-weight:700; font-variant-numeric:tabular-nums}
+  .dia-row .dt small{display:block; font-size:.64rem; color:var(--muted); font-weight:600; text-transform:capitalize}
+  .dia-row .barra{flex:1; min-width:0}
+  .dia-row .vb{display:flex; gap:3px; flex-wrap:wrap}
+  .dia-row .vb i{width:11px; height:11px; border-radius:3px; background:var(--line); display:block}
+  .dia-row .met{font-size:.7rem; color:var(--muted); margin-top:4px; display:block}
+  .dia-row .met b{color:var(--ink)}
+  .dia-row .qt{flex:none; text-align:right; font-size:.78rem; font-weight:700; font-variant-numeric:tabular-nums; width:52px}
+  .dia-row .qt small{display:block; font-size:.62rem; color:var(--muted); font-weight:600}
+  .dia-leg{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; font-size:.66rem; color:var(--muted)}
+  .dia-leg span{display:inline-flex; align-items:center; gap:4px}
+  .dia-leg i{width:9px; height:9px; border-radius:3px; display:block}
+  .dia-resumo{background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:11px 13px; margin-bottom:12px; font-size:.8rem}
+  .dia-resumo b{color:var(--accent)}
   .chart-card h2{margin-bottom:2px; display:flex; align-items:center; gap:8px}
   .chart-card h2:before{content:""; width:4px; height:16px; border-radius:2px; background:var(--accent); flex:none}
   .chart-card:nth-of-type(even) h2:before{background:var(--d3)}
@@ -1646,11 +1664,12 @@
 
     <div class="card chart-card">
       <h2>Evolução por dimensão</h2>
-      <p class="sub">Disciplina, tema e verbo — rastreado sozinho enquanto você estuda</p>
+      <p class="sub">Disciplina, tema, verbo e dia — rastreado sozinho enquanto você estuda</p>
       <div class="seg" role="tablist" aria-label="Dimensão do dashboard">
         <button class="sel" onclick="dvShow('disc',this)">Por disciplina</button>
         <button onclick="dvShow('tema',this)">Por tema</button>
         <button onclick="dvShow('verbo',this)">Por verbo</button>
+        <button onclick="dvShow('dia',this)">Por dia</button>
       </div>
 
       <div class="dv sel" id="dv-disc"><div id="dvDiscList">
@@ -1662,6 +1681,13 @@
         <div class="drow"><span class="dot" style="background:var(--d6)"></span><span class="dn">Medicina Legal<small class="num">3h de 18h</small></span><span class="db"><i style="width:18%; background:var(--d6)"></i></span><span class="dp num">18%</span></div>
         <div class="drow"><span class="dot" style="background:var(--d7)"></span><span class="dn">Informática<small class="num">1h de 12h</small></span><span class="db"><i style="width:10%; background:var(--d7)"></i></span><span class="dp num">10%</span></div>
         </div><p class="muted" style="font-size:.7rem; margin-top:10px">Cada disciplina mantém sua cor em todo o app. Toque em uma para abrir os temas.</p>
+      </div>
+
+      <div class="dv" id="dv-dia">
+        <div class="dia-resumo" id="diaResumo">—</div>
+        <div class="dia-leg" id="diaLeg"></div>
+        <div id="dvDiaList"></div>
+        <p class="muted" style="font-size:.7rem; margin-top:10px">Últimos 30 dias. Cada quadradinho é um dos oito verbos: aceso, você usou aquele verbo naquele dia.</p>
       </div>
 
       <div class="dv" id="dv-tema">
@@ -4534,6 +4560,56 @@
     marcaVerbo(verbo || 'escrever');
   }
 
+  /* ---------- dashboard: evolução dia a dia ---------- */
+  var VERBOS_ORDEM = ['ouvir','ler','falar','digitar','escrever','raciocinar','treinar','perguntar'];
+  var COR_VERBO = { ouvir:'var(--d5)', ler:'var(--d1)', falar:'var(--d7)', digitar:'var(--d3)',
+                    escrever:'var(--d2)', raciocinar:'var(--d4)', treinar:'var(--d6)', perguntar:'#2E9BA8' };
+
+  function renderPorDia(lista){
+    if(!$('dvDiaList')) return;
+    var DIA = ['dom','seg','ter','qua','qui','sex','sáb'];
+    var hojeISO = new Date().toISOString().slice(0,10);
+
+    $('diaLeg').innerHTML = VERBOS_ORDEM.map(function(v){
+      return '<span><i style="background:' + COR_VERBO[v] + '"></i>' + v + '</span>';
+    }).join('');
+
+    var ativos = lista.filter(function(d){ return d.eventos > 0; });
+    var qTot = lista.reduce(function(n, d){ return n + d.questoes; }, 0);
+    var qCer = lista.reduce(function(n, d){ return n + d.certas; }, 0);
+    var melhor = ativos.slice().sort(function(a, b){ return b.eventos - a.eventos; })[0];
+    $('diaResumo').innerHTML = ativos.length
+      ? 'Você estudou em <b>' + ativos.length + ' dos últimos 30 dias</b>' +
+        (qTot ? ' · <b>' + qTot + '</b> questões, <b>' + Math.round(100*qCer/qTot) + '%</b> de acerto' : '') +
+        (melhor ? ' · dia mais forte: <b>' + fmtData(melhor.dia) + '</b>' : '')
+      : 'Assim que você estudar, cada dia aparece aqui com os verbos que usou e o seu acerto nas questões.';
+
+    // do mais recente para o mais antigo, sem arrastar a fila de dias vazios do começo
+    var ordenada = lista.slice().reverse();
+    var ultimo = ordenada.length - 1;
+    while(ultimo > 6 && !ordenada[ultimo].eventos) ultimo--;
+    ordenada = ordenada.slice(0, ultimo + 1);
+
+    $('dvDiaList').innerHTML = ordenada.map(function(d){
+      var dt = new Date(d.dia + 'T12:00:00');
+      var quadros = VERBOS_ORDEM.map(function(v){
+        var fez = d.verbos.indexOf(v) >= 0;
+        return '<i title="' + v + '"' + (fez ? ' style="background:' + COR_VERBO[v] + '"' : '') + '></i>';
+      }).join('');
+      var partes = [];
+      if(d.sessoes) partes.push('<b>' + d.sessoes + '</b> ' + (d.sessoes === 1 ? 'sessão concluída' : 'sessões concluídas'));
+      if(d.verbos.length) partes.push('<b>' + d.verbos.length + '</b> de 8 verbos');
+      if(d.questoes) partes.push('<b>' + d.questoes + '</b> ' + (d.questoes === 1 ? 'questão' : 'questões'));
+      return '<div class="dia-row' + (d.eventos ? '' : ' vazio') + '">' +
+        '<span class="dt">' + dt.getDate() + '/' + (dt.getMonth()+1) +
+          '<small>' + (d.dia === hojeISO ? 'hoje' : DIA[dt.getDay()]) + '</small></span>' +
+        '<span class="barra"><span class="vb">' + quadros + '</span>' +
+          '<small class="met">' + (partes.length ? partes.join(' · ') : 'sem estudo registrado') + '</small></span>' +
+        '<span class="qt">' + (d.pct == null ? '—' : d.pct + '%') + '<small>acerto</small></span>' +
+        '</div>';
+    }).join('');
+  }
+
   /* ---------- dashboard: visões ---------- */
   function dvShow(k, btn){
     document.querySelectorAll('.dv').forEach(function(d){ d.classList.remove('sel'); });
@@ -5356,6 +5432,7 @@
       });
       $('dvTemaList').innerHTML = th;
     }
+    renderPorDia(dd.por_dia || []);
     $('dvVerboNota').innerHTML = 'Atividades registradas por verbo — dados reais da sua conta. O verbo com menos atividade é o que o plano reforça a seguir.';
     radarDrawn = false; drawRadar(vals);
   }
