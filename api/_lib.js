@@ -51,6 +51,11 @@ const DDL = [
     aluno_id TEXT PRIMARY KEY, estado TEXT NOT NULL DEFAULT 'teste',
     inicio_teste TEXT, fim_teste TEXT, preapproval_id TEXT, valor REAL,
     proxima_cobranca TEXT, cortesia_ate TEXT, atualizado_em TEXT)`,
+  `CREATE TABLE IF NOT EXISTS sugestoes (
+    id TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, nome TEXT, email TEXT,
+    texto TEXT NOT NULL, print TEXT, pagina TEXT,
+    status TEXT NOT NULL DEFAULT 'nova', resposta TEXT,
+    criado_em TEXT NOT NULL, respondido_em TEXT)`,
   `CREATE TABLE IF NOT EXISTS duvidas (
     id TEXT PRIMARY KEY, aluno_id TEXT, assunto TEXT, pergunta TEXT NOT NULL,
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`
@@ -175,7 +180,13 @@ async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
   const body = {
     systemInstruction: { parts: [{ text: systemText }] },
     contents: [{ role: 'user', parts: partes }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576 }
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576,
+      // o raciocínio interno do 2.5 gasta o mesmo orçamento da resposta e é o que
+      // vinha cortando o texto no meio da frase; aqui ele fica desligado por padrão
+      thinkingConfig: { thinkingBudget: Number(process.env.GEMINI_THINKING || 0) }
+    }
   };
   if (jsonSchema) {
     body.generationConfig.responseMimeType = 'application/json';
@@ -187,8 +198,14 @@ async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
   );
   if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
   const data = await r.json();
-  const text = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text).join('') || '';
+  const cand = (data.candidates || [])[0] || {};
+  const text = (cand.content || {}).parts?.map(p => p.text).join('') || '';
   if (!text) throw new Error('Resposta vazia do modelo');
+  // MAX_TOKENS = veio pela metade. Melhor falhar e tentar de novo do que
+  // gravar no cache um texto que morre no meio da frase.
+  if (cand.finishReason && cand.finishReason !== 'STOP') {
+    throw new Error('Resposta incompleta do modelo (' + cand.finishReason + ')');
+  }
   return text;
 }
 
@@ -199,7 +216,13 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   const body = {
     systemInstruction: { parts: [{ text: systemText }] },
     contents: [{ role: 'user', parts: [{ text: userText }] }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576 }
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576,
+      // o raciocínio interno do 2.5 gasta o mesmo orçamento da resposta e é o que
+      // vinha cortando o texto no meio da frase; aqui ele fica desligado por padrão
+      thinkingConfig: { thinkingBudget: Number(process.env.GEMINI_THINKING || 0) }
+    }
   };
   if (jsonSchema) {
     body.generationConfig.responseMimeType = 'application/json';
@@ -211,8 +234,14 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   );
   if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
   const data = await r.json();
-  const text = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text).join('') || '';
+  const cand = (data.candidates || [])[0] || {};
+  const text = (cand.content || {}).parts?.map(p => p.text).join('') || '';
   if (!text) throw new Error('Resposta vazia do modelo');
+  // MAX_TOKENS = veio pela metade. Melhor falhar e tentar de novo do que
+  // gravar no cache um texto que morre no meio da frase.
+  if (cand.finishReason && cand.finishReason !== 'STOP') {
+    throw new Error('Resposta incompleta do modelo (' + cand.finishReason + ')');
+  }
   return text;
 }
 

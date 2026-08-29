@@ -653,6 +653,36 @@
     display:none; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow);
   }
   .fab.show{display:flex}
+  /* botão do WhatsApp: fica acima do Persi, sempre visível */
+  .wafab{
+    position:fixed; bottom:160px; right:max(16px, calc(50vw - 204px)); z-index:51;
+    width:54px; height:54px; border-radius:50%; border:none; background:#25D366; color:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 4px 16px rgba(37,211,102,.4); text-decoration:none;
+  }
+  .wafab:hover{filter:brightness(1.06)}
+  body.sitemode .wafab{bottom:24px}
+  @media (min-width:900px){ .wafab{right:40px; bottom:110px; width:58px; height:58px} }
+
+  /* ---------- sugestões ---------- */
+  .sg-form textarea{
+    width:100%; min-height:110px; border:1.5px solid var(--line); background:var(--card2); color:var(--ink);
+    border-radius:14px; padding:12px 14px; font:500 .9rem "Albert Sans",sans-serif; resize:vertical;
+  }
+  .sg-anexo{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px}
+  .sg-anexo .prev{width:64px; height:64px; border-radius:10px; object-fit:cover; border:1px solid var(--line); display:none}
+  .sg-item{background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:10px}
+  .sg-item .cab{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px}
+  .sg-item .quando{font-size:.7rem; color:var(--muted)}
+  .sg-st{font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:2px 8px; border-radius:999px}
+  .sg-st.nova{background:var(--warm-soft); color:var(--warm)}
+  .sg-st.respondida{background:var(--accent-soft); color:var(--accent)}
+  .sg-st.arquivada{background:var(--line); color:var(--muted)}
+  .sg-item p{font-size:.87rem; line-height:1.55}
+  .sg-resp{margin-top:10px; padding:10px 12px; background:var(--accent-soft); border-radius:12px; font-size:.85rem; line-height:1.55}
+  .sg-resp b{display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); margin-bottom:3px}
+  .sg-print{max-width:100%; border-radius:12px; border:1px solid var(--line); margin-top:10px; display:block}
+  .sg-quem{font-size:.72rem; color:var(--muted)}
   #chat{
     position:fixed; inset:0; z-index:95; background:var(--bg); display:none; flex-direction:column;
     max-width:440px; margin:0 auto;
@@ -1201,7 +1231,9 @@
 
     <div class="st-rod">
       <p style="margin-bottom:6px">Criada com <b>propósito</b> e com <b>determinação</b> por <b>Sanmya Tiradentes</b> &amp; <b>Jane De Maria</b> 🎯</p>
-      <p><a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a> · persisteia.com.br · feito no Amazonas para concurseiros do Brasil inteiro</p>
+      <p><a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a> ·
+         <a id="stWhats" href="#" target="_blank" rel="noopener" onclick="this.href=linkWhats()">WhatsApp (92) 99152-1031</a> ·
+         persisteia.com.br · feito no Amazonas para concurseiros do Brasil inteiro</p>
     </div>
   </div>
 
@@ -1417,7 +1449,10 @@
             <b onclick="limpe('Eficiência — resultados com economicidade (EC 19/98)')">E</b>
           </div>
           <p id="limpeWord" aria-live="polite">Toque em uma letra ↑</p>
-          <button class="btn small" style="margin-top:12px" onclick="openLeitor()">Abrir a teoria completa no Leitor</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
+            <button class="btn small" style="margin:0" onclick="openLeitor()">Abrir a teoria completa no Leitor</button>
+            <button class="btn ghost small" style="margin:0" onclick="refazerConteudo()" title="Refaz a teoria, as questões e o áudio deste assunto">↻ Gerar de novo</button>
+          </div>
           <p class="muted" style="font-size:.72rem; margin-top:6px">Leitura silenciosa ou em voz alta com teleprompter — a teoria vem antes da prática.</p>
         </div></div>
       </div>
@@ -1794,6 +1829,31 @@
       <div class="card honest"><b>Por que não falamos em "estilos de aprendizagem"?</b><p>A ideia de que cada pessoa aprende só no "seu estilo" não tem respaldo científico. O que a evidência mostra é o contrário: <b>todo cérebro aprende mais quando o conteúdo entra por várias portas</b>. Por isso, aqui ninguém escolhe um estilo — todo mundo passa pelos oito verbos.</p></div>
       <div class="card"><b>E a persistência?</b><p>A maior causa de reprovação não é técnica: é desistência. A PersisteIA replaneja quando você falha, protege sua constância e celebra cada marco da jornada — porque quem persiste, passa.</p></div>
     </div>
+
+    <div class="card" style="margin-top:18px" id="cardSugestao">
+      <h2>Sugestões e dúvidas</h2>
+      <p class="muted" style="font-size:.82rem; margin-bottom:12px">
+        Achou um erro, sentiu falta de alguma coisa ou travou em algum ponto? Escreva aqui — chega direto na
+        desenvolvedora, e a resposta aparece nesta mesma tela. Se quiser, anexe um print para eu ver exatamente o que você viu.
+      </p>
+      <div class="sg-form">
+        <textarea id="sgTexto" placeholder="Escreva sua sugestão, dúvida ou o que deu errado…" aria-label="Sua sugestão"></textarea>
+        <div class="sg-anexo">
+          <input type="file" id="sgArquivo" accept="image/*" style="display:none" onchange="sgEscolherPrint(this)">
+          <button class="btn ghost small" style="margin:0" onclick="document.getElementById('sgArquivo').click()">📎 Anexar print</button>
+          <img class="prev" id="sgPrev" alt="Pré-visualização do print">
+          <button class="lg-alt" id="sgTirar" style="display:none; margin:0; padding:0; font-size:.76rem" onclick="sgTirarPrint()">remover print</button>
+          <span class="sg-quem" id="sgPeso"></span>
+          <button class="btn small" style="margin:0 0 0 auto" id="sgEnviar" onclick="sgEnviar()">Enviar</button>
+        </div>
+        <a class="btn ghost small" id="sgWhats" href="#" target="_blank" rel="noopener" onclick="this.href=linkWhats()"
+           style="margin-top:10px; border-color:#25D366; color:#25D366">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2z"/></svg>
+          Falar no WhatsApp
+        </a>
+      </div>
+      <div id="sgMinhas" style="margin-top:18px"></div>
+    </div>
   </section>
 
   <!-- ================= LEITOR ================= -->
@@ -1860,6 +1920,7 @@
       </div>
       <button class="btn ghost small" id="btnOuvirTeoria" onclick="ouvirTeoria()" style="padding:6px 12px; font-size:.76rem">🔊 Ouvir o texto</button>
       <button class="iconbtn velbtn" onclick="velProxima()" aria-label="Velocidade da leitura" title="Velocidade da leitura">1×</button>
+      <button class="iconbtn" onclick="refazerConteudo()" aria-label="Gerar este assunto de novo" title="Gerar este assunto de novo">↻</button>
       <span class="rec"><i></i><span id="recTxt">REC</span></span>
       <span class="tpctl" style="display:contents">
         <button class="iconbtn tpc" id="btnPause" onclick="tpPause()" aria-label="Pausar gravação">⏸</button>
@@ -1896,6 +1957,14 @@
       <button class="btn ghost small" onclick="bkAbrirTudo()">Mostrar respostas</button>
     </div>
   </div>
+
+  <!-- ================= WHATSAPP DA DESENVOLVEDORA ================= -->
+  <a class="wafab" id="waFab" href="#" target="_blank" rel="noopener" onclick="this.href=linkWhats()"
+     aria-label="Falar com a desenvolvedora no WhatsApp" title="Falar com a desenvolvedora no WhatsApp">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.15h-.01a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 012.41 5.83c0 4.54-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03 0 1.2.87 2.35.99 2.51.12.17 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.29z"/>
+    </svg>
+  </a>
 
   <!-- ================= CHATBOT PERSI ================= -->
   <button class="fab" id="fab" onclick="openChat()" aria-label="Tirar dúvida com o Persi">
@@ -1965,6 +2034,16 @@
       <button class="btn ghost small" onclick="admCarregar()">Atualizar</button>
     </div>
     <div class="adm-l" id="admLista"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>Sugestões dos alunos <span class="chip" id="admSgN" style="font-size:.66rem">0</span></h2>
+      <p class="muted" style="font-size:.78rem; margin-bottom:12px">O que chega pelo campo de sugestões do app. Responda aqui e o aluno vê a resposta na tela dele.</p>
+      <div class="lmode" style="width:fit-content; margin-bottom:12px">
+        <button id="asgNovas" class="sel" onclick="admSgFiltro('novas')">A responder</button>
+        <button id="asgTodas" onclick="admSgFiltro('todas')">Todas</button>
+      </div>
+      <div id="admSugestoes"></div>
+    </div>
   </section>
 
   <nav class="tabbar" id="tabbar" aria-label="Navegação principal">
@@ -2409,6 +2488,8 @@
     scr = mostrarTela(scr);
     empilhar({ tela: scr }, '#' + scr);
     if(scr === 'admin' && typeof admCarregar === 'function') admCarregar();
+    if(scr === 'admin' && typeof admSgCarregar === 'function') admSgCarregar();
+    if(scr === 'metodo' && typeof sgCarregar === 'function') sgCarregar();
   }
 
   window.addEventListener('popstate', function(ev){
@@ -4608,6 +4689,158 @@
     marcaVerbo(verbo || 'escrever');
   }
 
+  /* ================= WHATSAPP DA DESENVOLVEDORA ================= */
+  var WHATSAPP = '5592991521031';   // (92) 99152-1031
+  function linkWhats(){
+    var msg = 'Olá, Sanmya! Estou usando a PersisteIA' +
+      (typeof NOME !== 'undefined' && NOME ? ' (sou ' + NOME + ')' : '') + ' e tenho uma dúvida: ';
+    return 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
+  }
+  (function ligarWhats(){
+    ['waFab','sgWhats','stWhats'].forEach(function(idb){
+      var el = $(idb); if(el) el.href = linkWhats();
+    });
+  })();
+
+  /* ================= SUGESTÕES PARA A DESENVOLVEDORA ================= */
+  var SG_PRINT = null;
+
+  // O print vai comprimido: a tela inteira de um celular vira uns 100 KB,
+  // que passa folgado no limite de corpo da requisição.
+  function sgEscolherPrint(input){
+    var f = input.files && input.files[0];
+    if(!f) return;
+    if(!/^image\//.test(f.type)){ toast('Anexe uma imagem'); input.value = ''; return; }
+    var leitor = new FileReader();
+    leitor.onload = function(ev){
+      var img = new Image();
+      img.onload = function(){
+        var max = 1280, esc = Math.min(1, max / Math.max(img.width, img.height));
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * esc); cv.height = Math.round(img.height * esc);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        var q = 0.72, dados = cv.toDataURL('image/jpeg', q);
+        while(dados.length > 850000 && q > 0.35){ q -= 0.12; dados = cv.toDataURL('image/jpeg', q); }
+        if(dados.length > 850000){ toast('Essa imagem é grande demais — tente um recorte'); return; }
+        SG_PRINT = dados;
+        var prev = $('sgPrev'); prev.src = dados; prev.style.display = 'block';
+        $('sgTirar').style.display = 'inline';
+        $('sgPeso').textContent = Math.round(dados.length / 1400) + ' KB';
+      };
+      img.onerror = function(){ toast('Não consegui abrir essa imagem — tente um PNG ou JPG'); };
+      img.src = ev.target.result;
+    };
+    leitor.onerror = function(){ toast('Não consegui ler esse arquivo'); };
+    leitor.readAsDataURL(f);
+    input.value = '';
+  }
+  function sgTirarPrint(){
+    SG_PRINT = null;
+    $('sgPrev').style.display = 'none'; $('sgPrev').removeAttribute('src');
+    $('sgTirar').style.display = 'none'; $('sgPeso').textContent = '';
+  }
+  function sgEnviar(){
+    var txt = ($('sgTexto').value || '').trim();
+    if(txt.length < 5){ toast('Escreva um pouco mais para eu entender'); return; }
+    var btn = $('sgEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+    apiFetch('/api/sugestao', { texto: txt, print: SG_PRINT, pagina: (location.hash || '#hoje') })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        btn.disabled = false; btn.textContent = 'Enviar';
+        if(d && d.ok){
+          $('sgTexto').value = ''; sgTirarPrint();
+          toast('Recebido! Obrigada — respondo por aqui mesmo.');
+          sgCarregar();
+        } else toast((d && d.erro) || 'Não consegui enviar agora');
+      })
+      .catch(function(){ btn.disabled = false; btn.textContent = 'Enviar'; toast('Sem conexão'); });
+  }
+  function sgCarregar(){
+    if(!$('sgMinhas')) return;
+    apiFetch('/api/sugestao').then(function(r){ return r.json(); }).then(function(d){
+      var lista = (d && d.sugestoes) || [];
+      if(!lista.length){ $('sgMinhas').innerHTML = ''; return; }
+      $('sgMinhas').innerHTML = '<p class="eyebrow" style="margin-bottom:8px">O que você já mandou</p>' +
+        lista.map(function(x){
+          return '<div class="sg-item">' +
+            '<div class="cab"><span class="sg-st ' + esc(x.status) + '">' +
+              (x.status === 'respondida' ? 'respondida' : (x.status === 'arquivada' ? 'arquivada' : 'aguardando')) +
+            '</span><span class="quando">' + fmtData(String(x.criado_em).slice(0,10)) + '</span>' +
+            (x.tem_print ? '<button class="lg-alt" style="margin:0; padding:0; font-size:.72rem" onclick="sgVerPrint(\'' + x.id + '\', this)">ver print</button>' : '') +
+            '</div>' +
+            '<p>' + esc(x.texto).replace(/\n/g, '<br>') + '</p>' +
+            (x.resposta ? '<div class="sg-resp"><b>Resposta da Sanmya</b>' + esc(x.resposta).replace(/\n/g, '<br>') + '</div>' : '') +
+            '</div>';
+        }).join('');
+    }).catch(function(){});
+  }
+  function sgVerPrint(id, btn){
+    if(btn.dataset.aberto){ var im = btn.closest('.sg-item').querySelector('.sg-print'); if(im) im.remove(); btn.dataset.aberto = ''; btn.textContent = 'ver print'; return; }
+    apiFetch('/api/sugestao?print=' + encodeURIComponent(id)).then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.print){ toast('Print indisponível'); return; }
+      var im = document.createElement('img'); im.className = 'sg-print'; im.src = d.print; im.alt = 'Print enviado';
+      btn.closest('.sg-item').appendChild(im);
+      btn.dataset.aberto = '1'; btn.textContent = 'ocultar print';
+    }).catch(function(){ toast('Sem conexão'); });
+  }
+
+  /* ---------- fila de sugestões da gestora ---------- */
+  var ADM_SG = [], ADM_SG_F = 'novas';
+  function admSgFiltro(f){
+    ADM_SG_F = f;
+    $('asgNovas').classList.toggle('sel', f === 'novas');
+    $('asgTodas').classList.toggle('sel', f === 'todas');
+    admSgRender();
+  }
+  function admSgCarregar(){
+    if(!$('admSugestoes')) return;
+    apiFetch('/api/sugestao?todas=1').then(function(r){ return r.json(); }).then(function(d){
+      ADM_SG = (d && d.sugestoes) || [];
+      admSgRender();
+    }).catch(function(){});
+  }
+  function admSgRender(){
+    var novas = ADM_SG.filter(function(x){ return x.status === 'nova'; });
+    if($('admSgN')) $('admSgN').textContent = novas.length;
+    var lista = ADM_SG_F === 'novas' ? novas : ADM_SG;
+    if(!lista.length){
+      $('admSugestoes').innerHTML = '<p class="muted" style="font-size:.85rem">' +
+        (ADM_SG.length ? 'Nenhuma sugestão esperando resposta ✓' : 'Nenhuma sugestão recebida ainda.') + '</p>';
+      return;
+    }
+    $('admSugestoes').innerHTML = lista.map(function(x){
+      return '<div class="sg-item" id="sg_' + x.id + '">' +
+        '<div class="cab"><span class="sg-st ' + esc(x.status) + '">' +
+          (x.status === 'respondida' ? 'respondida' : (x.status === 'arquivada' ? 'arquivada' : 'nova')) + '</span>' +
+          '<b style="font-size:.84rem">' + esc(x.nome || 'Aluno') + '</b>' +
+          '<span class="sg-quem">' + esc(x.email || '') + ' · ' + fmtData(String(x.criado_em).slice(0,10)) +
+          (x.pagina ? ' · ' + esc(x.pagina) : '') + '</span>' +
+          (x.tem_print ? '<button class="lg-alt" style="margin:0; padding:0; font-size:.72rem" onclick="sgVerPrint(\'' + x.id + '\', this)">ver print</button>' : '') +
+        '</div>' +
+        '<p>' + esc(x.texto).replace(/\n/g, '<br>') + '</p>' +
+        (x.resposta ? '<div class="sg-resp"><b>Sua resposta</b>' + esc(x.resposta).replace(/\n/g, '<br>') + '</div>' : '') +
+        '<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">' +
+          '<textarea id="rsp_' + x.id + '" placeholder="Escreva a resposta para ' + esc((x.nome || 'o aluno').split(" ")[0]) + '…" ' +
+            'style="flex:1; min-width:200px; min-height:60px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); border-radius:12px; padding:9px 12px; font:500 .85rem \'Albert Sans\',sans-serif"></textarea>' +
+          '<div style="display:flex; flex-direction:column; gap:6px">' +
+            '<button class="btn small" style="margin:0" onclick="admResponder(\'' + x.id + '\')">Responder</button>' +
+            '<button class="lg-alt" style="margin:0; padding:0; font-size:.74rem" onclick="admArquivar(\'' + x.id + '\')">arquivar</button>' +
+          '</div>' +
+        '</div></div>';
+    }).join('');
+  }
+  function admResponder(id){
+    var txt = ($('rsp_' + id) && $('rsp_' + id).value || '').trim();
+    if(!txt){ toast('Escreva a resposta'); return; }
+    apiFetch('/api/sugestao', { responder: id, resposta: txt }).then(function(r){ return r.json(); }).then(function(d){
+      if(d && d.ok){ toast('Respondida — o aluno já vê na tela dele'); admSgCarregar(); }
+      else toast((d && d.erro) || 'Não consegui responder');
+    }).catch(function(){ toast('Sem conexão'); });
+  }
+  function admArquivar(id){
+    apiFetch('/api/sugestao', { arquivar: id }).then(function(){ admSgCarregar(); }).catch(function(){});
+  }
+
   /* ---------- dashboard: evolução dia a dia ---------- */
   var VERBOS_ORDEM = ['ouvir','ler','falar','digitar','escrever','raciocinar','treinar','perguntar'];
   var COR_VERBO = { ouvir:'var(--d5)', ler:'var(--d1)', falar:'var(--d7)', digitar:'var(--d3)',
@@ -4931,6 +5164,16 @@
     FEITOS = {}; CONT = null; enterLoading(); carregarReal();
   }
 
+  /* ---------- refazer o conteúdo de um assunto ---------- */
+  var REFAZER = false;
+  function refazerConteudo(){
+    REFAZER = true;
+    CONT = null;
+    toast('Gerando este assunto de novo — leva alguns segundos…');
+    enterLoading();
+    carregarReal();
+  }
+
   function estudarTopico(cronId){
     ESCOLHIDO = cronId;
     try { localStorage.setItem('persisteia_topico', cronId); } catch(e){}
@@ -4972,14 +5215,16 @@
       var it = itemAtivo();
       aplicarHojeReal(d, it);
       aplicarPlanoReal(d);
-      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(it.topico_id) + '&parte=' + (it.parte || 1))
+      apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(it.topico_id) + '&parte=' + (it.parte || 1) +
+               (REFAZER ? '&refazer=1' : ''))
         .then(function(r){ return r.json().then(function(c){ if(r.status === 402){ checar402({ s: 402, d: c }); return null; } return c; }); })
         .then(function(c){
+          REFAZER = false;
           if(!c) return;
           if(c && c.resumo){ CONT = c; aplicarConteudoReal(c); }
           else { $('lerIntro').textContent = 'Não consegui gerar o conteúdo agora. Recarregue a página em alguns instantes.'; }
         })
-        .catch(function(){ $('lerIntro').textContent = 'Falha ao gerar o conteúdo — tente recarregar.'; });
+        .catch(function(){ REFAZER = false; $('lerIntro').textContent = 'Falha ao gerar o conteúdo — tente recarregar.'; });
     }).catch(function(){});
     apiFetch('/api/dashboard').then(function(r){ return r.json(); })
       .then(function(dd){ if(dd && dd.cobertura) aplicarDashReal(dd); }).catch(function(){});
@@ -5134,7 +5379,13 @@
     else { $('limpeWord').textContent = 'Toque em uma letra ↑'; }
 
     var paras = String(c.resumo).split(/\n+/).filter(function(x){ return x.trim(); });
-    var corpo = paras.map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
+    var corpo = '';
+    if(c.incompleto){
+      corpo += '<div class="lei-nota" style="background:var(--warm-soft); color:var(--warm); border-radius:12px; ' +
+        'padding:10px 13px; margin-bottom:16px; font-style:normal; font-weight:600">' +
+        'Este texto veio incompleto do gerador. Toque em “Gerar de novo” na barra de baixo para refazê-lo.</div>';
+    }
+    corpo += paras.map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
 
     // LEI SECA: o texto integral dos dispositivos, logo depois da teoria.
     var disp = (c.dispositivos || []).filter(function(x){ return x && x.rotulo && x.texto; });

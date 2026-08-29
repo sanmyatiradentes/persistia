@@ -115,6 +115,24 @@ const S_PRATICA = {
   required: ['questoes', 'questoes_me', 'flashcards', 'feynman']
 };
 
+// Texto que morre no meio da frase é resposta cortada, não conteúdo pronto.
+function terminaInteiro(t) {
+  const s = String(t || '').trim();
+  if (!s) return false;
+  return /[.!?…)\]"'\u201d\u00bb]$/.test(s);
+}
+function pacoteCompleto(p, minParagrafos) {
+  if (!p || !p.resumo) return false;
+  const resumo = String(p.resumo).trim();
+  if (resumo.length < 200 || !terminaInteiro(resumo)) return false;
+  const paras = resumo.split(/\n+/).filter(x => x.trim());
+  if (paras.length < Math.min(3, minParagrafos || 3)) return false;
+  // o roteiro do podcast é longo: se ele terminar no meio, a resposta foi cortada
+  const pod = String(p.podcast || '').trim();
+  if (pod.length > 200 && !terminaInteiro(pod)) return false;
+  return true;
+}
+
 // Uma resposta gigante é o que trunca e devolve JSON pela metade. Duas respostas
 // menores, em paralelo, cabem folgadas — e se ainda assim vier quebrada, tenta de
 // novo pedindo menos.
@@ -172,8 +190,18 @@ module.exports = async (req, res) => {
     const horas = Number(linha && linha.horas) || Math.min(2, peso);
 
     const chave = partes > 1 ? topicoId + ':' + parte + '/' + partes : topicoId;
-    const cache = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
-    if (cache.rows.length) return res.status(200).json(JSON.parse(cache.rows[0].json));
+    // ?refazer=1 joga fora o conteúdo guardado e gera outro do zero
+    if (url.searchParams.get('refazer')) {
+      await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id = ?', args: [chave] });
+    } else {
+      const cache = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
+      if (cache.rows.length) {
+        const guardado = JSON.parse(cache.rows[0].json);
+        // conteúdo antigo que ficou truncado no cache: refaz em vez de repetir o defeito
+        if (pacoteCompleto(guardado, 3)) return res.status(200).json(guardado);
+        await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id = ?', args: [chave] });
+      }
+    }
 
     const recorte = partes > 1
       ? `Este tópico é amplo e foi dividido em ${partes} sessões de estudo. Divida o assunto em ${partes} blocos, na ordem didática natural (do fundamento ao detalhe), e desenvolva SOMENTE o bloco ${parte}. Não repita o que pertence aos outros blocos; escreva como quem continua uma aula.`
@@ -185,10 +213,23 @@ module.exports = async (req, res) => {
       (partes > 1 ? `Sessão: parte ${parte} de ${partes}\n` : '') +
       `Duração prevista da sessão: ${horas} h\n\n`;
 
-    const [teoria, pratica] = await Promise.all([
+    // A teoria é o texto grande e o que mais corta: se vier pela metade, refaz
+    // antes de mostrar — e, se ainda assim vier truncada, não vai para o cache.
+    let teoria = null, pratica = null;
+    [teoria, pratica] = await Promise.all([
       gerar(sis, cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.', S_TEORIA),
       gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
     ]);
+    if (!pacoteCompleto(teoria, alvo.paragrafos)) {
+      try {
+        teoria = await gerar(
+          sis,
+          cabecalho + 'Gere APENAS estes campos: subtitulo, resumo, acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas, podcast e musica.\n\n' +
+          'ATENÇÃO: a tentativa anterior foi cortada no meio. Escreva parágrafos mais curtos e um roteiro de podcast mais enxuto, mas TERMINE todas as frases e feche o JSON.',
+          S_TEORIA, 2
+        );
+      } catch (_) {}
+    }
     const pacote = Object.assign({}, teoria, pratica);
     pacote.topico = t.rows[0].topico;
     pacote.disciplina = t.rows[0].disciplina;
@@ -198,10 +239,14 @@ module.exports = async (req, res) => {
     pacote.horas = horas;
     pacote.lei_seca = pacote.trecho_chave; // compatibilidade com pacotes antigos
 
-    await db.execute({
-      sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
-      args: [chave, JSON.stringify(pacote), agora()]
-    });
+    const inteiro = pacoteCompleto(pacote, alvo.paragrafos);
+    pacote.incompleto = !inteiro;
+    if (inteiro) {
+      await db.execute({
+        sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
+        args: [chave, JSON.stringify(pacote), agora()]
+      });
+    }
     return res.status(200).json(pacote);
   } catch (e) {
     return res.status(500).json({ erro: 'Falha ao gerar o conteúdo', detalhe: String(e).slice(0, 200) });
