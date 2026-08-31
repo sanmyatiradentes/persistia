@@ -178,10 +178,28 @@ function cors(res) {
 const MODELO_PADRAO = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MODELO_LEVE = process.env.GEMINI_MODEL_LEVE || 'gemini-2.5-flash-lite';
 
-async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY não configurada');
-  const model = modelo || MODELO_PADRAO;
+const espera = ms => new Promise(r => setTimeout(r, ms));
+
+// Fila de modelos: se o primeiro estiver sobrecarregado, tentamos o seguinte.
+// GEMINI_MODELOS_RESERVA permite acrescentar outros sem mexer no código.
+function filaDeModelos(modelo) {
+  const primeiro = modelo || MODELO_PADRAO;
+  const reserva = String(process.env.GEMINI_MODELOS_RESERVA || '')
+    .split(',').map(m => m.trim()).filter(Boolean);
+  const padrao = [MODELO_PADRAO, MODELO_LEVE, 'gemini-2.0-flash'];
+  const fila = [primeiro, ...reserva, ...padrao];
+  return fila.filter((m, i) => m && fila.indexOf(m) === i);
+}
+
+// Erros que passam com o tempo (sobrecarga, limite momentâneo, queda de rede)
+// merecem outra tentativa; erro de chave ou de pedido malfeito, não.
+function ehPassageiro(status, msg) {
+  if (status === 429 || status === 408 || (status >= 500 && status <= 599)) return true;
+  if (status) return false;
+  return /fetch failed|network|timeout|socket|ECONN|EAI_AGAIN|aborted|vazia|incompleta/i.test(String(msg || ''));
+}
+
+function corpoGemini(systemText, partes, jsonSchema) {
   const body = {
     systemInstruction: { parts: [{ text: systemText }] },
     contents: [{ role: 'user', parts: partes }],
@@ -197,57 +215,87 @@ async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
     body.generationConfig.responseMimeType = 'application/json';
     body.generationConfig.responseSchema = jsonSchema;
   }
+  return body;
+}
+
+async function umaChamada(model, body, key) {
   const r = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
   );
-  if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
+  if (!r.ok) {
+    const e = new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
+    e.status = r.status;
+    throw e;
+  }
   const data = await r.json();
   const cand = (data.candidates || [])[0] || {};
   const text = (cand.content || {}).parts?.map(p => p.text).join('') || '';
   if (!text) throw new Error('Resposta vazia do modelo');
-  // MAX_TOKENS = veio pela metade. Melhor falhar e tentar de novo do que
-  // gravar no cache um texto que morre no meio da frase.
+  // MAX_TOKENS = veio pela metade. Melhor tentar de novo do que gravar no cache
+  // um texto que morre no meio da frase.
   if (cand.finishReason && cand.finishReason !== 'STOP') {
     throw new Error('Resposta incompleta do modelo (' + cand.finishReason + ')');
   }
   return text;
+}
+
+// Núcleo com paciência: para cada modelo da fila, tenta algumas vezes com
+// intervalos crescentes. Sobrecarga do Google deixa de virar erro na tela do
+// aluno — ele só espera alguns segundos a mais.
+async function geminiComPaciencia(systemText, partes, jsonSchema, modelo) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY não configurada');
+  const body = corpoGemini(systemText, partes, jsonSchema);
+  const modelos = filaDeModelos(modelo);
+  const tentativasPorModelo = Math.max(1, Number(process.env.GEMINI_TENTATIVAS) || 3);
+  const pausas = [700, 1800, 4000, 7000];
+  // A função tem tempo limitado no servidor: insistir além disso derruba tudo.
+  const limite = Date.now() + (Number(process.env.GEMINI_ORCAMENTO_MS) || 45000);
+  let ultimo = null;
+
+  for (let m = 0; m < modelos.length; m++) {
+    for (let t = 0; t < tentativasPorModelo; t++) {
+      try {
+        return await umaChamada(modelos[m], body, key);
+      } catch (e) {
+        ultimo = e;
+        if (!ehPassageiro(e.status, e.message)) throw e; // chave inválida, pedido malfeito
+        const ultimaChance = (m === modelos.length - 1) && (t === tentativasPorModelo - 1);
+        const pausa = pausas[Math.min(t, pausas.length - 1)] * (e.status === 429 ? 2 : 1)
+                    + Math.floor(Math.random() * 400); // jitter: evita repetir o mesmo instante
+        if (ultimaChance || Date.now() + pausa > limite) throw e;
+        await espera(pausa);
+      }
+    }
+  }
+  throw ultimo || new Error('Falha ao chamar o modelo');
+}
+
+// Traduz a falha da IA para algo que o aluno entenda, e devolve 503 quando o
+// problema é fila do Google — assim o aplicativo sabe que vale tentar de novo.
+function falhaIA(e, mensagemPadrao) {
+  const msg = String((e && e.message) || e || '');
+  const congestionado = ehPassageiro(e && e.status, msg);
+  if (congestionado) {
+    return {
+      status: 503,
+      corpo: {
+        erro: 'A IA está com muita procura neste momento',
+        congestionado: true,
+        detalhe: 'Tentei algumas vezes automaticamente. É passageiro — em alguns minutos costuma voltar.'
+      }
+    };
+  }
+  return { status: 500, corpo: { erro: mensagemPadrao, detalhe: msg.slice(0, 200) } };
+}
+
+async function chamarGeminiPartes(systemText, partes, jsonSchema, modelo) {
+  return geminiComPaciencia(systemText, partes, jsonSchema, modelo);
 }
 
 async function chamarGemini(systemText, userText, jsonSchema, modelo) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY não configurada');
-  const model = modelo || MODELO_PADRAO;
-  const body = {
-    systemInstruction: { parts: [{ text: systemText }] },
-    contents: [{ role: 'user', parts: [{ text: userText }] }],
-    generationConfig: {
-      temperature: 0.3,
-      maxOutputTokens: Number(process.env.GEMINI_MAX_TOKENS) || 24576,
-      // o raciocínio interno do 2.5 gasta o mesmo orçamento da resposta e é o que
-      // vinha cortando o texto no meio da frase; aqui ele fica desligado por padrão
-      thinkingConfig: { thinkingBudget: Number(process.env.GEMINI_THINKING || 0) }
-    }
-  };
-  if (jsonSchema) {
-    body.generationConfig.responseMimeType = 'application/json';
-    body.generationConfig.responseSchema = jsonSchema;
-  }
-  const r = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-  );
-  if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
-  const data = await r.json();
-  const cand = (data.candidates || [])[0] || {};
-  const text = (cand.content || {}).parts?.map(p => p.text).join('') || '';
-  if (!text) throw new Error('Resposta vazia do modelo');
-  // MAX_TOKENS = veio pela metade. Melhor falhar e tentar de novo do que
-  // gravar no cache um texto que morre no meio da frase.
-  if (cand.finishReason && cand.finishReason !== 'STOP') {
-    throw new Error('Resposta incompleta do modelo (' + cand.finishReason + ')');
-  }
-  return text;
+  return geminiComPaciencia(systemText, [{ text: userText }], jsonSchema, modelo);
 }
 
-module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO };
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO };

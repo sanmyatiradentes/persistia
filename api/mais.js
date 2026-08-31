@@ -2,7 +2,7 @@
 // o candidato quer aprofundar. O lote entra no pacote já guardado, então serve
 // todos os alunos daquele assunto — e o aluno decide quando gastar.
 // POST {topico_id, parte, partes, tipo:'questoes'|'questoes_me'|'flashcards'}
-const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini } = require('./_lib');
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA } = require('./_lib');
 
 const LOTES = {
   questoes: {
@@ -114,6 +114,7 @@ Cobre pontos DIFERENTES dos que já foram usados. Quando afirmar regra jurídica
 
     return res.status(200).json({ ok: true, tipo, novos, total: pacote[tipo].length });
   } catch (e) {
-    return res.status(500).json({ erro: 'Não consegui gerar mais agora', detalhe: String(e).slice(0, 200) });
+    const f = falhaIA(e, 'Não consegui gerar mais agora');
+    return res.status(f.status).json(f.corpo);
   }
 };

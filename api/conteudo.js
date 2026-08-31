@@ -3,7 +3,7 @@
 // recebe menos teoria e menos questões que um de 2 h, e um tópico grande é
 // dividido em partes (parte 2 de 3), cada uma com seu próprio pacote.
 // GET ?topico_id=...&parte=2  → {subtitulo, resumo, acronimo, trecho_chave, questoes, ...}
-const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini } = require('./_lib');
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA } = require('./_lib');
 
 function tamanhos(h) {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
@@ -296,6 +296,7 @@ module.exports = async (req, res) => {
     }
     return res.status(200).json(pacote);
   } catch (e) {
-    return res.status(500).json({ erro: 'Falha ao gerar o conteúdo', detalhe: String(e).slice(0, 200) });
+    const f = falhaIA(e, 'Falha ao gerar o conteúdo');
+    return res.status(f.status).json(f.corpo);
   }
 };

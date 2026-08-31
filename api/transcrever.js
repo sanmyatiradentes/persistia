@@ -1,6 +1,6 @@
 // Transcreve um áudio curto do aluno (pergunta falada para o Persi).
 // POST {audio_base64, mime}  → {texto}
-const { ensureSchema, alunoDoToken, cors, MODELO_LEVE } = require('./_lib');
+const { ensureSchema, alunoDoToken, cors, MODELO_LEVE, falhaIA } = require('./_lib');
 
 const LIMITE = 3400000;  // ~3,4 MB de base64, abaixo do teto de corpo da Vercel
 
@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
       .map(p => p.text).join('').trim();
     return res.status(200).json({ texto });
   } catch (e) {
-    return res.status(500).json({ erro: 'Erro ao transcrever', detalhe: String(e).slice(0, 200) });
+    const f = falhaIA(e, 'Erro ao transcrever');
+    return res.status(f.status).json(f.corpo);
   }
 };

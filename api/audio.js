@@ -1,7 +1,7 @@
 // Áudio do assunto: podcast (diálogo em duas vozes) e música (letra recitada/cantada).
 // POST {topico_id, tipo:'podcast'|'musica'} → {audio_base64, mime:'audio/wav'}
 // Usa o TTS do Gemini (mesma GEMINI_API_KEY). Guarda em cache no Turso quando couber.
-const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno } = require('./_lib');
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, falhaIA } = require('./_lib');
 
 const VOZ_A = process.env.GEMINI_VOZ_A || 'Kore';   // ANA
 const VOZ_B = process.env.GEMINI_VOZ_B || 'Puck';   // LÉO
@@ -182,6 +182,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({ audio_base64: wav, mime: 'audio/wav' });
   } catch (e) {
-    return res.status(500).json({ erro: 'Falha ao gerar o áudio', detalhe: String(e).slice(0, 220) });
+    const f = falhaIA(e, 'Falha ao gerar o áudio');
+    return res.status(f.status).json(f.corpo);
   }
 };

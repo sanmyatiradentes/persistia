@@ -1,7 +1,7 @@
 // Análise real de edital (texto colado ou PDF lido pela IA).
 // POST {pdf_base64|texto}          → se houver vários cargos: {precisa_cargo:true, cargos:[...]}
 // POST {pdf_base64|texto, cargo}   → extrai o programa daquele cargo e salva no Turso
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGeminiPartes, acessoDoAluno } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGeminiPartes, acessoDoAluno, falhaIA } = require('./_lib');
 
 const SYS_CARGOS = `Você analisa editais de concurso público brasileiros (ou programas de vestibular/ENEM).
 Responda APENAS com o que está no documento:
@@ -278,6 +278,7 @@ module.exports = async (req, res) => {
       }))
     });
   } catch (e) {
-    return res.status(500).json({ erro: 'Falha ao analisar o edital', detalhe: String(e).slice(0, 200) });
+    const f = falhaIA(e, 'Falha ao analisar o edital');
+    return res.status(f.status).json(f.corpo);
   }
 };

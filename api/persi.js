@@ -1,6 +1,6 @@
 // Persi, o tira-dúvidas (verbo Perguntar). POST {question, assunto}
 // Responde via Gemini e, se o aluno estiver logado, salva a dúvida no Turso.
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini, acessoDoAluno, MODELO_LEVE } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGemini, acessoDoAluno, MODELO_LEVE, falhaIA } = require('./_lib');
 
 const SYSTEM = `Você é o Persi, o tira-dúvidas do PersisteIA, um aplicativo brasileiro de estudos para concursos públicos.
 
@@ -54,6 +54,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({ answer });
   } catch (e) {
-    return res.status(500).json({ erro: 'Falha ao consultar o modelo', detalhe: String(e).slice(0, 200) });
+    const f = falhaIA(e, 'Falha ao consultar o modelo');
+    return res.status(f.status).json(f.corpo);
   }
 };
