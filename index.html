@@ -915,10 +915,14 @@
                  border-radius:999px; padding:6px 13px; font-weight:600}
   @media(min-width:900px){ .st-hero h1{font-size:3.6rem} .st-hero{padding-top:78px} }
 
-  .st-sec{padding:44px 20px; max-width:1080px; margin:0 auto}
+  .st-sec{padding:44px 20px; max-width:1240px; margin:0 auto}
+  @media(min-width:1500px){ .st-sec{max-width:1400px} }
   .st-sec h2{font-family:"Bricolage Grotesque",sans-serif; font-size:1.6rem; letter-spacing:-.025em; margin-bottom:8px; text-align:center}
   .st-sec > p.sub{text-align:center; color:var(--muted); font-size:.92rem; max-width:620px; margin:0 auto 26px; line-height:1.6}
-  .st-grid{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .st-grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  /* seis cartões viram 3+3 no computador, em vez de 4+2 com um buraco do lado */
+  @media(min-width:980px){ .st-grid.tres{grid-template-columns:repeat(3,1fr)} }
+  @media(min-width:980px){ .st-grid.dois{grid-template-columns:repeat(2,1fr)} }
 
   /* cartão com um toque de cor — cada bloco tem a sua, como as disciplinas */
   .st-card{background:color-mix(in srgb, var(--tc,var(--accent)) 6%, var(--card));
@@ -938,14 +942,28 @@
   .st-quote .aut{display:block; margin-top:14px; font-size:.7rem; color:var(--muted); font-weight:700; letter-spacing:.16em; text-transform:uppercase}
 
   /* telas reais do aplicativo */
-  .st-telas{display:flex; gap:18px; overflow-x:auto; padding:6px 20px 18px; scroll-snap-type:x mandatory; margin:0 -20px}
-  .st-tela{flex:none; width:236px; scroll-snap-align:center}
-  .st-tela img{width:100%; display:block; border-radius:20px; border:1px solid var(--line); box-shadow:0 10px 34px rgba(22,36,29,.13)}
-  .st-tela b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:.92rem; margin:12px 0 3px; color:var(--tc,var(--accent))}
-  .st-tela span{display:block; font-size:.79rem; color:var(--muted); line-height:1.5}
+  /* faixa própria: as telas não encostam em nenhuma outra seção */
+  .st-secTelas{background:var(--card2); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+               padding:48px 0 40px; overflow:hidden}
+  .st-secTelas .st-sec{padding-top:0; padding-bottom:0}
+  .st-telas{display:flex; gap:20px; overflow-x:auto; padding:10px 20px 4px; scroll-snap-type:x mandatory;
+            justify-content:flex-start; -webkit-overflow-scrolling:touch}
+  .st-tela{flex:none; width:230px; scroll-snap-align:center}
+  .st-tela img{width:100%; height:auto; aspect-ratio:412/860; object-fit:cover; object-position:top center;
+               display:block; border-radius:22px; border:1px solid var(--line); background:var(--card);
+               box-shadow:0 12px 36px rgba(22,36,29,.14)}
+  .st-tela b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:.95rem; margin:14px 0 4px; color:var(--tc,var(--accent))}
+  .st-tela span{display:block; font-size:.8rem; color:var(--muted); line-height:1.55}
+  /* no computador as cinco cabem lado a lado: nada de rolagem lateral */
+  @media(min-width:1180px){
+    .st-telas{justify-content:center; overflow-x:visible; flex-wrap:nowrap}
+    .st-tela{width:200px}
+  }
+  @media(min-width:1500px){ .st-tela{width:236px} }
 
   /* tudo o que o sistema faz */
-  .st-tudo{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .st-tudo{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  @media(min-width:1100px){ .st-tudo{grid-template-columns:repeat(3,1fr)} }
   .st-bloco{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:var(--shadow)}
   .st-bloco h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1rem; margin-bottom:12px; display:flex; align-items:center; gap:9px;
                color:color-mix(in srgb, var(--tc,var(--accent)) 80%, var(--ink))}
@@ -955,7 +973,8 @@
   .st-bloco li:before{content:"›"; color:var(--tc,var(--accent)); font-weight:800; position:absolute; left:0; top:0}
   .st-bloco li b{color:var(--ink); font-weight:700}
 
-  .st-passos{display:grid; gap:12px; counter-reset:pp}
+  .st-passos{display:grid; gap:12px; counter-reset:pp; max-width:900px; margin:0 auto}
+  @media(min-width:980px){ .st-passos{grid-template-columns:repeat(2,1fr); max-width:none} }
   .st-passo{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 18px;
             display:flex; gap:14px; align-items:flex-start; box-shadow:var(--shadow)}
   .st-passo:before{counter-increment:pp; content:counter(pp); flex:none; width:32px; height:32px; border-radius:50%;
@@ -975,7 +994,7 @@
   .st-preco li{font-size:.87rem; display:flex; gap:9px; align-items:flex-start}
   .st-preco li:before{content:"✓"; color:var(--accent); font-weight:800}
 
-  .st-quem{display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  .st-quem{display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); max-width:1000px; margin:0 auto}
   .st-pessoa{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:var(--shadow); text-align:left}
   .st-foto{width:112px; height:112px; border-radius:50%; object-fit:cover; margin:0 auto 14px; display:block; border:3px solid var(--accent-soft)}
   .st-ini{width:112px; height:112px; border-radius:50%; margin:0 auto 14px; display:none; align-items:center; justify-content:center;
@@ -990,7 +1009,7 @@
   .st-frase{margin-top:15px; padding:13px 15px; background:var(--accent-soft); border-radius:13px;
             font-family:Georgia,serif; font-size:.9rem; line-height:1.55; color:var(--ink)}
 
-  .st-lgpd{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px; box-shadow:var(--shadow)}
+  .st-lgpd{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px; box-shadow:var(--shadow); max-width:900px; margin:0 auto}
   .st-lgpd p{font-size:.86rem; color:var(--muted); line-height:1.65; margin-bottom:11px}
   .st-lgpd p:last-child{margin-bottom:0}
   .st-lgpd a{color:var(--accent); font-weight:600}
@@ -1125,7 +1144,8 @@
     </div>
 
     <!-- ================= TELAS REAIS ================= -->
-    <div class="st-sec" id="stTelas">
+    <div class="st-secTelas" id="stTelas">
+    <div class="st-sec">
       <div class="st-olho"><span>O sistema por dentro</span></div>
       <h2>Estas são as telas de verdade</h2>
       <p class="sub">Sem maquete e sem promessa: é o que você vê ao entrar, no dia seguinte a enviar o seu edital.</p>
@@ -1151,7 +1171,8 @@
           <b>Plano</b><span>O cronograma inteiro, pela ordem do edital ou dia a dia, com o assunto de cada data a um toque de distância.</span>
         </figure>
       </div>
-      <p class="muted" style="font-size:.75rem; text-align:center; margin-top:6px">Arraste para o lado para ver as outras telas.</p>
+      <p class="muted" style="font-size:.75rem; text-align:center; margin-top:14px">No celular, arraste para o lado para ver as outras telas.</p>
+    </div>
     </div>
 
     <!-- ================= O PROBLEMA ================= -->
@@ -1159,7 +1180,7 @@
       <div class="st-olho"><span>O problema real</span></div>
       <h2>Por que candidatos capacitados continuam reprovando?</h2>
       <p class="sub">Não é falta de esforço. São seis armadilhas que o método certo desarma.</p>
-      <div class="st-grid">
+      <div class="st-grid tres">
         <div class="st-card" style="--tc:#0E8F6E"><b>Estuda tudo com o mesmo peso</b><p>O edital não é democrático: uma minoria dos tópicos responde pela maioria das questões. Sem esse mapa, o mesmo tempo vai para o que cai sempre e para o que quase nunca cai.<span class="st-fonte">Princípio de Pareto aplicado ao edital.</span></p></div>
         <div class="st-card" style="--tc:#B97A0F"><b>Ignora a impressão digital da prova</b><p>Cada examinador tem manias: o tipo de pegadinha, o recorte preferido, o jeito de escrever a assertiva. Quem estuda só a teoria chega sem reconhecer o padrão.<span class="st-fonte">Engenharia reversa a partir do histórico de provas.</span></p></div>
         <div class="st-card" style="--tc:#B85C3A"><b>Confunde reconhecer com saber</b><p>Reler o resumo dá a sensação boa de domínio — e é justamente ela que engana. Você reconhece o texto; não consegue produzi-lo na hora da prova.<span class="st-fonte">Efeito de Fluência: familiaridade confundida com aprendizado.</span></p></div>
@@ -1273,7 +1294,7 @@
       <div class="st-olho"><span>Por que funciona</span></div>
       <h2>Fundamentos científicos</h2>
       <p class="sub">Cada recurso existe porque há evidência de que ele funciona — não porque ficou bonito na tela.</p>
-      <div class="st-grid">
+      <div class="st-grid dois">
         <div class="st-eixo" style="--tc:#0E8F6E"><b>Memorização e retenção</b><ul>
           <li>Curva do Esquecimento aplicada ao calendário de revisões</li>
           <li>Repetição espaçada: o intervalo cresce conforme você acerta</li>
@@ -1374,7 +1395,7 @@
       <div class="st-lgpd">
         <p>A PersisteIA trata seus dados pessoais em conformidade com a Lei Geral de Proteção de Dados (Lei n.º 13.709/2018). Coletamos apenas o necessário para o serviço funcionar: seu nome e e-mail para manter a conta, o edital que você envia para gerar o cronograma e o registro do seu progresso de estudo para calcular revisões e desempenho.</p>
         <p>Seus dados não são vendidos, alugados nem compartilhados com terceiros para fins publicitários. O conteúdo do seu edital é usado exclusivamente para produzir o seu plano e o seu material de estudo. Suas gravações de voz ficam guardadas no seu próprio aparelho. Você pode, a qualquer momento, solicitar acesso, correção ou exclusão dos seus dados — inclusive o encerramento definitivo da conta.</p>
-        <p>Dúvidas, pedidos ou exercício de direitos: <a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a>.</p>
+        <p>Dúvidas, pedidos ou exercício de direitos: <a href="mailto:persistia@gmail.com">persistia@gmail.com</a>.</p>
       </div>
     </div>
 
@@ -1386,10 +1407,12 @@
 
     <div class="st-rod">
       <p>Criada com <b>propósito</b> e com <b>determinação</b> por <b>Sanmya Tiradentes</b> &amp; <b>Jane De Maria</b></p>
-      <p style="margin-top:6px"><a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a> ·
+      <p style="margin-top:8px">
+         <a href="mailto:persistia@gmail.com">persistia@gmail.com</a> ·
          <a id="stWhats" href="#" target="_blank" rel="noopener" onclick="this.href=linkWhats()">WhatsApp (92) 99152-1031</a> ·
-         persisteia.com.br</p>
-      <p style="margin-top:6px">Feito no Amazonas para concurseiros do Brasil inteiro.</p>
+         <a href="https://instagram.com/persistia" target="_blank" rel="noopener">Instagram @persistia</a>
+      </p>
+      <p style="margin-top:6px">persisteia.com.br · feito no Amazonas para concurseiros do Brasil inteiro.</p>
     </div>
   </div>
 
