@@ -1395,7 +1395,7 @@
       <div class="st-lgpd">
         <p>A PersisteIA trata seus dados pessoais em conformidade com a Lei Geral de Proteção de Dados (Lei n.º 13.709/2018). Coletamos apenas o necessário para o serviço funcionar: seu nome e e-mail para manter a conta, o edital que você envia para gerar o cronograma e o registro do seu progresso de estudo para calcular revisões e desempenho.</p>
         <p>Seus dados não são vendidos, alugados nem compartilhados com terceiros para fins publicitários. O conteúdo do seu edital é usado exclusivamente para produzir o seu plano e o seu material de estudo. Suas gravações de voz ficam guardadas no seu próprio aparelho. Você pode, a qualquer momento, solicitar acesso, correção ou exclusão dos seus dados — inclusive o encerramento definitivo da conta.</p>
-        <p>Dúvidas, pedidos ou exercício de direitos: <a href="mailto:persistia@gmail.com">persistia@gmail.com</a>.</p>
+        <p>Dúvidas, pedidos ou exercício de direitos: <a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a>.</p>
       </div>
     </div>
 
@@ -1408,7 +1408,7 @@
     <div class="st-rod">
       <p>Criada com <b>propósito</b> e com <b>determinação</b> por <b>Sanmya Tiradentes</b> &amp; <b>Jane De Maria</b></p>
       <p style="margin-top:8px">
-         <a href="mailto:persistia@gmail.com">persistia@gmail.com</a> ·
+         <a href="mailto:persistiamentoria@gmail.com">persistiamentoria@gmail.com</a> ·
          <a id="stWhats" href="#" target="_blank" rel="noopener" onclick="this.href=linkWhats()">WhatsApp (92) 99152-1031</a> ·
          <a href="https://instagram.com/persistia" target="_blank" rel="noopener">Instagram @persistia</a>
       </p>
@@ -1948,7 +1948,15 @@
         </div>
         <p class="muted" style="font-size:.72rem; margin-top:6px" id="provaAviso"></p>
       </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
+      <div id="assinBox" style="margin-top:16px; border-top:1px solid var(--line); padding-top:14px">
+        <p class="optlbl" style="margin:0 0 6px">Assinatura</p>
+        <p id="assinEstado" style="font-size:.92rem; font-weight:700; margin:0">—</p>
+        <p class="muted" style="font-size:.76rem; margin:4px 0 0" id="assinDet"></p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px" id="assinAcoes"></div>
+        <p class="muted" style="font-size:.72rem; margin-top:8px" id="assinMsg"></p>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px">
         <button class="btn ghost small" onclick="refazerCronograma()">Refazer cronograma</button>
         <button class="btn ghost small" onclick="trocarEdital()">Trocar de edital</button>
         <button class="btn ghost small" onclick="sair()">Sair da conta</button>
@@ -2806,6 +2814,89 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
     if(!a.liberado){ $('paywall').classList.add('show'); }
     else { $('paywall').classList.remove('show'); }
+    if(a.valor || a.preco) mostrarPreco(a.valor || a.preco);
+    renderAssinatura();
+  }
+
+  function moeda(v){
+    var n = Number(v); if(!isFinite(n)) return '';
+    return 'R$ ' + n.toFixed(2).replace('.', ',');
+  }
+  function mostrarPreco(v){
+    var txt = moeda(v);
+    if(!txt) return;
+    document.querySelectorAll('.st-preco .val').forEach(function(el){
+      el.innerHTML = txt + '<small> /mês</small>';
+    });
+  }
+
+  /* ---------- painel da assinatura em "Minha conta" ---------- */
+  function renderAssinatura(){
+    var box = $('assinBox'); if(!box) return;
+    var a = ACESSO || {};
+    var est = a.estado || '';
+    var acoes = $('assinAcoes'); acoes.innerHTML = '';
+    var det = '';
+    var titulo = 'Sem assinatura';
+
+    if(est === 'admin'){
+      titulo = 'Acesso de gestora';
+      det = 'Sua conta é administradora — acesso livre, sem cobrança.';
+    } else if(est === 'ativa'){
+      titulo = 'Assinatura ativa · ' + moeda(a.valor || 59.9) + ' por mês';
+      det = a.proxima_cobranca
+        ? 'Próxima cobrança em ' + fmtData(a.proxima_cobranca) + '. Sem fidelidade: você pode cancelar quando quiser.'
+        : 'Sem fidelidade: você pode cancelar quando quiser.';
+      acoes.innerHTML = '<button class="btn ghost small" onclick="cancelarAssinatura()">Cancelar assinatura</button>' +
+                        '<button class="btn ghost small" onclick="sincronizarAssinatura()">Atualizar situação</button>';
+    } else if(est === 'encerrando'){
+      titulo = 'Assinatura cancelada';
+      det = 'Você continua com acesso completo até ' + fmtData(a.proxima_cobranca) + ' — não haverá nova cobrança.';
+      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Voltar a assinar</button>';
+    } else if(est === 'cortesia'){
+      titulo = 'Cortesia · ' + (a.dias_restantes || 0) + ' dias';
+      det = 'Acesso liberado sem cobrança.';
+      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>';
+    } else if(est === 'teste'){
+      titulo = 'Teste grátis · ' + (a.dias_restantes === 0 ? 'último dia' : (a.dias_restantes + ' dias restantes'));
+      det = 'Depois do teste, ' + moeda(a.valor || 59.9) + ' por mês. Você pode assinar antes para não perder o ritmo — a cobrança só começa quando o teste acabar.';
+      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>';
+    } else if(est === 'bloqueada'){
+      titulo = 'Conta bloqueada';
+      det = 'Fale com a gente pelo WhatsApp para reativar.';
+    } else {
+      titulo = 'Teste encerrado';
+      det = 'Seu edital e todo o seu progresso continuam guardados. ' + moeda(a.valor || 59.9) + ' por mês, sem fidelidade.';
+      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>';
+    }
+    $('assinEstado').textContent = titulo;
+    $('assinDet').textContent = det;
+  }
+
+  function sincronizarAssinatura(){
+    if($('assinMsg')) $('assinMsg').textContent = 'Conferindo no Mercado Pago…';
+    apiFetch('/api/assinatura', { conferir: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ if($('assinMsg')) $('assinMsg').textContent = d.erro; return; }
+        aplicarAcesso(d);
+        if($('assinMsg')) $('assinMsg').textContent = 'Situação atualizada agora.';
+      })
+      .catch(function(){ if($('assinMsg')) $('assinMsg').textContent = 'Sem conexão com o servidor.'; });
+  }
+
+  function cancelarAssinatura(){
+    if(!confirm('Cancelar a assinatura do PersisteIA?\n\nVocê continua com acesso completo até o fim do período que já pagou, e não haverá nova cobrança. Seu edital e todo o seu progresso ficam guardados.')) return;
+    if($('assinMsg')) $('assinMsg').textContent = 'Cancelando…';
+    apiFetch('/api/assinatura', { cancelar: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ if($('assinMsg')) $('assinMsg').textContent = d.erro; toast(d.erro); return; }
+        aplicarAcesso(d);
+        if($('assinMsg')) $('assinMsg').textContent = 'Assinatura cancelada. Não haverá nova cobrança.';
+        toast('Assinatura cancelada');
+      })
+      .catch(function(){ if($('assinMsg')) $('assinMsg').textContent = 'Sem conexão com o servidor.'; });
   }
 
   function assinar(){
@@ -6167,11 +6258,13 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       var est = ACESSO ? ACESSO.estado : '';
       var sit = est === 'ativa' ? 'assinatura ativa'
         : est === 'admin' ? 'acesso de gestora'
+        : est === 'encerrando' ? 'assinatura cancelada · acesso até ' + fmtData(ACESSO.proxima_cobranca)
         : est === 'cortesia' ? 'cortesia · ' + ACESSO.dias_restantes + ' dias'
         : est === 'teste' ? 'teste grátis · ' + ACESSO.dias_restantes + ' dias restantes'
         : 'sem assinatura';
       $('planoConta').textContent = (NOME || 'Minha conta') + ' · ' + sit;
     }
+    renderAssinatura();
     if($('provaInput')){
       var isoP = isoData(d.data_prova);
       $('provaInput').value = isoP || '';

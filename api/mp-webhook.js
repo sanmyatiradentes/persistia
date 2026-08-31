@@ -34,8 +34,11 @@ async function aplicar(db, preapprovalId) {
   if (!alunoId) return;
   const ativa = info.status === 'authorized';
   const estado = ativa ? 'ativa' : (info.status === 'paused' ? 'pausada' : (info.status === 'pending' ? 'pendente' : 'cancelada'));
+  // Ao cancelar, o MP devolve next_payment_date vazio. Guardamos a data que já
+  // tínhamos para o aluno seguir até o fim do mês que ele pagou.
   await db.execute({
-    sql: `UPDATE assinaturas SET estado = ?, preapproval_id = ?, proxima_cobranca = ?, atualizado_em = ?
+    sql: `UPDATE assinaturas SET estado = ?, preapproval_id = ?,
+                 proxima_cobranca = COALESCE(?, proxima_cobranca), atualizado_em = ?
           WHERE aluno_id = ?`,
     args: [estado, preapprovalId, info.next_payment_date || null, agora(), alunoId]
   });

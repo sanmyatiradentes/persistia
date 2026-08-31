@@ -43,21 +43,28 @@ module.exports = async (req, res) => {
 
     const body = req.body || {};
 
+    if (!process.env.MP_ACCESS_TOKEN) {
+      return res.status(503).json({ erro: 'O pagamento ainda está sendo configurado. Fale com a gente pelo WhatsApp que liberamos seu acesso.' });
+    }
+
     if (body.assinar) {
       const acesso = await acessoDoAluno(aluno);
       if (acesso.estado === 'ativa') return res.status(200).json({ ja_assinante: true });
 
-      const volta = siteUrl(req) + '/?assinatura=ok';
+      const base = siteUrl(req);
       const assinatura = await mp('/preapproval', 'POST', {
         reason: 'PersisteIA — assinatura mensal',
         external_reference: aluno.id,
         payer_email: aluno.email,
-        back_url: volta,
+        back_url: base + '/?assinatura=ok',
+        // Além do webhook configurado no painel, avisamos por assinatura:
+        // se um dos dois falhar, o outro ainda chega.
+        notification_url: base + '/api/mp-webhook',
         status: 'pending',
         auto_recurring: {
           frequency: 1,
           frequency_type: 'months',
-          transaction_amount: PRECO,
+          transaction_amount: Math.round(PRECO * 100) / 100,
           currency_id: 'BRL'
         }
       });
@@ -79,21 +86,22 @@ module.exports = async (req, res) => {
         sql: `UPDATE assinaturas SET estado = 'cancelada', atualizado_em = ? WHERE aluno_id = ?`,
         args: [agora(), aluno.id]
       });
-      return res.status(200).json({ ok: true });
+      const depois = await acessoDoAluno(aluno);
+      return res.status(200).json({ ok: true, ...depois, preco: PRECO, dias_teste: TRIAL_DIAS });
     }
 
     // Sincroniza o estado com o Mercado Pago (usado ao voltar do checkout).
     if (body.conferir) {
       const r = await db.execute({ sql: 'SELECT preapproval_id FROM assinaturas WHERE aluno_id = ?', args: [aluno.id] });
       const pid = (r.rows[0] || {}).preapproval_id;
-      if (!pid) return res.status(200).json({ ...(await acessoDoAluno(aluno)) });
+      if (!pid) return res.status(200).json({ ...(await acessoDoAluno(aluno)), preco: PRECO, dias_teste: TRIAL_DIAS });
       const info = await mp('/preapproval/' + pid);
-      const ativa = info.status === 'authorized';
+      const mapa = { authorized: 'ativa', paused: 'pausada', cancelled: 'cancelada', pending: 'pendente' };
       await db.execute({
         sql: `UPDATE assinaturas SET estado = ?, proxima_cobranca = ?, atualizado_em = ? WHERE aluno_id = ?`,
-        args: [ativa ? 'ativa' : 'pendente', info.next_payment_date || null, agora(), aluno.id]
+        args: [mapa[info.status] || 'pendente', info.next_payment_date || null, agora(), aluno.id]
       });
-      return res.status(200).json({ ...(await acessoDoAluno(aluno)), status_mp: info.status });
+      return res.status(200).json({ ...(await acessoDoAluno(aluno)), status_mp: info.status, preco: PRECO, dias_teste: TRIAL_DIAS });
     }
 
     return res.status(400).json({ erro: 'Ação não reconhecida' });

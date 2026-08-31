@@ -120,11 +120,15 @@ async function acessoDoAluno(aluno) {
   const emTeste = a.estado === 'teste' && a.fim_teste && a.fim_teste > hoje;
   const ativa = a.estado === 'ativa';
   const bloqueado = a.estado === 'bloqueada';
+  // Quem cancela não perde o que já pagou: segue com acesso até a data da
+  // próxima cobrança que não vai mais acontecer.
+  const encerrando = a.estado === 'cancelada' && a.proxima_cobranca && a.proxima_cobranca > hoje;
 
   let estado = 'expirado';
   if (bloqueado && !admin) estado = 'bloqueada';
   else if (admin) estado = 'admin';
   else if (ativa) estado = 'ativa';
+  else if (encerrando) estado = 'encerrando';
   else if (cortesia) estado = 'cortesia';
   else if (emTeste) estado = 'teste';
 
@@ -133,6 +137,7 @@ async function acessoDoAluno(aluno) {
 
   return {
     estado,
+    estado_bruto: a.estado || null,
     liberado: estado !== 'expirado' && estado !== 'bloqueada',
     dias_restantes: (estado === 'teste' || estado === 'cortesia') ? dias : null,
     fim_teste: a.fim_teste || null,
