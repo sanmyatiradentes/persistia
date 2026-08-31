@@ -69,10 +69,14 @@ module.exports = async (req, res) => {
         }
       });
 
-      await db.execute({
-        sql: `UPDATE assinaturas SET preapproval_id = ?, valor = ?, atualizado_em = ? WHERE aluno_id = ?`,
-        args: [assinatura.id, PRECO, agora(), aluno.id]
-      });
+      // O teste da gestora não grava nada: serve só para provar que as chaves
+      // estão valendo, sem sujar o cadastro de assinatura dela.
+      if (!body.teste) {
+        await db.execute({
+          sql: `UPDATE assinaturas SET preapproval_id = ?, valor = ?, atualizado_em = ? WHERE aluno_id = ?`,
+          args: [assinatura.id, PRECO, agora(), aluno.id]
+        });
+      }
 
       return res.status(200).json({ ok: true, checkout: assinatura.init_point, preapproval_id: assinatura.id });
     }

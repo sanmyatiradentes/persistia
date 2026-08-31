@@ -1362,11 +1362,9 @@
           <p>Aprovada em <b>três concursos públicos</b> — SUFRAMA, Polícia Civil do Amazonas e Corpo de Bombeiros Militar do Amazonas. Foi odontóloga efetiva da SUFRAMA e pediu exoneração para assumir o cargo no Corpo de Bombeiros Militar, onde é Capitão-Dentista; hoje é Perita Odontolegista da Polícia Civil do Amazonas e dirige a Polícia Científica do Estado. São mais de quinze anos de serviço público. Apaixonada por desburocratizar o Estado, une gestão enxuta, tecnologia e neurociência aplicada à aprendizagem: é dela o método por trás da Esteira dos oito verbos — e é ela quem desenvolve o sistema.</p>
           <ul class="st-cred">
             <li>Aprovada em 3 concursos: SUFRAMA, PC-AM e CBM-AM</li>
-            <li>Especialização em Odontologia Legal — FOP/Unicamp</li>
             <li>Master Black Belt em Lean Six Sigma</li>
             <li>MBA em Metodologias Ágeis</li>
             <li>Especialização em Inteligência e Inovação Aplicadas ao Enfrentamento ao Crime Organizado — UFSC</li>
-            <li>Formação em liderança pública — RenovaBR</li>
           </ul>
           <div class="st-frase">“A aprovação em concurso público não é um destino — é o resultado natural de quem transformou o método em identidade.”</div>
         </div>
@@ -2879,7 +2877,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function testarCheckout(){
     var msg = $('assinMsg');
     if(msg) msg.textContent = 'Pedindo um link de pagamento ao Mercado Pago…';
-    apiFetch('/api/assinatura', { assinar: true })
+    apiFetch('/api/assinatura', { assinar: true, teste: true })
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         if(!msg) return;
