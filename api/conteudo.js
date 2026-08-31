@@ -13,6 +13,7 @@ function tamanhos(h) {
     palavras_teoria: clamp(500 + h * 450, 700, 2600),
     palavras_simples: clamp(300 + h * 160, 380, 900),
     paragrafos: clamp(4 + h * 2.5, 6, 14),
+    cenas: clamp(1 + h * 0.8, 1, 3),
     questoes: clamp(4 + h * 4, 6, 14),
     me: clamp(3 + h * 2, 4, 8),
     flashcards: clamp(5 + h * 4, 6, 14),
@@ -51,6 +52,12 @@ Regras:
 - "musica": estilo sugerido + letra mnemônica com refrão e 3 estrofes, cobrindo os pontos principais do assunto (o refrão repete depois de cada estrofe).
 - "dispositivos": a LEI SECA do assunto. Quando o tópico tiver base normativa, transcreva LITERALMENTE, palavra por palavra, até ${t.dispositivos} dispositivos centrais (artigo de lei ou da Constituição, inciso, parágrafo, súmula ou enunciado). Cada item tem "rotulo" com a citação exata e abreviada (ex.: "Art. 37, caput, CF/88", "Art. 5.º, LXIII, CF/88", "Art. 2.º da Lei n.º 9.784/1999", "Súmula Vinculante 13") e "texto" com a transcrição fiel e integral do dispositivo, sem cortes, sem resumo e sem adaptação. Regra inegociável: só transcreva o que você tem CERTEZA de reproduzir literalmente. Se houver qualquer dúvida sobre a redação exata, não inclua aquele dispositivo — é melhor devolver a lista vazia do que apresentar paráfrase como se fosse texto de lei. Se o assunto não for jurídico (português, informática, raciocínio lógico, história), devolva lista vazia.
 - "palavras_chave": ${t.destaques} termos que APARECEM literalmente no texto do "resumo" e merecem destaque colorido, cada um com "termo" (1 a 3 palavras, exatamente como escrito no resumo) e "tipo", escolhido entre exatamente estes seis rótulos: "conceito" (definição ou instituto central), "principio" (princípio, regra ou fundamento), "prazo" (prazo, número, quórum, percentual, valor, idade), "excecao" (exceção, ressalva, hipótese de não aplicação), "orgao" (órgão, autoridade ou competência) e "pegadinha" (o ponto exato em que a banca costuma trocar uma palavra pela outra). Distribua entre os tipos; não classifique tudo como "conceito".
+- "cenas": de 1 a ${t.cenas} CENAS DE CINEMA MENTAL — pôsteres mentais que o aluno guarda e recupera na hora da prova. Cada cena tem:
+  · "arquetipo": o desenho que melhor representa a ideia, entre exatamente estes: "pilha" (hierarquia, o que está acima do quê, graus e níveis), "duplo" (dois conceitos que se opõem ou se completam — X é uma coisa, Y é outra), "caminho" (etapas em sequência, procedimento, linha do tempo), "arvore" (um gênero que se divide em espécies), "balanca" (dois lados que se pesam ou se equilibram), "funil" (muitos entram, poucos passam: requisitos e filtros) e "orbita" (um conceito central cercado pelos seus elementos).
+  · "rotulos": de 2 a 6 rótulos curtos (até 4 palavras cada), na ordem de leitura do desenho. São os termos técnicos de verdade do assunto. No arquétipo "pilha" vão de baixo para cima; no "duplo" são exatamente 2.
+  · "manchete": EXATAMENTE 3 linhas curtas (até 7 palavras cada) que, lidas em sequência, entregam a ideia da cena. A 1.ª apresenta, a 2.ª vira a chave, a 3.ª conclui. Exemplo: ["O direito é a casa.", "A garantia é o extintor.", "Um você tem, o outro você aciona."].
+  · "legenda": uma linha técnica curta com o par de conceitos e a fonte, no formato "direito x garantia — o bem e o remédio que o protege" ou "status de emenda x supralegal — art. 5.º, §§ 2.º e 3.º".
+  Cenas diferentes tratam de ideias diferentes, nunca a mesma com outro desenho. Nunca prometa aprovação, nunca cite banca, órgão, preço ou período de teste nas cenas.
 - "numeros": até 4 dados que a prova cobra de cor — prazo, quórum, percentual, idade, valor — cada um com "valor" curto (ex.: "5 anos", "2/3", "48 h") e "rotulo" de até 6 palavras. Se o assunto não tiver números decorativos, devolva lista vazia; não invente.
 - "pegadinhas": 3 erros que as bancas mais exploram neste assunto, cada um em até 18 palavras, escrito como alerta ("Confundir X com Y: ...").
 ${estilo}`;
@@ -109,9 +116,22 @@ const S_APOIO = {
       type: 'array',
       items: { type: 'object', properties: { valor: { type: 'string' }, rotulo: { type: 'string' } }, required: ['valor', 'rotulo'] }
     },
-    pegadinhas: { type: 'array', items: { type: 'string' } }
+    pegadinhas: { type: 'array', items: { type: 'string' } },
+    cenas: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          arquetipo: { type: 'string' },
+          rotulos: { type: 'array', items: { type: 'string' } },
+          manchete: { type: 'array', items: { type: 'string' } },
+          legenda: { type: 'string' }
+        },
+        required: ['arquetipo', 'rotulos', 'manchete', 'legenda']
+      }
+    }
   },
-  required: ['acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas']
+  required: ['acronimo', 'trecho_chave', 'dispositivos', 'palavras_chave', 'mapa', 'numeros', 'pegadinhas', 'cenas']
 };
 
 const S_PRATICA = {
@@ -240,7 +260,7 @@ module.exports = async (req, res) => {
     const PEDIDO_TEXTO = 'Gere APENAS estes campos: subtitulo, resumo e explicacao_simples. O "resumo" é o material principal do aluno — desenvolva-o na extensão pedida, sem economizar.';
     let [texto, apoio, midia, pratica] = await Promise.all([
       gerar(sis, cabecalho + PEDIDO_TEXTO, S_TEXTO),
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros e pegadinhas.', S_APOIO),
+      gerar(sis, cabecalho + 'Gere APENAS estes campos: acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas e cenas.', S_APOIO),
       gerar(sis, cabecalho + 'Gere APENAS estes campos: podcast e musica.', S_MIDIA),
       gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
     ]);

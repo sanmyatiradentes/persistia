@@ -9,7 +9,7 @@
 <meta property="og:description" content="Envie o edital do seu concurso e receba cronograma proporcional e material de estudo em 8 formatos. 7 dias gratis, sem cartao.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://persisteia.com.br">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2226%22 fill=%22%230E8F6E%22/><path d=%22M34 78V25h19a16 16 0 0 1 0 32H34%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-width=%2212%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M58 74l10-11 10 11%22 fill=%22none%22 stroke=%22%23FFC960%22 stroke-width=%229%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
 <link rel="apple-touch-icon" href="icone-180.png">
 </head>
 <body>
@@ -92,12 +92,8 @@
   .brand{font-weight:800; font-size:1.35rem; letter-spacing:-.02em; display:flex; align-items:center; gap:.42em}
   .brand .ia{color:var(--accent)}
   .side-brand{display:none}
-  .mk{width:1.5em; height:1.5em; flex:none; display:block}
-  .mk .bgm{fill:var(--accent)}
-  .mk .pm{stroke:var(--on-accent)}
-  .mk .cm{stroke:#FFC960}
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .mk .cm{stroke:#08130E; opacity:.55} }
-  :root[data-theme="dark"] .mk .cm{stroke:#08130E; opacity:.55}
+  /* símbolo oficial — o manual da marca proíbe redesenhá-lo */
+  .mk{width:1.5em; height:1.5em; flex:none; display:block; border-radius:.35em}
   .ob-hero{flex:1; display:flex; flex-direction:column; justify-content:center; gap:18px}
   .ob-hero h1{font-size:2rem; line-height:1.12; font-weight:800; letter-spacing:-.025em; text-wrap:balance}
   .ob-hero h1 em{font-style:normal; color:var(--accent)}
@@ -157,20 +153,26 @@
   }
   .task.warm .task-ic{background:var(--warm-soft); color:var(--warm)}
   /* cada verbo tem a sua cor — o painel fica legível de relance */
-  #t-ler   .task-ic{background:color-mix(in srgb, var(--d1) 16%, transparent); color:var(--d1)}
-  #t-ouvir .task-ic{background:color-mix(in srgb, var(--d5) 16%, transparent); color:var(--d5)}
-  #t-falar .task-ic{background:color-mix(in srgb, var(--d7) 16%, transparent); color:var(--d7)}
-  #t-digitar .task-ic{background:color-mix(in srgb, var(--d3) 16%, transparent); color:var(--d3)}
-  #t-escrever .task-ic{background:color-mix(in srgb, var(--d2) 16%, transparent); color:var(--d2)}
-  #t-raciocinar .task-ic{background:color-mix(in srgb, var(--d4) 16%, transparent); color:var(--d4)}
-  #t-treinar .task-ic{background:color-mix(in srgb, var(--d6) 16%, transparent); color:var(--d6)}
-  #t-visual .task-ic{background:color-mix(in srgb, var(--d3) 16%, transparent); color:var(--d3)}
-  #t-perguntar .task-ic{background:color-mix(in srgb, var(--d5) 16%, transparent); color:var(--d5)}
+  /* cor de cada verbo conforme o Manual de Design (4.4) */
+  #t-ouvir .task-ic{background:color-mix(in srgb, #0E8F6E 16%, transparent); color:#0E8F6E}
+  #t-ler   .task-ic{background:color-mix(in srgb, #B97A0F 16%, transparent); color:#B97A0F}
+  #t-falar .task-ic{background:color-mix(in srgb, #7A4FD6 16%, transparent); color:#7A4FD6}
+  #t-digitar .task-ic{background:color-mix(in srgb, #B85C3A 16%, transparent); color:#B85C3A}
+  #t-escrever .task-ic{background:color-mix(in srgb, #2E7DBE 16%, transparent); color:#2E7DBE}
+  #t-raciocinar .task-ic{background:color-mix(in srgb, #8A6D00 16%, transparent); color:#8A6D00}
+  #t-treinar .task-ic{background:color-mix(in srgb, #C4497E 16%, transparent); color:#C4497E}
+  #t-perguntar .task-ic{background:color-mix(in srgb, #2FBE92 16%, transparent); color:#2FBE92}
+  #t-simples .task-ic{background:color-mix(in srgb, #B97A0F 16%, transparent); color:#B97A0F}
+  #t-cine .task-ic{background:color-mix(in srgb, #7A4FD6 16%, transparent); color:#7A4FD6}
+  #t-mnemo .task-ic{background:color-mix(in srgb, #8A6D00 16%, transparent); color:#8A6D00}
+  #t-visual .task-ic{background:color-mix(in srgb, #2E7DBE 16%, transparent); color:#2E7DBE}
   .task{position:relative; overflow:hidden}
   .task.open:before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--vc,var(--accent))}
-  #t-ler.open:before{--vc:var(--d1)} #t-ouvir.open:before{--vc:var(--d5)} #t-falar.open:before{--vc:var(--d7)}
-  #t-digitar.open:before{--vc:var(--d3)} #t-escrever.open:before{--vc:var(--d2)} #t-raciocinar.open:before{--vc:var(--d4)}
-  #t-treinar.open:before{--vc:var(--d6)} #t-visual.open:before{--vc:var(--d3)} #t-perguntar.open:before{--vc:var(--d5)}
+  #t-ouvir.open:before{--vc:#0E8F6E} #t-ler.open:before{--vc:#B97A0F} #t-falar.open:before{--vc:#7A4FD6}
+  #t-digitar.open:before{--vc:#B85C3A} #t-escrever.open:before{--vc:#2E7DBE} #t-raciocinar.open:before{--vc:#8A6D00}
+  #t-treinar.open:before{--vc:#C4497E} #t-perguntar.open:before{--vc:#2FBE92}
+  #t-simples.open:before{--vc:#B97A0F} #t-cine.open:before{--vc:#7A4FD6} #t-mnemo.open:before{--vc:#8A6D00}
+  #t-visual.open:before{--vc:#2E7DBE}
   .task-h b{display:block; font-size:.95rem}
   .task-h small{color:var(--muted); font-size:.78rem}
   .task-min{margin-left:auto; text-align:right; flex:none}
@@ -379,6 +381,9 @@
   .simples p{font-size:.92rem; line-height:1.7; margin-bottom:12px}
   .simples p:last-child{margin-bottom:0}
   .simples em{font-style:normal; background:rgba(255,255,255,.5); border-radius:4px; padding:0 3px}
+  /* cinema mental: metáforas desenhadas */
+  .cena{margin:0 0 14px}
+  .cena-svg{display:block; width:100%; height:auto; border-radius:18px; box-shadow:var(--shadow)}
   .mnem{background:var(--card2); border:1px solid var(--line); border-radius:16px; padding:16px 18px}
   .mnem .sig{font-family:"Bricolage Grotesque",sans-serif; font-size:1.9rem; font-weight:800; letter-spacing:.12em;
              color:var(--accent); display:block; margin-bottom:10px}
@@ -1044,7 +1049,7 @@
   <!-- ================= SITE (quem somos / apresentação) ================= -->
   <div id="site">
     <div class="st-nav">
-      <div class="brand"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+      <div class="brand"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
       <div class="sp"></div>
       <button class="lg-alt" style="margin:0" onclick="abrirConta('login')">Entrar</button>
       <button class="btn small" onclick="abrirConta('cadastro')">Testar grátis</button>
@@ -1272,7 +1277,7 @@
 
   <!-- ================= PAYWALL ================= -->
   <div id="paywall">
-    <div class="brand" style="justify-content:center; margin-bottom:10px"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+    <div class="brand" style="justify-content:center; margin-bottom:10px"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
     <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.5rem; letter-spacing:-.02em; margin-bottom:6px">Seus 7 dias de teste terminaram</h2>
     <p class="muted" style="font-size:.9rem; max-width:420px; margin:0 auto 20px">Seu edital, seu cronograma e todo o seu progresso continuam guardados. Assine para seguir de onde parou.</p>
     <div class="st-preco">
@@ -1292,7 +1297,7 @@
   <div id="ob">
     <div class="ob-step active" id="ob1">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+        <div class="brand" style="margin:0"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -1305,7 +1310,7 @@
 
     <div class="ob-step" id="ob2">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+        <div class="brand" style="margin:0"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -1343,7 +1348,7 @@
 
     <div class="ob-step" id="ob3">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+        <div class="brand" style="margin:0"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -1363,7 +1368,7 @@
 
     <div class="ob-step" id="ob4">
       <div style="display:flex; align-items:center; gap:10px; width:100%">
-        <div class="brand" style="margin:0"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+        <div class="brand" style="margin:0"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
         <span style="flex:1"></span>
         <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
       </div>
@@ -1479,7 +1484,7 @@
         </button>
         <div class="task-b"><div class="inner">
           <div class="simples" id="simplesBox">
-            <h3>👦 Explicando como se você tivesse 12 anos</h3>
+            <h3>Explicando como se você tivesse 12 anos</h3>
             <p class="muted">Assim que a teoria carregar, a explicação simples aparece aqui.</p>
           </div>
           <div class="bloco-ctl">
@@ -1489,6 +1494,19 @@
             <button class="lg-alt" onclick="expandirBloco('simplesBox', this)">expandir</button>
             <span class="muted" style="font-size:.72rem">role dentro da caixa para ler tudo</span>
           </div>
+        </div></div>
+      </div>
+
+      <!-- CINEMA MENTAL -->
+      <div class="card task" id="t-cine">
+        <button class="task-h" onclick="tg('t-cine')">
+          <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg></span>
+          <span><b>Cinema Mental · a metáfora do assunto</b><small>Uma imagem que você recupera na hora da prova</small></span>
+          <span class="stbadge wait num" id="sbCine">imagem</span>
+        </button>
+        <div class="task-b"><div class="inner">
+          <div id="cineBox"><p class="muted" style="font-size:.85rem">As cenas do assunto aparecem aqui.</p></div>
+          <p class="muted" style="font-size:.72rem; margin-top:4px">Codificação dupla: o que entra como palavra <b>e</b> como imagem tem duas rotas de volta na memória.</p>
         </div></div>
       </div>
 
@@ -1731,7 +1749,7 @@
 
       <!-- MINHA VOZ -->
       <div class="card">
-        <h2 style="font-size:.98rem">🎙️ Minha Voz · suas gravações</h2>
+        <h2 style="font-size:.98rem">Minha Voz · suas gravações</h2>
         <p class="muted" style="font-size:.74rem; margin-bottom:6px">Toda leitura em voz alta que você grava no Leitor fica aqui, no seu aparelho, pronta para reouvir no trajeto.</p>
         <div id="mvLista"><p class="muted" style="font-size:.8rem">Nenhuma gravação ainda. Leia a teoria em voz alta no Leitor e sua faixa aparece aqui.</p></div>
         <p class="muted" style="font-size:.7rem; margin-top:8px">Ouvir a matéria na própria voz é um dos reforços de memória mais fortes que existem.</p>
@@ -2129,7 +2147,7 @@
   </section>
 
   <nav class="tabbar" id="tabbar" aria-label="Navegação principal">
-    <div class="brand side-brand"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+    <div class="brand side-brand"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
     <button class="tab active" data-scr="hoje" onclick="nav('hoje',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
       Hoje</button>
@@ -2152,7 +2170,7 @@
 
   <!-- ================= LOGIN (modo real) ================= -->
   <div id="login" role="dialog" aria-label="Entrar na sua conta">
-    <div class="brand" style="margin-bottom:8px"><svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><rect class="bgm" width="100" height="100" rx="26"/><path class="pm" d="M34 78V25h19a16 16 0 0 1 0 32H34" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path class="cm" d="M58 74l10-11 10 11" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Persiste<span class="ia">IA</span></span></div>
+    <div class="brand" style="margin-bottom:8px"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
     <h2 style="font-size:1.3rem" id="lgTitle">Criar minha conta</h2>
     <p class="muted" style="font-size:.85rem">Seu progresso fica salvo e sincronizado — é rapidinho.</p>
     <input id="lgNome" type="text" placeholder="Seu nome" autocomplete="name">
@@ -3605,6 +3623,191 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   /* ---------- LIMPE ---------- */
   function limpe(txt){ if($('limpeWord')) $('limpeWord').textContent = txt; }
 
+  /* ================= CINEMA MENTAL =================
+     Pôster mental no padrão do Manual de Design: fundo claro, ilustração em traço
+     grosso, manchete de três linhas (tinta · âmbar · verde) e a marca discreta no
+     rodapé. O modelo devolve só a ideia; o desenho é feito aqui, sem custo de token. */
+  var CM = { verde:'#0E8F6E', ambar:'#FFC960', ambarP:'#B97A0F', tinta:'#16241D',
+             respiro:'#E2F2EB', branco:'#FFFFFF', salvia:'#5C6E64', linha:'#DCE7DF' };
+
+  function escSvg(t){
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c];
+    });
+  }
+  function linhasSvg(txt, max){
+    var pal = String(txt || '').split(/\s+/), linhas = [''], i;
+    for(i = 0; i < pal.length; i++){
+      var tent = (linhas[linhas.length-1] + ' ' + pal[i]).trim();
+      if(tent.length <= max || !linhas[linhas.length-1]) linhas[linhas.length-1] = tent;
+      else linhas.push(pal[i]);
+    }
+    if(linhas.length > 2) linhas = [linhas[0], linhas.slice(1).join(' ')];
+    return linhas;
+  }
+  function textoSvg(txt, x, y, max, cls, alt){
+    var ls = linhasSvg(txt, max), h = alt || 15;
+    var y0 = y - (ls.length - 1) * h / 2;
+    return ls.map(function(l, i){
+      return '<text x="' + x + '" y="' + (y0 + i * h) + '" class="' + cls + '">' + escSvg(l) + '</text>';
+    }).join('');
+  }
+
+  // ---- desenhos, todos no traço grosso da marca ----
+  function dPilha(r, W, y0, h){
+    var n = r.length, hb = Math.min(52, (h - 20) / n), gap = 12, out = '';
+    var larg = [], i;
+    for(i = 0; i < n; i++) larg.push(360 - i * (140 / Math.max(1, n)));   // mais largo embaixo
+    for(i = 0; i < n; i++){
+      var topo = (i === n - 1);
+      var y = y0 + h - (i + 1) * (hb + gap);
+      var lg = larg[i], x = (W - lg) / 2;
+      out += '<rect x="' + x + '" y="' + y + '" width="' + lg + '" height="' + hb + '" rx="12" ' +
+             'fill="' + (topo ? CM.verde : (i === n - 2 ? CM.respiro : CM.branco)) + '" stroke="' + CM.tinta + '" stroke-width="5"/>' +
+             textoSvg(r[i], W/2, y + hb/2 + 5, 26, topo ? 'rb' : 'rt', 17);
+    }
+    // seta ascendente: o gesto do símbolo
+    var xs = (W + 380) / 2;
+    out += '<path d="M' + xs + ' ' + (y0 + h - 8) + ' V' + (y0 + 26) + '" stroke="' + CM.verde + '" stroke-width="7" stroke-linecap="round"/>' +
+           '<path d="M' + (xs - 15) + ' ' + (y0 + 40) + ' L' + xs + ' ' + (y0 + 20) + ' L' + (xs + 15) + ' ' + (y0 + 40) + '" fill="none" stroke="' + CM.verde + '" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>';
+    return out;
+  }
+  function dDuplo(r, W, y0, h){
+    var cy = y0 + h/2 - 10, out = '';
+    out += '<path d="M' + (W/2) + ' ' + (y0 + 10) + ' V' + (y0 + h - 6) + '" stroke="' + CM.linha + '" stroke-width="4" stroke-dasharray="3 14" stroke-linecap="round"/>';
+    [[W*0.27, r[0], CM.branco, 'gt'], [W*0.73, r[1] || '', CM.verde, 'gb']].forEach(function(par){
+      var x = par[0];
+      out += '<rect x="' + (x - 92) + '" y="' + (cy - 76) + '" width="184" height="152" rx="22" fill="' + par[2] + '" stroke="' + CM.tinta + '" stroke-width="6"/>' +
+        '<ellipse cx="' + x + '" cy="' + (cy + 90) + '" rx="74" ry="9" fill="' + CM.tinta + '" opacity=".08"/>' +
+        textoSvg(par[1], x, cy, 12, par[3], 24);
+    });
+    return out;
+  }
+  function dCaminho(r, W, y0, h){
+    var n = r.length, cy = y0 + h/2 - 14, px = 74, pw = (W - 148) / Math.max(1, n - 1), out = '';
+    out += '<path d="M' + px + ' ' + cy + ' H' + (W - px) + '" stroke="' + CM.tinta + '" stroke-width="5" stroke-dasharray="2 16" stroke-linecap="round" opacity=".5"/>';
+    r.forEach(function(t, i){
+      var x = n === 1 ? W/2 : px + i * pw, ult = (i === n - 1);
+      out += '<circle cx="' + x + '" cy="' + cy + '" r="26" fill="' + (ult ? CM.verde : CM.branco) + '" stroke="' + CM.tinta + '" stroke-width="5"/>' +
+        (ult ? '<path d="M' + (x-9) + ' ' + cy + ' l6 7 12 -14" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'
+             : '<circle cx="' + x + '" cy="' + cy + '" r="7" fill="' + CM.ambar + '"/>') +
+        textoSvg(t, x, cy + 56, 13, 'rt', 16);
+    });
+    return out;
+  }
+  function dArvore(r, W, y0, h){
+    var cx = W/2, out = '', n = r.length;
+    out += '<rect x="' + (cx - 118) + '" y="' + y0 + '" width="236" height="58" rx="16" fill="' + CM.verde + '" stroke="' + CM.tinta + '" stroke-width="5"/>' +
+      textoSvg(r[0], cx, y0 + 30, 24, 'rb', 17);
+    var filhos = r.slice(1), m = filhos.length || 1, lg = (W - 90) / m;
+    filhos.forEach(function(t, i){
+      var x = 45 + lg * i + lg/2;
+      out += '<path d="M' + cx + ' ' + (y0 + 58) + ' C' + cx + ' ' + (y0 + 110) + ', ' + x + ' ' + (y0 + 96) + ', ' + x + ' ' + (y0 + 146) + '" stroke="' + CM.tinta + '" stroke-width="4" fill="none" opacity=".55"/>' +
+        '<rect x="' + (x - lg/2 + 8) + '" y="' + (y0 + 146) + '" width="' + (lg - 16) + '" height="72" rx="14" fill="' + CM.branco + '" stroke="' + CM.tinta + '" stroke-width="5"/>' +
+        textoSvg(t, x, y0 + 184, 13, 'rt', 16);
+    });
+    return out;
+  }
+  function dBalanca(r, W, y0, h){
+    var cx = W/2, yb = y0 + 40, yp = y0 + h - 16, out = '';
+    var meio = Math.ceil(r.length/2), lados = [r.slice(0, meio), r.slice(meio)];
+    out += '<path d="M' + cx + ' ' + yb + ' V' + yp + '" stroke="' + CM.tinta + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M' + (cx - 150) + ' ' + yb + ' H' + (cx + 150) + '" stroke="' + CM.tinta + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M' + (cx - 78) + ' ' + yp + ' H' + (cx + 78) + '" stroke="' + CM.tinta + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<circle cx="' + cx + '" cy="' + yb + '" r="13" fill="' + CM.ambar + '" stroke="' + CM.tinta + '" stroke-width="4"/>';
+    [[cx - 150, lados[0], CM.branco], [cx + 150, lados[1], CM.respiro]].forEach(function(par){
+      var x = par[0];
+      out += '<path d="M' + (x - 62) + ' ' + (yb + 46) + ' L' + x + ' ' + yb + ' L' + (x + 62) + ' ' + (yb + 46) + ' Z" fill="' + par[2] + '" stroke="' + CM.tinta + '" stroke-width="5" stroke-linejoin="round"/>';
+      (par[1] || []).forEach(function(t, i){
+        out += textoSvg(t, x, yb + 88 + i * 34, 17, 'rt', 16);
+      });
+    });
+    return out;
+  }
+  function dFunil(r, W, y0, h){
+    var n = r.length, topo = 340, fundo = 120, hb = (h - 12) / n, out = '';
+    r.forEach(function(t, i){
+      var lt = topo - (topo - fundo) * (i / n), lb = topo - (topo - fundo) * ((i+1) / n);
+      var y = y0 + i * hb;
+      out += '<path d="M' + (W/2 - lt/2) + ' ' + y + ' H' + (W/2 + lt/2) + ' L' + (W/2 + lb/2) + ' ' + (y + hb - 4) + ' H' + (W/2 - lb/2) + ' Z" ' +
+        'fill="' + (i === n-1 ? CM.verde : (i % 2 ? CM.respiro : CM.branco)) + '" stroke="' + CM.tinta + '" stroke-width="5" stroke-linejoin="round"/>' +
+        textoSvg(t, W/2, y + hb/2 + 2, 26, i === n-1 ? 'rb' : 'rt', 16);
+    });
+    return out;
+  }
+  function dOrbita(r, W, y0, h){
+    var cx = W/2, cy = y0 + h/2 - 6, rx = 178, ry = h/2 - 44, out = '';
+    out += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="none" stroke="' + CM.tinta + '" stroke-width="4" stroke-dasharray="3 14" opacity=".45"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="62" fill="' + CM.verde + '" stroke="' + CM.tinta + '" stroke-width="5"/>' +
+      textoSvg(r[0], cx, cy + 2, 14, 'rb', 16);
+    r.slice(1).forEach(function(t, i, arr){
+      var a = -Math.PI/2 + ((i + 1) * 2 * Math.PI / (arr.length + 1));
+      var x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a);
+      out += '<circle cx="' + x + '" cy="' + y + '" r="11" fill="' + CM.ambar + '" stroke="' + CM.tinta + '" stroke-width="4"/>' +
+        textoSvg(t, x, y + 34, 13, 'rt', 16);
+    });
+    return out;
+  }
+
+  function svgCena(cena){
+    if(!cena || !cena.rotulos || !cena.rotulos.length) return '';
+    var r = cena.rotulos.slice(0, 6).map(function(x){ return String(x || '').trim(); }).filter(Boolean);
+    var man = (cena.manchete || []).slice(0, 3).map(function(x){ return String(x || '').trim(); }).filter(Boolean);
+    if(!man.length) man = [String(cena.titulo || '').trim()];
+    var W = 540, yIlu = 74;
+    var arq = norm(cena.arquetipo || '');
+    var ALT = { pilha:290, arvore:262, funil:284, balanca:250, orbita:262, caminho:176, duplo:236 };
+    var hIlu = ALT[arq] || 262;
+    var yMan = yIlu + hIlu + 54;
+    var H = yMan + man.length * 34 + 62;
+
+    var desenho =
+      arq === 'pilha'   ? dPilha(r, W, yIlu, hIlu) :
+      arq === 'duplo'   ? dDuplo(r, W, yIlu, hIlu) :
+      arq === 'caminho' ? dCaminho(r, W, yIlu, hIlu) :
+      arq === 'arvore'  ? dArvore(r, W, yIlu, hIlu) :
+      arq === 'balanca' ? dBalanca(r, W, yIlu, hIlu) :
+      arq === 'funil'   ? dFunil(r, W, yIlu, hIlu) : dOrbita(r, W, yIlu, hIlu);
+
+    var corMan = [CM.tinta, CM.ambarP, CM.verde];
+    var manchete = man.map(function(l, i){
+      return '<text x="' + (W/2) + '" y="' + (yMan + i * 34) + '" class="mh" fill="' + corMan[i % 3] + '">' + escSvg(l) + '</text>';
+    }).join('');
+
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="cena-svg" role="img" aria-label="' + escSvg(man.join(' ')) + '">' +
+      '<style>' +
+        '.rt{fill:' + CM.tinta + '; font:700 15px "Albert Sans",sans-serif; text-anchor:middle}' +
+        '.rb{fill:#fff; font:700 15px "Albert Sans",sans-serif; text-anchor:middle}' +
+        '.mh{font:800 25px "Bricolage Grotesque",sans-serif; text-anchor:middle; letter-spacing:-.5px}' +
+        '.eb{fill:' + CM.salvia + '; font:700 12px "Albert Sans",sans-serif; text-anchor:middle; letter-spacing:4px}' +
+        '.lg{fill:' + CM.salvia + '; font:500 13px "Albert Sans",sans-serif; text-anchor:middle}' +
+        '.wm{fill:' + CM.tinta + '; font:800 14px "Bricolage Grotesque",sans-serif}' +
+        '.gt{fill:' + CM.tinta + '; font:800 21px "Bricolage Grotesque",sans-serif; text-anchor:middle}' +
+        '.gb{fill:#fff; font:800 21px "Bricolage Grotesque",sans-serif; text-anchor:middle}' +
+      '</style>' +
+      '<rect width="' + W + '" height="' + H + '" rx="18" fill="#EFF5F0"/>' +
+      '<circle cx="' + (W/2) + '" cy="' + (yIlu + hIlu/2 - 10) + '" r="168" fill="' + CM.respiro + '" opacity=".55"/>' +
+      '<text x="' + (W/2) + '" y="42" class="eb">CINEMA MENTAL</text>' +
+      desenho +
+      '<path d="M40 ' + (yMan - 46) + ' H' + (W - 40) + '" stroke="' + CM.linha + '" stroke-width="2"/>' +
+      manchete +
+      (cena.legenda ? '<text x="' + (W/2) + '" y="' + (yMan + man.length * 34 + 6) + '" class="lg">' + escSvg(cena.legenda) + '</text>' : '') +
+      '<image href="logo-persisteia.png" x="30" y="' + (H - 42) + '" width="24" height="24"/>' +
+      '<text x="62" y="' + (H - 25) + '" class="wm">Persiste<tspan fill="' + CM.verde + '">IA</tspan></text>' +
+      '</svg>';
+  }
+
+  function renderCenas(cenas){
+    var box = $('cineBox'); if(!box) return;
+    var lista = (cenas || []).filter(function(c){ return c && c.rotulos && c.rotulos.length; });
+    if(!lista.length){
+      box.innerHTML = '<p class="muted" style="font-size:.85rem">Este assunto foi gerado antes do Cinema Mental existir. ' +
+        'Toque em <b>↻ Gerar de novo</b> no card Ler para criar as cenas.</p>';
+      return;
+    }
+    box.innerHTML = lista.map(function(c){ return '<figure class="cena">' + svgCena(c) + '</figure>'; }).join('');
+  }
+
   /* ---------- macete: todas as letras e significados à mostra ---------- */
   function renderMnemonico(a){
     var box = $('mnemBox'); if(!box) return;
@@ -3633,14 +3836,14 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var box = $('simplesBox'); if(!box) return;
     var t = String(txt || '').trim();
     if(!t){
-      box.innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3>' +
+      box.innerHTML = '<h3>Explicando como se você tivesse 12 anos</h3>' +
         '<p class="muted">Este assunto foi gerado antes desta explicação existir. Toque em <b>↻ Gerar de novo</b> no card Ler para criá-la.</p>';
       if($('sbSimples')) $('sbSimples').textContent = 'refaça o assunto';
       return;
     }
     box.classList.remove('aberto');
     box.scrollTop = 0;
-    box.innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3>' +
+    box.innerHTML = '<h3>Explicando como se você tivesse 12 anos</h3>' +
       t.split(/\n+/).filter(function(x){ return x.trim(); })
        .map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
     if($('sbSimples')) $('sbSimples').textContent = 'antes de decorar';
@@ -5050,8 +5253,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   /* ---------- dashboard: evolução dia a dia ---------- */
   var VERBOS_ORDEM = ['ouvir','ler','falar','digitar','escrever','raciocinar','treinar','perguntar'];
-  var COR_VERBO = { ouvir:'var(--d5)', ler:'var(--d1)', falar:'var(--d7)', digitar:'var(--d3)',
-                    escrever:'var(--d2)', raciocinar:'var(--d4)', treinar:'var(--d6)', perguntar:'#2E9BA8' };
+  // cores oficiais dos oito verbos (Manual de Design, 4.4)
+  var COR_VERBO = { ouvir:'#0E8F6E', ler:'#B97A0F', falar:'#7A4FD6', digitar:'#B85C3A',
+                    escrever:'#2E7DBE', raciocinar:'#8A6D00', treinar:'#C4497E', perguntar:'#2FBE92' };
 
   var DASH_DIA = [], FILTRO_DIA = 'tudo';
 
@@ -5486,7 +5690,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function enterLoading(){
     $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
     if($('mnemBox')) $('mnemBox').innerHTML = '<p class="muted" style="font-size:.85rem">Montando o macete…</p>';
-    if($('simplesBox')) $('simplesBox').innerHTML = '<h3>👦 Explicando como se você tivesse 12 anos</h3><p class="muted">Escrevendo a explicação simples…</p>';
+    if($('cineBox')) $('cineBox').innerHTML = '<p class="muted" style="font-size:.85rem">Desenhando as cenas do assunto…</p>';
+    if($('simplesBox')) $('simplesBox').innerHTML = '<h3>Explicando como se você tivesse 12 anos</h3><p class="muted">Escrevendo a explicação simples…</p>';
     $('leiBox').innerHTML = '<span class="muted">Carregando…</span>';
     $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões…</p>';
     $('lBody').innerHTML = '<p>Carregando…</p>';
@@ -5665,6 +5870,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('lerIntro').innerHTML = 'A teoria completa de <b>' + esc(c.topico) + '</b>' + recorte +
       ', com a lei seca e as palavras-chave em cores. Se o assunto for novo para você, comece por ' +
       '<a href="#" onclick="event.preventDefault(); tg(\'t-simples\', true); document.getElementById(\'t-simples\').scrollIntoView({behavior:\'smooth\'});" style="color:var(--warm); font-weight:700">Entender antes de decorar</a>.';
+    renderCenas(c.cenas);
     renderMnemonico(c.acronimo);
     renderSimples(c.explicacao_simples);
     renderTranscricao(c.podcast);
