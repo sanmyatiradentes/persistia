@@ -2841,7 +2841,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
     if(est === 'admin'){
       titulo = 'Acesso de gestora';
-      det = 'Sua conta é administradora — acesso livre, sem cobrança.';
+      det = 'Sua conta é administradora — acesso livre, sem cobrança. Use o teste abaixo para conferir se o pagamento está no ar.';
+      acoes.innerHTML = '<button class="btn ghost small" onclick="testarCheckout()">Testar o pagamento</button>';
     } else if(est === 'ativa'){
       titulo = 'Assinatura ativa · ' + moeda(a.valor || 59.9) + ' por mês';
       det = a.proxima_cobranca
@@ -2871,6 +2872,27 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
     $('assinEstado').textContent = titulo;
     $('assinDet').textContent = det;
+  }
+
+  // Só para a gestora: pede um checkout ao Mercado Pago e mostra o resultado
+  // sem sair do sistema. Serve para conferir se as chaves estão valendo.
+  function testarCheckout(){
+    var msg = $('assinMsg');
+    if(msg) msg.textContent = 'Pedindo um link de pagamento ao Mercado Pago…';
+    apiFetch('/api/assinatura', { assinar: true })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if(!msg) return;
+        if(x.d && x.d.checkout){
+          msg.innerHTML = '<b style="color:var(--accent)">Pagamento no ar.</b> O Mercado Pago devolveu o link de checkout. ' +
+            '<a href="' + x.d.checkout + '" target="_blank" rel="noopener" style="color:var(--accent)">Abrir para conferir</a> — ' +
+            'você pode fechar sem pagar; nada é cobrado enquanto ninguém autoriza.';
+          return;
+        }
+        if(x.d && x.d.ja_assinante){ msg.textContent = 'Esta conta já tem assinatura ativa.'; return; }
+        msg.innerHTML = '<b style="color:var(--crit)">Ainda não.</b> ' + ((x.d && (x.d.detalhe || x.d.erro)) || ('Erro ' + x.s));
+      })
+      .catch(function(){ if(msg) msg.textContent = 'Sem conexão com o servidor.'; });
   }
 
   function sincronizarAssinatura(){
