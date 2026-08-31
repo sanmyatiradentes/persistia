@@ -915,8 +915,8 @@
                  border-radius:999px; padding:6px 13px; font-weight:600}
   @media(min-width:900px){ .st-hero h1{font-size:3.6rem} .st-hero{padding-top:78px} }
 
-  .st-sec{padding:44px 20px; max-width:1240px; margin:0 auto}
-  @media(min-width:1500px){ .st-sec{max-width:1400px} }
+  .st-sec{padding:44px 20px; max-width:1360px; margin:0 auto}
+  @media(min-width:1500px){ .st-sec{max-width:1560px} }
   .st-sec h2{font-family:"Bricolage Grotesque",sans-serif; font-size:1.6rem; letter-spacing:-.025em; margin-bottom:8px; text-align:center}
   .st-sec > p.sub{text-align:center; color:var(--muted); font-size:.92rem; max-width:620px; margin:0 auto 26px; line-height:1.6}
   .st-grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
@@ -1023,6 +1023,76 @@
   .st-rod{text-align:center; padding:32px 20px; color:var(--muted); font-size:.79rem; line-height:1.7}
   .st-rod b{color:var(--ink)}
   .st-rod a{color:var(--accent); text-decoration:none; font-weight:600}
+
+  /* ----- No computador a apresentação respira mais: texto maior, marca maior
+     e as caixas ocupando mais largura. No celular nada muda. ----- */
+  @media(min-width:1024px){
+    .st-nav{padding:18px 34px}
+    .st-nav .brand{font-size:1.5rem}
+
+    .st-hero{max-width:960px; padding:78px 24px 46px}
+    .st-hero p.lead{font-size:1.18rem; max-width:720px}
+    .st-trust span{font-size:.86rem; padding:8px 16px}
+    .st-olho span{font-size:.76rem}
+
+    .st-sec{padding:60px 34px}
+    .st-sec h2{font-size:2.15rem}
+    .st-sec > p.sub{font-size:1.06rem; max-width:760px; margin-bottom:34px}
+
+    .st-grid{gap:22px}
+    .st-card{padding:26px}
+    .st-card b{font-size:1.16rem; margin-bottom:8px}
+    .st-card p{font-size:1rem; line-height:1.62}
+    .st-fonte{font-size:.82rem}
+
+    .st-quote{max-width:900px}
+    .st-quote p{font-size:1.48rem; line-height:1.5}
+    .st-quote .aut{font-size:.78rem}
+
+    .st-tudo{gap:22px}
+    .st-bloco{padding:26px}
+    .st-bloco h3{font-size:1.14rem; margin-bottom:15px}
+    .st-bloco li{font-size:.97rem; line-height:1.6; padding-left:18px}
+
+    .st-passos{gap:16px}
+    .st-passo{padding:20px 22px}
+    .st-passo b{font-size:1.1rem}
+    .st-passo p{font-size:.97rem}
+
+    .st-verb{font-size:.92rem; padding:9px 18px}
+
+    .st-preco{max-width:480px; padding:34px}
+    .st-preco .val{font-size:3rem}
+    .st-preco li{font-size:.97rem}
+
+    .st-quem{max-width:1180px; gap:26px}
+    .st-pessoa{padding:30px}
+    .st-foto,.st-ini{width:132px; height:132px}
+    .st-pessoa .nome{font-size:1.24rem}
+    .st-pessoa .cargo{font-size:.84rem}
+    .st-pessoa p{font-size:.98rem; line-height:1.65}
+    .st-cred li{font-size:.92rem; line-height:1.5}
+    .st-frase{font-size:1.02rem; padding:16px 18px}
+
+    .st-lgpd{max-width:1040px; padding:30px}
+    .st-lgpd p{font-size:.97rem}
+
+    .st-final{padding:66px 24px}
+    .st-final h2{font-size:2.6rem}
+    .st-final p{font-size:1.08rem; max-width:640px}
+
+    .st-rod{font-size:.9rem; padding:40px 24px}
+  }
+
+  /* as cinco telas maiores, já que sobra largura */
+  @media(min-width:1180px){ .st-tela{width:238px} }
+  @media(min-width:1500px){ .st-tela{width:272px} }
+  @media(min-width:1024px){
+    .st-secTelas{padding:60px 0 52px}
+    .st-telas{gap:26px}
+    .st-tela b{font-size:1.08rem; margin-top:16px}
+    .st-tela span{font-size:.92rem; line-height:1.6}
+  }
 
   .st-fase{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:var(--shadow); margin-bottom:14px}
   .st-fase .tag{display:inline-block; background:var(--accent); color:var(--on-accent); border-radius:999px;
@@ -2460,7 +2530,17 @@
     analisarEdital(nome);
   }
 
-  function analisarEdital(cargo){
+  // Sobrecarga momentânea da IA não é erro do aluno: reconhecemos e tentamos
+  // de novo sozinhos, em silêncio, avisando só que está demorando.
+  function ehCongestionamento(x){
+    if(!x) return false;
+    if(x.s === 429 || x.s === 500 || x.s === 502 || x.s === 503 || x.s === 504) return true;
+    var t = ((x.d && (x.d.detalhe || x.d.erro)) || '') + '';
+    return /503|429|overload|high demand|unavailable|congestion|temporar|indispon/i.test(t);
+  }
+
+  function analisarEdital(cargo, tentativa){
+    tentativa = tentativa || 0;
     var txt = $('edTexto').value.trim();
     if(!PDF64 && !(PAGINAS && PAGINAS.length) && txt.length < 200){ $('edStatus').textContent = 'Cole o conteúdo programático, ou arraste o PDF do edital.'; return; }
     if(!TOKEN){ $('login').classList.add('show'); return; }
@@ -2508,16 +2588,39 @@
           }
           toast(x.d.n_disciplinas + ' disciplinas e ' + x.d.n_topicos + ' tópicos salvos no seu banco');
           setTimeout(function(){ obGo(3); }, 500);
+        } else if(ehCongestionamento(x) && tentativa < 3){
+          // a IA está com fila: esperamos e tentamos de novo sem incomodar o aluno
+          var seg = [8, 18, 30][tentativa];
+          $('edStatus').innerHTML = '<b>A IA está com muita procura neste momento.</b><br>' +
+            'Não precisa fazer nada: vou tentar de novo em <b id="edConta">' + seg + '</b> segundos. ' +
+            'Seu edital continua aqui.';
+          var conta = setInterval(function(){
+            var el = $('edConta'); if(!el){ clearInterval(conta); return; }
+            var n = Number(el.textContent) - 1;
+            el.textContent = n > 0 ? n : 0;
+            if(n <= 0) clearInterval(conta);
+          }, 1000);
+          setTimeout(function(){ clearInterval(conta); analisarEdital(cargo, tentativa + 1); }, seg * 1000);
         } else {
           lis.forEach(function(l){ l.classList.remove('on','done'); });
+          var congest = ehCongestionamento(x);
           $('edStatus').innerHTML = '<b style="color:var(--crit)">' +
-            esc(x.d.erro || 'Não consegui analisar este edital agora.') + '</b><br>' +
-            'Seu texto continua aqui — toque em "Analisar meu edital" para tentar de novo, ' +
-            'ou cole apenas o anexo do conteúdo programático.' +
-            (x.d.detalhe ? '<br><span style="font-size:.68rem; opacity:.7">' + esc(x.d.detalhe) + '</span>' : '');
+            (congest ? 'A IA está congestionada agora.' : esc(x.d.erro || 'Não consegui analisar este edital agora.')) + '</b><br>' +
+            (congest
+              ? 'Já tentei algumas vezes por você. Seu edital continua aqui — toque em "Analisar meu edital" daqui a alguns minutos, que costuma passar rápido.'
+              : 'Seu texto continua aqui — toque em "Analisar meu edital" para tentar de novo, ou cole apenas o anexo do conteúdo programático.') +
+            (x.d.detalhe && !congest ? '<br><span style="font-size:.68rem; opacity:.7">' + esc(x.d.detalhe) + '</span>' : '');
         }
       })
-      .catch(function(){ clearInterval(anim); $('edStatus').textContent = 'Sem conexão com o servidor. Tente de novo.'; });
+      .catch(function(){
+        clearInterval(anim);
+        if(tentativa < 2){
+          $('edStatus').innerHTML = '<b>Conexão instável.</b><br>Vou tentar de novo em instantes — seu edital continua aqui.';
+          setTimeout(function(){ analisarEdital(cargo, tentativa + 1); }, 6000);
+          return;
+        }
+        $('edStatus').textContent = 'Sem conexão com o servidor. Confira sua internet e toque em "Analisar meu edital".';
+      });
   }
   var PDF64 = null, PDFNOME = '', PAGINAS = null;
   function lerArquivo(inp){ usarArquivo(inp.files && inp.files[0]); }
