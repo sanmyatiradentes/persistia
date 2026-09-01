@@ -1566,7 +1566,7 @@
       <ul>
         <li>Tudo o que você já usou nestes 7 dias</li>
         <li>Sem fidelidade — cancele quando quiser</li>
-        <li>Pagamento pelo Mercado Pago (Pix ou cartão)</li>
+        <li>Cartão de crédito, pelo Mercado Pago — a assinatura mensal só roda em cartão</li>
       </ul>
       <button class="btn" id="pwBtn" onclick="assinar()">Assinar agora</button>
       <p class="muted" style="font-size:.75rem; margin-top:10px" id="pwMsg"></p>
@@ -3122,7 +3122,28 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .catch(function(){ if($('assinMsg')) $('assinMsg').textContent = 'Sem conexão com o servidor.'; });
   }
 
+  // Instagram, Facebook e afins abrem os links num navegador próprio que costuma
+  // barrar o pagamento (cookies e a confirmação do banco não passam). Vale avisar
+  // antes de o candidato perder a compra achando que o cartão foi recusado.
+  function navegadorDeApp(){
+    var ua = navigator.userAgent || '';
+    return /Instagram|FBAN|FBAV|FB_IAB|Line\/|Twitter|TikTok|Snapchat|WhatsApp/i.test(ua);
+  }
+
   function assinar(){
+    if(navegadorDeApp()){
+      var pw = $('pwMsg');
+      if(pw){
+        pw.innerHTML = '<b style="color:var(--warm)">Abra esta página no navegador do celular.</b><br>' +
+          'Você está no navegador de dentro de outro aplicativo (Instagram, Facebook), e ele costuma bloquear ' +
+          'a confirmação do banco — o pagamento falha mesmo com o cartão bom. ' +
+          'Toque nos três pontinhos no alto da tela e escolha <b>Abrir no Chrome</b> ou <b>Abrir no Safari</b>, ' +
+          'ou copie o endereço <b>persisteia.com.br</b> e cole lá. Depois é só tocar em Assinar de novo.' +
+          '<br><button class="btn small" style="margin-top:10px" onclick="copiarEndereco()">Copiar o endereço do site</button>';
+      }
+      toast('Abra no Chrome ou Safari para pagar');
+      return;
+    }
     var b = $('pwBtn'); if(b){ b.disabled = true; b.textContent = 'Abrindo o pagamento…'; }
     apiFetch('/api/assinatura', { assinar: true })
       .then(function(r){ return r.json(); })
@@ -3137,6 +3158,16 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         if(b){ b.disabled = false; b.textContent = 'Assinar agora'; }
         toast('Sem conexão com o servidor');
       });
+  }
+
+  function copiarEndereco(){
+    var url = 'https://persisteia.com.br';
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ toast('Endereço copiado — cole no Chrome ou Safari'); })
+        .catch(function(){ toast('Copie: persisteia.com.br'); });
+    } else {
+      toast('Copie: persisteia.com.br');
+    }
   }
 
   // Volta do Mercado Pago: confere o pagamento antes de liberar.
@@ -4378,30 +4409,177 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
   }
 
-  /* ---------- Feynman ---------- */
-  var feynOn = false;
-  function feyn(){
-    var m = $('mic'), fb = $('feynFb');
-    if(!feynOn){
-      feynOn = true; m.classList.add('rec'); fb.className = 'fb'; fb.innerHTML = '';
-      toast('Ouvindo… explique com suas palavras');
-      setTimeout(function(){
-        m.classList.remove('rec'); feynOn = false;
-        fb.className = 'fb ok';
-        if(CONT && CONT.feynman && CONT.feynman.length){
-          var fy = CONT.feynman[0];
-          fb.innerHTML = '<b>Explicação registrada!</b>Pontos-chave que eu esperava ouvir: ' +
-            fy.pontos.map(function(x){ return esc(x); }).join('; ') +
-            '.<br><br>No app, a transcrição da sua fala é comparada com esses pontos — o que faltar vira flashcard.';
-          evento('feynman', 'falar', { pergunta: fy.pergunta }, 'concluido');
-          return;
-        }
-        fb.innerHTML = '<b>Boa explicação! 2 de 3 pontos-chave</b>' +
-          'Você citou o acesso igualitário aos cargos e a seleção por mérito ✓<br><br>' +
-          '<b style="color:var(--warn)">Faltou:</b> a vedação à promoção pessoal (art. 37, §1º). Esse ponto entrou nos seus flashcards de amanhã.';
-        evento('feynman', 'falar', null, 'concluido');
-      }, 3200);
+  /* ---------- Feynman: explicar em voz alta de verdade ---------- */
+  // O aluno fala o tempo que quiser; só para quando ele toca no microfone de
+  // novo. A fala é transcrita e comparada com os pontos que o assunto exige.
+  var feynOn = false, FEY = { sr: null, texto: '', rec: null, chunks: [], mime: '', t0: 0 };
+
+  // "as palavras que importam" de um ponto-chave: fora as de ligação
+  var VAZIAS = ('de da do das dos a o as os e ou que em no na nos nas um uma uns umas ' +
+    'para por com sem sobre ao aos à às se sua seu suas seus ser é são foi era como ' +
+    'mais menos muito pouco quando onde qual quais isso isto aquele este essa esse').split(' ');
+  function relevantes(t){
+    return norm(t).replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+      .filter(function(w){ return w.length > 3 && VAZIAS.indexOf(w) < 0; });
+  }
+  // Um ponto conta como coberto quando o aluno disse a maior parte dos termos
+  // que o definem — radical de 5 letras, para aceitar plural e flexão.
+  function pontoCoberto(ponto, dito){
+    var alvo = relevantes(ponto);
+    if(!alvo.length) return false;
+    var achou = 0;
+    for(var i = 0; i < alvo.length; i++){
+      var raiz = alvo[i].slice(0, Math.min(5, alvo[i].length));
+      if(dito.indexOf(raiz) >= 0) achou++;
     }
+    return achou / alvo.length >= 0.5;
+  }
+
+  function feynEstado(ouvindo){
+    var m = $('mic');
+    if(m){ m.classList.toggle('rec', !!ouvindo); m.setAttribute('aria-label', ouvindo ? 'Parar e avaliar' : 'Gravar explicação'); }
+  }
+
+  function feyn(){
+    if(feynOn){ feynPararEAvaliar(); return; }
+    var fb = $('feynFb');
+    fb.className = 'fb'; fb.innerHTML = '<b>Ouvindo…</b>Explique com suas palavras, sem pressa. Toque de novo no microfone quando terminar.';
+    FEY.texto = ''; FEY.t0 = Date.now();
+    feynOn = true; feynEstado(true);
+
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(SR){
+      try {
+        var r = new SR();
+        r.lang = 'pt-BR'; r.continuous = true; r.interimResults = true;
+        FEY.sr = r;
+        r.onresult = function(ev){
+          var t = '';
+          for(var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript + ' ';
+          FEY.texto = t.trim();
+          var el = $('feynFb');
+          if(el && feynOn) el.innerHTML = '<b>Ouvindo…</b><span style="opacity:.75">' + esc(FEY.texto.slice(-160)) + '</span>';
+        };
+        // o navegador encerra sozinho em cada pausa: religamos enquanto o aluno não parar
+        r.onend = function(){
+          if(!feynOn) return;
+          try { r.start(); } catch(e){}
+        };
+        r.onerror = function(ev){
+          if(!feynOn) return;
+          if(ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed')){
+            feynOn = false; feynEstado(false); FEY.sr = null;
+            $('feynFb').className = 'fb no';
+            $('feynFb').innerHTML = '<b>Preciso da permissão do microfone.</b>Libere o microfone para este site e toque de novo.';
+          }
+        };
+        r.start();
+        return;
+      } catch(e){ FEY.sr = null; }
+    }
+    // Sem reconhecimento no navegador (iPhone): grava e manda transcrever no servidor
+    feynGravar();
+  }
+
+  function feynGravar(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      feynOn = false; feynEstado(false);
+      $('feynFb').className = 'fb no';
+      $('feynFb').innerHTML = '<b>Seu navegador não deixa gravar aqui.</b>Tente pelo Chrome, ou escreva a explicação no verbo Digitar.';
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      FEY.chunks = []; FEY.mime = '';
+      ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus',''].some(function(t){
+        if(!t || (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t))){ FEY.mime = t; return true; }
+        return false;
+      });
+      var rec = FEY.mime ? new MediaRecorder(stream, { mimeType: FEY.mime }) : new MediaRecorder(stream);
+      FEY.mime = FEY.mime || rec.mimeType || 'audio/webm';
+      FEY.rec = rec;
+      rec.ondataavailable = function(e){ if(e.data && e.data.size) FEY.chunks.push(e.data); };
+      rec.onstop = function(){
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        FEY.rec = null;
+        if(!FEY.chunks.length){ feynAvaliar(''); return; }
+        var blob = new Blob(FEY.chunks, { type: FEY.mime });
+        if(blob.size > 3000000){ feynAvaliar(''); return; }
+        $('feynFb').innerHTML = '<b>Transcrevendo sua explicação…</b>';
+        var fr = new FileReader();
+        fr.onload = function(){
+          apiFetch('/api/transcrever', { audio_base64: String(fr.result).split(',')[1], mime: FEY.mime })
+            .then(function(r){ return r.json(); })
+            .then(function(d){ feynAvaliar((d && d.texto) || ''); })
+            .catch(function(){ feynAvaliar(''); });
+        };
+        fr.readAsDataURL(blob);
+      };
+      rec.start(1000);
+    }).catch(function(){
+      feynOn = false; feynEstado(false);
+      $('feynFb').className = 'fb no';
+      $('feynFb').innerHTML = '<b>Preciso da permissão do microfone.</b>Libere o microfone para este site e toque de novo.';
+    });
+  }
+
+  function feynPararEAvaliar(){
+    feynOn = false; feynEstado(false);
+    if(FEY.sr){ try { FEY.sr.onend = null; FEY.sr.onerror = null; FEY.sr.stop(); } catch(e){} FEY.sr = null; }
+    if(FEY.rec){ try { FEY.rec.stop(); } catch(e){} return; }   // a avaliação vem no onstop
+    feynAvaliar(FEY.texto);
+  }
+
+  function feynAvaliar(texto){
+    var fb = $('feynFb');
+    var seg = FEY.t0 ? Math.max(1, Math.round((Date.now() - FEY.t0) / 1000)) : 0;
+    var fy = (CONT && CONT.feynman && CONT.feynman.length) ? CONT.feynman[0] : null;
+    var pontos = (fy && fy.pontos) || [];
+
+    if(!String(texto || '').trim()){
+      fb.className = 'fb no';
+      fb.innerHTML = '<b>Não consegui ouvir sua explicação.</b>' +
+        'Confira se o microfone está liberado para este site e fale um pouco mais alto. ' +
+        'Se preferir, escreva a explicação no verbo <b>Digitar</b> — vale a mesma coisa para a memória.';
+      return;
+    }
+
+    var dito = ' ' + norm(texto).replace(/[^a-z0-9\s]/g, ' ') + ' ';
+    var cobertos = [], faltaram = [];
+    pontos.forEach(function(p){ (pontoCoberto(p, dito) ? cobertos : faltaram).push(p); });
+
+    var nPal = texto.trim().split(/\s+/).length;
+    var medida = nPal + ' palavras' + (seg ? ' em ' + seg + 's' : '');
+    fb.className = faltaram.length ? 'fb' : 'fb ok';
+    var html = '<b>' + (pontos.length
+        ? cobertos.length + ' de ' + pontos.length + ' pontos-chave · ' + medida
+        : 'Explicação registrada · ' + medida) + '</b>';
+
+    if(cobertos.length){
+      html += '<div style="margin-top:6px">✓ Você explicou: ' +
+        cobertos.map(function(x){ return esc(x); }).join('; ') + '</div>';
+    }
+    if(faltaram.length){
+      html += '<div style="margin-top:8px"><b style="color:var(--warm)">Faltou dizer:</b> ' +
+        faltaram.map(function(x){ return esc(x); }).join('; ') +
+        '.<br><span style="opacity:.8">Virou flashcard para você revisar.</span></div>';
+      // o que ficou de fora entra na revisão espaçada
+      faltaram.slice(0, 4).forEach(function(p){
+        apiFetch('/api/flashcard', {
+          frente: (fy && fy.pergunta) ? fy.pergunta : ('Explique: ' + (ASSUNTO || 'o assunto de hoje')),
+          verso: p,
+          origem: 'feynman'
+        }).catch(function(){});
+      });
+    }
+    html += '<details style="margin-top:10px"><summary style="cursor:pointer; font-size:.78rem; opacity:.8">Ver o que eu ouvi</summary>' +
+            '<p style="font-size:.82rem; line-height:1.6; margin-top:6px">' + esc(texto) + '</p></details>';
+    fb.innerHTML = html;
+
+    evento('feynman', 'falar', {
+      pergunta: fy ? fy.pergunta : null, segundos: seg, palavras: nPal,
+      cobertos: cobertos.length, esperados: pontos.length,
+      transcricao: String(texto).slice(0, 800)
+    }, 'concluido');
   }
 
   /* ---------- questões ---------- */
@@ -5299,7 +5477,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       tpIdx = Math.max(tpIdx, Math.min(i, lWords.length));
       marcarAtual();
     }
-    if(tpIdx >= lWords.length){ pararGravacao(false); }
+    // Só encerra quando existe texto de verdade e ele chegou ao fim. Sem esta
+    // guarda, um texto que não foi fatiado em palavras (lWords vazio) fazia a
+    // gravação fechar no primeiro instante, dizendo que estava concluída.
+    if(lWords && lWords.length && tpIdx >= lWords.length){ pararGravacao(false); }
   }
 
   function iniciarGravacao(){
@@ -5335,7 +5516,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         if(tpIdx > 0 || tpPaused) return;
         toast('Não consegui ouvir sua voz — o marcador vai andar no ritmo médio de leitura');
         tpTimer = setInterval(function(){
-          if(!tpPaused){ tpIdx++; marcarAtual(); if(tpIdx >= lWords.length) pararGravacao(false); }
+          if(!tpPaused){ tpIdx++; marcarAtual(); if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false); }
         }, 380 / VEL);
       }, 7000);
 
@@ -5368,7 +5549,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         toast('Pode ler em voz alta — eu acompanho e gravo');
       } else {
         toast('Gravando. Seu navegador não transcreve em tempo real — use o Chrome para o teleprompter seguir sua voz');
-        tpTimer = setInterval(function(){ if(!tpPaused){ tpIdx++; marcarAtual(); if(tpIdx >= lWords.length) pararGravacao(false); } }, 380);
+        tpTimer = setInterval(function(){ if(!tpPaused){ tpIdx++; marcarAtual(); if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false); } }, 380);
       }
     }).catch(function(){
       toast('Preciso da permissão do microfone para gravar sua leitura');
