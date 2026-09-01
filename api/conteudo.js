@@ -3,7 +3,8 @@
 // recebe menos teoria e menos questões que um de 2 h, e um tópico grande é
 // dividido em partes (parte 2 de 3), cada uma com seu próprio pacote.
 // GET ?topico_id=...&parte=2  → {subtitulo, resumo, acronimo, trecho_chave, questoes, ...}
-const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA } = require('./_lib');
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA, MODELO_LEVE } = require('./_lib');
+const { fonteOficial } = require('./_fontes');
 
 function tamanhos(h) {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
@@ -192,6 +193,70 @@ async function gerar(sistemaTxt, pedido, schema, tentativas) {
   throw ultimo || new Error('Falha ao gerar');
 }
 
+// ----- conferência da lei seca -----
+// Quem escreveu não é quem confere. Uma segunda chamada, independente e sem ver
+// a aula, recebe só as transcrições e responde se a citação existe e se o texto
+// bate com a redação oficial. Não é prova cabal — é uma peneira que pega o erro
+// grosseiro. O que não passa vai para a tela marcado, com o link da fonte.
+const S_REVISOR = {
+  type: 'object',
+  properties: {
+    itens: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          indice: { type: 'integer' },
+          veredito: { type: 'string', enum: ['confere', 'duvida', 'nao_confere'] },
+          motivo: { type: 'string' }
+        },
+        required: ['indice', 'veredito']
+      }
+    }
+  },
+  required: ['itens']
+};
+
+const SISTEMA_REVISOR = `Você é revisor jurídico. Sua única função é conferir citações de lei.
+
+Você recebe uma lista numerada de dispositivos, cada um com o rótulo da citação e o texto que alguém transcreveu como sendo o texto oficial.
+
+Para cada item, responda:
+- "confere": você tem certeza de que esse dispositivo existe com esse rótulo E de que a transcrição corresponde à redação oficial vigente.
+- "duvida": o dispositivo existe, mas a transcrição pode estar desatualizada, parcial ou parafraseada; ou você não tem certeza da redação exata.
+- "nao_confere": a citação está errada (artigo inexistente, número ou diploma trocado) ou o texto não é daquele dispositivo.
+
+Regras:
+- Na dúvida, responda "duvida". Nunca marque "confere" por educação ou para agradar.
+- Revogação, renumeração e alteração posterior contam: se a redação mudou, é "duvida" ou "nao_confere".
+- "motivo" em até 20 palavras, em português, dizendo o que está errado ou incerto. Se for "confere", deixe vazio.
+- Julgue só o que está escrito. Não reescreva nada.`;
+
+async function conferirDispositivos(lista, topico) {
+  const disp = Array.isArray(lista) ? lista : [];
+  // o link da fonte oficial não depende de IA nenhuma: é tabela e regra
+  const comFonte = disp.map(d => Object.assign({}, d, { fonte: fonteOficial(d && d.rotulo) }));
+  if (!comFonte.length) return comFonte;
+
+  const pedido = 'Assunto de origem: ' + (topico || '—') + '\n\nDispositivos a conferir:\n' +
+    comFonte.map((d, i) =>
+      `[${i}] Citação: ${d.rotulo || '(sem rótulo)'}\nTexto transcrito: ${String(d.texto || '').slice(0, 1200)}`
+    ).join('\n\n');
+
+  const bruto = await chamarGemini(SISTEMA_REVISOR, pedido, S_REVISOR, MODELO_LEVE);
+  const veredito = {};
+  for (const it of (JSON.parse(bruto).itens || [])) veredito[it.indice] = it;
+
+  return comFonte.map((d, i) => {
+    const v = veredito[i] || {};
+    return Object.assign({}, d, {
+      conferido: v.veredito === 'confere',
+      alerta: v.veredito === 'nao_confere' ? 'nao_confere' : (v.veredito === 'duvida' ? 'duvida' : null),
+      motivo: v.veredito && v.veredito !== 'confere' ? (v.motivo || '') : ''
+    });
+  });
+}
+
 module.exports = async (req, res) => {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -277,6 +342,13 @@ module.exports = async (req, res) => {
     }
     const teoria = Object.assign({}, texto, apoio, midia);
     const pacote = Object.assign({}, teoria, pratica);
+
+    // Conferência da lei seca: cada dispositivo ganha o link da fonte oficial e
+    // passa por uma segunda leitura independente. O que não se confirma vai
+    // marcado para o aluno — nunca apagado às escondidas.
+    try {
+      pacote.dispositivos = await conferirDispositivos(pacote.dispositivos, t.rows[0].topico);
+    } catch (_) { /* a conferência é melhor-esforço: sem ela o conteúdo ainda vale */ }
     pacote.palavras_resumo = String(pacote.resumo || '').split(/\s+/).filter(Boolean).length;
     pacote.topico = t.rows[0].topico;
     pacote.disciplina = t.rows[0].disciplina;

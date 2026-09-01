@@ -554,6 +554,22 @@
   .disp .rot{display:block; font-family:"Albert Sans",sans-serif; font-size:.72rem; font-weight:800;
              letter-spacing:.03em; color:var(--violet); margin-bottom:6px}
   .disp p{font-size:.94rem; line-height:1.75; margin:0}
+  /* o que foi conferido, o que ficou em dúvida — e por onde o aluno confere */
+  .disp.alerta{border-left-color:var(--warm); background:var(--warm-soft)}
+  .disp .rot{display:inline-block; margin-right:8px}
+  .selo{display:inline-block; font-family:"Albert Sans",sans-serif; font-size:.6rem; font-weight:800;
+        letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:999px;
+        vertical-align:2px; margin-bottom:6px; cursor:help}
+  .selo.ok{background:var(--accent-soft); color:var(--accent)}
+  .selo.duv{background:var(--warm-soft); color:var(--warm)}
+  .selo.no{background:#FBE4E4; color:#B4322F}
+  .disp-aviso{font-family:"Albert Sans",sans-serif; font-size:.74rem; color:var(--warm);
+              margin-top:8px; font-weight:600; line-height:1.5}
+  .disp-fonte{margin-top:9px; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .fonte-link{font-family:"Albert Sans",sans-serif; font-size:.74rem; font-weight:700;
+              color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor; padding-bottom:1px}
+  .fonte-org{font-family:"Albert Sans",sans-serif; font-size:.64rem; color:var(--muted);
+             letter-spacing:.05em; text-transform:uppercase; font-weight:700}
   .lei-nota{font-family:"Albert Sans",sans-serif; font-size:.7rem; color:var(--muted); font-style:italic; margin-top:2px}
   .l-body.tp{font-size:1.28em; line-height:2.15}
   .l-body.tp .w{cursor:default}
@@ -929,8 +945,10 @@
            border:1px solid color-mix(in srgb, var(--tc,var(--accent)) 26%, var(--line));
            border-radius:18px; padding:20px; box-shadow:var(--shadow); position:relative; overflow:hidden}
   .st-card:before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--tc,var(--accent))}
-  .st-card b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem; margin-bottom:6px;
+  /* só o título do cartão vira bloco; negrito dentro do texto continua inline */
+  .st-card > b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem; margin-bottom:6px;
              color:color-mix(in srgb, var(--tc,var(--accent)) 78%, var(--ink))}
+  .st-card p b{color:var(--ink); font-weight:700}
   .st-card p{font-size:.87rem; color:var(--muted); line-height:1.6}
   .st-fonte{display:block; margin-top:11px; padding-top:9px; border-top:1px dashed color-mix(in srgb, var(--tc,var(--accent)) 30%, var(--line));
             font-size:.72rem; color:var(--muted); font-style:italic; line-height:1.45}
@@ -1041,7 +1059,7 @@
 
     .st-grid{gap:22px}
     .st-card{padding:26px}
-    .st-card b{font-size:1.16rem; margin-bottom:8px}
+    .st-card > b{font-size:1.16rem; margin-bottom:8px}
     .st-card p{font-size:1rem; line-height:1.62}
     .st-fonte{font-size:.82rem}
 
@@ -1393,6 +1411,44 @@
       <p class="muted" style="font-size:.76rem; text-align:center; margin-top:18px; max-width:640px; margin-left:auto; margin-right:auto">
         A PersisteIA organiza, ensina e sustenta o estudo — ela não aprova ninguém. Não existe fórmula, atalho nem garantia: o esforço continua sendo seu.
       </p>
+    </div>
+
+    <!-- ================= CONFIANÇA NA IA ================= -->
+    <div class="st-secTelas">
+      <div class="st-sec">
+        <div class="st-olho"><span>IA com fonte</span></div>
+        <h2>“Mas dá para confiar em conteúdo feito por IA?”</h2>
+        <p class="sub">A pergunta é boa e a resposta honesta não é “sim, confie”. É: <b>não precise confiar — confira</b>. A PersisteIA foi construída para que checar seja mais rápido do que duvidar.</p>
+        <div class="st-grid tres">
+          <div class="st-card" style="--tc:#0E8F6E">
+            <b>A lei vem com o endereço da lei</b>
+            <p>Cada dispositivo transcrito traz o link do texto oficial — Planalto para leis e Constituição, o site do próprio tribunal para súmulas. O endereço é montado por tabela, não pela IA. Um toque e você está lendo a fonte.</p>
+            <span class="st-fonte">Quando não há endereço exato, o link vai para a busca oficial do LexML, do Senado Federal.</span>
+          </div>
+          <div class="st-card" style="--tc:#7A4FD6">
+            <b>Quem escreve não é quem confere</b>
+            <p>Depois de pronta, a lei seca passa por uma segunda leitura independente, que recebe só as transcrições — sem ver a aula — e responde se a citação existe e se a redação bate. O que passa aparece marcado como <b>conferido</b>; o que não passa aparece marcado como <b>a conferir</b>, com o motivo à vista.</p>
+            <span class="st-fonte">Nada é apagado em silêncio: o aluno vê o alerta e decide.</span>
+          </div>
+          <div class="st-card" style="--tc:#B97A0F">
+            <b>Silêncio vale mais que invenção</b>
+            <p>O gerador é instruído a não transcrever nada de que não tenha certeza literal: melhor devolver a lei seca vazia do que apresentar paráfrase como se fosse texto de lei. Números, prazos e quóruns seguem a mesma regra.</p>
+            <span class="st-fonte">Toda questão vem com comentário e fundamento — você discorda com a lei na mão.</span>
+          </div>
+          <div class="st-card" style="--tc:#2E7DBE">
+            <b>Erro encontrado vira correção</b>
+            <p>Dentro do app há um canal direto com a desenvolvedora, com anexo de print, e a resposta volta na mesma tela. Assunto com problema é refeito — e o botão “Gerar de novo” reescreve o conteúdo na hora, sem esperar ninguém.</p>
+          </div>
+          <div class="st-card" style="--tc:#C4497E">
+            <b>O que não prometemos</b>
+            <p>Que a IA nunca erra, ninguém pode prometer — nem a IA, nem a apostila, nem o cursinho. A PersisteIA não substitui a lei, a jurisprudência atualizada nem o edital: ela organiza, explica e treina, deixando a fonte sempre a um toque de distância.</p>
+          </div>
+          <div class="st-card" style="--tc:#8A6D00">
+            <b>Você continua no comando</b>
+            <p>O material é declaradamente gerado por IA e está escrito assim dentro do app, na tela do Método. Nada de fingir que veio de uma equipe de professores. Transparência é o que permite estudar com a régua certa.</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ================= PREÇO ================= -->
@@ -2142,6 +2198,34 @@
       <div class="card"><span class="vnum">08 · PERGUNTAR</span><b> — interrogação elaborativa</b><p>Formular as próprias perguntas e caçar as respostas é aprender duas vezes: expõe lacunas que você não sabia que tinha. O Persi responde com a fonte citada, e toda dúvida vira flashcard.</p></div>
       <div class="card honest"><b>Por que não falamos em "estilos de aprendizagem"?</b><p>A ideia de que cada pessoa aprende só no "seu estilo" não tem respaldo científico. O que a evidência mostra é o contrário: <b>todo cérebro aprende mais quando o conteúdo entra por várias portas</b>. Por isso, aqui ninguém escolhe um estilo — todo mundo passa pelos oito verbos.</p></div>
       <div class="card"><b>E a persistência?</b><p>A maior causa de reprovação não é técnica: é desistência. A PersisteIA replaneja quando você falha, protege sua constância e celebra cada marco da jornada — porque quem persiste, passa.</p></div>
+    </div>
+
+    <div class="card" style="margin-top:18px" id="cardConfianca">
+      <h2>De onde vem este conteúdo</h2>
+      <p style="font-size:.9rem; line-height:1.7; margin-bottom:12px">
+        O material é <b>escrito por inteligência artificial</b> a partir do seu edital — e isso está dito com todas as letras,
+        porque você merece saber com o que está estudando. IA erra: inventa um número, troca um artigo, repete uma redação
+        que a lei já mudou. Em vez de prometer que isso nunca acontece, a PersisteIA faz o que dá para fazer de verdade — te dá
+        os meios de conferir em um toque, e confere sozinha o que consegue conferir.
+      </p>
+      <ul class="st-cred" style="margin:0 0 14px">
+        <li><b>Link da fonte oficial em cada dispositivo.</b> A citação vira endereço no Planalto ou no site do tribunal —
+          montado por tabela, não por IA. Se não dá para montar o endereço exato, o link vai para a busca oficial do LexML, do Senado.</li>
+        <li><b>Segunda leitura independente.</b> Quem escreve não é quem confere: outra passada recebe só as transcrições,
+          sem ver a aula, e responde se a citação existe e se a redação bate. O que passa vem marcado como <b>conferido</b>;
+          o que não passa vem marcado como <b>a conferir</b>, com o motivo — nunca some da tela sem você saber.</li>
+        <li><b>Regra de silêncio na dúvida.</b> O gerador é instruído a deixar a lei seca vazia quando não tem certeza da
+          redação literal, em vez de apresentar paráfrase como se fosse texto de lei.</li>
+        <li><b>Questão com comentário e fundamento.</b> Toda alternativa vem explicada, e o Persi responde citando o
+          dispositivo — assim você discorda dele com a lei na mão.</li>
+        <li><b>Erro encontrado vira correção.</b> O campo aqui embaixo chega direto na desenvolvedora, com print. Conteúdo
+          errado é refeito, e o botão “Gerar de novo” no Leitor reescreve o assunto na hora.</li>
+      </ul>
+      <p class="muted" style="font-size:.8rem; line-height:1.65">
+        O que <b>não</b> prometemos: que a IA nunca erre, nem que o material substitua a lei, a jurisprudência atualizada ou o
+        edital. Trate a PersisteIA como um professor muito bem preparado e muito rápido — que você confere quando a informação
+        for decisiva. Perto da prova, a redação vigente se confirma na fonte oficial, que está a um toque de cada dispositivo.
+      </p>
     </div>
 
     <div class="card" style="margin-top:18px" id="cardSugestao">
@@ -5622,6 +5706,16 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     });
     renderPorDia();
   }
+  // Do dispositivo para a explicação de como o conteúdo é conferido.
+  function abrirComoConferir(){
+    var aba = document.querySelector('.tab[data-scr="metodo"]');
+    if(typeof nav === 'function') nav('metodo', aba);
+    setTimeout(function(){
+      var el = $('cardConfianca');
+      if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  }
+
   function irParaHoje(){
     var el = document.querySelector('#dvDiaList .dia-row.hoje') || document.querySelector('#dvDiaList .dia-row');
     if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -6244,9 +6338,30 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(disp.length){
       corpo += '<div class="lei-h">Lei seca · texto integral</div>' +
         disp.map(function(x){
-          return '<div class="disp"><span class="rot">' + esc(x.rotulo) + '</span><p>' + md(x.texto) + '</p></div>';
+          var sel = '';
+          if(x.conferido) sel = '<span class="selo ok" title="A citação e a redação foram conferidas por uma segunda leitura independente">conferido</span>';
+          else if(x.alerta === 'nao_confere') sel = '<span class="selo no" title="' + esc(x.motivo || '') + '">confira na fonte</span>';
+          else if(x.alerta === 'duvida') sel = '<span class="selo duv" title="' + esc(x.motivo || '') + '">redação a conferir</span>';
+
+          var link = '';
+          if(x.fonte && x.fonte.url){
+            link = '<a class="fonte-link" href="' + esc(x.fonte.url) + '" target="_blank" rel="noopener">' +
+                   (x.fonte.tipo === 'direto' ? 'Ver no texto oficial' :
+                    x.fonte.tipo === 'lista'  ? 'Ver a lista oficial de súmulas' :
+                                                'Procurar na fonte oficial') +
+                   ' <span aria-hidden="true">↗</span></a>' +
+                   '<span class="fonte-org">' + esc(x.fonte.fonte || '') + '</span>';
+          }
+          var aviso = (x.alerta && x.motivo)
+            ? '<div class="disp-aviso">' + esc(x.motivo) + '</div>' : '';
+          return '<div class="disp' + (x.alerta ? ' alerta' : '') + '">' +
+                 '<span class="rot">' + esc(x.rotulo) + '</span>' + sel +
+                 '<p>' + md(x.texto) + '</p>' + aviso +
+                 '<div class="disp-fonte">' + link + '</div></div>';
         }).join('') +
-        '<div class="lei-nota">Transcrição para estudo. Na dúvida sobre a redação vigente, confira no texto oficial — leis mudam.</div>';
+        '<div class="lei-nota">Transcrição para estudo, com o link do texto oficial em cada dispositivo. ' +
+        'Leis mudam: antes da prova, confira a redação vigente na fonte. ' +
+        '<button class="lg-alt" style="margin:6px 0 0; padding:0; font-size:.72rem" onclick="abrirComoConferir()">Como este conteúdo é conferido</button></div>';
     }
     $('lBody').innerHTML = corpo;
 
