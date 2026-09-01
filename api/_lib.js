@@ -56,6 +56,10 @@ const DDL = [
     texto TEXT NOT NULL, print TEXT, pagina TEXT,
     status TEXT NOT NULL DEFAULT 'nova', resposta TEXT,
     criado_em TEXT NOT NULL, respondido_em TEXT)`,
+  // um pagamento avulso só pode creditar dias uma vez, por mais avisos que cheguem
+  `CREATE TABLE IF NOT EXISTS pagamentos (
+    id TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, meses INTEGER, valor REAL,
+    meio TEXT, status TEXT, criado_em TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS duvidas (
     id TEXT PRIMARY KEY, aluno_id TEXT, assunto TEXT, pergunta TEXT NOT NULL,
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`
@@ -69,7 +73,9 @@ const MIGRACOES = [
   // um tópico grande vira várias sessões: parte 2 de 3, 1,5 h cada
   'ALTER TABLE cronograma ADD COLUMN parte INTEGER',
   'ALTER TABLE cronograma ADD COLUMN partes INTEGER',
-  'ALTER TABLE cronograma ADD COLUMN horas REAL'
+  'ALTER TABLE cronograma ADD COLUMN horas REAL',
+  // acesso comprado avulso (Pix, boleto, cartão à vista): vale até esta data
+  'ALTER TABLE assinaturas ADD COLUMN acesso_ate TEXT'
 ];
 
 async function ensureSchema() {
@@ -123,23 +129,27 @@ async function acessoDoAluno(aluno) {
   // Quem cancela não perde o que já pagou: segue com acesso até a data da
   // próxima cobrança que não vai mais acontecer.
   const encerrando = a.estado === 'cancelada' && a.proxima_cobranca && a.proxima_cobranca > hoje;
+  // acesso pago avulso (Pix e afins): vale sozinho, sem depender do estado
+  const avulso = a.acesso_ate && a.acesso_ate > hoje;
 
   let estado = 'expirado';
   if (bloqueado && !admin) estado = 'bloqueada';
   else if (admin) estado = 'admin';
   else if (ativa) estado = 'ativa';
+  else if (avulso) estado = 'avulso';
   else if (encerrando) estado = 'encerrando';
   else if (cortesia) estado = 'cortesia';
   else if (emTeste) estado = 'teste';
 
-  const fim = estado === 'cortesia' ? a.cortesia_ate : a.fim_teste;
+  const fim = estado === 'cortesia' ? a.cortesia_ate : (estado === 'avulso' ? a.acesso_ate : a.fim_teste);
   const dias = fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null;
 
   return {
     estado,
     estado_bruto: a.estado || null,
     liberado: estado !== 'expirado' && estado !== 'bloqueada',
-    dias_restantes: (estado === 'teste' || estado === 'cortesia') ? dias : null,
+    dias_restantes: (estado === 'teste' || estado === 'cortesia' || estado === 'avulso') ? dias : null,
+    acesso_ate: a.acesso_ate || null,
     fim_teste: a.fim_teste || null,
     proxima_cobranca: a.proxima_cobranca || null,
     preapproval_id: a.preapproval_id || null,
@@ -147,6 +157,58 @@ async function acessoDoAluno(aluno) {
     admin
   };
 }
+// ----- pagamento avulso (Pix, boleto, cartão à vista) -----
+// Assinatura recorrente só existe em cartão de crédito, e boa parte dos
+// candidatos não tem um. Aqui o aluno compra um período fechado e o acesso vale
+// até a data comprada — sem cobrança automática e sem nada para cancelar depois.
+//
+// PACOTES_AVULSOS aceita "meses:preço" separados por vírgula, por exemplo:
+//   PACOTES_AVULSOS="1:59.90,3:161.70,6:305.40,12:574.80"
+// Sem a variável, cada pacote sai pelo preço cheio multiplicado pelos meses.
+function pacotesAvulsos() {
+  const bruto = String(process.env.PACOTES_AVULSOS || '').trim();
+  if (bruto) {
+    const lista = bruto.split(',').map(p => {
+      const [m, v] = p.split(':');
+      return { meses: Number(String(m).trim()), valor: Math.round(Number(String(v).trim()) * 100) / 100 };
+    }).filter(p => p.meses > 0 && p.valor > 0);
+    if (lista.length) return lista.sort((a, b) => a.meses - b.meses);
+  }
+  return [1, 3, 6, 12].map(m => ({ meses: m, valor: Math.round(PRECO * m * 100) / 100 }));
+}
+
+function pacotePorMeses(meses) {
+  return pacotesAvulsos().find(p => p.meses === Number(meses)) || null;
+}
+
+/**
+ * Credita dias de acesso a partir de um pagamento aprovado, uma única vez.
+ * Se o aluno ainda tem acesso, os dias somam ao fim do período atual — quem
+ * paga adiantado não perde o que já tinha.
+ */
+async function creditarAcesso(pagamentoId, alunoId, meses, valor, meio) {
+  const d = getDb();
+  const ja = await d.execute({ sql: 'SELECT id FROM pagamentos WHERE id = ?', args: [String(pagamentoId)] });
+  if (ja.rows.length) return { creditado: false, motivo: 'ja_creditado' };
+
+  const r = await d.execute({ sql: 'SELECT acesso_ate FROM assinaturas WHERE aluno_id = ?', args: [alunoId] });
+  if (!r.rows.length) return { creditado: false, motivo: 'aluno_sem_assinatura' };
+
+  const atual = r.rows[0].acesso_ate;
+  const base = (atual && atual > agora()) ? atual : agora();
+  const ate = emDias(Math.round(Number(meses) * 30), base);
+
+  await d.execute({
+    sql: `INSERT INTO pagamentos (id, aluno_id, meses, valor, meio, status, criado_em) VALUES (?,?,?,?,?,?,?)`,
+    args: [String(pagamentoId), alunoId, Number(meses), Number(valor) || null, meio || null, 'aprovado', agora()]
+  });
+  await d.execute({
+    sql: 'UPDATE assinaturas SET acesso_ate = ?, atualizado_em = ? WHERE aluno_id = ?',
+    args: [ate, agora(), alunoId]
+  });
+  return { creditado: true, acesso_ate: ate };
+}
+
 function id() { return crypto.randomUUID(); }
 
 function hashSenha(senha, sal) {
@@ -298,4 +360,4 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   return geminiComPaciencia(systemText, [{ text: userText }], jsonSchema, modelo);
 }
 
-module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO };
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso };

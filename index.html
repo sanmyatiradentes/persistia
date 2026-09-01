@@ -1012,6 +1012,28 @@
   .st-preco li{font-size:.87rem; display:flex; gap:9px; align-items:flex-start}
   .st-preco li:before{content:"✓"; color:var(--accent); font-weight:800}
 
+  /* pagamento sem cartão: períodos fechados, por Pix e afins */
+  .pix-box{max-width:420px; margin:20px auto 0; text-align:left}
+  .pix-h{display:flex; align-items:center; gap:12px; margin-bottom:12px}
+  .pix-h:before,.pix-h:after{content:""; flex:1; height:1px; background:var(--line)}
+  .pix-h span{font-size:.66rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
+  .pix-sub{font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:14px; text-align:center}
+  .pix-lista{display:grid; gap:9px}
+  .pix-op{display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer;
+          background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:13px 15px;
+          font:inherit; color:inherit; transition:border-color .15s, background .15s}
+  .pix-op:hover{border-color:var(--accent); background:var(--accent-soft)}
+  .pix-op:disabled{opacity:.55; cursor:default}
+  .pix-op .per{flex:1}
+  .pix-op .per b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1rem}
+  .pix-op .per span{display:block; font-size:.73rem; color:var(--muted); margin-top:2px}
+  .pix-op .vlr{flex:none; text-align:right}
+  .pix-op .vlr b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem;
+                 color:var(--accent); font-variant-numeric:tabular-nums}
+  .pix-op .vlr span{display:block; font-size:.66rem; color:var(--muted); margin-top:2px}
+  .pix-eco{display:inline-block; font-size:.6rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+           background:var(--warm-soft); color:var(--warm); padding:3px 8px; border-radius:999px; margin-top:5px}
+
   .st-quem{display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); max-width:1000px; margin:0 auto}
   .st-pessoa{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:var(--shadow); text-align:left}
   .st-foto{width:112px; height:112px; border-radius:50%; object-fit:cover; margin:0 auto 14px; display:block; border:3px solid var(--accent-soft)}
@@ -1147,6 +1169,11 @@
   .trial button{margin-left:auto; flex:none}
   #paywall{display:none; position:fixed; inset:0; background:var(--bg); z-index:80; overflow:auto; padding:34px 20px; text-align:center}
   #paywall.show{display:block}
+  /* aberto por quem ainda tem acesso: some o discurso de fim de teste */
+  #paywall.sopix h2, #paywall.sopix > p.muted, #paywall.sopix .st-preco{display:none}
+  #paywall.sopix #pwSair{display:none}
+  #paywall.sopix #pwVoltar{display:block}
+  #paywall.sopix .pix-h span{font-size:.72rem}
 
   /* ===== admin ===== */
   .adm-m{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-bottom:18px}
@@ -1571,7 +1598,17 @@
       <button class="btn" id="pwBtn" onclick="assinar()">Assinar agora</button>
       <p class="muted" style="font-size:.75rem; margin-top:10px" id="pwMsg"></p>
     </div>
-    <button class="lg-alt" style="margin:18px auto 0" onclick="sair()">Sair da conta</button>
+
+    <div class="pix-box">
+      <div class="pix-h"><span>ou pague sem cartão</span></div>
+      <p class="pix-sub">Escolha um período e pague por <b>Pix</b>, boleto, cartão à vista ou parcelado.
+         Não renova sozinho e não tem nada para cancelar: o acesso vale até a data que você comprou.</p>
+      <div id="pixLista" class="pix-lista"></div>
+      <p class="muted" style="font-size:.74rem; margin-top:10px" id="pixMsg"></p>
+    </div>
+
+    <button class="lg-alt" style="margin:18px auto 0" id="pwSair" onclick="sair()">Sair da conta</button>
+    <button class="lg-alt" style="margin:18px auto 0; display:none" id="pwVoltar" onclick="fecharPacotes()">Voltar aos estudos</button>
   </div>
 
   <!-- ================= ONBOARDING ================= -->
@@ -3013,7 +3050,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     } else {
       f.classList.remove('show');
     }
-    if(!a.liberado){ $('paywall').classList.add('show'); }
+    if(!a.liberado){ $('paywall').classList.add('show'); carregarPacotes(); }
     else { $('paywall').classList.remove('show'); }
     if(a.valor || a.preco) mostrarPreco(a.valor || a.preco);
     renderAssinatura();
@@ -3051,6 +3088,12 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         : 'Sem fidelidade: você pode cancelar quando quiser.';
       acoes.innerHTML = '<button class="btn ghost small" onclick="cancelarAssinatura()">Cancelar assinatura</button>' +
                         '<button class="btn ghost small" onclick="sincronizarAssinatura()">Atualizar situação</button>';
+    } else if(est === 'avulso'){
+      titulo = 'Acesso pago até ' + fmtData(a.acesso_ate);
+      det = 'Faltam ' + (a.dias_restantes || 0) + ' dias. Você pagou um período fechado: não há cobrança automática ' +
+            'nem nada para cancelar. Quando quiser, compre mais tempo — os dias somam ao que você já tem.';
+      acoes.innerHTML = '<button class="btn small" onclick="abrirPacotes()">Comprar mais tempo</button>' +
+                        '<button class="btn ghost small" onclick="assinar()">Prefiro assinatura mensal</button>';
     } else if(est === 'encerrando'){
       titulo = 'Assinatura cancelada';
       det = 'Você continua com acesso completo até ' + fmtData(a.proxima_cobranca) + ' — não haverá nova cobrança.';
@@ -3062,14 +3105,16 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     } else if(est === 'teste'){
       titulo = 'Teste grátis · ' + (a.dias_restantes === 0 ? 'último dia' : (a.dias_restantes + ' dias restantes'));
       det = 'Depois do teste, ' + moeda(a.valor || 59.9) + ' por mês. Você pode assinar antes para não perder o ritmo — a cobrança só começa quando o teste acabar.';
-      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>';
+      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>' +
+                        '<button class="btn ghost small" onclick="abrirPacotes()">Pagar sem cartão (Pix)</button>';
     } else if(est === 'bloqueada'){
       titulo = 'Conta bloqueada';
       det = 'Fale com a gente pelo WhatsApp para reativar.';
     } else {
       titulo = 'Teste encerrado';
       det = 'Seu edital e todo o seu progresso continuam guardados. ' + moeda(a.valor || 59.9) + ' por mês, sem fidelidade.';
-      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>';
+      acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>' +
+                        '<button class="btn ghost small" onclick="abrirPacotes()">Pagar sem cartão (Pix)</button>';
     }
     $('assinEstado').textContent = titulo;
     $('assinDet').textContent = det;
@@ -3160,6 +3205,93 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       });
   }
 
+  /* ---------- pagamento avulso: Pix, boleto, cartão à vista ---------- */
+  var PIX_PACOTES = null;
+
+  // Abre a vitrine de períodos mesmo para quem ainda tem acesso (teste, ou já
+  // pagou e quer somar tempo): o paywall aparece só com a parte de pagamento.
+  function abrirPacotes(){
+    var pw = $('paywall');
+    pw.classList.add('show', 'sopix');
+    carregarPacotes();
+    setTimeout(function(){
+      var el = $('pixLista'); if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+  function fecharPacotes(){
+    $('paywall').classList.remove('show', 'sopix');
+  }
+
+  function carregarPacotes(){
+    if(PIX_PACOTES){ renderPacotes(); return; }
+    apiFetch('/api/avulso').then(function(r){ return r.json(); }).then(function(d){
+      if(d && d.pacotes){ PIX_PACOTES = d.pacotes; renderPacotes(); }
+    }).catch(function(){});
+  }
+
+  function renderPacotes(){
+    var box = $('pixLista'); if(!box || !PIX_PACOTES) return;
+    box.innerHTML = PIX_PACOTES.map(function(p){
+      var nome = p.meses === 1 ? '1 mês' : (p.meses === 12 ? '1 ano' : p.meses + ' meses');
+      var ate = new Date(Date.now() + p.meses * 30 * 86400000);
+      var dia = ('0' + ate.getDate()).slice(-2) + '/' + ('0' + (ate.getMonth() + 1)).slice(-2) + '/' + ate.getFullYear();
+      return '<button class="pix-op" onclick="pagarAvulso(' + p.meses + ', this)">' +
+        '<span class="per"><b>' + nome + '</b><span>acesso completo até ' + dia + '</span>' +
+        (p.economia > 0 ? '<span class="pix-eco">economia de ' + moeda(p.economia) + '</span>' : '') + '</span>' +
+        '<span class="vlr"><b>' + moeda(p.valor) + '</b><span>' + moeda(p.por_mes) + '/mês</span></span>' +
+        '</button>';
+    }).join('');
+  }
+
+  function pagarAvulso(meses, btn){
+    if(navegadorDeApp()){
+      $('pixMsg').innerHTML = '<b style="color:var(--warm)">Abra no navegador do celular.</b> ' +
+        'Aqui dentro do Instagram o pagamento costuma falhar. Toque nos três pontinhos e escolha ' +
+        '<b>Abrir no Chrome</b> ou <b>Abrir no Safari</b>.' +
+        '<br><button class="btn small" style="margin-top:8px" onclick="copiarEndereco()">Copiar o endereço do site</button>';
+      return;
+    }
+    document.querySelectorAll('.pix-op').forEach(function(b){ b.disabled = true; });
+    if(btn) btn.querySelector('.per b').textContent = 'Abrindo o pagamento…';
+    $('pixMsg').textContent = '';
+    apiFetch('/api/avulso', { meses: meses })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.checkout){ window.location.href = d.checkout; return; }
+        document.querySelectorAll('.pix-op').forEach(function(b){ b.disabled = false; });
+        renderPacotes();
+        $('pixMsg').textContent = (d && d.erro) || 'Não consegui abrir o pagamento agora.';
+      })
+      .catch(function(){
+        document.querySelectorAll('.pix-op').forEach(function(b){ b.disabled = false; });
+        renderPacotes();
+        $('pixMsg').textContent = 'Sem conexão com o servidor.';
+      });
+  }
+
+  // Volta do pagamento avulso: confere no Mercado Pago antes de liberar.
+  function conferirAvulso(tentativa){
+    tentativa = tentativa || 0;
+    apiFetch('/api/avulso', { conferir: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.estado){ aplicarAcesso(d); }
+        if(d && d.liberado){
+          toast('Pagamento confirmado! Acesso liberado' + (d.acesso_ate ? ' até ' + fmtData(d.acesso_ate) : '') + '.');
+          return;
+        }
+        if(d && d.pendente && tentativa < 6){
+          // Pix cai em segundos; boleto pode levar dias. Enquanto isso, avisamos.
+          toast('Pagamento em processamento — assim que cair, o acesso abre sozinho');
+          setTimeout(function(){ conferirAvulso(tentativa + 1); }, 10000);
+          return;
+        }
+        if(tentativa < 3){ setTimeout(function(){ conferirAvulso(tentativa + 1); }, 6000); return; }
+        toast('Ainda não vi o pagamento. Se já pagou, ele entra sozinho assim que o Mercado Pago avisar.');
+      })
+      .catch(function(){});
+  }
+
   function copiarEndereco(){
     var url = 'https://persisteia.com.br';
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -3172,7 +3304,22 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   // Volta do Mercado Pago: confere o pagamento antes de liberar.
   function conferirVolta(){
-    if(location.search.indexOf('assinatura=ok') < 0) return;
+    var q = location.search;
+
+    // volta do pagamento avulso (Pix, boleto, cartão à vista)
+    if(q.indexOf('pagamento=') >= 0){
+      var falhou = q.indexOf('pagamento=falhou') >= 0;
+      history.replaceState({}, '', location.pathname);
+      if(falhou){
+        toast('O pagamento não foi concluído — dá para tentar de novo ou escolher outro meio');
+        return;
+      }
+      toast('Confirmando seu pagamento…');
+      conferirAvulso(0);
+      return;
+    }
+
+    if(q.indexOf('assinatura=ok') < 0) return;
     history.replaceState({}, '', location.pathname);
     toast('Confirmando seu pagamento…');
     apiFetch('/api/assinatura', { conferir: true })

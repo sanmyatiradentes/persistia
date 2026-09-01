@@ -3,7 +3,7 @@
 // Configure em "Suas integrações" → Webhooks: https://SEUSITE/api/mp-webhook
 // Tópicos: subscription_preapproval e subscription_authorized_payment.
 const crypto = require('crypto');
-const { getDb, ensureSchema, agora, cors } = require('./_lib');
+const { getDb, ensureSchema, agora, cors, creditarAcesso } = require('./_lib');
 
 const MP = 'https://api.mercadopago.com';
 
@@ -44,6 +44,26 @@ async function aplicar(db, preapprovalId) {
   });
 }
 
+// Pagamento avulso aprovado → credita os meses comprados, uma única vez.
+// O Pix avisa em segundos; o boleto, em dias. Os dois passam por aqui.
+async function creditarPagamento(dataId, tipo) {
+  let pagamentos = [];
+  if (tipo === 'merchant_order') {
+    const ordem = await mpGet('/merchant_orders/' + dataId);
+    pagamentos = ((ordem && ordem.payments) || []).map(p => String(p.id));
+  } else {
+    pagamentos = [dataId];
+  }
+  for (const id of pagamentos) {
+    const pg = await mpGet('/v1/payments/' + id);
+    if (!pg || pg.status !== 'approved') continue;
+    const alunoId = pg.external_reference || (pg.metadata && pg.metadata.aluno_id);
+    const meses = Number((pg.metadata && pg.metadata.meses) || 0);
+    if (!alunoId || !meses) continue;
+    await creditarAcesso(pg.id, String(alunoId), meses, pg.transaction_amount, pg.payment_method_id);
+  }
+}
+
 module.exports = async (req, res) => {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -64,6 +84,9 @@ module.exports = async (req, res) => {
     } else if (tipo === 'subscription_authorized_payment') {
       const pag = await mpGet('/authorized_payments/' + dataId);
       if (pag && pag.preapproval_id) await aplicar(db, String(pag.preapproval_id));
+    } else if (tipo === 'payment' || tipo === 'merchant_order') {
+      // pagamento avulso (Pix, boleto, cartão): credita o período comprado
+      await creditarPagamento(String(dataId), tipo);
     }
     return res.status(200).json({ ok: true });
   } catch (e) {
