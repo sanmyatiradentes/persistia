@@ -3565,7 +3565,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   function copiarEndereco(){
-    var url = 'https://persisteia.com.br';
+    var url = 'https://www.persisteia.com.br';  // domínio principal: o sem www redireciona
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(url).then(function(){ toast('Endereço copiado — cole no Chrome ou Safari'); })
         .catch(function(){ toast('Copie: persisteia.com.br'); });
