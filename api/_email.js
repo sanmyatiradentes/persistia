@@ -1,14 +1,29 @@
 // Envio de e-mail pelo Resend.
 //
-// Variáveis na Vercel:
+// Variáveis na Vercel (mesma convenção do ExecuteIA, para uma conta Resend
+// atender aos dois projetos):
 //   RESEND_API_KEY   → a chave da conta (re_...)
-//   EMAIL_REMETENTE  → "PersisteIA <contato@persisteia.com.br>" (domínio verificado)
+//   EMAIL_FROM       → remetente verificado, ex.: "PersisteIA <contato@persisteia.com.br>"
+//                      (EMAIL_REMETENTE também é aceito, por compatibilidade)
 //   EMAIL_RESPOSTA   → opcional: para onde vai a resposta do aluno
 //
 // Sem a chave configurada, nada quebra: o envio devolve {enviado:false} e quem
 // chamou decide o que dizer ao aluno.
+//
+// ATENÇÃO ao remetente padrão: enquanto o domínio não estiver verificado no
+// Resend, o endereço onboarding@resend.dev só entrega para o e-mail dono da
+// conta. Serve para testar, NÃO serve para os alunos.
 
-const REMETENTE_PADRAO = 'PersisteIA <contato@persisteia.com.br>';
+const REMETENTE_PADRAO = 'PersisteIA <onboarding@resend.dev>';
+
+function remetente() {
+  return process.env.EMAIL_FROM || process.env.EMAIL_REMETENTE || REMETENTE_PADRAO;
+}
+
+// true quando o remetente já é do domínio próprio (entrega para qualquer aluno)
+function remetenteProprio() {
+  return !/resend\.dev/i.test(remetente());
+}
 
 function escapar(t) {
   return String(t == null ? '' : t)
@@ -61,7 +76,7 @@ async function enviarEmail({ para, assunto, titulo, corpo, botao, rodape, texto 
 
   const corpoHtml = molde({ titulo, corpo, botao, rodape });
   const dados = {
-    from: process.env.EMAIL_REMETENTE || REMETENTE_PADRAO,
+    from: remetente(),
     to: Array.isArray(para) ? para : [para],
     subject: assunto,
     html: corpoHtml,
@@ -84,4 +99,4 @@ async function enviarEmail({ para, assunto, titulo, corpo, botao, rodape, texto 
   }
 }
 
-module.exports = { enviarEmail, molde };
+module.exports = { enviarEmail, molde, remetente, remetenteProprio };

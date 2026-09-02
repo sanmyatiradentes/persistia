@@ -2739,6 +2739,11 @@
              style="flex:1; min-width:180px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:9px 12px; font:500 .88rem 'Albert Sans',sans-serif">
       <button class="btn ghost small" onclick="admCarregar()">Atualizar</button>
     </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px">
+      <button class="btn ghost small" style="margin:0" onclick="admTestarEmail()">✉ Testar o envio de e-mail</button>
+    </div>
+    <p class="muted" id="admEmailMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></p>
+
     <div class="adm-l" id="admLista"></div>
 
     <div class="card" style="margin-top:18px">
@@ -3811,6 +3816,36 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .then(function(r){ return r.json(); })
       .then(function(d){ toast(d.erro || 'Feito ✓'); admCarregar(); })
       .catch(function(){ toast('Não consegui aplicar agora'); });
+  }
+
+  // Confere, com um clique, se o Resend está mesmo ligado — e diz a verdade
+  // sobre a limitação do remetente de teste.
+  function admTestarEmail(){
+    var msg = $('admEmailMsg');
+    msg.textContent = 'Enviando um e-mail de teste para você…';
+    apiFetch('/api/admin', { aluno_id: 'gestora', acao: 'testar_email' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ msg.innerHTML = '<b style="color:var(--crit)">' + esc(d.erro) + '</b>'; return; }
+        if(!d.chave_configurada){
+          msg.innerHTML = '<b style="color:var(--warm)">RESEND_API_KEY ainda não está na Vercel.</b> ' +
+            'Sem ela, o “esqueci minha senha” devolve o link pelo painel, mas nenhum e-mail sai.';
+          return;
+        }
+        if(!d.enviado){
+          msg.innerHTML = '<b style="color:var(--crit)">O envio falhou.</b> ' +
+            esc(d.detalhe || d.motivo || '') + '<br>Remetente em uso: <b>' + esc(d.remetente) + '</b>';
+          return;
+        }
+        msg.innerHTML = '<b style="color:var(--accent)">Enviado para ' + esc(d.destino) + '.</b> ' +
+          'Remetente: <b>' + esc(d.remetente) + '</b>.' +
+          (d.dominio_proprio
+            ? ' Domínio próprio verificado — os e-mails chegam a qualquer aluno.'
+            : '<br><b style="color:var(--warm)">Atenção:</b> este é o remetente de teste do Resend. ' +
+              'Ele só entrega para o e-mail dono da conta Resend — os alunos <b>não</b> recebem. ' +
+              'Verifique o domínio persisteia.com.br no Resend e ponha o remetente próprio em EMAIL_FROM.');
+      })
+      .catch(function(){ msg.textContent = 'Sem conexão com o servidor.'; });
   }
 
   function admAchar(id){ return (ADM || []).filter(function(a){ return a.id === id; })[0] || null; }
@@ -7502,6 +7537,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       var it = itemAtivo();
       aplicarHojeReal(d, it);
       aplicarPlanoReal(d);
+      CORES_DISC = null;            // cronograma novo, cores recalculadas
+      avisarReplano(d.replano);
       apiFetch('/api/conteudo?topico_id=' + encodeURIComponent(it.topico_id) + '&parte=' + (it.parte || 1) +
                (REFAZER ? '&refazer=1' : ''))
         .then(function(r){ return r.json().then(function(c){ if(r.status === 402){ checar402({ s: 402, d: c }); return null; } return c; }); })
@@ -7813,6 +7850,49 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     evento('questao', 'raciocinar', { n: q + 1, respondeu_certo: acertou }, (q + 1 >= CONT.questoes.length) ? 'concluido' : 'em_andamento');
     var prox = $('rq_' + (q + 1));
     if(prox) prox.style.display = 'block';
+  }
+
+  // O plano se acertou sozinho: o aluno precisa saber, senão parece que o
+  // sistema mexeu nas coisas dele pelas costas.
+  function avisarReplano(rp){
+    if(!rp || !rp.replanejado) return;
+    var cx = $('avisoReplano');
+    if(!cx){
+      cx = document.createElement('div');
+      cx.id = 'avisoReplano';
+      cx.className = 'card';
+      cx.style.cssText = 'margin-bottom:14px; border-left:5px solid var(--accent); background:var(--accent-soft)';
+      var alvo = document.querySelector('#scr-hoje .hoje-nav');
+      if(alvo && alvo.parentNode) alvo.parentNode.insertBefore(cx, alvo);
+      else return;
+    }
+    var txt;
+    if(rp.nao_coube > 0){
+      cx.style.borderLeftColor = 'var(--warm)';
+      cx.style.background = 'var(--warm-soft)';
+      txt = '<b>Reorganizei o seu plano — e preciso te contar uma coisa.</b>' +
+        '<p style="font-size:.85rem; line-height:1.6; margin-top:6px">Coloquei de volta no calendário ' +
+        rp.reagendadas + ' sessões, mas <b>' + rp.nao_coube + ' não cabem</b> até a data da prova, ' +
+        'nem estudando ' + fmtHoras(rp.carga_dia) + ' por dia. Vale escolher: aumentar as horas por dia, ' +
+        'incluir mais dias na semana, ou focar nas disciplinas que mais caem e deixar o resto para revisão rápida.</p>' +
+        '<p style="font-size:.78rem; margin-top:8px"><button class="lg-alt" style="padding:0" onclick="nav(\'plano\', document.querySelector(\'.tab[data-scr=plano]\'))">Ajustar meu ritmo em Minha conta →</button></p>';
+    } else if(rp.atrasadas > 0){
+      txt = '<b>Seu plano se reorganizou sozinho.</b>' +
+        '<p style="font-size:.85rem; line-height:1.6; margin-top:6px">' +
+        rp.atrasadas + (rp.atrasadas === 1 ? ' sessão ficou' : ' sessões ficaram') + ' para trás e ' +
+        (rp.atrasadas === 1 ? 'voltou' : 'voltaram') + ' para os próximos dias. Nada se perdeu.' +
+        (rp.apertou ? ' Para caber antes da prova, os dias ficaram um pouco mais cheios — cerca de ' +
+          fmtHoras(rp.carga_dia) + ' por dia.' : '') +
+        (rp.termina_em ? ' Neste ritmo, você fecha o edital em <b>' + fmtData(rp.termina_em) + '</b>.' : '') +
+        '</p>';
+    } else {
+      txt = '<b>Você está adiantada — o plano puxou os próximos assuntos.</b>' +
+        '<p style="font-size:.85rem; line-height:1.6; margin-top:6px">Como não havia nada pendente para hoje, ' +
+        'trouxe os próximos assuntos para frente' +
+        (rp.termina_em ? ', e o edital fecha em <b>' + fmtData(rp.termina_em) + '</b>' : '') + '.</p>';
+    }
+    cx.innerHTML = txt +
+      '<button class="lg-alt" style="padding:0; margin-top:6px; font-size:.76rem" onclick="this.parentNode.remove()">entendi, fechar</button>';
   }
 
   function aplicarPlanoReal(d){

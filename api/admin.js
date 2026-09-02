@@ -6,8 +6,9 @@
 // POST {aluno_id, acao:'editar', nome?, email?}
 // POST {aluno_id, acao:'nova_senha'}            → manda o link de nova senha
 // POST {acao:'avisar', assunto, mensagem, para} → aviso por e-mail (todos ou um grupo)
+// POST {acao:'testar_email', para?}             → confere se o Resend está ligado
 const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, PRECO, TRIAL_DIAS } = require('./_lib');
-const { enviarEmail } = require('./_email');
+const { enviarEmail, remetente, remetenteProprio } = require('./_email');
 const crypto = require('crypto');
 
 function siteUrl(req) {
@@ -156,6 +157,29 @@ module.exports = async (req, res) => {
           if (envio.enviado) enviados++; else falhas++;
         }
         return res.status(200).json({ ok: true, destinatarios: destinos.length, enviados, falhas });
+      }
+
+      // ----- conferir se o e-mail está mesmo saindo -----
+      if (acao === 'testar_email') {
+        const destino = String((req.body || {}).para || aluno.email).trim();
+        const envio = await enviarEmail({
+          para: destino,
+          assunto: 'Teste de e-mail da PersisteIA',
+          titulo: 'O envio está funcionando',
+          corpo: '<p style="margin:0 0 14px">Se você está lendo isto, o Resend está ligado corretamente ao PersisteIA.</p>' +
+                 '<p style="margin:0">A partir de agora, o “esqueci minha senha”, as boas-vindas e os avisos chegam por aqui.</p>',
+          rodape: 'Mensagem de teste enviada pelo painel da gestora.'
+        });
+        return res.status(200).json({
+          ok: true,
+          destino,
+          enviado: !!envio.enviado,
+          motivo: envio.motivo || null,
+          detalhe: envio.detalhe || null,
+          remetente: remetente(),
+          dominio_proprio: remetenteProprio(),
+          chave_configurada: !!process.env.RESEND_API_KEY
+        });
       }
 
       return res.status(400).json({ erro: 'Ação não reconhecida' });

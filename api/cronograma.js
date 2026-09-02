@@ -19,6 +19,92 @@ function proximasDatas(qtd, diasSemana) {
   return datas;
 }
 
+// Dias de estudo daqui para frente, até um limite.
+function datasAPartirDeHoje(qtd, diasSemana) { return proximasDatas(qtd, diasSemana); }
+
+/**
+ * Replanejamento automático.
+ *
+ * O que atrasou não desaparece nem some da fila: ele é redistribuído a partir de
+ * hoje, respeitando os dias que o aluno estuda. A data da prova é sagrada — em
+ * vez de empurrar o fim para depois dela, o sistema aperta os dias que restam,
+ * até um teto (por padrão 1,5× a carga normal). Se nem apertando couber, ele diz
+ * isso com todas as letras em vez de fingir que cabe.
+ *
+ * Vale também para quem adianta: as sessões pendentes puxam para a frente.
+ */
+async function replanejar(db, alunoId, dataProva) {
+  const cfg = await db.execute({
+    sql: 'SELECT horas_dia, dias_semana FROM config WHERE aluno_id = ?', args: [alunoId]
+  });
+  const horasDia = Math.max(0.5, Number((cfg.rows[0] || {}).horas_dia) || 2);
+  const diasSemana = Number((cfg.rows[0] || {}).dias_semana) || 6;
+  const teto = horasDia * (Number(process.env.FATOR_APERTO) || 1.5);
+
+  const pend = await db.execute({
+    sql: `SELECT id, data, ordem, horas, topico_id FROM cronograma
+          WHERE aluno_id = ? AND status <> 'concluido' ORDER BY ordem`,
+    args: [alunoId]
+  });
+  if (!pend.rows.length) return null;
+
+  const hoje = hojeISO();
+  const atrasadas = pend.rows.filter(r => r.data < hoje).length;
+  const adiantado = pend.rows.every(r => r.data > hoje);   // vazio hoje e nada atrasado
+  if (!atrasadas && !adiantado) return null;               // nada a fazer
+
+  // quantos dias de estudo existem até a prova (ou 180 dias, sem data)
+  let limiteDias = 180;
+  if (dataProva && dataProva >= hoje) {
+    const bruto = Math.floor((new Date(dataProva + 'T12:00:00') - new Date(hoje + 'T12:00:00')) / 86400000);
+    limiteDias = Math.max(1, Math.min(400, bruto));
+  }
+  const candidatas = datasAPartirDeHoje(limiteDias, diasSemana)
+    .filter(d => !dataProva || d < dataProva || !dataProva);
+  const dias = (dataProva && dataProva >= hoje)
+    ? candidatas.filter(d => d <= dataProva)
+    : candidatas;
+  if (!dias.length) return { sem_dias: true, sobraram: pend.rows.length };
+
+  // Primeiro tenta na carga normal; só aperta se for preciso para caber.
+  function distribuir(limitePorDia) {
+    const mapa = [];
+    let i = 0, usadas = 0, noDia = new Set();
+    for (let k = 0; k < pend.rows.length; k++) {
+      const s = pend.rows[k];
+      const h = Number(s.horas) || 1;
+      const estoura = usadas > 0 && (usadas + h > limitePorDia + 0.25);
+      const repetido = noDia.has(s.topico_id);          // partes do mesmo tópico em dias diferentes
+      if (estoura || repetido) { i++; usadas = 0; noDia = new Set(); }
+      // Acabaram os dias: o que sobra NÃO é empilhado no último dia. Empilhar
+      // criaria um dia de dez horas e um plano que mente que cabe.
+      if (i >= dias.length) return { mapa, sobra: pend.rows.length - k };
+      mapa.push({ id: s.id, data: dias[i] });
+      usadas += h; noDia.add(s.topico_id);
+    }
+    return { mapa, sobra: 0 };
+  }
+
+  let r = distribuir(horasDia);
+  let apertou = false;
+  if (r.sobra > 0) { r = distribuir(teto); apertou = true; }
+
+  for (const m of r.mapa) {
+    await db.execute({ sql: 'UPDATE cronograma SET data = ? WHERE id = ?', args: [m.data, m.id] });
+  }
+
+  const ultima = r.mapa.length ? r.mapa[r.mapa.length - 1].data : null;
+  return {
+    replanejado: true,
+    atrasadas,
+    reagendadas: r.mapa.length,
+    apertou,
+    carga_dia: Math.round((apertou ? teto : horasDia) * 10) / 10,
+    nao_coube: r.sobra,
+    termina_em: ultima
+  };
+}
+
 module.exports = async (req, res) => {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -122,6 +208,13 @@ module.exports = async (req, res) => {
     }
 
     // GET — visão do dia
+    // Antes de mostrar qualquer coisa, o plano se acerta com a realidade:
+    // o que ficou para trás volta para os dias que ainda existem.
+    const cfgP = await db.execute({ sql: 'SELECT data_prova FROM config WHERE aluno_id = ?', args: [aluno.id] });
+    const provaPara = (cfgP.rows[0] || {}).data_prova || edital.data_prova || null;
+    let replano = null;
+    try { replano = await replanejar(db, aluno.id, provaPara); } catch (_) { /* nunca derruba a tela */ }
+
     const rows = await db.execute({
       sql: `SELECT c.id AS cron_id, c.data, c.ordem, c.status, c.parte, c.partes, c.horas,
                    t.id AS topico_id, t.nome AS topico, t.peso, d.nome AS disciplina
@@ -161,6 +254,7 @@ module.exports = async (req, res) => {
       hoje: { cron_id: hoje.cron_id, topico_id: hoje.topico_id, topico: hoje.topico, disciplina: hoje.disciplina, data: hoje.data, parte: hoje.parte || 1, partes: hoje.partes || 1, horas: hoje.horas || null, atrasado: hoje.data < hojeISO() },
       dia_de_hoje: todos.filter(r => r.data === hoje.data).map(r => ({ cron_id: r.cron_id, topico_id: r.topico_id, topico: r.topico, disciplina: r.disciplina, parte: r.parte || 1, partes: r.partes || 1, horas: r.horas || null, status: r.status })),
       proximos: proximos.map(r => ({ topico: r.topico, disciplina: r.disciplina, data: r.data, status: r.status, parte: r.parte || 1, partes: r.partes || 1, horas: r.horas || null })),
+      replano,
       resumo: {
         total: todos.length, concluidos,
         termina_em: todos[todos.length - 1].data,
