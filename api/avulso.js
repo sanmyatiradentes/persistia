@@ -52,11 +52,17 @@ module.exports = async (req, res) => {
   const db = getDb();
 
   try {
-    const pacotes = pacotesAvulsos().map(p => Object.assign({}, p, {
-      rotulo: rotulo(p.meses),
-      por_mes: Math.round((p.valor / p.meses) * 100) / 100,
-      economia: Math.max(0, Math.round((PRECO * p.meses - p.valor) * 100) / 100)
-    }));
+    const pacotes = pacotesAvulsos().map(p => {
+      const cheio = PRECO * p.meses;
+      const economia = Math.max(0, Math.round((cheio - p.valor) * 100) / 100);
+      return Object.assign({}, p, {
+        rotulo: rotulo(p.meses),
+        por_mes: Math.round((p.valor / p.meses) * 100) / 100,
+        economia,
+        desconto: cheio > 0 ? Math.round(100 * economia / cheio) : 0,
+        cheio: Math.round(cheio * 100) / 100
+      });
+    });
 
     if (req.method === 'GET') {
       const acesso = await acessoDoAluno(aluno);

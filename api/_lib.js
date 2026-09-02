@@ -60,6 +60,10 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS pagamentos (
     id TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, meses INTEGER, valor REAL,
     meio TEXT, status TEXT, criado_em TEXT NOT NULL)`,
+  // links de "esqueci minha senha": valem 24 h e só uma vez
+  `CREATE TABLE IF NOT EXISTS tokens_senha (
+    token TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, expira_em TEXT NOT NULL,
+    usado INTEGER NOT NULL DEFAULT 0, criado_em TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS duvidas (
     id TEXT PRIMARY KEY, aluno_id TEXT, assunto TEXT, pergunta TEXT NOT NULL,
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`
@@ -162,9 +166,14 @@ async function acessoDoAluno(aluno) {
 // candidatos não tem um. Aqui o aluno compra um período fechado e o acesso vale
 // até a data comprada — sem cobrança automática e sem nada para cancelar depois.
 //
-// PACOTES_AVULSOS aceita "meses:preço" separados por vírgula, por exemplo:
-//   PACOTES_AVULSOS="1:59.90,3:161.70,6:305.40,12:574.80"
-// Sem a variável, cada pacote sai pelo preço cheio multiplicado pelos meses.
+// Quanto mais meses, mais barato o mês — e o desconto é escolhido para que o
+// preço mensal caia em número redondo, que é o que o candidato compara:
+//   1 mês  → 59,90/mês        3 meses → 53,90/mês  (-10%)
+//   6 meses → 49,90/mês (-17%)   1 ano → 44,90/mês (-25%)
+// PACOTES_AVULSOS sobrescreve tudo, no formato "meses:preço" separado por vírgula:
+//   PACOTES_AVULSOS="1:59.90,3:161.70,6:299.40,12:538.80"
+const MENSAL_POR_PACOTE = { 1: 1, 3: 0.90, 6: 0.8333, 12: 0.75 };
+
 function pacotesAvulsos() {
   const bruto = String(process.env.PACOTES_AVULSOS || '').trim();
   if (bruto) {
@@ -174,7 +183,11 @@ function pacotesAvulsos() {
     }).filter(p => p.meses > 0 && p.valor > 0);
     if (lista.length) return lista.sort((a, b) => a.meses - b.meses);
   }
-  return [1, 3, 6, 12].map(m => ({ meses: m, valor: Math.round(PRECO * m * 100) / 100 }));
+  return [1, 3, 6, 12].map(m => {
+    // arredonda o mês para terminar em ,90 — preço que se lê de relance
+    const mes = Math.round(PRECO * (MENSAL_POR_PACOTE[m] || 1) - 0.9) + 0.9;
+    return { meses: m, valor: Math.round(mes * m * 100) / 100 };
+  });
 }
 
 function pacotePorMeses(meses) {
@@ -258,7 +271,7 @@ function filaDeModelos(modelo) {
 function ehPassageiro(status, msg) {
   if (status === 429 || status === 408 || (status >= 500 && status <= 599)) return true;
   if (status) return false;
-  return /fetch failed|network|timeout|socket|ECONN|EAI_AGAIN|aborted|vazia|incompleta/i.test(String(msg || ''));
+  return /fetch failed|network|timeout|demorou demais|socket|ECONN|EAI_AGAIN|aborted|vazia|incompleta/i.test(String(msg || ''));
 }
 
 function corpoGemini(systemText, partes, jsonSchema) {
@@ -281,10 +294,23 @@ function corpoGemini(systemText, partes, jsonSchema) {
 }
 
 async function umaChamada(model, body, key) {
-  const r = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-  );
+  // Uma única chamada não pode consumir todo o tempo da função no servidor:
+  // se passar disso, cortamos nós mesmos e tentamos de novo (ou no outro modelo).
+  const limite = Number(process.env.GEMINI_TIMEOUT_MS) || 38000;
+  const corte = new AbortController();
+  const alarme = setTimeout(() => corte.abort(), limite);
+  let r;
+  try {
+    r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: corte.signal }
+    );
+  } catch (e) {
+    clearTimeout(alarme);
+    if (e && e.name === 'AbortError') throw new Error('O modelo demorou demais para responder (timeout)');
+    throw e;
+  }
+  clearTimeout(alarme);
   if (!r.ok) {
     const e = new Error('Gemini HTTP ' + r.status + ': ' + (await r.text()).slice(0, 200));
     e.status = r.status;
@@ -313,7 +339,7 @@ async function geminiComPaciencia(systemText, partes, jsonSchema, modelo) {
   const tentativasPorModelo = Math.max(1, Number(process.env.GEMINI_TENTATIVAS) || 3);
   const pausas = [700, 1800, 4000, 7000];
   // A função tem tempo limitado no servidor: insistir além disso derruba tudo.
-  const limite = Date.now() + (Number(process.env.GEMINI_ORCAMENTO_MS) || 45000);
+  const limite = Date.now() + (Number(process.env.GEMINI_ORCAMENTO_MS) || 50000);
   let ultimo = null;
 
   for (let m = 0; m < modelos.length; m++) {

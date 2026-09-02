@@ -264,6 +264,33 @@
   .mic.rec{animation:pulse 1.2s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(194,74,58,.4)}70%{box-shadow:0 0 0 16px rgba(194,74,58,0)}100%{box-shadow:0 0 0 0 rgba(194,74,58,0)}}
   @media(prefers-reduced-motion:reduce){.mic.rec{animation:none}}
+  .mic-dica{text-align:center; font-size:.76rem; color:var(--muted); margin:-6px 0 0}
+
+  /* painel de gravação: não dá para confundir se está ligado ou não */
+  .gravando{display:none; margin-top:14px; background:var(--card2);
+            border:1.5px solid var(--crit); border-radius:16px; padding:14px 15px}
+  .gravando.on{display:block}
+  .gr-topo{display:flex; align-items:center; gap:9px; font-size:.86rem}
+  .gr-topo b{flex:1; text-align:left}
+  .gr-luz{width:11px; height:11px; border-radius:50%; background:var(--crit); flex:none;
+          animation:luzpisca 1s infinite}
+  @keyframes luzpisca{0%,100%{opacity:1}50%{opacity:.25}}
+  .gr-tempo{font-variant-numeric:tabular-nums; font-weight:800; color:var(--crit); font-size:.9rem}
+  .gr-onda{display:flex; align-items:flex-end; justify-content:center; gap:4px; height:26px; margin:12px 0 10px}
+  .gr-onda i{width:4px; border-radius:3px; background:var(--crit); opacity:.75; animation:onda 1s infinite ease-in-out}
+  .gr-onda i:nth-child(1){height:9px;  animation-delay:0s}
+  .gr-onda i:nth-child(2){height:17px; animation-delay:.1s}
+  .gr-onda i:nth-child(3){height:24px; animation-delay:.2s}
+  .gr-onda i:nth-child(4){height:14px; animation-delay:.3s}
+  .gr-onda i:nth-child(5){height:22px; animation-delay:.4s}
+  .gr-onda i:nth-child(6){height:11px; animation-delay:.5s}
+  .gr-onda i:nth-child(7){height:18px; animation-delay:.6s}
+  @keyframes onda{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+  .gr-txt{font-size:.85rem; line-height:1.6; text-align:left; max-height:120px; overflow:auto;
+          background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:0}
+  @media(prefers-reduced-motion:reduce){
+    .gr-luz,.gr-onda i{animation:none}
+  }
 
   /* mindmap svg */
   .mm{width:100%; height:auto; display:block; margin-top:10px}
@@ -792,6 +819,18 @@
     max-width:440px; margin:0 auto; padding:28px 24px; flex-direction:column; justify-content:center; gap:12px;
   }
   #login.show{display:flex}
+  /* as duas telas de senha usam a mesma casca do login */
+  #esqueci, #novaSenha{
+    position:fixed; inset:0; z-index:101; background:var(--bg); display:none;
+    max-width:440px; margin:0 auto; padding:28px 24px; flex-direction:column; justify-content:center; gap:12px;
+  }
+  #esqueci.show, #novaSenha.show{display:flex}
+  #esqueci input, #novaSenha input{
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:14px; padding:13px 16px; font:400 .95rem "Albert Sans",sans-serif; width:100%;
+  }
+  #esqueci .err, #novaSenha .err{color:var(--crit); font-size:.8rem; min-height:1.2em}
+  #esqueci .ok, #novaSenha .ok{color:var(--accent)}
   #login input{
     border:1.5px solid var(--line); background:var(--card); color:var(--ink);
     border-radius:14px; padding:13px 16px; font:400 .95rem "Albert Sans",sans-serif; width:100%;
@@ -1033,6 +1072,30 @@
   .pix-op .vlr span{display:block; font-size:.66rem; color:var(--muted); margin-top:2px}
   .pix-eco{display:inline-block; font-size:.6rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
            background:var(--warm-soft); color:var(--warm); padding:3px 8px; border-radius:999px; margin-top:5px}
+  .pix-op .vlr b i{font-style:normal; font-size:.66rem; font-weight:700; color:var(--muted); margin-left:1px}
+  .pix-op.top{border-color:var(--accent); background:var(--accent-soft)}
+  .pix-top{font-style:normal; display:inline-block; margin-left:7px; vertical-align:2px;
+           font-family:"Albert Sans",sans-serif; font-size:.56rem; font-weight:800; letter-spacing:.08em;
+           text-transform:uppercase; background:var(--accent); color:var(--on-accent);
+           padding:3px 7px; border-radius:999px}
+
+  /* pacotes sem cartão, no site */
+  .st-pacotes{max-width:1000px; margin:0 auto}
+  .st-pk{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  .pk{background:var(--card); border:1.5px solid var(--line); border-radius:18px; padding:20px 18px;
+      text-align:center; box-shadow:var(--shadow); position:relative}
+  .pk.melhor{border-color:var(--accent); background:var(--accent-soft)}
+  .pk-selo{position:absolute; top:-11px; left:50%; transform:translateX(-50%); white-space:nowrap;
+           font-size:.6rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+           background:var(--accent); color:var(--on-accent); padding:4px 11px; border-radius:999px}
+  .pk-per{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.02rem; margin-bottom:8px}
+  .pk-mes{font-family:"Bricolage Grotesque",sans-serif; font-size:1.72rem; letter-spacing:-.03em;
+          color:var(--accent); font-variant-numeric:tabular-nums; line-height:1.1}
+  .pk-mes small{font-size:.8rem; color:var(--muted); font-weight:600; letter-spacing:0}
+  .pk-tot{display:block; font-size:.78rem; color:var(--muted); margin-top:6px}
+  .pk-eco{display:inline-block; margin-top:10px; font-size:.62rem; font-weight:800; letter-spacing:.05em;
+          text-transform:uppercase; background:var(--warm-soft); color:var(--warm);
+          padding:4px 10px; border-radius:999px; line-height:1.4}
 
   .st-quem{display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); max-width:1000px; margin:0 auto}
   .st-pessoa{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:var(--shadow); text-align:left}
@@ -1492,7 +1555,8 @@
     <div class="st-sec">
       <div class="st-olho"><span>Assinatura</span></div>
       <h2>Quanto custa</h2>
-      <p class="sub">Menos que uma apostila por mês. Sem fidelidade, sem multa, cancela quando quiser.</p>
+      <p class="sub">Menos que uma apostila por mês — e sem cartão de crédito, se você não tiver. Sempre com 7 dias grátis antes de qualquer cobrança.</p>
+
       <div class="st-preco">
         <p class="eyebrow" style="margin-bottom:4px">Plano mensal</p>
         <div class="val">R$ 59,90<small> /mês</small></div>
@@ -1507,6 +1571,43 @@
         </ul>
         <button class="btn" onclick="abrirConta('cadastro')">Começar meus 7 dias grátis</button>
         <p class="muted" style="font-size:.75rem; margin-top:11px">No 8.º dia você decide se continua. Nada é cobrado antes disso.</p>
+      </div>
+
+      <div class="st-pacotes">
+        <div class="st-olho" style="margin:34px 0 6px"><span>ou pague sem cartão</span></div>
+        <p class="sub" style="margin-bottom:22px">Não tem cartão de crédito, ou prefere não deixar cobrança automática rodando?
+           Compre um período fechado por <b>Pix</b>, boleto ou cartão. Quanto mais longo, mais barato o mês —
+           e não há renovação nem nada para cancelar depois.</p>
+        <div class="st-pk">
+          <div class="pk">
+            <b class="pk-per">1 mês</b>
+            <div class="pk-mes">R$ 59,90<small>/mês</small></div>
+            <span class="pk-tot">R$ 59,90 de uma vez</span>
+          </div>
+          <div class="pk">
+            <b class="pk-per">3 meses</b>
+            <div class="pk-mes">R$ 53,90<small>/mês</small></div>
+            <span class="pk-tot">R$ 161,70 de uma vez</span>
+            <span class="pk-eco">10% menos · economia de R$ 18</span>
+          </div>
+          <div class="pk">
+            <b class="pk-per">6 meses</b>
+            <div class="pk-mes">R$ 49,90<small>/mês</small></div>
+            <span class="pk-tot">R$ 299,40 de uma vez</span>
+            <span class="pk-eco">17% menos · economia de R$ 60</span>
+          </div>
+          <div class="pk melhor">
+            <span class="pk-selo">melhor preço</span>
+            <b class="pk-per">1 ano</b>
+            <div class="pk-mes">R$ 44,90<small>/mês</small></div>
+            <span class="pk-tot">R$ 538,80 de uma vez</span>
+            <span class="pk-eco">25% menos · economia de R$ 180</span>
+          </div>
+        </div>
+        <p class="muted" style="font-size:.78rem; text-align:center; margin-top:18px; line-height:1.6">
+          O período comprado soma ao que você já tem: quem paga adiantado nunca perde dias.
+          Escolha o seu dentro do aplicativo, depois dos 7 dias grátis.
+        </p>
       </div>
     </div>
 
@@ -1880,7 +1981,22 @@
         </button>
         <div class="task-b"><div class="inner">
           <p style="font-size:.88rem; text-align:center" id="feynQ">Explique em voz alta: <b>por que o concurso público concretiza a impessoalidade?</b></p>
-          <button class="mic" id="mic" onclick="feyn()" aria-label="Gravar explicação"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0h-1.6a5.4 5.4 0 01-10.8 0H5zM11 19h2v3h-2z"/></svg></button>
+          <button class="mic" id="mic" onclick="feyn()" aria-label="Começar a falar"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0h-1.6a5.4 5.4 0 01-10.8 0H5zM11 19h2v3h-2z"/></svg></button>
+          <p class="mic-dica" id="micDica">Toque no microfone e explique em voz alta</p>
+
+          <!-- painel que só existe enquanto está gravando -->
+          <div class="gravando" id="feynPainel" aria-live="polite">
+            <div class="gr-topo">
+              <span class="gr-luz" aria-hidden="true"></span>
+              <b>Gravando sua explicação</b>
+              <span class="gr-tempo" id="feynTempo">0:00</span>
+            </div>
+            <div class="gr-onda" id="feynOnda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <p class="gr-txt" id="feynAoVivo">Pode falar. O que você disser aparece aqui.</p>
+            <button class="btn" style="width:100%; margin-top:12px" onclick="feyn()">Terminei — avaliar minha explicação</button>
+            <p class="muted" style="font-size:.7rem; margin-top:8px">Sem pressa: só para quando você tocar no botão.</p>
+          </div>
+
           <div class="fb" id="feynFb"></div>
         </div></div>
       </div>
@@ -2533,7 +2649,31 @@
     <p class="err" id="lgErr"></p>
     <button class="btn" id="lgBtn" onclick="lgEnviar()">Começar</button>
     <button class="lg-alt" id="lgAlt" onclick="lgToggle()">Já tenho conta — entrar</button>
+    <button class="lg-alt" id="lgEsqueci" style="display:none" onclick="abrirEsqueci()">Esqueci minha senha</button>
     <button class="lg-alt" style="opacity:.7" onclick="voltarAoSite()">← Conhecer o PersisteIA antes</button>
+  </div>
+
+  <!-- ========== esqueci minha senha ========== -->
+  <div id="esqueci">
+    <div class="brand" style="justify-content:center; margin-bottom:14px"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
+    <h2 style="font-size:1.3rem">Esqueci minha senha</h2>
+    <p class="muted" style="font-size:.85rem">Digite o e-mail da sua conta. Mando um link para você criar uma senha nova — seu edital e todo o seu progresso continuam guardados.</p>
+    <input id="esqEmail" type="email" placeholder="Seu e-mail" autocomplete="email">
+    <p class="err" id="esqErr"></p>
+    <button class="btn" id="esqBtn" onclick="pedirNovaSenha()">Mandar o link</button>
+    <button class="lg-alt" onclick="fecharEsqueci()">← Voltar para entrar</button>
+  </div>
+
+  <!-- ========== criar a nova senha (chega pelo link do e-mail) ========== -->
+  <div id="novaSenha">
+    <div class="brand" style="justify-content:center; margin-bottom:14px"><img class="mk" src="logo-persisteia.png" alt="" aria-hidden="true"><span>Persiste<span class="ia">IA</span></span></div>
+    <h2 style="font-size:1.3rem">Criar uma senha nova</h2>
+    <p class="muted" style="font-size:.85rem">Escolha uma senha com pelo menos 6 caracteres. Assim que salvar, você já entra direto.</p>
+    <input id="nsSenha" type="password" placeholder="Nova senha" autocomplete="new-password">
+    <input id="nsSenha2" type="password" placeholder="Repita a nova senha" autocomplete="new-password">
+    <p class="err" id="nsErr"></p>
+    <button class="btn" id="nsBtn" onclick="salvarNovaSenha()">Salvar e entrar</button>
+    <button class="lg-alt" onclick="location.href=location.pathname">← Voltar</button>
   </div>
 
   <div id="visor" role="dialog" aria-label="Visualizador">
@@ -2584,6 +2724,8 @@
     apiFetch('/api/evento', { tipo: tipo, assunto: ASSUNTO, verbo: verbo || null, detalhe: detalhe || null, status: status || 'concluido' }).catch(function(){});
   }
   function initReal(){
+    // O link de nova senha vale mesmo sem estar logado: ele vem antes de tudo.
+    if(typeof verificarLinkDeSenha === 'function' && !TOKEN_NOVA_SENHA && verificarLinkDeSenha()) return;
     apiFetch('/api/aluno').then(function(r){
       if(r.status === 200){
         API = true;
@@ -2608,7 +2750,7 @@
       } else if(r.status === 401){
         API = true; TOKEN = '';
         try { localStorage.removeItem('persisteia_token'); } catch(e){}
-        mostrarSite();
+        if(!(typeof verificarLinkDeSenha === 'function' && verificarLinkDeSenha())) mostrarSite();
       } else {
         semServidor('O servidor respondeu com erro ' + r.status + '.');
       }
@@ -2671,7 +2813,7 @@
   // de novo sozinhos, em silêncio, avisando só que está demorando.
   function ehCongestionamento(x){
     if(!x) return false;
-    if(x.s === 429 || x.s === 500 || x.s === 502 || x.s === 503 || x.s === 504) return true;
+    if(x.s === 429 || x.s === 500 || x.s === 502 || x.s === 503 || x.s === 504 || x.s === 408) return true;
     var t = ((x.d && (x.d.detalhe || x.d.erro)) || '') + '';
     return /503|429|overload|high demand|unavailable|congestion|temporar|indispon/i.test(t);
   }
@@ -2681,15 +2823,40 @@
     var txt = $('edTexto').value.trim();
     if(!PDF64 && !(PAGINAS && PAGINAS.length) && txt.length < 200){ $('edStatus').textContent = 'Cole o conteúdo programático, ou arraste o PDF do edital.'; return; }
     if(!TOKEN){ $('login').classList.add('show'); return; }
-    $('edStatus').textContent = (PDF64 || PAGINAS) ? 'Lendo seu edital com a IA… pode levar até um minuto.' : 'Analisando com IA… isso leva alguns segundos.';
     var lis = document.querySelectorAll('#proc li'), i = 0;
     var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
+
+    // Relógio à vista: edital grande leva mais de um minuto, e a espera cega
+    // faz parecer travado. Aqui o candidato vê que o trabalho continua.
+    var t0 = Date.now();
+    if(window.EDCRONO) clearInterval(window.EDCRONO);
+    window.EDCRONO = setInterval(function(){
+      var s = Math.round((Date.now() - t0) / 1000);
+      var el = $('edStatus');
+      if(!el) return;
+      var fase = s < 25 ? 'Lendo o seu edital…'
+               : s < 60 ? 'Separando disciplinas e tópicos…'
+               : s < 110 ? 'Medindo o peso de cada assunto — editais grandes levam mais tempo…'
+               : 'Ainda trabalhando. Editais muito longos podem passar de dois minutos…';
+      el.innerHTML = fase + ' <b>' + Math.floor(s/60) + ':' + ('0'+(s%60)).slice(-2) + '</b>' +
+        (s > 150 ? '<br><span style="font-size:.72rem; opacity:.8">Se passar de 4 minutos, toque em “Analisar meu edital” de novo — nada do que você enviou se perde.</span>' : '');
+    }, 1000);
+    var pararCrono = function(){ if(window.EDCRONO){ clearInterval(window.EDCRONO); window.EDCRONO = null; } };
     var carga = PDF64 ? { pdf_base64: PDF64 } : (PAGINAS && PAGINAS.length ? { paginas: PAGINAS } : { texto: txt });
     if(cargo) carga.cargo = cargo;
     apiFetch('/api/edital', carga)
-      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(r){
+        // 504/502 da Vercel devolve página de erro, não JSON: sem isto virava
+        // "conexão instável" e o candidato achava que o problema era a internet dele.
+        return r.text().then(function(t){
+          var d = null; try { d = JSON.parse(t); } catch(e){}
+          if(!d) d = { erro: r.status >= 500 ? 'O servidor demorou demais para responder' : 'Resposta inesperada do servidor',
+                       detalhe: 'HTTP ' + r.status };
+          return { s: r.status, d: d };
+        });
+      })
       .then(function(x){
-        clearInterval(anim);
+        clearInterval(anim); pararCrono();
         lis.forEach(function(l){ l.classList.add('on','done'); });
         if(x.s === 200 && x.d.precisa_cargo){
           lis.forEach(function(l){ l.classList.remove('on','done'); });
@@ -2728,8 +2895,11 @@
         } else if(ehCongestionamento(x) && tentativa < 3){
           // a IA está com fila: esperamos e tentamos de novo sem incomodar o aluno
           var seg = [8, 18, 30][tentativa];
-          $('edStatus').innerHTML = '<b>A IA está com muita procura neste momento.</b><br>' +
-            'Não precisa fazer nada: vou tentar de novo em <b id="edConta">' + seg + '</b> segundos. ' +
+          var motivo = (x.s === 504 || x.s === 502)
+            ? '<b>O edital é grande e o servidor cortou a leitura no meio.</b><br>Vou tentar de novo — costuma passar na segunda tentativa. '
+            : '<b>A IA está com muita procura neste momento.</b><br>';
+          $('edStatus').innerHTML = motivo +
+            'Não precisa fazer nada: tento de novo em <b id="edConta">' + seg + '</b> segundos. ' +
             'Seu edital continua aqui.';
           var conta = setInterval(function(){
             var el = $('edConta'); if(!el){ clearInterval(conta); return; }
@@ -2750,7 +2920,7 @@
         }
       })
       .catch(function(){
-        clearInterval(anim);
+        clearInterval(anim); pararCrono();
         if(tentativa < 2){
           $('edStatus').innerHTML = '<b>Conexão instável.</b><br>Vou tentar de novo em instantes — seu edital continua aqui.';
           setTimeout(function(){ analisarEdital(cargo, tentativa + 1); }, 6000);
@@ -3030,7 +3200,84 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('lgNome').style.display = lgModo === 'cadastro' ? 'block' : 'none';
     $('lgBtn').textContent = lgModo === 'cadastro' ? 'Começar meus 7 dias' : 'Entrar';
     $('lgAlt').textContent = lgModo === 'cadastro' ? 'Já tenho conta — entrar' : 'Não tenho conta — criar';
+    $('lgEsqueci').style.display = lgModo === 'login' ? 'block' : 'none';
     $('login').classList.add('show');
+  }
+
+  /* ---------- esqueci minha senha ---------- */
+  function abrirEsqueci(){
+    $('esqEmail').value = ($('lgEmail').value || '').trim();
+    $('esqErr').textContent = ''; $('esqErr').className = 'err';
+    $('esqBtn').disabled = false; $('esqBtn').textContent = 'Mandar o link';
+    $('login').classList.remove('show');
+    $('esqueci').classList.add('show');
+    setTimeout(function(){ $('esqEmail').focus(); }, 80);
+  }
+  function fecharEsqueci(){
+    $('esqueci').classList.remove('show');
+    abrirConta('login');
+  }
+  function pedirNovaSenha(){
+    var mail = ($('esqEmail').value || '').trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){
+      $('esqErr').className = 'err'; $('esqErr').textContent = 'Digite um e-mail válido'; return;
+    }
+    $('esqBtn').disabled = true; $('esqBtn').textContent = 'Enviando…';
+    $('esqErr').textContent = '';
+    apiFetch('/api/auth', { acao: 'esqueci', email: mail })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        $('esqBtn').textContent = 'Mandar de novo';
+        $('esqBtn').disabled = false;
+        $('esqErr').className = 'err ok';
+        $('esqErr').textContent = (d && d.recado) ||
+          'Se existir uma conta com esse e-mail, o link chega em instantes. Olhe também o spam.';
+      })
+      .catch(function(){
+        $('esqBtn').disabled = false; $('esqBtn').textContent = 'Mandar o link';
+        $('esqErr').className = 'err'; $('esqErr').textContent = 'Sem conexão com o servidor.';
+      });
+  }
+
+  /* ---------- criar a nova senha (link do e-mail) ---------- */
+  var TOKEN_NOVA_SENHA = '';
+  function verificarLinkDeSenha(){
+    var m = location.search.match(/[?&]nova-senha=([a-f0-9]{20,})/i);
+    if(!m) return false;
+    TOKEN_NOVA_SENHA = m[1];
+    history.replaceState({}, '', location.pathname);
+    document.body.classList.remove('sitemode');
+    $('site').classList.remove('show');
+    $('login').classList.remove('show');
+    if($('ob')) $('ob').style.display = 'none';
+    $('novaSenha').classList.add('show');
+    setTimeout(function(){ $('nsSenha').focus(); }, 120);
+    return true;
+  }
+  function salvarNovaSenha(){
+    var s1 = $('nsSenha').value || '', s2 = $('nsSenha2').value || '';
+    $('nsErr').className = 'err';
+    if(s1.length < 6){ $('nsErr').textContent = 'A senha precisa de pelo menos 6 caracteres'; return; }
+    if(s1 !== s2){ $('nsErr').textContent = 'As duas senhas não são iguais'; return; }
+    $('nsBtn').disabled = true; $('nsBtn').textContent = 'Salvando…';
+    apiFetch('/api/auth', { acao: 'redefinir', token: TOKEN_NOVA_SENHA, senha: s1 })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if(x.s === 200 && x.d.token){
+          TOKEN = x.d.token; NOME = x.d.nome || '';
+          try { localStorage.setItem('persisteia_token', TOKEN); } catch(e){}
+          $('novaSenha').classList.remove('show');
+          toast('Senha trocada. Bem-vinda(o) de volta, ' + (NOME || 'concurseira(o)') + '!');
+          initReal();
+          return;
+        }
+        $('nsBtn').disabled = false; $('nsBtn').textContent = 'Salvar e entrar';
+        $('nsErr').textContent = (x.d && x.d.erro) || 'Não consegui trocar a senha.';
+      })
+      .catch(function(){
+        $('nsBtn').disabled = false; $('nsBtn').textContent = 'Salvar e entrar';
+        $('nsErr').textContent = 'Sem conexão com o servidor.';
+      });
   }
   function sair(){
     if(!confirm('Sair da conta e voltar para a página do PersisteIA? Seu progresso continua salvo.')) return;
@@ -3231,14 +3478,19 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   function renderPacotes(){
     var box = $('pixLista'); if(!box || !PIX_PACOTES) return;
+    var melhor = PIX_PACOTES.reduce(function(a, b){ return (b.desconto || 0) > (a.desconto || 0) ? b : a; }, PIX_PACOTES[0]);
     box.innerHTML = PIX_PACOTES.map(function(p){
       var nome = p.meses === 1 ? '1 mês' : (p.meses === 12 ? '1 ano' : p.meses + ' meses');
       var ate = new Date(Date.now() + p.meses * 30 * 86400000);
       var dia = ('0' + ate.getDate()).slice(-2) + '/' + ('0' + (ate.getMonth() + 1)).slice(-2) + '/' + ate.getFullYear();
-      return '<button class="pix-op" onclick="pagarAvulso(' + p.meses + ', this)">' +
-        '<span class="per"><b>' + nome + '</b><span>acesso completo até ' + dia + '</span>' +
-        (p.economia > 0 ? '<span class="pix-eco">economia de ' + moeda(p.economia) + '</span>' : '') + '</span>' +
-        '<span class="vlr"><b>' + moeda(p.valor) + '</b><span>' + moeda(p.por_mes) + '/mês</span></span>' +
+      var destaque = (p === melhor && p.desconto > 0);
+      return '<button class="pix-op' + (destaque ? ' top' : '') + '" onclick="pagarAvulso(' + p.meses + ', this)">' +
+        '<span class="per"><b>' + nome + (destaque ? '<i class="pix-top">melhor preço</i>' : '') + '</b>' +
+        '<span>acesso completo até ' + dia + '</span>' +
+        (p.desconto > 0 ? '<span class="pix-eco">' + p.desconto + '% menos · economia de ' + moeda(p.economia) + '</span>' : '') +
+        '</span>' +
+        '<span class="vlr"><b>' + moeda(p.por_mes) + '<i>/mês</i></b>' +
+        '<span>' + moeda(p.valor) + ' de uma vez</span></span>' +
         '</button>';
     }).join('');
   }
@@ -3411,6 +3663,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           (a.situacao === 'bloqueado'
             ? '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'liberar\')">desbloquear</button>'
             : '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'bloquear\')">bloquear</button>') +
+          '<button class="btn ghost small" onclick="admEditar(\'' + a.id + '\')">editar dados</button>' +
+          '<button class="btn ghost small" onclick="admNovaSenha(\'' + a.id + '\')">nova senha</button>' +
+          '<button class="btn ghost small" onclick="admAvisar(\'' + a.id + '\')">avisar por e-mail</button>' +
         '</div></div>';
     }).join('');
   }
@@ -3419,6 +3674,69 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .then(function(r){ return r.json(); })
       .then(function(d){ toast(d.erro || 'Feito ✓'); admCarregar(); })
       .catch(function(){ toast('Não consegui aplicar agora'); });
+  }
+
+  function admAchar(id){ return (ADM || []).filter(function(a){ return a.id === id; })[0] || null; }
+
+  // Corrigir nome e e-mail: e-mail errado no cadastro é o que mais tranca o
+  // aluno fora, porque é por ele que chega o link de senha.
+  function admEditar(alunoId){
+    var a = admAchar(alunoId); if(!a) return;
+    var nome = prompt('Nome do aluno:', a.nome || '');
+    if(nome === null) return;
+    var email = prompt('E-mail do aluno (é por aqui que ele recebe o link de senha):', a.email || '');
+    if(email === null) return;
+    apiFetch('/api/admin', { aluno_id: alunoId, acao: 'editar', nome: nome, email: email })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ toast(d.erro); return; }
+        toast('Dados atualizados ✓'); admCarregar();
+      })
+      .catch(function(){ toast('Não consegui salvar agora'); });
+  }
+
+  // Nunca escolhemos a senha de ninguém: mandamos um link para o aluno criar a
+  // dele. Se o e-mail falhar, o link aparece aqui para você passar no WhatsApp.
+  function admNovaSenha(alunoId){
+    var a = admAchar(alunoId); if(!a) return;
+    if(!confirm('Mandar para ' + a.email + ' um link para criar nova senha?\n\nA senha atual continua valendo até ele usar o link.')) return;
+    apiFetch('/api/admin', { aluno_id: alunoId, acao: 'nova_senha' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ toast(d.erro); return; }
+        if(d.enviado){ toast('Link enviado para ' + d.email); return; }
+        // e-mail não saiu: entrega o link na mão da gestora
+        if(d.link && navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(d.link).catch(function(){});
+        }
+        prompt('O e-mail não saiu (' + (d.motivo || 'motivo desconhecido') +
+               '). Copie o link abaixo e mande para o aluno:', d.link || '');
+      })
+      .catch(function(){ toast('Não consegui gerar o link agora'); });
+  }
+
+  function admAvisar(alunoId){
+    var alvo = alunoId || 'todos';
+    var quem = 'todos';
+    if(alvo === 'todos'){
+      quem = (prompt('Mandar para quem?\n\ntodos · assinantes · teste · expirados', 'todos') || '').trim().toLowerCase();
+      if(!quem) return;
+      if(['todos','assinantes','teste','expirados'].indexOf(quem) < 0){ toast('Grupo não reconhecido'); return; }
+    }
+    var assunto = prompt('Assunto do e-mail:', '');
+    if(assunto === null || !assunto.trim()) return;
+    var mensagem = prompt('Mensagem (pule uma linha em branco para separar parágrafos):', '');
+    if(mensagem === null || !mensagem.trim()) return;
+    var a = alvo === 'todos' ? null : admAchar(alvo);
+    if(!confirm('Enviar "' + assunto + '"\n\npara ' + (a ? a.email : 'o grupo: ' + quem) + '?')) return;
+    toast('Enviando…');
+    apiFetch('/api/admin', { aluno_id: alvo, acao: 'avisar', assunto: assunto, mensagem: mensagem, para: quem })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ toast(d.erro); return; }
+        toast('Enviados: ' + d.enviados + ' de ' + d.destinatarios + (d.falhas ? ' · falhas: ' + d.falhas : ''));
+      })
+      .catch(function(){ toast('Não consegui enviar agora'); });
   }
 
   /* ---------- áudio gerado (podcast e música) ---------- */
@@ -4559,7 +4877,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   /* ---------- Feynman: explicar em voz alta de verdade ---------- */
   // O aluno fala o tempo que quiser; só para quando ele toca no microfone de
   // novo. A fala é transcrita e comparada com os pontos que o assunto exige.
-  var feynOn = false, FEY = { sr: null, texto: '', rec: null, chunks: [], mime: '', t0: 0 };
+  var feynOn = false, FEY = { sr: null, texto: '', rec: null, chunks: [], mime: '', t0: 0, relogio: null };
 
   // "as palavras que importam" de um ponto-chave: fora as de ligação
   var VAZIAS = ('de da do das dos a o as os e ou que em no na nos nas um uma uns umas ' +
@@ -4583,16 +4901,42 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   function feynEstado(ouvindo){
-    var m = $('mic');
-    if(m){ m.classList.toggle('rec', !!ouvindo); m.setAttribute('aria-label', ouvindo ? 'Parar e avaliar' : 'Gravar explicação'); }
+    var m = $('mic'), pn = $('feynPainel'), dica = $('micDica');
+    if(m){
+      m.classList.toggle('rec', !!ouvindo);
+      m.setAttribute('aria-label', ouvindo ? 'Terminei — avaliar minha explicação' : 'Começar a falar');
+    }
+    if(pn) pn.classList.toggle('on', !!ouvindo);
+    if(dica) dica.textContent = ouvindo
+      ? 'Estou ouvindo — toque no microfone ou no botão abaixo para terminar'
+      : 'Toque no microfone e explique em voz alta';
+
+    if(FEY.relogio){ clearInterval(FEY.relogio); FEY.relogio = null; }
+    if(ouvindo){
+      if($('feynTempo')) $('feynTempo').textContent = '0:00';
+      FEY.relogio = setInterval(function(){
+        var s = Math.round((Date.now() - FEY.t0) / 1000);
+        var el = $('feynTempo');
+        if(el) el.textContent = Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+      }, 1000);
+      if(pn) setTimeout(function(){ pn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120);
+    }
+  }
+
+  function feynAoVivo(txt){
+    var el = $('feynAoVivo');
+    if(!el) return;
+    if(!txt){ el.textContent = 'Pode falar. O que você disser aparece aqui.'; el.style.opacity = '.7'; return; }
+    el.textContent = txt; el.style.opacity = '1';
+    el.scrollTop = el.scrollHeight;
   }
 
   function feyn(){
     if(feynOn){ feynPararEAvaliar(); return; }
     var fb = $('feynFb');
-    fb.className = 'fb'; fb.innerHTML = '<b>Ouvindo…</b>Explique com suas palavras, sem pressa. Toque de novo no microfone quando terminar.';
+    fb.className = 'fb'; fb.innerHTML = '';
     FEY.texto = ''; FEY.t0 = Date.now();
-    feynOn = true; feynEstado(true);
+    feynOn = true; feynEstado(true); feynAoVivo('');
 
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(SR){
@@ -4604,8 +4948,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           var t = '';
           for(var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript + ' ';
           FEY.texto = t.trim();
-          var el = $('feynFb');
-          if(el && feynOn) el.innerHTML = '<b>Ouvindo…</b><span style="opacity:.75">' + esc(FEY.texto.slice(-160)) + '</span>';
+          if(feynOn) feynAoVivo(FEY.texto);
         };
         // o navegador encerra sozinho em cada pausa: religamos enquanto o aluno não parar
         r.onend = function(){
@@ -4651,7 +4994,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         if(!FEY.chunks.length){ feynAvaliar(''); return; }
         var blob = new Blob(FEY.chunks, { type: FEY.mime });
         if(blob.size > 3000000){ feynAvaliar(''); return; }
-        $('feynFb').innerHTML = '<b>Transcrevendo sua explicação…</b>';
+        $('feynFb').className = 'fb';
+        $('feynFb').innerHTML = '<b>Transcrevendo sua explicação…</b>Leva alguns segundos.';
         var fr = new FileReader();
         fr.onload = function(){
           apiFetch('/api/transcrever', { audio_base64: String(fr.result).split(',')[1], mime: FEY.mime })
@@ -4662,6 +5006,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         fr.readAsDataURL(blob);
       };
       rec.start(1000);
+      feynAoVivo('Gravando sua voz. A transcrição aparece quando você terminar — neste aparelho o navegador não transcreve enquanto você fala.');
     }).catch(function(){
       feynOn = false; feynEstado(false);
       $('feynFb').className = 'fb no';
