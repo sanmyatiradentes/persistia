@@ -681,6 +681,10 @@
   .lr-acoes .btn{margin:0; flex:1; min-width:112px; padding:11px 12px; font-size:.82rem}
   .lr-stop{background:var(--crit); color:#fff; flex:1.4 !important}
   .lr-dica{font-size:.72rem; color:var(--muted); margin:0; text-align:left; line-height:1.5}
+  .lr-ritmo{display:flex; align-items:center; gap:8px; font-size:.76rem; color:var(--muted)}
+  .lr-ritmo span{flex:none}
+  .lr-ritmo b{flex:1; text-align:center; color:var(--ink); font-size:.78rem}
+  .lr-ritmo .iconbtn{width:32px; height:32px; flex:none; font-size:1rem}
   /* o aluno vê a própria voz entrando: se a barra não mexe, o som não está indo */
   /* ---------- visão da gestora ---------- */
   #espiar{position:fixed; inset:0; z-index:96; background:var(--bg); display:none; flex-direction:column;
@@ -2614,6 +2618,12 @@
         <span class="lr-tempo" id="lrTempo">0:00</span>
       </div>
       <div class="lr-vu" aria-hidden="true" title="Som que está entrando pelo microfone"><i id="lrNivel"></i></div>
+      <div class="lr-ritmo">
+        <span>Ritmo do marcador</span>
+        <button class="iconbtn" onclick="mudarRitmo(-1)" aria-label="Mais devagar" title="Mais devagar">−</button>
+        <b id="lrRitmo">normal</b>
+        <button class="iconbtn" onclick="mudarRitmo(1)" aria-label="Mais rápido" title="Mais rápido">+</button>
+      </div>
       <div class="lr-acoes">
         <button class="btn ghost small" id="lrPause" onclick="tpPause()">⏸ Pausar</button>
         <button class="btn ghost small" onclick="tpRestart()">↺ Recomeçar</button>
@@ -2739,8 +2749,9 @@
              style="flex:1; min-width:180px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:9px 12px; font:500 .88rem 'Albert Sans',sans-serif">
       <button class="btn ghost small" onclick="admCarregar()">Atualizar</button>
     </div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; align-items:center">
       <button class="btn ghost small" style="margin:0" onclick="admTestarEmail()">✉ Testar o envio de e-mail</button>
+      <span class="muted" style="font-size:.7rem">versão publicada: <b id="admVersao">—</b></span>
     </div>
     <p class="muted" id="admEmailMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></p>
 
@@ -3288,6 +3299,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(scr === 'admin' && typeof admCarregar === 'function') admCarregar();
     if(scr === 'admin' && typeof admSgCarregar === 'function') admSgCarregar();
     if(scr === 'metodo' && typeof sgCarregar === 'function') sgCarregar();
+    if(scr === 'admin' && typeof admVersaoMostrar === 'function') admVersaoMostrar();
   }
 
   window.addEventListener('popstate', function(ev){
@@ -3820,6 +3832,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   // Confere, com um clique, se o Resend está mesmo ligado — e diz a verdade
   // sobre a limitação do remetente de teste.
+  function admVersaoMostrar(){
+    var el = $('admVersao');
+    if(el) el.textContent = VERSAO;
+  }
+
   function admTestarEmail(){
     var msg = $('admEmailMsg');
     msg.textContent = 'Enviando um e-mail de teste para você…';
@@ -6453,29 +6470,52 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   // reconhecimento entrega texto, ele corrige a posição para a palavra certa.
   // Antes o marcador dependia só da fala e congelava a cada queda do
   // reconhecimento — que no Android cai a cada poucos segundos.
+  /* ---------- ritmo do marcador ----------
+     Antes o passo era calculado a partir da posição atual. Só que a fala também
+     empurra a posição, então cada correção deixava a média mais rápida, que
+     empurrava mais — o marcador ia acelerando sozinho até desgarrar da leitura.
+     Agora o ritmo é FIXO e escolhido pela pessoa. A fala corrige a posição; ela
+     nunca mexe na velocidade. */
+  var RITMOS = [
+    { ms: 800, nome: 'bem devagar', ppm: 75 },
+    { ms: 660, nome: 'devagar',     ppm: 91 },
+    { ms: 545, nome: 'normal',      ppm: 110 },
+    { ms: 460, nome: 'ligeiro',     ppm: 130 },
+    { ms: 390, nome: 'rápido',      ppm: 154 }
+  ];
+  var RITMO_I = 2;                       // "normal" — leitura em voz alta de estudo
+  try {
+    // sem valor salvo, localStorage devolve null e Number(null) é 0 — o que
+    // punha todo mundo no ritmo mais lento sem ter escolhido
+    var bruto = localStorage.getItem('persisteia_ritmo_marcador');
+    if(bruto !== null && bruto !== ''){
+      var salvo = Number(bruto);
+      if(Number.isFinite(salvo) && salvo >= 0 && salvo < RITMOS.length) RITMO_I = salvo;
+    }
+  } catch(e){}
+
+  function ritmoAtual(){ return RITMOS[RITMO_I]; }
+
+  function mostrarRitmo(){
+    var el = $('lrRitmo');
+    if(el) el.textContent = ritmoAtual().nome + ' · ' + ritmoAtual().ppm + ' palavras/min';
+  }
+
+  function mudarRitmo(passo){
+    RITMO_I = Math.max(0, Math.min(RITMOS.length - 1, RITMO_I + passo));
+    try { localStorage.setItem('persisteia_ritmo_marcador', RITMO_I); } catch(e){}
+    mostrarRitmo();
+    if(tpTimer){ clearInterval(tpTimer); tpTimer = null; marcadorPorTempo(); }
+  }
+
   function marcadorPorTempo(){
     if(tpTimer) return;
-    var seg = Math.max(1, (Date.now() - RECT0) / 1000);
-    var ritmo = (tpIdx > 8) ? (seg * 1000 / tpIdx) : 460;   // ms por palavra
-    ritmo = Math.max(330, Math.min(900, ritmo));
+    mostrarRitmo();
     tpTimer = setInterval(function(){
       if(tpPaused) return;
       tpIdx++; marcarAtual();
       if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false);
-    }, ritmo);
-    RITMO_ATUAL = ritmo;
-  }
-
-  // De tempos em tempos, ajusta o passo à velocidade real da leitura.
-  var RITMO_ATUAL = 0;
-  function reajustarRitmo(){
-    if(!tpTimer || tpIdx < 12) return;
-    var seg = Math.max(1, (Date.now() - RECT0) / 1000);
-    var novo = Math.max(330, Math.min(900, seg * 1000 / tpIdx));
-    if(Math.abs(novo - RITMO_ATUAL) < 60) return;   // só mexe em mudança real
-    clearInterval(tpTimer); tpTimer = null;
-    RITMO_ATUAL = 0;
-    marcadorPorTempo();
+    }, ritmoAtual().ms);
   }
 
   function iniciarGravacao(){
@@ -6524,7 +6564,6 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           if($('lrDica')) $('lrDica').textContent = 'Perdi o fio da sua voz, mas continuo gravando: o marcador passou a andar no ritmo médio de leitura. Toque em "Parar e salvar" quando terminar.';
         }
         marcadorPorTempo();
-        reajustarRitmo();
       }, 2000);
 
       // a base de tempo começa junto: nunca fica sem marcador
@@ -7446,6 +7485,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if($('mapaBox')) $('mapaBox').innerHTML = '<p class="muted" style="font-size:.85rem">Desenhando o mapa mental do assunto…</p>';
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
+  // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
+  var VERSAO = '02/09/2026 23:46';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
