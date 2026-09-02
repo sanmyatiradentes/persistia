@@ -266,6 +266,34 @@
   @media(prefers-reduced-motion:reduce){.mic.rec{animation:none}}
   .mic-dica{text-align:center; font-size:.76rem; color:var(--muted); margin:-6px 0 0}
 
+  /* nota da explicação */
+  .fy-nota{display:flex; align-items:center; gap:14px; text-align:left}
+  .fy-num{flex:none; width:66px; height:66px; border-radius:50%; display:flex; align-items:baseline;
+          justify-content:center; gap:1px; background:var(--card);
+          border:3px solid var(--nc,var(--accent))}
+  .fy-num b{font-family:"Bricolage Grotesque",sans-serif; font-size:1.5rem; line-height:66px;
+            color:var(--nc,var(--accent)); font-variant-numeric:tabular-nums}
+  .fy-num span{font-size:.62rem; color:var(--muted); line-height:66px}
+  .fy-tx{flex:1; min-width:0}
+  .fy-tx b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.05rem}
+  .fy-tx span{display:block; font-size:.76rem; color:var(--muted); margin-top:3px}
+  .fy-barra{height:7px; border-radius:99px; background:var(--line); overflow:hidden; margin:12px 0 10px}
+  .fy-barra i{display:block; height:100%; border-radius:99px; transition:width .5s ease}
+  .fy-msg{font-size:.84rem; line-height:1.6; text-align:left; margin:0 0 4px}
+  .fy-lista{text-align:left; margin-top:12px; padding:11px 13px; border-radius:12px; background:var(--card)}
+  .fy-lista b{display:block; font-size:.68rem; font-weight:800; letter-spacing:.08em;
+              text-transform:uppercase; margin-bottom:6px}
+  .fy-lista.ok b{color:var(--good)}
+  .fy-lista.falta b{color:var(--warm)}
+  .fy-lista ul{list-style:none; display:grid; gap:5px}
+  .fy-lista li{font-size:.84rem; line-height:1.5; padding-left:16px; position:relative}
+  .fy-lista.ok li:before{content:"✓"; position:absolute; left:0; color:var(--good); font-weight:800}
+  .fy-lista.falta li:before{content:"›"; position:absolute; left:0; color:var(--warm); font-weight:800}
+  .fy-lista span{display:block; font-size:.72rem; color:var(--muted); margin-top:8px; font-style:italic}
+  .fy-det{text-align:left; margin-top:12px}
+  .fy-det summary{cursor:pointer; font-size:.78rem; color:var(--muted)}
+  .fy-det p{font-size:.82rem; line-height:1.6; margin-top:8px}
+
   /* painel de gravação: não dá para confundir se está ligado ou não */
   .gravando{display:none; margin-top:14px; background:var(--card2);
             border:1.5px solid var(--crit); border-radius:16px; padding:14px 15px}
@@ -1908,7 +1936,6 @@
           <p style="font-size:.88rem" id="lerIntro">O essencial do assunto de hoje:</p>
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
             <button class="btn small" style="margin:0" onclick="openLeitor()">Abrir a teoria completa no Leitor</button>
-            <button class="btn ghost small" style="margin:0" onclick="refazerConteudo()" title="Refaz a teoria, as questões e o áudio deste assunto">↻ Gerar de novo</button>
           </div>
           <p class="muted" style="font-size:.72rem; margin-top:6px">Leitura silenciosa ou em voz alta com teleprompter — a teoria vem antes da prática.</p>
         </div></div>
@@ -2191,6 +2218,16 @@
         </button>
 
         <div id="slotConcluir"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2 style="font-size:.95rem">Algo neste assunto saiu errado?</h2>
+        <p class="muted" style="font-size:.78rem; margin:6px 0 10px">
+          Ao entrar no dia, o sistema escreve de uma vez o pacote inteiro deste assunto: teoria, lei seca,
+          explicação simples, mnemônico, podcast, música, mapa, Cinema Mental, questões e flashcards.
+          Refazer reescreve <b>tudo isso</b> — não só a teoria. Seu progresso e suas marcações no texto continuam.
+        </p>
+        <button class="btn ghost small" style="margin:0" onclick="refazerConteudo()">↻ Gerar este assunto de novo</button>
       </div>
 
       <p class="eyebrow" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
@@ -4773,7 +4810,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var lista = (cenas || []).filter(function(c){ return c && c.rotulos && c.rotulos.length; });
     if(!lista.length){
       box.innerHTML = '<p class="muted" style="font-size:.85rem">Este assunto foi gerado antes do Cinema Mental existir. ' +
-        'Toque em <b>↻ Gerar de novo</b> no card Ler para criar as cenas.</p>';
+        'Toque em <b>↻ Gerar este assunto de novo</b>, no fim da tela Hoje, para criar as cenas.</p>';
       return;
     }
     box.innerHTML = lista.map(function(c){ return '<figure class="cena">' + svgCena(c) + '</figure>'; }).join('');
@@ -4808,7 +4845,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var t = String(txt || '').trim();
     if(!t){
       box.innerHTML = '<h3>Explicando como se você tivesse 12 anos</h3>' +
-        '<p class="muted">Este assunto foi gerado antes desta explicação existir. Toque em <b>↻ Gerar de novo</b> no card Ler para criá-la.</p>';
+        '<p class="muted">Este assunto foi gerado antes desta explicação existir. Toque em <b>↻ Gerar este assunto de novo</b>, no fim da tela Hoje, para criá-la.</p>';
       if($('sbSimples')) $('sbSimples').textContent = 'refaça o assunto';
       return;
     }
@@ -4907,15 +4944,27 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     return norm(t).replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
       .filter(function(w){ return w.length > 3 && VAZIAS.indexOf(w) < 0; });
   }
+  // O radical tem de abrir uma palavra falada, não aparecer no meio de outra:
+  // sem isso, "impessoalidade" contava como se o aluno tivesse dito "pessoal",
+  // e o sistema dava por explicado um ponto que ele não explicou.
+  function ditasEmLista(dito){
+    return String(dito).split(/\s+/).filter(Boolean);
+  }
+  function disseRaiz(palavras, raiz){
+    if(raiz.length < 4) return false;
+    for(var i = 0; i < palavras.length; i++){
+      if(palavras[i].indexOf(raiz) === 0) return true;   // aceita plural e flexão
+    }
+    return false;
+  }
   // Um ponto conta como coberto quando o aluno disse a maior parte dos termos
-  // que o definem — radical de 5 letras, para aceitar plural e flexão.
+  // que o definem — radical de 5 letras no começo da palavra.
   function pontoCoberto(ponto, dito){
     var alvo = relevantes(ponto);
     if(!alvo.length) return false;
-    var achou = 0;
+    var palavras = ditasEmLista(dito), achou = 0;
     for(var i = 0; i < alvo.length; i++){
-      var raiz = alvo[i].slice(0, Math.min(5, alvo[i].length));
-      if(dito.indexOf(raiz) >= 0) achou++;
+      if(disseRaiz(palavras, alvo[i].slice(0, Math.min(5, alvo[i].length)))) achou++;
     }
     return achou / alvo.length >= 0.5;
   }
@@ -5041,6 +5090,50 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     feynAvaliar(FEY.texto);
   }
 
+  // Nota de relevância: o quanto a explicação cobriu do que o assunto exige.
+  // Três parcelas, porque explicar bem não é só citar tópicos:
+  //   70 → pontos-chave que o assunto pede
+  //   20 → termos técnicos do próprio conteúdo que apareceram na fala
+  //   10 → densidade: explicação curta demais não sustenta o raciocínio
+  function notaFeynman(cobertos, esperados, dito, texto){
+    var nota = 0;
+
+    if(esperados > 0) nota += 70 * (cobertos / esperados);
+    else nota += 70 * Math.min(1, (texto.trim().split(/\s+/).length) / 90);
+
+    var termos = [];
+    if(CONT && CONT.palavras_chave && CONT.palavras_chave.length){
+      termos = CONT.palavras_chave.map(function(k){ return (k && (k.palavra || k.termo || k)) || ''; });
+    } else if(CONT && CONT.trecho_chave){
+      termos = String(CONT.trecho_chave).match(/\[\[(.+?)\]\]/g) || [];
+      termos = termos.map(function(t){ return t.replace(/[\[\]]/g, ''); });
+    }
+    termos = termos.map(function(t){ return norm(t).replace(/[^a-z0-9\s]/g,'').trim(); })
+                   .filter(function(t){ return t.length > 3; });
+    if(termos.length){
+      var palavras = ditasEmLista(dito), achados = 0;
+      termos.forEach(function(t){
+        if(disseRaiz(palavras, t.split(/\s+/)[0].slice(0, 5))) achados++;
+      });
+      nota += 20 * Math.min(1, achados / Math.min(termos.length, 6));
+    } else {
+      nota += 14;   // sem termos para conferir, não punimos o aluno
+    }
+
+    var pal = texto.trim().split(/\s+/).length;
+    nota += 10 * Math.min(1, pal / 80);
+
+    return Math.max(0, Math.min(100, Math.round(nota)));
+  }
+
+  function faixaDaNota(n){
+    if(n >= 88) return { rot: 'Domínio', cor: 'var(--good)', txt: 'Você explicaria isso para outra pessoa sem consultar nada. Esse é o ponto.' };
+    if(n >= 72) return { rot: 'Muito bom', cor: 'var(--accent)', txt: 'A estrutura está firme. Feche as lacunas abaixo e este assunto está resolvido.' };
+    if(n >= 55) return { rot: 'Bom, com lacunas', cor: 'var(--warm)', txt: 'Você entendeu o essencial, mas parte do conteúdo ainda não sai na hora de falar.' };
+    if(n >= 35) return { rot: 'Parcial', cor: 'var(--warm)', txt: 'Vale reler a teoria e tentar de novo hoje mesmo — explicar duas vezes fixa mais que reler cinco.' };
+    return { rot: 'Ainda frágil', cor: 'var(--crit)', txt: 'Sem problema: é exatamente para isso que serve este verbo. Releia e explique de novo.' };
+  }
+
   function feynAvaliar(texto){
     var fb = $('feynFb');
     var seg = FEY.t0 ? Math.max(1, Math.round((Date.now() - FEY.t0) / 1000)) : 0;
@@ -5060,21 +5153,34 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     pontos.forEach(function(p){ (pontoCoberto(p, dito) ? cobertos : faltaram).push(p); });
 
     var nPal = texto.trim().split(/\s+/).length;
+    var nota = notaFeynman(cobertos.length, pontos.length, dito, texto);
+    var faixa = faixaDaNota(nota);
     var medida = nPal + ' palavras' + (seg ? ' em ' + seg + 's' : '');
-    fb.className = faltaram.length ? 'fb' : 'fb ok';
-    var html = '<b>' + (pontos.length
-        ? cobertos.length + ' de ' + pontos.length + ' pontos-chave · ' + medida
-        : 'Explicação registrada · ' + medida) + '</b>';
+
+    // a caixa SEMPRE aparece: 'ok' quando foi bem, 'no' quando ficou frágil
+    fb.className = nota >= 55 ? 'fb ok' : 'fb no';
+
+    var html =
+      '<div class="fy-nota">' +
+        '<div class="fy-num" style="--nc:' + faixa.cor + '">' +
+          '<b>' + nota + '</b><span>/100</span>' +
+        '</div>' +
+        '<div class="fy-tx">' +
+          '<b style="color:' + faixa.cor + '">' + faixa.rot + '</b>' +
+          '<span>' + (pontos.length ? cobertos.length + ' de ' + pontos.length + ' pontos-chave · ' : '') + medida + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="fy-barra"><i style="width:' + nota + '%; background:' + faixa.cor + '"></i></div>' +
+      '<p class="fy-msg">' + faixa.txt + '</p>';
 
     if(cobertos.length){
-      html += '<div style="margin-top:6px">✓ Você explicou: ' +
-        cobertos.map(function(x){ return esc(x); }).join('; ') + '</div>';
+      html += '<div class="fy-lista ok"><b>Você explicou</b><ul>' +
+        cobertos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
     }
     if(faltaram.length){
-      html += '<div style="margin-top:8px"><b style="color:var(--warm)">Faltou dizer:</b> ' +
-        faltaram.map(function(x){ return esc(x); }).join('; ') +
-        '.<br><span style="opacity:.8">Virou flashcard para você revisar.</span></div>';
-      // o que ficou de fora entra na revisão espaçada
+      html += '<div class="fy-lista falta"><b>Faltou dizer</b><ul>' +
+        faltaram.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+        '<span>Isso virou flashcard para a sua revisão.</span></div>';
       faltaram.slice(0, 4).forEach(function(p){
         apiFetch('/api/flashcard', {
           frente: (fy && fy.pergunta) ? fy.pergunta : ('Explique: ' + (ASSUNTO || 'o assunto de hoje')),
@@ -5083,12 +5189,12 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         }).catch(function(){});
       });
     }
-    html += '<details style="margin-top:10px"><summary style="cursor:pointer; font-size:.78rem; opacity:.8">Ver o que eu ouvi</summary>' +
-            '<p style="font-size:.82rem; line-height:1.6; margin-top:6px">' + esc(texto) + '</p></details>';
+    html += '<details class="fy-det"><summary>Ver o que eu ouvi</summary><p>' + esc(texto) + '</p></details>' +
+            '<button class="btn ghost small" style="margin-top:12px" onclick="feyn()">Explicar de novo</button>';
     fb.innerHTML = html;
 
     evento('feynman', 'falar', {
-      pergunta: fy ? fy.pergunta : null, segundos: seg, palavras: nPal,
+      pergunta: fy ? fy.pergunta : null, segundos: seg, palavras: nPal, nota: nota,
       cobertos: cobertos.length, esperados: pontos.length,
       transcricao: String(texto).slice(0, 800)
     }, 'concluido');
@@ -7118,7 +7224,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(c.incompleto){
       corpo += '<div class="lei-nota" style="background:var(--warm-soft); color:var(--warm); border-radius:12px; ' +
         'padding:10px 13px; margin-bottom:16px; font-style:normal; font-weight:600">' +
-        'Este texto veio incompleto do gerador. Toque em “Gerar de novo” na barra de baixo para refazê-lo.</div>';
+        'Este texto veio incompleto do gerador. Toque em “Gerar este assunto de novo”, no fim da tela Hoje, para refazê-lo.</div>';
     }
     corpo += paras.map(function(pp){ return '<p>' + md(pp) + '</p>'; }).join('');
 
