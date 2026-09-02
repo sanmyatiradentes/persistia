@@ -6414,6 +6414,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   // Marcador no ritmo da própria aluna: usa a velocidade medida até aqui e,
   // sem medida, um passo calmo de leitura em voz alta (cerca de 130 palavras/min).
+  // Base contínua: o marcador anda sempre no ritmo medido. Quando o
+  // reconhecimento entrega texto, ele corrige a posição para a palavra certa.
+  // Antes o marcador dependia só da fala e congelava a cada queda do
+  // reconhecimento — que no Android cai a cada poucos segundos.
   function marcadorPorTempo(){
     if(tpTimer) return;
     var seg = Math.max(1, (Date.now() - RECT0) / 1000);
@@ -6424,6 +6428,19 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       tpIdx++; marcarAtual();
       if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false);
     }, ritmo);
+    RITMO_ATUAL = ritmo;
+  }
+
+  // De tempos em tempos, ajusta o passo à velocidade real da leitura.
+  var RITMO_ATUAL = 0;
+  function reajustarRitmo(){
+    if(!tpTimer || tpIdx < 12) return;
+    var seg = Math.max(1, (Date.now() - RECT0) / 1000);
+    var novo = Math.max(330, Math.min(900, seg * 1000 / tpIdx));
+    if(Math.abs(novo - RITMO_ATUAL) < 60) return;   // só mexe em mudança real
+    clearInterval(tpTimer); tpTimer = null;
+    RITMO_ATUAL = 0;
+    marcadorPorTempo();
   }
 
   function iniciarGravacao(){
@@ -6472,7 +6489,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           if($('lrDica')) $('lrDica').textContent = 'Perdi o fio da sua voz, mas continuo gravando: o marcador passou a andar no ritmo médio de leitura. Toque em "Parar e salvar" quando terminar.';
         }
         marcadorPorTempo();
+        reajustarRitmo();
       }, 2000);
+
+      // a base de tempo começa junto: nunca fica sem marcador
+      marcadorPorTempo();
 
       if(SR){
         RECON = new SR();
@@ -6482,8 +6503,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript + ' '; }
           TRANSCRICAO = txt.trim();
           RECON.ultimo = Date.now();
-          // a fala voltou: ela reassume o marcador, para não correr na frente
-          if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
+          // a fala corrige a posição; a base de tempo continua rodando por baixo
           if(!tpPaused) avancarComFala(TRANSCRICAO);
         };
         // O reconhecimento do navegador para sozinho em silêncio, em erro de rede
@@ -6568,14 +6588,31 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(RECCHUNKS.length){
       var titulo = ($('leitorTitle') || {}).textContent || 'Leitura';
       var blob = new Blob(RECCHUNKS, { type: REC_MIME });
-      vozSalvar({ id: 'g' + Date.now(), titulo: titulo, quando: Date.now(), dur: mm + ':' + ss, ppm: ppm, mime: REC_MIME, blob: blob })
-        .then(function(ok){
-          vozCarregar();
-          if(!ok){
-            if(url) minhaVozAdd(titulo, url, mm + ':' + ss, ppm);
-            toast('Gravação disponível nesta sessão — seu navegador não guardou para depois');
-          }
-        });
+      var idg = 'g' + Date.now();
+      // guarda o áudio em memória desta sessão: se o banco do navegador falhar,
+      // a faixa continua tocando até a página ser fechada
+      VOZ_SESSAO[idg] = { url: url, titulo: titulo, dur: mm + ':' + ss, ppm: ppm };
+
+      // Vários navegadores de celular guardam mal um Blob dentro do banco local:
+      // o registro fica lá, mas volta vazio — e a faixa toca muda. Guardamos os
+      // bytes crus (ArrayBuffer), que todos suportam, e conferimos depois.
+      var comoBytes = blob.arrayBuffer ? blob.arrayBuffer()
+        : new Promise(function(ok){ var fr = new FileReader(); fr.onload = function(){ ok(fr.result); }; fr.readAsArrayBuffer(blob); });
+
+      comoBytes.then(function(bytes){
+        return vozSalvar({ id: idg, titulo: titulo, quando: Date.now(), dur: mm + ':' + ss,
+                           ppm: ppm, mime: REC_MIME, bytes: bytes, tamanho: blob.size })
+          .then(function(ok){ return ok ? vozConferir(idg, blob.size) : false; });
+      }).then(function(guardou){
+        vozCarregar();
+        if(!guardou){
+          minhaVozAdd(titulo, url, mm + ':' + ss, ppm);
+          toast('Gravação disponível só nesta sessão — seu navegador não guardou para depois');
+        }
+      }).catch(function(){
+        vozCarregar();
+        minhaVozAdd(titulo, url, mm + ':' + ss, ppm);
+      });
     }
     evento('voz_alta', 'ler', { segundos: seg, ppm: ppm, transcricao: TRANSCRICAO.slice(0, 800) }, 'concluido');
     toast('Leitura registrada · ' + (ppm ? ppm + ' ppm' : mm + ':' + ss));
@@ -6610,6 +6647,27 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       req.onerror = function(){ falha(); };
     });
   }
+  // gravações desta sessão, para nunca sumir da tela por falha do banco local
+  var VOZ_SESSAO = {};
+
+  // Lê de volta o que acabou de ser gravado e confere se os bytes estão lá.
+  // Sem isso, o registro parecia salvo e a faixa tocava muda.
+  function vozConferir(id, tamanhoEsperado){
+    return vozDb().then(function(db){
+      return new Promise(function(ok){
+        var req = db.transaction('gravacoes').objectStore('gravacoes').get(id);
+        req.onsuccess = function(){
+          var r = req.result;
+          if(!r) return ok(false);
+          var n = r.bytes ? (r.bytes.byteLength || r.bytes.size || 0)
+                          : (r.blob ? (r.blob.size || 0) : 0);
+          ok(n > 0 && (!tamanhoEsperado || n >= Math.min(1000, tamanhoEsperado)));
+        };
+        req.onerror = function(){ ok(false); };
+      });
+    }).catch(function(){ return false; });
+  }
+
   function vozSalvar(reg){
     return vozDb().then(function(db){
       return new Promise(function(ok){
@@ -6655,14 +6713,35 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       }
       pai.innerHTML = '';
       regs.slice(0, 30).forEach(function(r){
-        var blob = r.blob instanceof Blob ? r.blob : new Blob([r.blob], { type: r.mime || 'audio/webm' });
-        var url = URL.createObjectURL(blob);
+        var mime = r.mime || 'audio/webm';
+        var fonte = r.bytes || r.blob;      // 'bytes' é o formato novo; 'blob', o antigo
+        var bytesN = fonte ? (fonte.byteLength || fonte.size || 0) : 0;
+        var url;
+        if(bytesN > 0){
+          url = URL.createObjectURL(fonte instanceof Blob ? fonte : new Blob([fonte], { type: mime }));
+        } else if(VOZ_SESSAO[r.id]){
+          url = VOZ_SESSAO[r.id].url;       // banco vazio, mas a sessão ainda tem o áudio
+        }
+        if(!url){
+          var vazio = document.createElement('div');
+          vazio.className = 'mv-row';
+          vazio.innerHTML = '<span class="mi" style="flex:1"><b>' + esc(r.titulo) + '</b>' +
+            '<small class="num" style="color:var(--warm)">' + vozQuando(r.quando) +
+            ' · o áudio desta faixa não ficou guardado neste aparelho</small></span>';
+          var bx = document.createElement('button');
+          bx.className = 'iconbtn'; bx.style.cssText = 'width:30px;height:30px;font-size:.8rem'; bx.textContent = '✕';
+          bx.onclick = function(){ vozApagar(r.id).then(vozCarregar); };
+          vazio.appendChild(bx);
+          pai.appendChild(vazio);
+          return;
+        }
         var div = document.createElement('div');
         div.className = 'mv-row';
         div.style.flexWrap = 'wrap';
         div.innerHTML =
           '<span class="mi" style="flex:1; min-width:160px"><b>' + esc(r.titulo) + '</b><small class="num">' +
-            vozQuando(r.quando) + ' · ' + r.dur + (r.ppm ? ' · ' + r.ppm + ' ppm' : '') + '</small></span>' +
+            vozQuando(r.quando) + ' · ' + r.dur + (r.ppm ? ' · ' + r.ppm + ' ppm' : '') +
+            (bytesN ? ' · ' + Math.max(1, Math.round(bytesN / 1024)) + ' KB' : '') + '</small></span>' +
           '<a class="iconbtn" style="width:30px;height:30px;font-size:.8rem;text-decoration:none" download="' +
             esc(r.titulo).replace(/[^\w ]/g,'').slice(0,40) + '.webm" href="' + url + '" title="Baixar" aria-label="Baixar gravação">⭳</a>' +
           '<button class="iconbtn" style="width:30px;height:30px;font-size:.8rem" title="Apagar" aria-label="Apagar gravação">✕</button>' +
