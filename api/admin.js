@@ -161,6 +161,67 @@ module.exports = async (req, res) => {
       return res.status(400).json({ erro: 'Ação não reconhecida' });
     }
 
+    const q = new URL(req.url, 'http://x').searchParams;
+
+    // ----- ver o que o aluno vê: o material gerado para ele -----
+    // Só o conteúdo de estudo. Anotações no texto, gravações de voz e mensagens
+    // continuam sendo do aluno: nada disso passa por aqui.
+    if (q.get('aluno')) {
+      const alunoId = q.get('aluno');
+      const dono = await db.execute({ sql: 'SELECT id, nome, email FROM alunos WHERE id = ?', args: [alunoId] });
+      if (!dono.rows.length) return res.status(404).json({ erro: 'Aluno não encontrado' });
+
+      const ed = await db.execute({
+        sql: 'SELECT id, titulo, banca, data_prova FROM editais WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 1',
+        args: [alunoId]
+      });
+      if (!ed.rows.length) return res.status(200).json({ aluno: dono.rows[0], edital: null, itens: [] });
+
+      const itens = await db.execute({
+        sql: `SELECT c.id AS cron_id, c.data, c.status, c.parte, c.partes, c.horas,
+                     t.id AS topico_id, t.nome AS topico, t.ordem AS ordem_topico,
+                     d.nome AS disciplina, d.ordem AS ordem_disc,
+                     (SELECT COUNT(*) FROM conteudos k
+                       WHERE k.topico_id = t.id OR k.topico_id LIKE t.id || ':%') AS pacotes
+              FROM cronograma c
+              JOIN topicos t ON t.id = c.topico_id
+              JOIN disciplinas d ON d.id = t.disciplina_id
+              WHERE c.aluno_id = ?
+              ORDER BY d.ordem, t.ordem, c.parte`,
+        args: [alunoId]
+      });
+
+      return res.status(200).json({
+        aluno: dono.rows[0],
+        edital: ed.rows[0],
+        itens: itens.rows.map(r => ({
+          cron_id: r.cron_id, data: r.data, status: r.status,
+          parte: Number(r.parte) || 1, partes: Number(r.partes) || 1, horas: r.horas,
+          topico_id: r.topico_id, topico: r.topico, disciplina: r.disciplina,
+          gerado: Number(r.pacotes) > 0
+        }))
+      });
+    }
+
+    // ----- o pacote gerado de um tópico, como o aluno recebeu -----
+    if (q.get('conteudo')) {
+      const topicoId = q.get('conteudo');
+      // a chave do cache é a mesma que o gerador usa: "topico:2/3" quando o
+      // assunto foi dividido em partes
+      const parte = Math.max(1, Number(q.get('parte')) || 1);
+      const partes = Math.max(1, Number(q.get('partes')) || 1);
+      const chave = partes > 1 ? topicoId + ':' + parte + '/' + partes : topicoId;
+      const r = await db.execute({
+        sql: 'SELECT json, criado_em FROM conteudos WHERE topico_id = ?', args: [chave]
+      });
+      if (!r.rows.length) {
+        return res.status(404).json({ erro: 'Este assunto ainda não foi gerado — o material nasce quando o aluno abre o dia.' });
+      }
+      let pacote = null;
+      try { pacote = JSON.parse(r.rows[0].json); } catch (_) {}
+      return res.status(200).json({ pacote, criado_em: r.rows[0].criado_em });
+    }
+
     const alunos = await db.execute(`
       SELECT a.id, a.nome, a.email, a.criado_em,
              s.estado, s.fim_teste, s.cortesia_ate, s.proxima_cobranca,

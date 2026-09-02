@@ -681,6 +681,41 @@
   .lr-acoes .btn{margin:0; flex:1; min-width:112px; padding:11px 12px; font-size:.82rem}
   .lr-stop{background:var(--crit); color:#fff; flex:1.4 !important}
   .lr-dica{font-size:.72rem; color:var(--muted); margin:0; text-align:left; line-height:1.5}
+  /* o aluno vê a própria voz entrando: se a barra não mexe, o som não está indo */
+  /* ---------- visão da gestora ---------- */
+  #espiar{position:fixed; inset:0; z-index:96; background:var(--bg); display:none; flex-direction:column;
+          max-width:720px; margin:0 auto}
+  #espiar.open{display:flex}
+  @media(min-width:520px){#espiar{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  .esp-top{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--card)}
+  .esp-top .ttl{flex:1; min-width:0}
+  .esp-top .ttl b{display:block; font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .esp-top .ttl small{display:block; font-size:.72rem; color:var(--muted)}
+  .esp-body{flex:1; overflow-y:auto; padding:14px 16px 40px}
+  .esp-disc{font-family:"Bricolage Grotesque",sans-serif; font-size:.86rem; font-weight:700;
+            margin:18px 0 8px; color:var(--tc,var(--accent)); display:flex; align-items:center; gap:8px}
+  .esp-disc:after{content:""; flex:1; height:1px; background:var(--line)}
+  .esp-item{display:flex; align-items:center; gap:10px; width:100%; text-align:left; cursor:pointer;
+            background:var(--card); border:1px solid var(--line); border-radius:13px; padding:11px 13px;
+            margin-bottom:7px; font:inherit; color:inherit}
+  .esp-item:hover{border-color:var(--accent)}
+  .esp-item .nm{flex:1; min-width:0; font-size:.87rem; line-height:1.4}
+  .esp-item .nm small{display:block; font-size:.7rem; color:var(--muted); margin-top:2px}
+  .esp-sit{flex:none; font-size:.6rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+           padding:3px 8px; border-radius:999px; white-space:nowrap}
+  .esp-sit.sim{background:var(--accent-soft); color:var(--accent)}
+  .esp-sit.nao{background:var(--card2); color:var(--muted); border:1px solid var(--line)}
+  .esp-sec{margin:22px 0 8px; font-size:.66rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+           color:var(--muted)}
+  .esp-cx{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px}
+  .esp-cx p{font-size:.9rem; line-height:1.72; margin-bottom:10px}
+  .esp-cx p:last-child{margin-bottom:0}
+  .esp-q{font-size:.88rem; line-height:1.6}
+  .esp-q b{color:var(--accent)}
+  .esp-meta{font-size:.72rem; color:var(--muted); margin-bottom:12px}
+
+  .lr-vu{height:6px; border-radius:99px; background:var(--line); overflow:hidden}
+  .lr-vu i{display:block; height:100%; width:0; border-radius:99px; background:var(--crit); transition:width .12s linear}
   /* ---------- baralho completo ---------- */
   #baralho{position:fixed; inset:0; z-index:95; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
   #baralho.open{display:flex}
@@ -2578,6 +2613,7 @@
         <b id="lrEstado">Gravando sua leitura</b>
         <span class="lr-tempo" id="lrTempo">0:00</span>
       </div>
+      <div class="lr-vu" aria-hidden="true" title="Som que está entrando pelo microfone"><i id="lrNivel"></i></div>
       <div class="lr-acoes">
         <button class="btn ghost small" id="lrPause" onclick="tpPause()">⏸ Pausar</button>
         <button class="btn ghost small" onclick="tpRestart()">↺ Recomeçar</button>
@@ -2585,6 +2621,16 @@
       </div>
       <p class="lr-dica" id="lrDica">O marcador segue a sua voz. Se ele se perder, continue lendo — eu acompanho pelo tempo.</p>
     </div>
+  </div>
+
+  <!-- ========== visão da gestora: o material como o aluno recebeu ========== -->
+  <div id="espiar">
+    <div class="esp-top">
+      <button class="iconbtn" onclick="fecharEspiar()" aria-label="Fechar">←</button>
+      <div class="ttl"><b id="espNome">—</b><small id="espEdital">—</small></div>
+      <button class="iconbtn" id="espVoltarLista" onclick="espVoltarLista()" style="display:none" aria-label="Voltar à lista de assuntos">☰</button>
+    </div>
+    <div class="esp-body" id="espBody"><p class="muted">Carregando…</p></div>
   </div>
 
   <div class="selpop" id="selPop" role="toolbar" aria-label="Marcar seleção">
@@ -3753,6 +3799,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           (a.situacao === 'bloqueado'
             ? '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'liberar\')">desbloquear</button>'
             : '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'bloquear\')">bloquear</button>') +
+          '<button class="btn ghost small" onclick="espiarAluno(\'' + a.id + '\')">ver o material dele</button>' +
           '<button class="btn ghost small" onclick="admEditar(\'' + a.id + '\')">editar dados</button>' +
           '<button class="btn ghost small" onclick="admNovaSenha(\'' + a.id + '\')">nova senha</button>' +
           '<button class="btn ghost small" onclick="admAvisar(\'' + a.id + '\')">avisar por e-mail</button>' +
@@ -3767,6 +3814,160 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   function admAchar(id){ return (ADM || []).filter(function(a){ return a.id === id; })[0] || null; }
+
+  /* ---------- ver o material do aluno (só leitura) ----------
+     Mostra o que a IA escreveu para aquele aluno, exatamente como ele recebeu.
+     Não abre anotações no texto, gravações de voz nem mensagens: aquilo é dele. */
+  var ESP = { alunoId: null, itens: [], edital: null, nome: '' };
+
+  function espiarAluno(alunoId){
+    var a = admAchar(alunoId);
+    ESP.alunoId = alunoId;
+    ESP.nome = (a && a.nome) || 'Aluno';
+    $('espNome').textContent = ESP.nome;
+    $('espEdital').textContent = 'carregando o plano…';
+    $('espBody').innerHTML = '<p class="muted">Carregando…</p>';
+    $('espVoltarLista').style.display = 'none';
+    $('espiar').classList.add('open');
+
+    apiFetch('/api/admin?aluno=' + encodeURIComponent(alunoId))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ $('espBody').innerHTML = '<p class="muted">' + esc(d.erro) + '</p>'; return; }
+        ESP.itens = d.itens || [];
+        ESP.edital = d.edital;
+        espListaAssuntos();
+      })
+      .catch(function(){ $('espBody').innerHTML = '<p class="muted">Sem conexão com o servidor.</p>'; });
+  }
+  function fecharEspiar(){ $('espiar').classList.remove('open'); }
+  function espVoltarLista(){ espListaAssuntos(); }
+
+  function espListaAssuntos(){
+    $('espVoltarLista').style.display = 'none';
+    var ed = ESP.edital;
+    $('espEdital').textContent = ed
+      ? (ed.titulo || 'Edital') + (ed.banca ? ' · ' + ed.banca : '') +
+        (ed.data_prova ? ' · prova em ' + fmtData(ed.data_prova) : '')
+      : 'sem edital enviado';
+
+    if(!ESP.itens.length){
+      $('espBody').innerHTML = '<p class="muted" style="font-size:.88rem">Este aluno ainda não enviou edital, ' +
+        'ou o cronograma ainda não foi montado. Não há material gerado para mostrar.</p>';
+      return;
+    }
+    var gerados = ESP.itens.filter(function(x){ return x.gerado; }).length;
+    var html = '<p class="esp-meta"><b>' + gerados + '</b> de <b>' + ESP.itens.length +
+      '</b> assuntos já foram escritos pela IA. O material nasce quando o aluno abre o dia — ' +
+      'os que ainda não foram abertos aparecem em cinza.</p>';
+
+    var disc = '';
+    ESP.itens.forEach(function(x){
+      if(x.disciplina !== disc){
+        disc = x.disciplina;
+        html += '<div class="esp-disc" style="--tc:' + corDaDisciplina(disc) + '">' + esc(disc) + '</div>';
+      }
+      var sufixo = (x.partes > 1) ? ' · parte ' + x.parte + ' de ' + x.partes : '';
+      html += '<button class="esp-item" onclick="espAbrirAssunto(\'' + x.topico_id + '\',' + x.parte + ',' + x.partes + ')">' +
+        '<span class="nm">' + esc(x.topico) + '<small>' +
+          (x.data ? fmtData(x.data) : 'sem data') + sufixo +
+          (x.status === 'concluido' ? ' · concluído pelo aluno' : '') +
+        '</small></span>' +
+        '<span class="esp-sit ' + (x.gerado ? 'sim' : 'nao') + '">' + (x.gerado ? 'gerado' : 'não aberto') + '</span>' +
+        '</button>';
+    });
+    $('espBody').innerHTML = html;
+    $('espBody').scrollTop = 0;
+  }
+
+  function espAbrirAssunto(topicoId, parte, partes){
+    $('espBody').innerHTML = '<p class="muted">Abrindo o material…</p>';
+    $('espVoltarLista').style.display = 'inline-flex';
+    apiFetch('/api/admin?conteudo=' + encodeURIComponent(topicoId) + '&parte=' + parte + '&partes=' + partes)
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if(x.s !== 200 || !x.d.pacote){
+          $('espBody').innerHTML = '<div class="esp-cx"><p class="muted">' +
+            esc((x.d && x.d.erro) || 'Material ainda não gerado.') + '</p></div>';
+          return;
+        }
+        espRenderPacote(x.d.pacote, x.d.criado_em);
+      })
+      .catch(function(){ $('espBody').innerHTML = '<p class="muted">Sem conexão com o servidor.</p>'; });
+  }
+
+  function espRenderPacote(c, quando){
+    var h = '';
+    h += '<h2 style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:1.2rem; line-height:1.25">' +
+         esc(c.topico || 'Assunto') + '</h2>';
+    h += '<p class="esp-meta">' + esc(c.disciplina || '') +
+         (c.subtitulo ? ' · ' + esc(c.subtitulo) : '') +
+         (Number(c.partes) > 1 ? ' · parte ' + c.parte + ' de ' + c.partes : '') +
+         (c.banca ? ' · banca ' + esc(c.banca) : '') +
+         (quando ? ' · escrito em ' + fmtData(String(quando).slice(0,10)) : '') +
+         (c.palavras_resumo ? ' · ' + c.palavras_resumo + ' palavras de teoria' : '') + '</p>';
+
+    if(c.incompleto){
+      h += '<div class="esp-cx" style="border-color:var(--warm); background:var(--warm-soft)">' +
+           '<p style="font-weight:600; margin:0">Este pacote foi marcado como incompleto na geração — ' +
+           'vale mandar o aluno tocar em “Gerar este assunto de novo”.</p></div>';
+    }
+
+    if(c.resumo){
+      h += '<div class="esp-sec">Teoria — o que o aluno lê</div><div class="esp-cx">';
+      h += String(c.resumo).split(/\n+/).filter(function(p){ return p.trim(); })
+             .map(function(p){ return '<p>' + md(p) + '</p>'; }).join('') + '</div>';
+    }
+    if(c.explicacao_simples){
+      h += '<div class="esp-sec">Entender antes de decorar</div><div class="esp-cx">' +
+           String(c.explicacao_simples).split(/\n+/).filter(function(p){ return p.trim(); })
+             .map(function(p){ return '<p>' + md(p) + '</p>'; }).join('') + '</div>';
+    }
+    if(c.dispositivos && c.dispositivos.length){
+      h += '<div class="esp-sec">Lei seca e conferência</div>';
+      c.dispositivos.forEach(function(x){
+        var selo = x.conferido ? '<span class="selo ok">conferido</span>'
+                 : x.alerta === 'nao_confere' ? '<span class="selo no">não confere</span>'
+                 : x.alerta === 'duvida' ? '<span class="selo duv">a conferir</span>' : '';
+        h += '<div class="esp-cx"><b style="font-size:.76rem; color:var(--violet)">' + esc(x.rotulo || '') + '</b> ' + selo +
+             '<p style="margin-top:8px">' + md(x.texto || '') + '</p>' +
+             (x.motivo ? '<p class="muted" style="font-size:.76rem">' + esc(x.motivo) + '</p>' : '') +
+             (x.fonte && x.fonte.url ? '<a class="fonte-link" href="' + esc(x.fonte.url) + '" target="_blank" rel="noopener">Ver na fonte oficial ↗</a>' : '') +
+             '</div>';
+      });
+    }
+    if(c.acronimo && c.acronimo.sigla){
+      h += '<div class="esp-sec">Macete</div><div class="esp-cx"><b>' + esc(c.acronimo.sigla) + '</b>' +
+           '<p style="margin-top:8px">' + (c.acronimo.itens || []).map(function(i){ return esc(i); }).join('<br>') + '</p></div>';
+    }
+    if(c.questoes && c.questoes.length){
+      h += '<div class="esp-sec">Questões Certo/Errado (' + c.questoes.length + ')</div>';
+      c.questoes.forEach(function(q, i){
+        h += '<div class="esp-cx"><p class="esp-q">' + (i+1) + '. ' + md(q.enunciado || '') + '</p>' +
+             '<p class="esp-q"><b>' + (q.gabarito ? 'CERTO' : 'ERRADO') + '</b> — ' + md(q.comentario || '') + '</p></div>';
+      });
+    }
+    if(c.questoes_me && c.questoes_me.length){
+      h += '<div class="esp-sec">Múltipla escolha (' + c.questoes_me.length + ')</div>';
+      c.questoes_me.forEach(function(q, i){
+        h += '<div class="esp-cx"><p class="esp-q">' + (i+1) + '. ' + md(q.enunciado || '') + '</p><ol style="padding-left:20px; font-size:.85rem; line-height:1.6">' +
+             (q.alternativas || []).map(function(alt, k){
+               return '<li' + (k === q.correta ? ' style="font-weight:700; color:var(--accent)"' : '') + '>' + esc(alt) + '</li>';
+             }).join('') + '</ol><p class="esp-q" style="margin-top:8px">' + md(q.comentario || '') + '</p></div>';
+      });
+    }
+    if(c.flashcards && c.flashcards.length){
+      h += '<div class="esp-sec">Flashcards (' + c.flashcards.length + ')</div><div class="esp-cx">' +
+           c.flashcards.map(function(f){ return '<p><b>' + esc(f.frente) + '</b><br>' + esc(f.verso) + '</p>'; }).join('') + '</div>';
+    }
+    if(c.podcast){
+      h += '<div class="esp-sec">Roteiro do podcast</div><div class="esp-cx">' +
+           String(c.podcast).split(/\n+/).filter(function(p){ return p.trim(); })
+             .map(function(p){ return '<p style="font-size:.85rem">' + esc(p) + '</p>'; }).join('') + '</div>';
+    }
+    $('espBody').innerHTML = h;
+    $('espBody').scrollTop = 0;
+  }
 
   // Corrigir nome e e-mail: e-mail errado no cadastro é o que mais tranca o
   // aluno fora, porque é por ele que chega o link de senha.
@@ -6134,6 +6335,97 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(lWords && lWords.length && tpIdx >= lWords.length){ pararGravacao(false); }
   }
 
+  /* ---------- medidor de voz ----------
+     O reconhecimento de fala e o gravador disputam o mesmo microfone: em vários
+     aparelhos Android o reconhecimento fica com ele e o gravador guarda silêncio.
+     O aluno só descobria no fim, ao dar play e não ouvir nada. Aqui a gente MEDE
+     o som que está entrando e age antes de a leitura inteira se perder. */
+  var VOZ = { ctx: null, an: null, dados: null, timer: null, ultimoSom: 0, pico: 0, mudoTratado: false, confiavel: false };
+
+  function pararMedidor(){
+    if(VOZ.timer){ clearInterval(VOZ.timer); VOZ.timer = null; }
+    if(VOZ.ctx){ try { VOZ.ctx.close(); } catch(e){} VOZ.ctx = null; }
+    VOZ.an = null; VOZ.dados = null;
+    var b = $('lrNivel'); if(b) b.style.width = '0%';
+  }
+
+  function medirVoz(stream){
+    pararMedidor();
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    try {
+      VOZ.ctx = new AC();
+      // o navegador cria o contexto suspenso: sem isto o medidor lê zero sempre
+      if(VOZ.ctx.state === 'suspended'){ try { VOZ.ctx.resume(); } catch(e){} }
+      var fonte = VOZ.ctx.createMediaStreamSource(stream);
+      VOZ.an = VOZ.ctx.createAnalyser();
+      VOZ.an.fftSize = 512;
+      fonte.connect(VOZ.an);
+      VOZ.dados = new Uint8Array(VOZ.an.frequencyBinCount);
+    } catch(e){ VOZ.ctx = null; VOZ.confiavel = false; return; }
+
+    VOZ.ultimoSom = Date.now(); VOZ.pico = 0; VOZ.mudoTratado = false; VOZ.confiavel = false;
+    VOZ.timer = setInterval(function(){
+      if(!VOZ.an || !REC || REC.state !== 'recording') return;
+      // Só acusamos silêncio se o medidor estiver mesmo funcionando. Um contexto
+      // que não roda leria zero e acusaria mudez em gravação perfeita — erro
+      // pior que o problema original.
+      if(VOZ.ctx && VOZ.ctx.state !== 'running'){
+        try { VOZ.ctx.resume(); } catch(e){}
+        VOZ.ultimoSom = Date.now();
+        return;
+      }
+      VOZ.confiavel = true;
+      // amplitude no tempo (o quanto a onda sai do repouso) mede volume de
+      // verdade; a média de frequências enxergava quase nada numa voz normal
+      VOZ.an.getByteTimeDomainData(VOZ.dados);
+      var pico = 0;
+      for(var i = 0; i < VOZ.dados.length; i++){
+        var d = Math.abs(VOZ.dados[i] - 128);
+        if(d > pico) pico = d;
+      }
+      var nivel = pico;                              // 0 (silêncio) a 127 (máximo)
+      if(nivel > VOZ.pico) VOZ.pico = nivel;
+      var barra = $('lrNivel');
+      if(barra) barra.style.width = Math.min(100, Math.round(nivel * 2.2)) + '%';
+      if(nivel > 4){ VOZ.ultimoSom = Date.now(); return; }
+      if(tpPaused){ VOZ.ultimoSom = Date.now(); return; }
+
+      var mudoHa = Date.now() - VOZ.ultimoSom;
+      // 5 s de silêncio absoluto com o reconhecimento ligado = ele está com o
+      // microfone. Desligamos o reconhecimento para o gravador voltar a ouvir.
+      if(mudoHa > 5000 && RECON && !VOZ.mudoTratado && VOZ.confiavel){
+        VOZ.mudoTratado = true;
+        try { RECON.onend = null; RECON.onerror = null; RECON.stop(); } catch(e){}
+        RECON = null;
+        if(RECWATCH){ clearInterval(RECWATCH); RECWATCH = null; }
+        VOZ.ultimoSom = Date.now();
+        if($('lrDica')) $('lrDica').textContent = 'Seu aparelho não deixa gravar e transcrever ao mesmo tempo. Desliguei a transcrição para garantir o áudio — continue lendo, o marcador segue pelo tempo.';
+        marcadorPorTempo();
+        return;
+      }
+      // continua mudo mesmo sem o reconhecimento: aí é o microfone mesmo
+      if(mudoHa > 12000 && VOZ.confiavel && $('lrDica') && $('lrDica').dataset.alerta !== '1'){
+        $('lrDica').dataset.alerta = '1';
+        $('lrDica').innerHTML = '<b style="color:var(--crit)">Não estou captando som nenhum.</b> Confira se o microfone está liberado para o site e se nada mais está usando o microfone. Pode parar e tentar de novo — assim você não perde a leitura inteira.';
+      }
+    }, 400);
+  }
+
+  // Marcador no ritmo da própria aluna: usa a velocidade medida até aqui e,
+  // sem medida, um passo calmo de leitura em voz alta (cerca de 130 palavras/min).
+  function marcadorPorTempo(){
+    if(tpTimer) return;
+    var seg = Math.max(1, (Date.now() - RECT0) / 1000);
+    var ritmo = (tpIdx > 8) ? (seg * 1000 / tpIdx) : 460;   // ms por palavra
+    ritmo = Math.max(330, Math.min(900, ritmo));
+    tpTimer = setInterval(function(){
+      if(tpPaused) return;
+      tpIdx++; marcarAtual();
+      if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false);
+    }, ritmo);
+  }
+
   function iniciarGravacao(){
     RECCHUNKS = []; RECT0 = Date.now();
     tpPaused = false; syncRec(); relogioGravacao(true);
@@ -6158,6 +6450,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         REC.onstop = function(){ stream.getTracks().forEach(function(t){ t.stop(); }); };
         // pedaços de 1 s: se algo der errado no fim, o que já foi falado não se perde
         REC.start(1000);
+        medirVoz(stream);   // mede o som que está realmente entrando
       } catch(e){ REC = null; }
 
       // Se o reconhecimento não devolver nada em alguns segundos (microfone mudo,
@@ -6178,9 +6471,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           avisou = true;
           if($('lrDica')) $('lrDica').textContent = 'Perdi o fio da sua voz, mas continuo gravando: o marcador passou a andar no ritmo médio de leitura. Toque em "Parar e salvar" quando terminar.';
         }
-        tpTimer = setInterval(function(){
-          if(!tpPaused){ tpIdx++; marcarAtual(); if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false); }
-        }, 380 / VEL);
+        marcadorPorTempo();
       }, 2000);
 
       if(SR){
@@ -6191,6 +6482,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript + ' '; }
           TRANSCRICAO = txt.trim();
           RECON.ultimo = Date.now();
+          // a fala voltou: ela reassume o marcador, para não correr na frente
+          if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
           if(!tpPaused) avancarComFala(TRANSCRICAO);
         };
         // O reconhecimento do navegador para sozinho em silêncio, em erro de rede
@@ -6211,8 +6504,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         try { RECON.start(); } catch(e){}
         toast('Pode ler em voz alta — eu acompanho e gravo');
       } else {
-        toast('Gravando. Seu navegador não transcreve em tempo real — use o Chrome para o teleprompter seguir sua voz');
-        tpTimer = setInterval(function(){ if(!tpPaused){ tpIdx++; marcarAtual(); if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false); } }, 380);
+        toast('Gravando. Seu navegador não transcreve em tempo real — o marcador anda pelo tempo');
+        marcadorPorTempo();
       }
     }).catch(function(){
       toast('Preciso da permissão do microfone para gravar sua leitura');
@@ -6222,6 +6515,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   function pararGravacao(silencioso){
     relogioGravacao(false);
+    var picoDaVoz = VOZ.pico, medidorConfiavel = !!VOZ.confiavel;
+    pararMedidor();
     if(TP_WATCH){ clearInterval(TP_WATCH); clearTimeout(TP_WATCH); TP_WATCH = null; }
     if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
     if(RECWATCH){ clearInterval(RECWATCH); RECWATCH = null; }
@@ -6237,7 +6532,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           toast('Não gravou nada — confira a permissão do microfone');
           return;
         }
-        finalizarLeitura();   // salva o que existe, mesmo parando no meio do texto
+        // pico de volume perto de zero = gravou silêncio; melhor dizer do que
+        // deixar a aluna descobrir dando play
+        finalizarLeitura(medidorConfiavel && picoDaVoz < 6);
       };
       try { r.stop(); } catch(e){ if(!silencioso) finalizarLeitura(); }
     } else if(!silencioso){
@@ -6250,7 +6547,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
   }
 
-  function finalizarLeitura(){
+  function finalizarLeitura(mudo){
     var seg = Math.max(1, Math.round((Date.now() - RECT0) / 1000));
     var palavras = PALAVRAS_OUVIDAS || tpIdx;
     var ppm = Math.round(palavras / (seg / 60));
@@ -6259,6 +6556,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
     $('lDone').classList.add('show');
     $('lDone').innerHTML =
+      (mudo ? '<div style="background:var(--warm-soft); color:var(--warm); border-radius:12px; padding:11px 13px; margin-bottom:12px; font-weight:600; text-align:left">' +
+              'Gravei, mas <b>não entrou som pelo microfone</b> — o áudio ficou mudo. Costuma ser permissão do microfone, ou outro aplicativo usando ele. ' +
+              'Libere o microfone para o site e grave de novo.</div>' : '') +
       '<b>Leitura em voz alta concluída · ' + mm + ':' + ss + ' gravados' + (ppm ? ' · fluência: ' + ppm + ' palavras/min' : '') + '</b><br>' +
       'Sua gravação ficou salva em <b>Minha Voz</b>, no fim da tela Hoje — dá para reouvir quando quiser.' +
       (url ? '<audio controls src="' + url + '" style="width:100%; margin-top:10px"></audio>' : '') +
