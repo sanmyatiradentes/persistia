@@ -663,6 +663,24 @@
     padding:7px 14px; border-radius:999px; cursor:pointer;
   }
   .lmode button.sel{background:var(--accent); color:var(--on-accent)}
+  /* nada de botão cortado fora da tela num celular estreito */
+  .l-bar{flex-wrap:wrap}
+
+  /* barra de gravação: estado e saída sempre visíveis */
+  .l-recbar{display:none; border-top:1px solid var(--line); background:var(--card); padding:11px 14px 13px;
+            flex-direction:column; gap:9px}
+  #leitor.tpmode .l-bar{display:none}
+  #leitor.tpmode .l-recbar{display:flex}
+  .lr-info{display:flex; align-items:center; gap:9px; font-size:.88rem}
+  .lr-info b{flex:1; text-align:left; font-weight:700}
+  .lr-luz{width:11px; height:11px; border-radius:50%; background:var(--crit); flex:none; animation:luzpisca 1s infinite}
+  .l-recbar.pausado .lr-luz{animation:none; opacity:.4}
+  .lr-tempo{font-variant-numeric:tabular-nums; font-weight:800; color:var(--crit)}
+  .l-recbar.pausado .lr-tempo{color:var(--muted)}
+  .lr-acoes{display:flex; gap:8px; flex-wrap:wrap}
+  .lr-acoes .btn{margin:0; flex:1; min-width:112px; padding:11px 12px; font-size:.82rem}
+  .lr-stop{background:var(--crit); color:#fff; flex:1.4 !important}
+  .lr-dica{font-size:.72rem; color:var(--muted); margin:0; text-align:left; line-height:1.5}
   /* ---------- baralho completo ---------- */
   #baralho{position:fixed; inset:0; z-index:95; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
   #baralho.open{display:flex}
@@ -2551,6 +2569,21 @@
         <button class="iconbtn tpc" onclick="tpRestart()" aria-label="Gravar novamente do início">↺</button>
       </span>
       <span class="l-meta" id="lHint">toque numa palavra para marcar</span>
+    </div>
+
+    <!-- durante a gravação a barra some e dá lugar a esta, com PARAR à vista -->
+    <div class="l-recbar" id="lRecBar">
+      <div class="lr-info">
+        <span class="lr-luz" aria-hidden="true"></span>
+        <b id="lrEstado">Gravando sua leitura</b>
+        <span class="lr-tempo" id="lrTempo">0:00</span>
+      </div>
+      <div class="lr-acoes">
+        <button class="btn ghost small" id="lrPause" onclick="tpPause()">⏸ Pausar</button>
+        <button class="btn ghost small" onclick="tpRestart()">↺ Recomeçar</button>
+        <button class="btn lr-stop" onclick="pararGravacao(false)">■ Parar e salvar</button>
+      </div>
+      <p class="lr-dica" id="lrDica">O marcador segue a sua voz. Se ele se perder, continue lendo — eu acompanho pelo tempo.</p>
     </div>
   </div>
 
@@ -6103,7 +6136,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   function iniciarGravacao(){
     RECCHUNKS = []; RECT0 = Date.now();
-    tpPaused = false; syncRec();
+    tpPaused = false; syncRec(); relogioGravacao(true);
+    if($('lrDica')) $('lrDica').textContent = 'O marcador segue a sua voz. Se ele se perder, continue lendo — eu acompanho pelo tempo.';
     $('lHint').textContent = 'lendo…';
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
@@ -6129,14 +6163,25 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       // Se o reconhecimento não devolver nada em alguns segundos (microfone mudo,
       // permissão parcial, navegador sem suporte real), o marcador passa a andar
       // sozinho para a leitura não ficar sem teleprompter.
+      // Vigia permanente: o reconhecimento do navegador cai sozinho no meio de
+      // uma leitura longa. Se o marcador ficar parado por alguns segundos, o
+      // tempo assume o acompanhamento — e a gravação NUNCA para por isso.
       if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
-      TP_WATCH = setTimeout(function(){
-        if(tpIdx > 0 || tpPaused) return;
-        toast('Não consegui ouvir sua voz — o marcador vai andar no ritmo médio de leitura');
+      var ultimoIdx = -1, paradoDesde = Date.now(), avisou = false;
+      if(TP_WATCH) clearInterval(TP_WATCH);
+      TP_WATCH = setInterval(function(){
+        if(!REC || REC.state === 'inactive'){ clearInterval(TP_WATCH); TP_WATCH = null; return; }
+        if(tpPaused || tpTimer){ paradoDesde = Date.now(); return; }
+        if(tpIdx !== ultimoIdx){ ultimoIdx = tpIdx; paradoDesde = Date.now(); return; }
+        if(Date.now() - paradoDesde < 7000) return;
+        if(!avisou){
+          avisou = true;
+          if($('lrDica')) $('lrDica').textContent = 'Perdi o fio da sua voz, mas continuo gravando: o marcador passou a andar no ritmo médio de leitura. Toque em "Parar e salvar" quando terminar.';
+        }
         tpTimer = setInterval(function(){
           if(!tpPaused){ tpIdx++; marcarAtual(); if(lWords && lWords.length && tpIdx >= lWords.length) pararGravacao(false); }
         }, 380 / VEL);
-      }, 7000);
+      }, 2000);
 
       if(SR){
         RECON = new SR();
@@ -6176,7 +6221,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   function pararGravacao(silencioso){
-    if(TP_WATCH){ clearTimeout(TP_WATCH); TP_WATCH = null; }
+    relogioGravacao(false);
+    if(TP_WATCH){ clearInterval(TP_WATCH); clearTimeout(TP_WATCH); TP_WATCH = null; }
     if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
     if(RECWATCH){ clearInterval(RECWATCH); RECWATCH = null; }
     if(RECON){ try { RECON.onend = null; RECON.onerror = null; RECON.stop(); } catch(e){} RECON = null; }
@@ -6185,8 +6231,13 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       var r = REC; REC = null;
       r.onstop = function(){
         try { r.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
-        if(silencioso || !RECCHUNKS.length) return;
-        finalizarLeitura();
+        if(silencioso) return;
+        if(!RECCHUNKS.length){
+          $('lHint').textContent = 'nada foi gravado';
+          toast('Não gravou nada — confira a permissão do microfone');
+          return;
+        }
+        finalizarLeitura();   // salva o que existe, mesmo parando no meio do texto
       };
       try { r.stop(); } catch(e){ if(!silencioso) finalizarLeitura(); }
     } else if(!silencioso){
@@ -6675,10 +6726,28 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   var tpPaused = false;
   function syncRec(){
     var rec = document.querySelector('#leitor .rec');
-    if(!rec) return;
-    rec.classList.toggle('paused', tpPaused);
-    $('recTxt').textContent = tpPaused ? 'PAUSADO' : 'REC';
+    if(rec){
+      rec.classList.toggle('paused', tpPaused);
+      $('recTxt').textContent = tpPaused ? 'PAUSADO' : 'REC';
+    }
     var b = $('btnPause'); if(b){ b.textContent = tpPaused ? '▶' : '⏸'; b.setAttribute('aria-label', tpPaused ? 'Retomar gravação' : 'Pausar gravação'); }
+    var barra = $('lRecBar');
+    if(barra) barra.classList.toggle('pausado', tpPaused);
+    if($('lrEstado')) $('lrEstado').textContent = tpPaused ? 'Gravação pausada' : 'Gravando sua leitura';
+    if($('lrPause')) $('lrPause').textContent = tpPaused ? '▶ Retomar' : '⏸ Pausar';
+  }
+
+  // relógio da gravação, para o aluno saber que ela está viva
+  var RELOGIO_REC = null;
+  function relogioGravacao(ligar){
+    if(RELOGIO_REC){ clearInterval(RELOGIO_REC); RELOGIO_REC = null; }
+    if(!ligar) return;
+    if($('lrTempo')) $('lrTempo').textContent = '0:00';
+    RELOGIO_REC = setInterval(function(){
+      if(tpPaused) return;
+      var sg = Math.round((Date.now() - RECT0) / 1000), el = $('lrTempo');
+      if(el) el.textContent = Math.floor(sg / 60) + ':' + ('0' + (sg % 60)).slice(-2);
+    }, 1000);
   }
   function tpPause(){
     if(tpPaused){
