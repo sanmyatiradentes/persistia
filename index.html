@@ -344,8 +344,17 @@
                   border-radius:16px; font:700 1.2rem "Albert Sans",sans-serif; cursor:pointer}
   .hoje-nav .seta:hover:not(:disabled){background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
   .hoje-nav .seta:disabled{opacity:.35; cursor:default}
-  .hn-c{flex:1; min-width:0; background:var(--card); border:1px solid var(--line); border-left:6px solid var(--accent);
+  /* a faixa do dia veste a cor da disciplina, num tom leve — a mesma cor que a
+     disciplina tem no cronograma e no painel de evolução */
+  .hn-c{flex:1; min-width:0; position:relative; overflow:hidden;
+        background:color-mix(in srgb, var(--tc,var(--accent)) 9%, var(--card));
+        border:1px solid color-mix(in srgb, var(--tc,var(--accent)) 30%, var(--line));
+        border-left:6px solid var(--tc,var(--accent));
         border-radius:16px; padding:15px 18px 16px; box-shadow:var(--shadow)}
+  /* halo discreto no canto, para a cor respirar sem pesar no texto */
+  .hn-c:after{content:""; position:absolute; right:-38px; top:-38px; width:118px; height:118px;
+              border-radius:50%; background:var(--tc,var(--accent)); opacity:.07; pointer-events:none}
+  .hn-c > *{position:relative; z-index:1}
   .hn-dia{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px}
   .hn-dia .d{font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
   .hn-dia .tag{font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
@@ -353,9 +362,19 @@
   .hn-dia .tag.atr{background:var(--warm-soft); color:var(--warm)}
   .hn-dia .tag.fut{background:var(--accent-soft); color:var(--accent)}
   .hn-c h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.42rem; line-height:1.2; letter-spacing:-.03em; color:var(--ink)}
-  .hn-c .sub{font-size:.8rem; color:var(--accent); font-weight:700; margin-top:5px; letter-spacing:.02em}
+  .hn-c .sub{font-size:.8rem; color:color-mix(in srgb, var(--tc,var(--accent)) 82%, var(--ink));
+             font-weight:700; margin-top:5px; letter-spacing:.02em}
   .hn-c .rot{display:block; font-size:.64rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
-             color:var(--muted); margin-bottom:2px}
+             color:color-mix(in srgb, var(--tc,var(--accent)) 60%, var(--muted)); margin-bottom:2px}
+  .hn-dia .tag{background:var(--tc,var(--accent))}
+  /* frase do dia: rodapé da faixa, discreta, muda a cada dia */
+  .hn-frase{margin-top:12px; padding-top:11px; font-size:.82rem; line-height:1.55; font-style:italic;
+            color:color-mix(in srgb, var(--tc,var(--accent)) 55%, var(--ink));
+            border-top:1px dashed color-mix(in srgb, var(--tc,var(--accent)) 32%, var(--line))}
+  .hn-frase:before{content:"\201C"; font-family:Georgia,serif; font-size:1.3em; line-height:0;
+                   vertical-align:-.22em; margin-right:2px; opacity:.6}
+  .hn-frase:after{content:"\201D"; font-family:Georgia,serif; font-size:1.3em; line-height:0;
+                  vertical-align:-.22em; margin-left:2px; opacity:.6}
   .hn-hoje{background:none; border:none; color:var(--accent); font:700 .74rem "Albert Sans",sans-serif;
            cursor:pointer; padding:0; margin-top:6px; text-decoration:underline}
   @media(min-width:900px){ .hn-c h3{font-size:1.72rem} }
@@ -1850,6 +1869,7 @@
         <h3 id="hdrAssunto">Princípios da Administração Pública</h3>
         <p class="sub" id="hdrAssuntoSub">—</p>
         <button class="hn-hoje" id="hnVoltarHoje" style="display:none" onclick="voltarParaHoje()">← voltar para o assunto de hoje</button>
+        <p class="hn-frase" id="hnFrase"></p>
       </div>
       <button class="seta" id="hnProx" onclick="mudarDiaEstudo(1)" aria-label="Próximo dia do cronograma" title="Próximo dia">›</button>
     </div>
@@ -6838,6 +6858,81 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
+
+  // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
+  // no cronograma, e vale igual em toda a interface: faixa do dia, cronograma,
+  // evolução. Assim o aluno associa cor a matéria sem precisar ler o rótulo.
+  var CORES_DISC = null;
+  function mapaDeCores(){
+    if(CORES_DISC) return CORES_DISC;
+    var itens = (typeof PLANO_ITENS !== 'undefined' && PLANO_ITENS && PLANO_ITENS.length)
+      ? PLANO_ITENS
+      : ((REAL && REAL.itens) || []);
+    if(!itens.length) return null;               // sem cronograma ainda: decide depois
+    var m = {}, k = 0;
+    itens.forEach(function(x){
+      if(x && x.disciplina && m[x.disciplina] === undefined){ m[x.disciplina] = PAL[k % PAL.length]; k++; }
+    });
+    CORES_DISC = m;
+    return m;
+  }
+  function corDaDisciplina(nome){
+    var m = mapaDeCores();
+    if(m && m[nome]) return m[nome];
+    // fallback estável: mesma disciplina, mesma cor, mesmo sem cronograma na mão
+    var soma = 0, t = String(nome || '');
+    for(var i = 0; i < t.length; i++) soma = (soma * 31 + t.charCodeAt(i)) % 100000;
+    return PAL[soma % PAL.length];
+  }
+
+  /* ---------- frase do dia ---------- */
+  // Uma por dia, igual da manhã à noite e diferente amanhã. Falam de método e de
+  // persistência — nada de "pense positivo": o que sustenta o candidato é ver
+  // sentido no esforço que ele já está fazendo.
+  var FRASES = [
+    'Você não precisa de motivação hoje. Precisa do próximo assunto — e ele já está aqui.',
+    'Quem estuda todo dia não é mais disciplinado: é alguém que tornou a decisão menor.',
+    'A aprovação não acontece no dia da prova. Ela é montada nos dias em que ninguém viu.',
+    'Estudar cansado rende menos que estudar descansado — mas rende muito mais que não estudar.',
+    'O edital é grande. O dia de hoje não é. Faça o dia.',
+    'Entender vem antes de decorar. Decorar sem entender é construir na areia.',
+    'Errar na questão custa segundos. Errar na prova custa um ano.',
+    'A revisão de hoje é o presente que você manda para a sua memória de daqui a um mês.',
+    'Ninguém lembra do dia em que quase desistiu — só de ter continuado.',
+    'Explicar em voz alta é o teste mais honesto: a lacuna aparece na hora.',
+    'Constância vence intensidade. Sempre venceu.',
+    'Você não está atrasado. Você está no dia em que está — e ele conta igual.',
+    'Concurso não premia quem estudou mais. Premia quem lembrou na hora certa.',
+    'Se hoje render pouco, que renda pouco. Zero é a única nota que não soma.',
+    'A banca repete. Quem estuda o padrão dela larga na frente.',
+    'Não se compara com quem começou antes. Compare-se com quem você era no mês passado.',
+    'Cansaço passa. Arrependimento de não ter tentado, não.',
+    'Cada assunto concluído é um pedaço do edital que deixou de te assustar.',
+    'Ler bonito não é estudar. Estudar é conseguir explicar depois.',
+    'O que você não revisar, você vai reaprender. Revisar é mais barato.',
+    'Prova é dia de reconhecer, não de descobrir. Reconheça hoje.',
+    'Um dia perdido não derruba um plano. Uma semana de desculpas, sim.',
+    'A parte difícil do assunto é onde a banca mora. Não pule.',
+    'Você já sabe mais do que sabia ontem — mesmo que não pareça.',
+    'Método é o que faz o esforço virar resultado em vez de virar cansaço.',
+    'Sublinhar dá conforto. Responder questão dá aprovação.',
+    'Estudar dói menos que a espera de mais um ano.',
+    'Faça o assunto de hoje mesmo sem vontade. A vontade costuma chegar no meio.',
+    'Fixação não é talento: é reencontro espaçado com a mesma informação.',
+    'O concurseiro que passa não é o mais inteligente. É o que não parou.',
+    'Toda hora estudada hoje é uma hora a menos de insegurança na véspera.',
+    'Conhecimento que você não consegue recuperar é conhecimento que você não tem.',
+    'Não é sobre estudar 12 horas. É sobre estar aqui de novo amanhã.',
+    'Assunto pequeno também derruba candidato. Feche este direito.',
+    'Você está construindo uma vida inteira dentro de um dia comum.',
+    'Persistir é uma escolha diária — e você já fez a de hoje ao abrir isto aqui.'
+  ];
+  function fraseDoDia(iso){
+    var base = String(iso || new Date().toISOString().slice(0,10));
+    var soma = 0;
+    for(var i = 0; i < base.length; i++) soma = (soma * 33 + base.charCodeAt(i)) % 1000003;
+    return FRASES[soma % FRASES.length];
+  }
   function esc(x){ var d = document.createElement('span'); d.textContent = String(x == null ? '' : x); return d.innerHTML; }
   function fmtData(v){ var iso = isoData(v); return iso ? iso.split('-').reverse().join('/') : (v ? String(v) : ''); }
 
@@ -6923,6 +7018,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     ASSUNTO = it.topico + (Number(it.partes) > 1 ? ' (parte ' + it.parte + ')' : '') + ' — ' + it.disciplina;
     $('hdrAssunto').textContent = it.topico;
     $('hdrAssuntoSub').textContent = it.disciplina + parteTxt + (it.horas ? ' · ' + fmtHoras(it.horas) : '');
+
+    // a faixa veste a cor da disciplina do dia, e a frase muda com a data
+    var faixa = document.querySelector('.hn-c');
+    if(faixa) faixa.style.setProperty('--tc', corDaDisciplina(it.disciplina));
+    if($('hnFrase')) $('hnFrase').textContent = fraseDoDia(it.data);
 
     // barra do dia: data por extenso, situação e setas de navegação
     var hojeISO = new Date().toISOString().slice(0,10);
