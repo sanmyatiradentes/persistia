@@ -5,9 +5,10 @@
 // POST {aluno_id, acao:'resetar_teste', dias}
 // POST {aluno_id, acao:'editar', nome?, email?}
 // POST {aluno_id, acao:'nova_senha'}            → manda o link de nova senha
+// POST {aluno_id, acao:'senha_provisoria'}      → define uma senha na hora e devolve para repassar
 // POST {acao:'avisar', assunto, mensagem, para} → aviso por e-mail (todos ou um grupo)
 // POST {acao:'testar_email', para?}             → confere se o Resend está ligado
-const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, PRECO, TRIAL_DIAS } = require('./_lib');
+const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, hashSenha, PRECO, TRIAL_DIAS } = require('./_lib');
 const { enviarEmail, remetente, remetenteProprio } = require('./_email');
 const crypto = require('crypto');
 
@@ -157,6 +158,47 @@ module.exports = async (req, res) => {
           if (envio.enviado) enviados++; else falhas++;
         }
         return res.status(200).json({ ok: true, destinatarios: destinos.length, enviados, falhas });
+      }
+
+      // ----- definir uma senha provisória na hora -----
+      // O caminho preferido continua sendo o link ("nova_senha"): ninguém, nem
+      // você, precisa saber a senha de um aluno. Mas quando o e-mail não chega
+      // ou o aluno está no telefone com você, isto resolve na hora. A senha é
+      // sorteada pelo sistema, aparece UMA vez para você repassar, e todas as
+      // sessões antigas daquele aluno caem.
+      if (acao === 'senha_provisoria') {
+        const r = await db.execute({ sql: 'SELECT id, nome, email FROM alunos WHERE id = ?', args: [aluno_id] });
+        const al = r.rows[0];
+        if (!al) return res.status(404).json({ erro: 'Aluno não encontrado' });
+
+        // fácil de ditar por telefone: sem caracteres que se confundem
+        const alfabeto = 'abcdefghjkmnpqrstuvwxyz23456789';
+        let senha = '';
+        const sorteio = crypto.randomBytes(10);
+        for (let i = 0; i < 10; i++) senha += alfabeto[sorteio[i] % alfabeto.length];
+
+        const sal = crypto.randomBytes(16).toString('hex');
+        await db.execute({
+          sql: 'UPDATE alunos SET senha_hash = ?, sal = ? WHERE id = ?',
+          args: [hashSenha(senha, sal), sal, al.id]
+        });
+        await db.execute({ sql: 'DELETE FROM sessoes WHERE aluno_id = ?', args: [al.id] });
+        await db.execute({ sql: 'UPDATE tokens_senha SET usado = 1 WHERE aluno_id = ? AND usado = 0', args: [al.id] });
+
+        // avisa o aluno de que a senha mudou — trocar senha sem avisar é feio
+        enviarEmail({
+          para: al.email,
+          assunto: 'Sua senha da PersisteIA foi redefinida',
+          titulo: 'Definimos uma senha provisória',
+          corpo: '<p style="margin:0 0 14px">Oi, ' + (al.nome ? String(al.nome).split(' ')[0] : 'tudo bem') + '!</p>' +
+                 '<p style="margin:0 0 14px">A pedido do suporte, criamos uma senha provisória para a sua conta. ' +
+                 'Ela foi passada a você diretamente.</p>' +
+                 '<p style="margin:0">Assim que entrar, troque por uma senha sua em “Esqueci minha senha”.</p>',
+          botao: { texto: 'Entrar na PersisteIA', url: siteUrl(req) },
+          rodape: 'Se não foi você que pediu, responda este e-mail imediatamente.'
+        }).catch(function () {});
+
+        return res.status(200).json({ ok: true, email: al.email, nome: al.nome, senha });
       }
 
       // ----- conferir se o e-mail está mesmo saindo -----

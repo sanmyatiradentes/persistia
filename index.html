@@ -3230,6 +3230,11 @@
       });
     });
   })();
+
+  // Precisa existir ANTES de initReal(): é ele que lê o link do e-mail e guarda
+  // o token aqui. Declarada mais abaixo, a inicialização apagava o token que
+  // acabara de ser capturado — e o aluno recebia "Link inválido" ao salvar.
+  var TOKEN_NOVA_SENHA = '';
   initReal();
 
   /* ---------- onboarding ---------- */
@@ -3393,7 +3398,6 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   /* ---------- criar a nova senha (link do e-mail) ---------- */
-  var TOKEN_NOVA_SENHA = '';
   function verificarLinkDeSenha(){
     var m = location.search.match(/[?&]nova-senha=([a-f0-9]{20,})/i);
     if(!m) return false;
@@ -3818,7 +3822,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
             : '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'bloquear\')">bloquear</button>') +
           '<button class="btn ghost small" onclick="espiarAluno(\'' + a.id + '\')">ver o material dele</button>' +
           '<button class="btn ghost small" onclick="admEditar(\'' + a.id + '\')">editar dados</button>' +
-          '<button class="btn ghost small" onclick="admNovaSenha(\'' + a.id + '\')">nova senha</button>' +
+          '<button class="btn ghost small" onclick="admNovaSenha(\'' + a.id + '\')">mandar link de senha</button>' +
+          '<button class="btn ghost small" onclick="admSenhaProvisoria(\'' + a.id + '\')">definir senha agora</button>' +
           '<button class="btn ghost small" onclick="admAvisar(\'' + a.id + '\')">avisar por e-mail</button>' +
         '</div></div>';
     }).join('');
@@ -4056,6 +4061,29 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
                '). Copie o link abaixo e mande para o aluno:', d.link || '');
       })
       .catch(function(){ toast('Não consegui gerar o link agora'); });
+  }
+
+  // Saída para quando o e-mail não chega: o sistema sorteia uma senha, mostra
+  // uma vez para você repassar, e derruba as sessões antigas do aluno.
+  function admSenhaProvisoria(alunoId){
+    var a = admAchar(alunoId); if(!a) return;
+    if(!confirm('Definir uma senha provisória para ' + a.nome + '?\n\n' +
+                'A senha atual dele deixa de funcionar na hora e ele é desconectado. ' +
+                'A senha nova aparece uma única vez, para você passar por WhatsApp ou telefone.\n\n' +
+                'Se o e-mail dele estiver funcionando, prefira "mandar link de senha": ' +
+                'assim ninguém, nem você, precisa saber a senha dele.')) return;
+    apiFetch('/api/admin', { aluno_id: alunoId, acao: 'senha_provisoria' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro){ toast(d.erro); return; }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(d.senha).catch(function(){});
+        }
+        prompt('Senha provisória de ' + d.nome + ' (' + d.email + ').\n' +
+               'Copiei para você; anote antes de fechar — ela não aparece de novo.\n' +
+               'Peça para ele trocar depois em "Esqueci minha senha".', d.senha);
+      })
+      .catch(function(){ toast('Não consegui definir a senha agora'); });
   }
 
   function admAvisar(alunoId){
