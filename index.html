@@ -3398,11 +3398,27 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   /* ---------- criar a nova senha (link do e-mail) ---------- */
+  // O token do link é guardado em três lugares: variável, sessionStorage e o
+  // próprio endereço (só limpo depois que a senha é salva). Assim nenhuma
+  // ordem de carregamento consegue perdê-lo de novo.
+  function guardarTokenSenha(t){
+    TOKEN_NOVA_SENHA = t;
+    try { sessionStorage.setItem('persisteia_token_senha', t); } catch(e){}
+  }
+  function tokenDeSenha(){
+    if(TOKEN_NOVA_SENHA) return TOKEN_NOVA_SENHA;
+    try {
+      var g = sessionStorage.getItem('persisteia_token_senha');
+      if(g) return g;
+    } catch(e){}
+    var m = location.search.match(/[?&]nova-senha=([a-f0-9]{20,})/i);
+    return m ? m[1] : '';
+  }
+
   function verificarLinkDeSenha(){
     var m = location.search.match(/[?&]nova-senha=([a-f0-9]{20,})/i);
     if(!m) return false;
-    TOKEN_NOVA_SENHA = m[1];
-    history.replaceState({}, '', location.pathname);
+    guardarTokenSenha(m[1]);
     document.body.classList.remove('sitemode');
     $('site').classList.remove('show');
     $('login').classList.remove('show');
@@ -3416,13 +3432,23 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('nsErr').className = 'err';
     if(s1.length < 6){ $('nsErr').textContent = 'A senha precisa de pelo menos 6 caracteres'; return; }
     if(s1 !== s2){ $('nsErr').textContent = 'As duas senhas não são iguais'; return; }
+    var chave = tokenDeSenha();
+    if(!chave){
+      $('nsErr').innerHTML = 'Perdi o código deste link. Abra de novo o link do e-mail, ' +
+        'sem copiar e colar só um pedaço — ou peça um novo em “Esqueci minha senha”.';
+      return;
+    }
     $('nsBtn').disabled = true; $('nsBtn').textContent = 'Salvando…';
-    apiFetch('/api/auth', { acao: 'redefinir', token: TOKEN_NOVA_SENHA, senha: s1 })
+    apiFetch('/api/auth', { acao: 'redefinir', token: chave, senha: s1 })
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         if(x.s === 200 && x.d.token){
           TOKEN = x.d.token; NOME = x.d.nome || '';
           try { localStorage.setItem('persisteia_token', TOKEN); } catch(e){}
+          // deu certo: agora sim o token pode ser esquecido e o endereço limpo
+          TOKEN_NOVA_SENHA = '';
+          try { sessionStorage.removeItem('persisteia_token_senha'); } catch(e){}
+          history.replaceState({}, '', location.pathname);
           $('novaSenha').classList.remove('show');
           toast('Senha trocada. Bem-vinda(o) de volta, ' + (NOME || 'concurseira(o)') + '!');
           initReal();
