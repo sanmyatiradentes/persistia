@@ -1916,7 +1916,12 @@
           <button class="optchip" data-v="1.5" onclick="pick(this)">1h30</button>
           <button class="optchip sel" data-v="2" onclick="pick(this)">2h</button>
           <button class="optchip" data-v="3" onclick="pick(this)">3h</button>
+          <button class="optchip" data-v="4" onclick="pick(this)">4h</button>
+          <button class="optchip" data-v="5" onclick="pick(this)">5h</button>
+          <button class="optchip" data-v="6" onclick="pick(this)">6h</button>
+          <button class="optchip" data-v="8" onclick="pick(this)">8h</button>
         </div>
+        <p class="muted" style="font-size:.72rem; margin-top:6px">Quem estuda em tempo integral costuma render mais em blocos: 6h ou 8h aqui viram vários assuntos no mesmo dia, com intervalos entre eles.</p>
         <p class="optlbl">Quantos dias por semana?</p>
         <div class="optchips" id="gD">
           <button class="optchip" data-v="5" onclick="pick(this)">5</button>
@@ -2629,7 +2634,7 @@
         <button class="btn ghost small" onclick="tpRestart()">↺ Recomeçar</button>
         <button class="btn lr-stop" onclick="pararGravacao(false)">■ Parar e salvar</button>
       </div>
-      <p class="lr-dica" id="lrDica">O marcador segue a sua voz. Se ele se perder, continue lendo — eu acompanho pelo tempo.</p>
+      <p class="lr-dica" id="lrDica">O marcador anda no ritmo que você escolher aqui embaixo — ele não tenta adivinhar sua voz. Use − e + até ficar no seu passo.</p>
     </div>
   </div>
 
@@ -4842,8 +4847,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         '<div class="bib-acoes">' +
           '<button class="pri" onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'mapa\')">Mapa mental</button>' +
           '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'info\')">Resumo visual</button>' +
-          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'video\')">Vídeo</button>' +
+          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'simples\')">Como se tivesse 12 anos</button>' +
+          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'video\')">Cinema mental</button>' +
           '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'audio\')">Podcast</button>' +
+          '<button onclick="bibAbrir(\'' + a.topico_id + '\',' + a.parte + ',' + a.partes + ',\'musica\')">Música</button>' +
           '<button onclick="estudarTopico(\'' + a.cron_id + '\')">Estudar de novo</button>' +
         '</div></div>';
     }).join('');
@@ -4858,43 +4865,76 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         pai.innerHTML = '<p class="bib-vazio">Nenhuma gravação ainda. No Leitor, escolha "Voz alta" e leia a teoria — a faixa fica salva aqui.</p>';
         return;
       }
+      pai.innerHTML = '';
       var vistos = {};
-      var html = BIB.gravacoes.map(function(g){
+      BIB.gravacoes.forEach(function(g){
         var chave = norm(String(g.assunto).split(' — ')[0]);
         vistos[chave] = true;
         var local = porTitulo[chave];
         var min = g.segundos ? Math.floor(g.segundos / 60) + ':' + ('0' + (g.segundos % 60)).slice(-2) : '';
-        return '<div class="mv-row">' +
-          (local
-            ? '<button class="mv-play" onclick="bibTocar(this,\'' + local.id + '\')" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>'
-            : '<span class="mv-play" style="opacity:.35" title="Áudio em outro aparelho">☁</span>') +
-          '<span class="mi"><b>' + esc(String(g.assunto).slice(0, 60)) + '</b><small class="num">' +
-            fmtData(String(g.quando).slice(0, 10)) + (min ? ' · ' + min : '') + (g.ppm ? ' · ' + g.ppm + ' ppm' : '') +
-            (local ? '' : ' · gravado em outro aparelho') + '</small></span>' +
-          '</div>';
-      }).join('');
+        pai.appendChild(linhaDeGravacao({
+          titulo: String(g.assunto).slice(0, 60),
+          legenda: fmtData(String(g.quando).slice(0, 10)) + (min ? ' · ' + min : '') + (g.ppm ? ' · ' + g.ppm + ' ppm' : ''),
+          reg: local
+        }));
+      });
       // gravações locais que ainda não têm ficha no servidor
       (locais || []).forEach(function(r){
         if(vistos[norm(r.titulo)]) return;
-        html += '<div class="mv-row">' +
-          '<button class="mv-play" onclick="bibTocar(this,\'' + r.id + '\')" aria-label="Tocar"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
-          '<span class="mi"><b>' + esc(r.titulo) + '</b><small class="num">' + vozQuando(r.quando) + ' · ' + r.dur + '</small></span></div>';
+        pai.appendChild(linhaDeGravacao({
+          titulo: r.titulo,
+          legenda: vozQuando(r.quando) + ' · ' + r.dur + (r.ppm ? ' · ' + r.ppm + ' ppm' : ''),
+          reg: r
+        }));
       });
-      pai.innerHTML = html;
+      if(!pai.children.length){
+        pai.innerHTML = '<p class="bib-vazio">Nenhuma gravação ainda. No Leitor, escolha "Voz alta" e leia a teoria — a faixa fica salva aqui.</p>';
+      }
     }).catch(function(){ pai.innerHTML = '<p class="bib-vazio">Não consegui ler as gravações deste aparelho.</p>'; });
   }
 
-  function bibTocar(btn, id){
-    vozListar().then(function(regs){
-      var r = (regs || []).filter(function(x){ return x.id === id; })[0];
-      if(!r){ toast('Gravação não encontrada neste aparelho'); return; }
-      var blob = r.blob instanceof Blob ? r.blob : new Blob([r.blob], { type: r.mime || 'audio/webm' });
-      var a = new Audio(URL.createObjectURL(blob));
-      a.playbackRate = VEL;
-      a.play().catch(function(){ toast('Não consegui tocar aqui — abra em Minha Voz e baixe a faixa'); });
-      btn.textContent = '❚❚';
-      a.onended = function(){ btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; };
-    });
+  // Monta o endereço tocável de uma gravação guardada no aparelho.
+  // O formato novo guarda os bytes crus ('bytes'); o antigo guardava um Blob.
+  // Antes a Biblioteca só olhava para 'blob' — por isso as faixas novas não
+  // tocavam nada por lá, embora tocassem em Minha Voz.
+  function urlDaGravacao(r){
+    if(!r) return null;
+    var fonte = r.bytes || r.blob;
+    var n = fonte ? (fonte.byteLength || fonte.size || 0) : 0;
+    if(n > 0){
+      return URL.createObjectURL(fonte instanceof Blob ? fonte : new Blob([fonte], { type: r.mime || 'audio/webm' }));
+    }
+    return (VOZ_SESSAO[r.id] && VOZ_SESSAO[r.id].url) || null;
+  }
+
+  // Linha de gravação com tocador de verdade: barra de tempo, minutagem e
+  // volume do próprio navegador — igual ao que aparece na leitura do dia.
+  function linhaDeGravacao(o){
+    var div = document.createElement('div');
+    div.className = 'mv-row';
+    div.style.flexWrap = 'wrap';
+    var url = urlDaGravacao(o.reg);
+    div.innerHTML = '<span class="mi" style="flex:1; min-width:150px"><b>' + esc(o.titulo) + '</b><small class="num">' +
+      esc(o.legenda) + (url ? '' : ' · áudio gravado em outro aparelho') + '</small></span>';
+    if(!url) return div;
+    var baixa = document.createElement('a');
+    baixa.className = 'iconbtn';
+    baixa.style.cssText = 'width:30px;height:30px;font-size:.8rem;text-decoration:none';
+    baixa.title = 'Baixar'; baixa.setAttribute('aria-label', 'Baixar gravação');
+    baixa.download = String(o.titulo).replace(/[^\w ]/g, '').slice(0, 40) + '.webm';
+    baixa.href = url; baixa.textContent = '⭳';
+    div.appendChild(baixa);
+    var au = document.createElement('audio');
+    au.controls = true; au.preload = 'metadata'; au.src = url;
+    au.style.cssText = 'width:100%; margin-top:8px; height:36px';
+    au.onerror = function(){
+      var av = document.createElement('small');
+      av.className = 'num'; av.style.color = 'var(--warm)'; av.style.width = '100%';
+      av.textContent = 'Este navegador não consegue tocar esta gravação — use ⭳ para baixar e ouvir no aparelho.';
+      div.appendChild(av);
+    };
+    div.appendChild(au);
+    return div;
   }
 
   // Abre mapa, resumo visual, vídeo ou podcast de um assunto sem sair da Biblioteca.
@@ -4915,13 +4955,14 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   function bibMostrar(c, oque, topicoId, parte, partes){
     if(oque === 'video'){ AUD = { podcast: null, musica: null }; abrirCine(c); return; }
-    if(oque === 'audio'){
-      var it = { topico_id: topicoId, parte: parte, partes: partes };
+    var it = { topico_id: topicoId, parte: parte, partes: partes };
+    if(oque === 'audio' || oque === 'musica'){
       AUD = { podcast: null, musica: null };
       BIB_ITEM = it;
-      tocarAudioDe(it);
+      abrirSomDaBiblioteca(c, it, oque === 'musica' ? 'musica' : 'podcast');
       return;
     }
+    if(oque === 'simples'){ abrirSimplesDaBiblioteca(c); return; }
     var d = dadosVisual(c);
     VISOR = { tipo: oque, dados: d };
     $('visorTit').textContent = (oque === 'mapa' ? 'Mapa mental · ' : 'Resumo visual · ') + d.topico;
@@ -4948,21 +4989,89 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     } catch(e){ return false; }
   }
 
-  // toca o podcast de um assunto qualquer da Biblioteca
-  function tocarAudioDe(it){
-    var el = $('audPod');
-    apiFetch('/api/audio?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=podcast&parte=' + it.parte + '&partes=' + it.partes)
-      .then(function(r){ return r.json(); })
+  /* ---------- som da Biblioteca: podcast e música com tocador de verdade ----------
+     Antes o podcast tocava num Audio() invisível: sem barra de tempo, sem
+     minutagem, sem pausa — e, se o navegador bloqueasse o play automático,
+     não tocava nada e ninguém entendia por quê. Agora abre um tocador com
+     controles, transcrição/letra e, se o áudio ainda não existir, gera na hora. */
+  function abrirSomDaBiblioteca(c, it, tipo){
+    var musica = tipo === 'musica';
+    var titulo = (c && c.topico) || (c && c.subtitulo) || 'Assunto';
+    VISOR = null;
+    $('visorTit').textContent = (musica ? 'Música · ' : 'Podcast · ') + titulo;
+    $('visorBaixar').style.display = 'none';
+    var texto = musica
+      ? ((c && c.musica && c.musica.letra) ? md(String(c.musica.letra)).replace(/\n/g, '<br>') : '')
+      : ((c && c.podcast) ? esc(semMd(String(c.podcast))).replace(/\n+/g, '<br><br>') : '');
+    $('visorBody').innerHTML =
+      '<div style="padding:14px 16px 20px; max-width:640px; margin:0 auto">' +
+        '<p class="muted" id="bsEstado" style="font-size:.82rem; margin-bottom:10px">Buscando o áudio…</p>' +
+        '<audio id="bsAudio" controls preload="metadata" style="width:100%; display:none"></audio>' +
+        '<button class="btn small" id="bsGerar" style="display:none; margin-top:12px">Gerar o áudio agora</button>' +
+        (texto ? '<div style="margin-top:16px; font-size:.9rem; line-height:1.75">' +
+                 '<p class="eyebrow" style="margin-bottom:8px">' + (musica ? 'Letra' : 'Transcrição') + '</p>' +
+                 texto + '</div>' : '') +
+      '</div>';
+    $('visor').classList.add('show');
+    empilhar({ tela: 'biblioteca', visor: true }, '#visor');
+    buscarSomDaBiblioteca(it, tipo, false);
+  }
+
+  function buscarSomDaBiblioteca(it, tipo, gerar){
+    var est = $('bsEstado'), au = $('bsAudio'), bt = $('bsGerar');
+    if(!est || !au) return;
+    if(bt) bt.style.display = 'none';
+    est.textContent = gerar
+      ? 'Gravando com as vozes da IA — leva até 2 minutos, só na primeira vez…'
+      : 'Buscando o áudio…';
+
+    var pronto = function(b64){
+      pararTodosOsSons();
+      au.src = 'data:audio/wav;base64,' + b64;
+      au.style.display = 'block';
+      est.textContent = 'Pronto — use ▶ para ouvir. A barra mostra o tempo.';
+      try { au.playbackRate = VEL; } catch(e){}
+      au.play().catch(function(){});
+    };
+    var semAudio = function(msg){
+      au.style.display = 'none';
+      est.textContent = msg || 'Este assunto ainda não tem esse áudio gravado.';
+      if(bt){
+        bt.style.display = '';
+        bt.textContent = 'Gerar o áudio agora';
+        bt.disabled = false;
+        bt.onclick = function(){ bt.disabled = true; buscarSomDaBiblioteca(it, tipo, true); };
+      }
+    };
+
+    var q = '?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
+            '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1);
+    var pedido = gerar
+      ? apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
+      : apiFetch('/api/audio' + q);
+
+    pedido.then(function(r){ return r.json(); })
       .then(function(d){
-        if(d && d.audio_base64){
-          var a = new Audio('data:audio/wav;base64,' + d.audio_base64);
-          a.play().catch(function(){});
-          toast('Tocando o podcast do assunto');
-        } else {
-          toast('Este assunto ainda não tem podcast — abra-o em Estudar para gerar');
-        }
+        if(d && d.audio_base64) return pronto(d.audio_base64);
+        if(gerar) return semAudio((d && d.erro) || 'Não consegui gerar a voz agora — tente de novo em instantes.');
+        semAudio();
       })
-      .catch(function(){ toast('Sem conexão'); });
+      .catch(function(){ semAudio('Sem conexão para buscar o áudio.'); });
+  }
+
+  function abrirSimplesDaBiblioteca(c){
+    var t = String((c && c.explicacao_simples) || '').trim();
+    VISOR = null;
+    $('visorTit').textContent = 'Como se tivesse 12 anos · ' + ((c && c.topico) || (c && c.subtitulo) || 'Assunto');
+    $('visorBaixar').style.display = 'none';
+    $('visorBody').innerHTML =
+      '<div style="padding:14px 16px 24px; max-width:640px; margin:0 auto; font-size:.95rem; line-height:1.8">' +
+      (t ? t.split(/\n+/).filter(function(x){ return x.trim(); })
+            .map(function(pp){ return '<p style="margin-bottom:13px">' + md(pp) + '</p>'; }).join('')
+         : '<p class="muted">Este assunto foi gerado antes desta explicação existir. Abra-o em <b>Estudar de novo</b> e toque em <b>↻ Gerar este assunto de novo</b> para criá-la.</p>') +
+      '</div>';
+    $('visor').classList.add('show');
+    empilhar({ tela: 'biblioteca', visor: true }, '#visor');
   }
 
   /* ---------- expanders ---------- */
@@ -6498,19 +6607,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       if(tpPaused){ VOZ.ultimoSom = Date.now(); return; }
 
       var mudoHa = Date.now() - VOZ.ultimoSom;
-      // 5 s de silêncio absoluto com o reconhecimento ligado = ele está com o
-      // microfone. Desligamos o reconhecimento para o gravador voltar a ouvir.
-      if(mudoHa > 5000 && RECON && !VOZ.mudoTratado && VOZ.confiavel){
-        VOZ.mudoTratado = true;
-        try { RECON.onend = null; RECON.onerror = null; RECON.stop(); } catch(e){}
-        RECON = null;
-        if(RECWATCH){ clearInterval(RECWATCH); RECWATCH = null; }
-        VOZ.ultimoSom = Date.now();
-        if($('lrDica')) $('lrDica').textContent = 'Seu aparelho não deixa gravar e transcrever ao mesmo tempo. Desliguei a transcrição para garantir o áudio — continue lendo, o marcador segue pelo tempo.';
-        marcadorPorTempo();
-        return;
-      }
-      // continua mudo mesmo sem o reconhecimento: aí é o microfone mesmo
+      // Nada mais disputa o microfone com o gravador (o reconhecimento de fala
+      // saiu daqui). Se ficar mudo por muito tempo, é o microfone mesmo.
       if(mudoHa > 12000 && VOZ.confiavel && $('lrDica') && $('lrDica').dataset.alerta !== '1'){
         $('lrDica').dataset.alerta = '1';
         $('lrDica').innerHTML = '<b style="color:var(--crit)">Não estou captando som nenhum.</b> Confira se o microfone está liberado para o site e se nada mais está usando o microfone. Pode parar e tentar de novo — assim você não perde a leitura inteira.';
@@ -6575,9 +6673,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function iniciarGravacao(){
     RECCHUNKS = []; RECT0 = Date.now();
     tpPaused = false; syncRec(); relogioGravacao(true);
-    if($('lrDica')) $('lrDica').textContent = 'O marcador segue a sua voz. Se ele se perder, continue lendo — eu acompanho pelo tempo.';
+    mostrarRitmo();
+    if($('lrDica')) $('lrDica').textContent = 'O marcador anda no ritmo que você escolher aqui embaixo — ele não tenta adivinhar sua voz. Use − e + até ficar no seu passo.';
     $('lHint').textContent = 'lendo…';
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       toast('Seu navegador não permite gravar áudio aqui');
       return;
@@ -6599,62 +6697,16 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         medirVoz(stream);   // mede o som que está realmente entrando
       } catch(e){ REC = null; }
 
-      // Se o reconhecimento não devolver nada em alguns segundos (microfone mudo,
-      // permissão parcial, navegador sem suporte real), o marcador passa a andar
-      // sozinho para a leitura não ficar sem teleprompter.
-      // Vigia permanente: o reconhecimento do navegador cai sozinho no meio de
-      // uma leitura longa. Se o marcador ficar parado por alguns segundos, o
-      // tempo assume o acompanhamento — e a gravação NUNCA para por isso.
+      // O marcador NÃO escuta mais a voz. Antes o reconhecimento de fala
+      // empurrava o marcador para a frente de vez em quando: ele começava no
+      // ritmo certo, dava um salto quando a transcrição chegava e voltava a
+      // andar devagar — a aluna via isso como "acelera sozinho e trava".
+      // Além disso o reconhecimento disputava o microfone com o gravador, e a
+      // gravação saía muda. Agora o marcador é um metrônomo puro, no ritmo que
+      // a própria aluna escolhe, e o microfone fica só para gravar.
       if(tpTimer){ clearInterval(tpTimer); tpTimer = null; }
-      var ultimoIdx = -1, paradoDesde = Date.now(), avisou = false;
-      if(TP_WATCH) clearInterval(TP_WATCH);
-      TP_WATCH = setInterval(function(){
-        if(!REC || REC.state === 'inactive'){ clearInterval(TP_WATCH); TP_WATCH = null; return; }
-        if(tpPaused || tpTimer){ paradoDesde = Date.now(); return; }
-        if(tpIdx !== ultimoIdx){ ultimoIdx = tpIdx; paradoDesde = Date.now(); return; }
-        if(Date.now() - paradoDesde < 7000) return;
-        if(!avisou){
-          avisou = true;
-          if($('lrDica')) $('lrDica').textContent = 'Perdi o fio da sua voz, mas continuo gravando: o marcador passou a andar no ritmo médio de leitura. Toque em "Parar e salvar" quando terminar.';
-        }
-        marcadorPorTempo();
-      }, 2000);
-
-      // a base de tempo começa junto: nunca fica sem marcador
       marcadorPorTempo();
-
-      if(SR){
-        RECON = new SR();
-        RECON.lang = 'pt-BR'; RECON.continuous = true; RECON.interimResults = true;
-        RECON.onresult = function(ev){
-          var txt = '';
-          for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript + ' '; }
-          TRANSCRICAO = txt.trim();
-          RECON.ultimo = Date.now();
-          // a fala corrige a posição; a base de tempo continua rodando por baixo
-          if(!tpPaused) avancarComFala(TRANSCRICAO);
-        };
-        // O reconhecimento do navegador para sozinho em silêncio, em erro de rede
-        // e a cada poucos minutos. Religa sempre, enquanto a gravação estiver ativa.
-        RECON.ultimo = Date.now();
-        RECON.onresult0 = RECON.onresult;
-        RECON.onerror = function(ev){
-          var fatal = ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed');
-          if(fatal){ toast('Preciso da permissão do microfone para acompanhar sua leitura'); return; }
-          religarFala();
-        };
-        RECON.onend = function(){ religarFala(); };
-        if(RECWATCH) clearInterval(RECWATCH);
-        RECWATCH = setInterval(function(){
-          if(!REC || REC.state !== 'recording'){ clearInterval(RECWATCH); RECWATCH = null; return; }
-          if(!tpPaused && RECON && Date.now() - (RECON.ultimo || 0) > 9000){ religarFala(); }
-        }, 3000);
-        try { RECON.start(); } catch(e){}
-        toast('Pode ler em voz alta — eu acompanho e gravo');
-      } else {
-        toast('Gravando. Seu navegador não transcreve em tempo real — o marcador anda pelo tempo');
-        marcadorPorTempo();
-      }
+      toast('Pode ler em voz alta — o marcador anda no ritmo que você escolher');
     }).catch(function(){
       toast('Preciso da permissão do microfone para gravar sua leitura');
       setLMode('sil');
@@ -7540,7 +7592,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '02/09/2026 23:46';
+  var VERSAO = '03/09/2026 · karaokê no seu ritmo + biblioteca com tocador';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
