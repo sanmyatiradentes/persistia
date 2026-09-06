@@ -50,7 +50,18 @@ async function replanejar(db, alunoId, dataProva) {
 
   const hoje = hojeISO();
   const atrasadas = pend.rows.filter(r => r.data < hoje).length;
-  const adiantado = pend.rows.every(r => r.data > hoje);   // vazio hoje e nada atrasado
+
+  // "Adiantado" é quem já concluiu sessões e ficou sem nada para hoje.
+  // Sem esta conferência, um cronograma RECÉM-MONTADO era tratado como
+  // adiantado — bastava o primeiro dia cair amanhã (hoje é domingo, ou dia de
+  // descanso) — e o plano era comprimido na hora para 1,5× a carga escolhida:
+  // a aluna pedia 6 h por dia e recebia dias de 9 h sem ter estudado nada ainda.
+  const feitas = await db.execute({
+    sql: "SELECT COUNT(*) AS n FROM cronograma WHERE aluno_id = ? AND status = 'concluido'",
+    args: [alunoId]
+  });
+  const jaEstudou = Number((feitas.rows[0] || {}).n) > 0;
+  const adiantado = jaEstudou && pend.rows.every(r => r.data > hoje);
   if (!atrasadas && !adiantado) return null;               // nada a fazer
 
   // quantos dias de estudo existem até a prova (ou 180 dias, sem data)
@@ -130,6 +141,25 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST' && (req.body || {}).gerar) {
+      // As horas podem vir no próprio pedido. Antes só vinham da tabela config,
+      // e quem já tinha uma configuração antiga via a escolha nova ser ignorada
+      // em silêncio: a aluna marcava 6 h por dia e o plano continuava montado
+      // com as 3 h de antes, um assunto por dia. Agora o que ela escolher manda,
+      // e fica gravado.
+      const pedidoHoras = Number((req.body || {}).horas_dia);
+      const pedidoDias = Number((req.body || {}).dias_semana);
+      if (isFinite(pedidoHoras) && pedidoHoras > 0) {
+        await db.execute({
+          sql: `INSERT INTO config (aluno_id, horas_dia, dias_semana, atualizado_em)
+                VALUES (?,?,?,?)
+                ON CONFLICT(aluno_id) DO UPDATE SET
+                  horas_dia = excluded.horas_dia,
+                  dias_semana = COALESCE(excluded.dias_semana, config.dias_semana),
+                  atualizado_em = excluded.atualizado_em`,
+          args: [aluno.id, Math.min(14, Math.max(0.5, pedidoHoras)),
+                 (isFinite(pedidoDias) && pedidoDias >= 1 && pedidoDias <= 7) ? pedidoDias : null, agora()]
+        });
+      }
       const cfg = await db.execute({ sql: 'SELECT horas_dia, dias_semana FROM config WHERE aluno_id = ?', args: [aluno.id] });
       const horasDia = Math.max(0.5, Number((cfg.rows[0] || {}).horas_dia) || 2);
       const dias = Number((cfg.rows[0] || {}).dias_semana) || 6;
@@ -203,6 +233,9 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         ok: true, itens: ordem, sessoes: ordem, dias: plano.length,
         horas_totais: Math.round(totalHoras * 10) / 10,
+        horas_dia: horasDia, dias_semana: dias,
+        // quanto o dia realmente ficou cheio — é isto que a aluna quer conferir
+        sessoes_por_dia: plano.length ? Math.round((ordem / plano.length) * 10) / 10 : 0,
         termina_em: listaDatas[listaDatas.length - 1]
       });
     }
@@ -238,8 +271,10 @@ module.exports = async (req, res) => {
     }
     const concluidos = todos.filter(r => r.status === 'concluido').length;
 
-    const cfgD = await db.execute({ sql: 'SELECT data_prova FROM config WHERE aluno_id = ?', args: [aluno.id] });
+    const cfgD = await db.execute({ sql: 'SELECT data_prova, horas_dia, dias_semana FROM config WHERE aluno_id = ?', args: [aluno.id] });
     const dataProvaFinal = (cfgD.rows[0] || {}).data_prova || edital.data_prova || null;
+    const horasDiaAtual = Math.max(0.5, Number((cfgD.rows[0] || {}).horas_dia) || 2);
+    const diasSemanaAtual = Number((cfgD.rows[0] || {}).dias_semana) || 6;
 
     const assuntoHoje = hoje.topico + (Number(hoje.partes) > 1 ? ' (parte ' + hoje.parte + ')' : '') + ' — ' + hoje.disciplina;
     const prog = await db.execute({
@@ -249,6 +284,9 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       edital: edital.titulo, data_prova: dataProvaFinal,
+      // o app precisa saber com que ritmo o plano foi montado, para mostrar e
+      // deixar a aluna corrigir sem refazer o edital inteiro
+      horas_dia: horasDiaAtual, dias_semana: diasSemanaAtual,
       verbos_hoje: prog.rows.map(r => ({ verbo: r.verbo, status: r.status })),
       itens: todos.map(r => ({ cron_id: r.cron_id, topico_id: r.topico_id, topico: r.topico, disciplina: r.disciplina, data: r.data, status: r.status, ordem: r.ordem, parte: r.parte || 1, partes: r.partes || 1, horas: r.horas || null })),
       hoje: { cron_id: hoje.cron_id, topico_id: hoje.topico_id, topico: hoje.topico, disciplina: hoje.disciplina, data: hoje.data, parte: hoje.parte || 1, partes: hoje.partes || 1, horas: hoje.horas || null, atrasado: hoje.data < hojeISO() },

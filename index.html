@@ -1941,7 +1941,7 @@
         </div>
 
         <div class="calc" id="calcBox" aria-live="polite"></div>
-        <button class="btn" onclick="enterApp()">Gerar meu cronograma</button>
+        <button class="btn" onclick="confirmarRitmo()">Gerar meu cronograma</button>
       </div>
     </div>
   </div>
@@ -2377,6 +2377,30 @@
         <p class="muted" style="font-size:.76rem; margin:4px 0 0" id="assinDet"></p>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px" id="assinAcoes"></div>
         <p class="muted" style="font-size:.72rem; margin-top:8px" id="assinMsg"></p>
+      </div>
+
+      <div id="ritmoBox" style="margin-top:16px; border-top:1px solid var(--line); padding-top:14px">
+        <p class="optlbl" style="margin:0 0 6px">Seu ritmo de estudo</p>
+        <p class="muted" style="font-size:.76rem; margin:0 0 10px" id="ritmoAtualTxt">—</p>
+        <p class="optlbl" style="margin-top:0">Horas por dia</p>
+        <div class="optchips" id="rH">
+          <button class="optchip" data-v="1" onclick="pick(this)">1h</button>
+          <button class="optchip" data-v="1.5" onclick="pick(this)">1h30</button>
+          <button class="optchip" data-v="2" onclick="pick(this)">2h</button>
+          <button class="optchip" data-v="3" onclick="pick(this)">3h</button>
+          <button class="optchip" data-v="4" onclick="pick(this)">4h</button>
+          <button class="optchip" data-v="5" onclick="pick(this)">5h</button>
+          <button class="optchip" data-v="6" onclick="pick(this)">6h</button>
+          <button class="optchip" data-v="8" onclick="pick(this)">8h</button>
+        </div>
+        <p class="optlbl">Dias por semana</p>
+        <div class="optchips" id="rD">
+          <button class="optchip" data-v="5" onclick="pick(this)">5</button>
+          <button class="optchip" data-v="6" onclick="pick(this)">6</button>
+          <button class="optchip" data-v="7" onclick="pick(this)">7</button>
+        </div>
+        <button class="btn small" style="margin-top:12px" id="ritmoBtn" onclick="salvarRitmo()">Aplicar e refazer o cronograma</button>
+        <p class="muted" style="font-size:.72rem; margin-top:8px">Mudar aqui redistribui o edital inteiro pelas horas novas. Um dia de 6 h recebe vários assuntos, com intervalo entre eles; o que já foi concluído volta para a fila.</p>
       </div>
 
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px">
@@ -3463,6 +3487,36 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     carregarReal();
   }
 
+  // Botão "Gerar meu cronograma" do passo 2.
+  //
+  // Antes ele chamava enterApp(), que só gravava as horas quando o aluno era
+  // NOVO (JA_CONFIG falso). Quem já tinha conta escolhia 6 h por dia, o plano
+  // era montado com a configuração antiga — 2 ou 3 h — e saía um assunto por
+  // dia, com o dobro de dias. A escolha era descartada sem avisar ninguém.
+  // Agora o ritmo escolhido é sempre gravado E o cronograma é refeito com ele.
+  function confirmarRitmo(){
+    var h = selVal('gH'), d = selVal('gD');
+    var btn = event && event.target && event.target.tagName === 'BUTTON' ? event.target : null;
+    if(btn){ btn.disabled = true; btn.textContent = 'Montando seu cronograma…'; }
+    apiFetch('/api/aluno', { data_prova: (temData && PROVA_ISO) ? PROVA_ISO : null, horas_dia: h, dias_semana: d })
+      .catch(function(){})
+      .then(function(){ return apiFetch('/api/cronograma', { gerar: true, horas_dia: h, dias_semana: d }); })
+      .then(function(r){ return r.json(); })
+      .then(function(x){
+        JA_CONFIG = true;
+        if(btn){ btn.disabled = false; btn.textContent = 'Gerar meu cronograma'; }
+        if(x && x.ok){
+          toast('Cronograma montado: ' + fmtHoras(x.horas_dia) + ' por dia, ' +
+                x.sessoes_por_dia + ' assunto' + (x.sessoes_por_dia > 1 ? 's' : '') + ' por dia em média.');
+        }
+        enterApp();
+      })
+      .catch(function(){
+        if(btn){ btn.disabled = false; btn.textContent = 'Gerar meu cronograma'; }
+        enterApp();
+      });
+  }
+
   /* ---------- navigation ---------- */
   // O app é uma página só, mas o botão "voltar" do navegador (e o gesto no
   // celular) precisa funcionar: cada tela e cada sobreposição vira um passo
@@ -3992,9 +4046,61 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function refazerCronograma(){
     if(!confirm('Refazer o cronograma redistribui todos os assuntos do edital pelas horas que você tem por dia. O que já foi concluído volta para a fila. Continuar?')) return;
     toast('Refazendo seu cronograma…');
-    apiFetch('/api/cronograma', { gerar: true })
-      .then(function(){ ESCOLHIDO = null; CONT = null; enterLoading(); carregarReal(); toast('Cronograma refeito ✓'); })
+    // manda o ritmo junto: assim o que está na tela é o que vale
+    apiFetch('/api/cronograma', { gerar: true, horas_dia: selVal('rH', (REAL && REAL.horas_dia) || 2), dias_semana: selVal('rD', (REAL && REAL.dias_semana) || 6) })
+      .then(function(r){ return r.json(); })
+      .then(function(x){
+        ESCOLHIDO = null; CONT = null; enterLoading(); carregarReal();
+        toast(x && x.ok
+          ? 'Cronograma refeito: ' + x.dias + ' dias, ' + x.sessoes_por_dia + ' assunto(s) por dia'
+          : 'Cronograma refeito ✓');
+      })
       .catch(function(){ toast('Não consegui refazer agora'); });
+  }
+
+  /* ---------- ritmo de estudo, editável a qualquer momento ----------
+     Sem isto, mudar as horas por dia exigia refazer o edital do zero — e, pior,
+     a escolha feita no cadastro era descartada para quem já tinha conta. */
+  function marcarChip(gid, valor){
+    var box = $(gid); if(!box) return;
+    var alvo = null, chips = box.querySelectorAll('.optchip');
+    chips.forEach(function(c){
+      c.classList.remove('sel');
+      if(Math.abs(parseFloat(c.dataset.v) - Number(valor)) < 0.001) alvo = c;
+    });
+    (alvo || chips[0]).classList.add('sel');
+  }
+
+  function mostrarRitmoEstudo(){
+    if(!REAL || !$('ritmoBox')) return;
+    var h = Number(REAL.horas_dia) || 2, d = Number(REAL.dias_semana) || 6;
+    marcarChip('rH', h); marcarChip('rD', d);
+    var res = REAL.resumo || {};
+    var porDia = (res.dias && res.total) ? Math.round((res.total / res.dias) * 10) / 10 : 0;
+    $('ritmoAtualTxt').textContent = 'Hoje o plano está montado para ' + fmtHoras(h) + ' por dia, ' + d +
+      ' dias por semana' + (porDia ? ' — cerca de ' + porDia + ' assunto' + (porDia > 1 ? 's' : '') + ' por dia.' : '.');
+  }
+
+  function salvarRitmo(){
+    var h = selVal('rH', (REAL && REAL.horas_dia) || 2), d = selVal('rD', (REAL && REAL.dias_semana) || 6);
+    var btn = $('ritmoBtn');
+    btn.disabled = true; btn.textContent = 'Redistribuindo o edital…';
+    apiFetch('/api/aluno', { data_prova: PROVA_ISO || null, horas_dia: h, dias_semana: d })
+      .catch(function(){})
+      .then(function(){ return apiFetch('/api/cronograma', { gerar: true, horas_dia: h, dias_semana: d }); })
+      .then(function(r){ return r.json(); })
+      .then(function(x){
+        btn.disabled = false; btn.textContent = 'Aplicar e refazer o cronograma';
+        if(!x || !x.ok){ toast((x && x.erro) || 'Não consegui refazer agora'); return; }
+        ESCOLHIDO = null; CONT = null;
+        toast('Pronto: ' + fmtHoras(x.horas_dia) + ' por dia · ' + x.sessoes_por_dia +
+              ' assunto(s) por dia · ' + x.dias + ' dias de estudo');
+        carregarReal();
+      })
+      .catch(function(){
+        btn.disabled = false; btn.textContent = 'Aplicar e refazer o cronograma';
+        toast('Sem conexão para refazer agora');
+      });
   }
 
   /* ---------- painel da gestora ---------- */
@@ -6113,7 +6219,13 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     el.classList.add('sel');
     calcTempo();
   }
-  function selVal(gid){ return parseFloat(document.querySelector('#'+gid+' .sel').dataset.v); }
+  // Nunca estoura quando o grupo ainda não tem escolha marcada (o painel de
+  // ritmo do Plano só é preenchido depois que o cronograma carrega).
+  function selVal(gid, padrao){
+    var el = document.querySelector('#' + gid + ' .sel') || document.querySelector('#' + gid + ' .optchip');
+    var v = el ? parseFloat(el.dataset.v) : NaN;
+    return isFinite(v) ? v : (padrao === undefined ? 2 : padrao);
+  }
   function calcTempo(){
     var h = selVal('gH'), d = selVal('gD'), box = $('calcBox');
     var nTop = parseInt(String($('stT').textContent).replace(/\D/g,''), 10) || 0;
@@ -7775,7 +7887,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '06/09/2026 · edital em etapas + retificações';
+  var VERSAO = '06/09/2026 · ritmo de estudo editável + edital em etapas';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
@@ -8231,6 +8343,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var dd = diasAte(d.data_prova);
     $('planoTit').textContent = d.edital || 'Seu plano';
     $('planoCount').textContent = (dd === null) ? 'estudo contínuo' : (dd < 0 ? 'data da prova passou' : 'prova em ' + dd + ' dias');
+    mostrarRitmoEstudo();
 
     // ----- faixa da semana (navegável) -----
     PLANO_ITENS = itens;
