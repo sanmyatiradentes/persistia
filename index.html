@@ -105,6 +105,13 @@
   .drop:active{transform:scale(.98)}
   .drop strong{display:block; margin-top:8px}
   .drop span{font-size:.8rem; color:var(--muted)}
+  /* edital + retificações: cada arquivo carregado vira uma linha */
+  .ed-doc{display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 10px;
+    border:1px solid var(--line); border-radius:12px; background:var(--card); font-size:.8rem}
+  .ed-doc .ed-nome{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600}
+  .ed-tag{flex:none; font-size:.64rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+    padding:3px 7px; border-radius:999px; background:var(--accent-soft); color:var(--accent)}
+  .ed-tag.ret{background:var(--warm-soft); color:var(--warm)}
   .proc{list-style:none; display:flex; flex-direction:column; gap:14px; margin-top:18px}
   .proc li{display:flex; gap:12px; align-items:center; opacity:.28; transition:opacity .3s}
   .proc li.on{opacity:1}
@@ -1850,8 +1857,12 @@
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--accent)"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
             <strong id="dropTxt">Enviar o PDF do edital</strong>
             <span>toque para escolher, ou arraste o arquivo aqui (.pdf ou .txt, até 30 MB)</span>
-            <input type="file" id="edArquivo" accept=".pdf,application/pdf,.txt,text/plain" style="display:none" onchange="lerArquivo(this)">
+            <input type="file" id="edArquivo" accept=".pdf,application/pdf,.txt,text/plain" multiple style="display:none" onchange="lerArquivo(this)">
           </div>
+          <div id="edDocs"></div>
+          <p class="muted" style="font-size:.74rem; margin-top:8px">
+            Saiu retificação do seu edital? Envie o arquivo da retificação também — eu leio os dois juntos e, onde houver diferença, vale sempre a retificação mais nova.
+          </p>
           <button class="btn" style="margin-top:12px" onclick="analisarEdital()">Analisar meu edital</button>
           <button class="lg-alt" style="margin-top:10px" id="obVoltarApp" onclick="voltarAoApp()">Já tenho um edital — voltar para os estudos</button>
           <p class="muted" style="font-size:.75rem; margin-top:8px" id="edStatus"></p>
@@ -2962,7 +2973,7 @@
   }
   function escolherCargo(nome){
     $('cargoBox').style.display = 'none';
-    $('edStatus').textContent = 'Extraindo o programa de "' + nome + '"… pode levar até um minuto.';
+    ED.cargo = nome;
     analisarEdital(nome);
   }
 
@@ -2975,35 +2986,37 @@
     return /503|429|overload|high demand|unavailable|congestion|temporar|indispon/i.test(t);
   }
 
-  function analisarEdital(cargo, tentativa){
-    tentativa = tentativa || 0;
-    var txt = $('edTexto').value.trim();
-    if(!PDF64 && !(PAGINAS && PAGINAS.length) && txt.length < 200){ $('edStatus').textContent = 'Cole o conteúdo programático, ou arraste o PDF do edital.'; return; }
-    if(!TOKEN){ $('login').classList.add('show'); return; }
-    var lis = document.querySelectorAll('#proc li'), i = 0;
-    var anim = setInterval(function(){ if(i < lis.length){ if(i>0) lis[i-1].classList.add('done'); lis[i].classList.add('on'); i++; } }, 900);
+  /* ================= ANÁLISE DO EDITAL, EM ETAPAS =================
+     A análise de um edital grande são várias chamadas de IA. Antes elas
+     aconteciam todas dentro de UMA requisição, e a função no servidor tem 60
+     segundos: num edital como o da Transpetro (60 páginas, 18 ênfases) o tempo
+     estourava, a Vercel devolvia erro, o aplicativo recomeçava do zero e o
+     candidato ficava preso em "Separando disciplinas e tópicos…" para sempre.
+     Agora cada requisição faz UM passo. O aplicativo conduz a sequência, mostra
+     o progresso de verdade e, se um passo falhar, repete só aquele passo —
+     nunca o edital inteiro. */
+  var ED = { cargo: '', titulo: '', prova: null, banca: null, discs: [], feitas: [], passo: '' };
 
-    // Relógio à vista: edital grande leva mais de um minuto, e a espera cega
-    // faz parecer travado. Aqui o candidato vê que o trabalho continua.
-    var t0 = Date.now();
-    if(window.EDCRONO) clearInterval(window.EDCRONO);
-    window.EDCRONO = setInterval(function(){
-      var s = Math.round((Date.now() - t0) / 1000);
-      var el = $('edStatus');
-      if(!el) return;
-      var fase = s < 25 ? 'Lendo o seu edital…'
-               : s < 60 ? 'Separando disciplinas e tópicos…'
-               : s < 110 ? 'Medindo o peso de cada assunto — editais grandes levam mais tempo…'
-               : 'Ainda trabalhando. Editais muito longos podem passar de dois minutos…';
-      el.innerHTML = fase + ' <b>' + Math.floor(s/60) + ':' + ('0'+(s%60)).slice(-2) + '</b>' +
-        (s > 150 ? '<br><span style="font-size:.72rem; opacity:.8">Se passar de 4 minutos, toque em “Analisar meu edital” de novo — nada do que você enviou se perde.</span>' : '');
-    }, 1000);
-    var pararCrono = function(){ if(window.EDCRONO){ clearInterval(window.EDCRONO); window.EDCRONO = null; } };
-    var carga = PDF64 ? { pdf_base64: PDF64 } : (PAGINAS && PAGINAS.length ? { paginas: PAGINAS } : { texto: txt });
-    if(cargo) carga.cargo = cargo;
-    apiFetch('/api/edital', carga)
+  function edStatus(html){ var e = $('edStatus'); if(e) e.innerHTML = html; }
+
+  // Marca os quatro passos visíveis conforme o trabalho anda de verdade.
+  function edPasso(n){
+    var lis = document.querySelectorAll('#proc li');
+    lis.forEach(function(l, i){
+      l.classList.toggle('on', i <= n);
+      l.classList.toggle('done', i < n);
+    });
+  }
+  function edLimparPassos(){
+    document.querySelectorAll('#proc li').forEach(function(l){ l.classList.remove('on','done'); });
+  }
+
+  // Um passo, com paciência: repete só ele quando a IA estiver congestionada.
+  function edChamar(carga, rotulo, tentativa){
+    tentativa = tentativa || 0;
+    return apiFetch('/api/edital', carga)
       .then(function(r){
-        // 504/502 da Vercel devolve página de erro, não JSON: sem isto virava
+        // 502/504 da Vercel devolve página de erro, não JSON: sem isto virava
         // "conexão instável" e o candidato achava que o problema era a internet dele.
         return r.text().then(function(t){
           var d = null; try { d = JSON.parse(t); } catch(e){}
@@ -3012,82 +3025,229 @@
           return { s: r.status, d: d };
         });
       })
+      .catch(function(){ return { s: 0, d: { erro: 'Sem conexão com o servidor', detalhe: 'rede' } }; })
       .then(function(x){
-        clearInterval(anim); pararCrono();
-        lis.forEach(function(l){ l.classList.add('on','done'); });
-        if(x.s === 200 && x.d.precisa_cargo){
-          lis.forEach(function(l){ l.classList.remove('on','done'); });
-          $('edStatus').textContent = 'Encontrei ' + x.d.cargos.length + ' cargos neste edital.';
-          if(x.d.data_prova){ PROVA_ISO = x.d.data_prova; }
-          var box = $('cargoLista'); box.innerHTML = '';
-          x.d.cargos.forEach(function(nome){
-            var b = document.createElement('button');
-            b.className = 'optchip'; b.textContent = nome;
-            b.onclick = function(){ escolherCargo(nome); };
-            box.appendChild(b);
-          });
-          $('cargoBox').style.display = 'block';
-          $('cargoBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
-        }
-        if(x.s === 200 && x.d.ok){
-          $('edTitulo').textContent = x.d.titulo;
-          $('cargoBox').style.display = 'none';
-          $('edSub').textContent = x.d.data_prova ? ('seu edital · prova em ' + x.d.data_prova.split('-').reverse().join('/')) : 'seu edital · data da prova a confirmar';
-          $('stD').textContent = x.d.n_disciplinas;
-          $('stT').textContent = x.d.n_topicos;
-          PROVA_ISO = x.d.data_prova || null;
-          if(PROVA_ISO){
-            $('dtInput').value = PROVA_ISO;
-            temData = true;
-            var dd = diasAte(PROVA_ISO);
-            $('dtSub').textContent = (dd !== null && dd < 0)
-              ? 'essa data do edital já passou — corrija acima'
-              : 'encontrei essa data no edital — ajuste se precisar';
-          } else {
-            $('dtSub').textContent = 'não encontrei a data no edital — informe acima';
-          }
-          toast(x.d.n_disciplinas + ' disciplinas e ' + x.d.n_topicos + ' tópicos salvos no seu banco');
-          setTimeout(function(){ obGo(3); }, 500);
-        } else if(ehCongestionamento(x) && tentativa < 3){
-          // a IA está com fila: esperamos e tentamos de novo sem incomodar o aluno
-          var seg = [8, 18, 30][tentativa];
-          var motivo = (x.s === 504 || x.s === 502)
-            ? '<b>O edital é grande e o servidor cortou a leitura no meio.</b><br>Vou tentar de novo — costuma passar na segunda tentativa. '
-            : '<b>A IA está com muita procura neste momento.</b><br>';
-          $('edStatus').innerHTML = motivo +
-            'Não precisa fazer nada: tento de novo em <b id="edConta">' + seg + '</b> segundos. ' +
-            'Seu edital continua aqui.';
-          var conta = setInterval(function(){
-            var el = $('edConta'); if(!el){ clearInterval(conta); return; }
-            var n = Number(el.textContent) - 1;
-            el.textContent = n > 0 ? n : 0;
-            if(n <= 0) clearInterval(conta);
-          }, 1000);
-          setTimeout(function(){ clearInterval(conta); analisarEdital(cargo, tentativa + 1); }, seg * 1000);
-        } else {
-          lis.forEach(function(l){ l.classList.remove('on','done'); });
-          var congest = ehCongestionamento(x);
-          $('edStatus').innerHTML = '<b style="color:var(--crit)">' +
-            (congest ? 'A IA está congestionada agora.' : esc(x.d.erro || 'Não consegui analisar este edital agora.')) + '</b><br>' +
-            (congest
-              ? 'Já tentei algumas vezes por você. Seu edital continua aqui — toque em "Analisar meu edital" daqui a alguns minutos, que costuma passar rápido.'
-              : 'Seu texto continua aqui — toque em "Analisar meu edital" para tentar de novo, ou cole apenas o anexo do conteúdo programático.') +
-            (x.d.detalhe && !congest ? '<br><span style="font-size:.68rem; opacity:.7">' + esc(x.d.detalhe) + '</span>' : '');
-        }
-      })
-      .catch(function(){
-        clearInterval(anim); pararCrono();
-        if(tentativa < 2){
-          $('edStatus').innerHTML = '<b>Conexão instável.</b><br>Vou tentar de novo em instantes — seu edital continua aqui.';
-          setTimeout(function(){ analisarEdital(cargo, tentativa + 1); }, 6000);
-          return;
-        }
-        $('edStatus').textContent = 'Sem conexão com o servidor. Confira sua internet e toque em "Analisar meu edital".';
+        if(x.s === 200 && x.d && x.d.ok) return x.d;
+        var vale = (ehCongestionamento(x) || x.s === 0) && tentativa < 3;
+        if(!vale){ var e = new Error(x.d && x.d.erro || 'Falha'); e.x = x; throw e; }
+        var seg = [6, 14, 26][tentativa];
+        edStatus('<b>' + esc(rotulo) + '</b><br>' +
+          (x.s === 0 ? 'A conexão oscilou. ' : 'A IA está com fila neste instante. ') +
+          'Tento de novo em <b id="edConta">' + seg + '</b> s — nada do que você enviou se perde.');
+        var conta = setInterval(function(){
+          var el = $('edConta'); if(!el){ clearInterval(conta); return; }
+          var n = Number(el.textContent) - 1; el.textContent = n > 0 ? n : 0;
+          if(n <= 0) clearInterval(conta);
+        }, 1000);
+        return new Promise(function(ok){
+          setTimeout(function(){ clearInterval(conta); ok(edChamar(carga, rotulo, tentativa + 1)); }, seg * 1000);
+        });
       });
   }
+
+  function analisarEdital(cargo){
+    if(!temMaterial()){
+      edStatus('Cole o conteúdo programático, ou envie o PDF do edital.');
+      return;
+    }
+    if(!TOKEN){ $('login').classList.add('show'); return; }
+
+    var base = cargaDoEdital();
+    var comCargo = function(extra){
+      var c = {}; for(var k in base) c[k] = base[k];
+      c.cargo = ED.cargo || cargo || '';
+      for(var k2 in extra) c[k2] = extra[k2];
+      return c;
+    };
+    var t0 = Date.now();
+    var relogio = function(){ var s = Math.round((Date.now() - t0)/1000); return Math.floor(s/60) + ':' + ('0'+(s%60)).slice(-2); };
+
+    ED.cargo = cargo || ED.cargo || '';
+    ED.discs = []; ED.feitas = []; ED.falhou = null;
+    edPasso(0);
+    edStatus('Lendo o seu edital…');
+
+    // ---- passo 1: quais cargos existem (só quando o aluno ainda não escolheu)
+    var inicio = ED.cargo
+      ? Promise.resolve({ pulou: true })
+      : edChamar(comCargo({ etapa: 'cargos' }), 'Lendo o edital');
+
+    inicio.then(function(d){
+      if(d.pulou) return null;
+      ED.titulo = d.titulo || 'Meu edital';
+      ED.prova = d.data_prova || null;
+      ED.banca = d.banca || null;
+      if(d.precisa_cargo){
+        edLimparPassos();
+        edStatus('Encontrei ' + d.cargos.length + ' cargos neste edital.');
+        if(d.data_prova) PROVA_ISO = d.data_prova;
+        var box = $('cargoLista'); box.innerHTML = '';
+        d.cargos.forEach(function(nome){
+          var b = document.createElement('button');
+          b.className = 'optchip'; b.textContent = nome;
+          b.onclick = function(){ escolherCargo(nome); };
+          box.appendChild(b);
+        });
+        $('cargoBox').style.display = 'block';
+        $('cargoBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return 'parar';
+      }
+      ED.cargo = (d.cargos && d.cargos[0]) || '';
+      return null;
+    }).then(function(sinal){
+      if(sinal === 'parar') return 'parar';
+
+      // ---- passo 2: nomes das disciplinas (resposta curta, nunca trunca)
+      edPasso(1);
+      edStatus('Separando as disciplinas' + (ED.cargo ? ' de "' + esc(ED.cargo) + '"' : '') + '… <b>' + relogio() + '</b>');
+      return edChamar(comCargo({ etapa: 'disciplinas' }), 'Separando as disciplinas').then(function(d){
+        ED.titulo = ED.titulo || d.titulo || 'Meu edital';
+        ED.prova = ED.prova || d.data_prova || null;
+        ED.discs = d.disciplinas || [];
+        return null;
+      });
+    }).then(function(sinal){
+      if(sinal === 'parar') return 'parar';
+
+      // ---- passo 3: tópicos, três disciplinas por requisição
+      edPasso(2);
+      var lotes = [];
+      for(var i = 0; i < ED.discs.length; i += 3) lotes.push(ED.discs.slice(i, i + 3));
+      var feito = 0;
+
+      return lotes.reduce(function(fila, lote){
+        return fila.then(function(){
+          var qual = lote.join(', ');
+          edStatus('Lendo os tópicos de <b>' + esc(qual) + '</b><br>' +
+            '<span class="num">disciplina ' + Math.min(feito + lote.length, ED.discs.length) + ' de ' + ED.discs.length +
+            ' · ' + relogio() + '</span>');
+          return edChamar(comCargo({ etapa: 'topicos', lote: lote }), 'Lendo ' + qual)
+            .then(function(d){
+              (d.disciplinas || []).forEach(function(x){ if(x && x.nome) ED.feitas.push(x); });
+              feito += lote.length;
+            })
+            .catch(function(){
+              // O lote de três não saiu. Antes de desistir, tenta uma por uma:
+              // quase sempre é uma disciplina específica que atrapalhou, e as
+              // outras duas se perderiam junto sem necessidade.
+              edStatus('Uma parte não saiu de primeira. Tentando disciplina por disciplina… <b>' + relogio() + '</b>');
+              return lote.reduce(function(f2, nome){
+                return f2.then(function(){
+                  return edChamar(comCargo({ etapa: 'topicos', lote: [nome] }), 'Lendo ' + nome)
+                    .then(function(d2){
+                      (d2.disciplinas || []).forEach(function(x){ if(x && x.nome) ED.feitas.push(x); });
+                    })
+                    .catch(function(){ ED.falhou = (ED.falhou || []).concat([nome]); });
+                });
+              }, Promise.resolve()).then(function(){ feito += lote.length; });
+            });
+        });
+      }, Promise.resolve()).then(function(){ return null; });
+    }).then(function(sinal){
+      if(sinal === 'parar') return 'parar';
+      if(!ED.feitas.length){
+        var e = new Error('Não consegui ler os tópicos deste edital');
+        e.x = { s: 422, d: { erro: 'Não consegui ler os tópicos — envie só as páginas do programa do seu cargo' } };
+        throw e;
+      }
+
+      // ---- passo 4: salvar (sem IA, é rápido)
+      edPasso(3);
+      edStatus('Guardando o seu programa de estudos… <b>' + relogio() + '</b>');
+      return edChamar({
+        etapa: 'salvar', titulo: ED.titulo, cargo: ED.cargo,
+        data_prova: ED.prova, banca: ED.banca, disciplinas: ED.feitas
+      }, 'Salvando');
+    }).then(function(d){
+      if(d === 'parar' || !d) return;
+      edPasso(4);
+      $('edTitulo').textContent = d.titulo;
+      $('cargoBox').style.display = 'none';
+      $('edSub').textContent = d.data_prova
+        ? ('seu edital · prova em ' + d.data_prova.split('-').reverse().join('/'))
+        : 'seu edital · data da prova a confirmar';
+      $('stD').textContent = d.n_disciplinas;
+      $('stT').textContent = d.n_topicos;
+      PROVA_ISO = d.data_prova || null;
+      if(PROVA_ISO){
+        $('dtInput').value = PROVA_ISO;
+        temData = true;
+        var dd = diasAte(PROVA_ISO);
+        $('dtSub').textContent = (dd !== null && dd < 0)
+          ? 'essa data do edital já passou — corrija acima'
+          : 'encontrei essa data no edital — ajuste se precisar';
+      } else {
+        $('dtSub').textContent = 'não encontrei a data no edital — informe acima';
+      }
+      if(ED.falhou && ED.falhou.length){
+        toast('Salvei ' + d.n_disciplinas + ' disciplinas. Não consegui ler: ' + ED.falhou.join(', '));
+      } else {
+        toast(d.n_disciplinas + ' disciplinas e ' + d.n_topicos + ' tópicos salvos no seu banco');
+      }
+      setTimeout(function(){ obGo(3); }, 500);
+    }).catch(function(e){
+      edLimparPassos();
+      var x = (e && e.x) || { s: 500, d: { erro: String(e && e.message || 'Falha') } };
+      var congest = ehCongestionamento(x) || x.s === 0;
+      edStatus('<b style="color:var(--crit)">' +
+        (congest ? 'A IA está congestionada agora.' : esc((x.d && x.d.erro) || 'Não consegui analisar este edital agora.')) + '</b><br>' +
+        (congest
+          ? 'Já tentei algumas vezes por você. Seu edital continua aqui — toque em "Analisar meu edital" daqui a alguns minutos.'
+          : 'Seu material continua aqui — toque em "Analisar meu edital" para tentar de novo, ou envie só o anexo do conteúdo programático.') +
+        (x.d && x.d.detalhe && !congest ? '<br><span style="font-size:.68rem; opacity:.7">' + esc(x.d.detalhe) + '</span>' : ''));
+    });
+  }
   var PDF64 = null, PDFNOME = '', PAGINAS = null;
-  function lerArquivo(inp){ usarArquivo(inp.files && inp.files[0]); }
+
+  /* ---------- edital + retificações ----------
+     Um concurso raramente vive só do edital original: sai retificação, sai
+     aditamento, e o conteúdo programático muda. Aqui o aluno junta quantos
+     arquivos precisar; o primeiro é o edital, os seguintes são retificações,
+     e a IA recebe todos marcados, com a ordem, para consolidar. */
+  var DOCS = [];
+
+  function rotuloDoc(i){ return i === 0 ? 'EDITAL' : 'RETIFICAÇÃO / ADITAMENTO'; }
+
+  function renderDocs(){
+    var pai = $('edDocs'); if(!pai) return;
+    if(!DOCS.length){ pai.innerHTML = ''; if($('dropTxt')) $('dropTxt').textContent = 'Enviar o PDF do edital'; return; }
+    if($('dropTxt')) $('dropTxt').textContent = DOCS.length === 1 ? '+ Adicionar retificação' : '+ Adicionar outro documento';
+    pai.innerHTML = DOCS.map(function(d, i){
+      return '<div class="ed-doc">' +
+        '<span class="ed-tag' + (i ? ' ret' : '') + '">' + (i ? 'retificação' : 'edital') + '</span>' +
+        '<span class="ed-nome">' + esc(d.nome) + '</span>' +
+        '<span class="num" style="opacity:.7">' + Math.round((d.texto || '').length / 1000) + ' mil car.</span>' +
+        '<button class="iconbtn" style="width:26px;height:26px;font-size:.75rem" onclick="tirarDoc(' + i + ')" ' +
+          'title="Tirar este arquivo" aria-label="Tirar este arquivo">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function tirarDoc(i){
+    DOCS.splice(i, 1);
+    renderDocs();
+    $('edStatus').textContent = DOCS.length ? 'Documento removido.' : 'Nenhum arquivo. Envie o PDF do edital ou cole o texto.';
+  }
+
+  // O que vai para o servidor: os arquivos, se houver; senão, o texto colado.
+  function cargaDoEdital(){
+    if(DOCS.length) return { documentos: DOCS.map(function(d, i){ return { rotulo: rotuloDoc(i), nome: d.nome, texto: d.texto }; }) };
+    if(PDF64) return { pdf_base64: PDF64 };
+    if(PAGINAS && PAGINAS.length) return { paginas: PAGINAS };
+    return { texto: $('edTexto').value.trim() };
+  }
+
+  function temMaterial(){
+    return !!(DOCS.length || PDF64 || (PAGINAS && PAGINAS.length) || $('edTexto').value.trim().length >= 200);
+  }
+
+  function lerArquivo(inp){
+    var fs = inp.files ? Array.prototype.slice.call(inp.files) : [];
+    (function proximo(i){
+      if(i >= fs.length){ inp.value = ''; return; }
+      usarArquivo(fs[i]).then(function(){ proximo(i + 1); });
+    })(0);
+  }
 
   var LIMITE_MB = 30;          // o que o aluno pode enviar
   var LIMITE_ENVIO = 3400000;  // o que cabe numa requisição (a Vercel corta em 4,5 MB)
@@ -3116,30 +3276,46 @@
     return tentar(0);
   }
 
+  // Guarda mais um documento lido (edital, depois retificações).
+  function guardarDoc(nome, texto){
+    if(!texto || texto.length < 60) return false;
+    DOCS.push({ nome: nome, texto: texto.slice(0, 400000) });
+    renderDocs();
+    $('edStatus').textContent = DOCS.length === 1
+      ? 'Edital carregado. Se houver retificação, envie o arquivo dela também — depois toque em "Analisar meu edital".'
+      : 'Pronto: ' + DOCS.length + ' documentos (edital + ' + (DOCS.length - 1) + ' retificação' +
+        (DOCS.length > 2 ? 'ões' : '') + '). Toque em "Analisar meu edital".';
+    return true;
+  }
+
   function usarArquivo(f){
-    if(!f) return;
+    if(!f) return Promise.resolve();
     var ehPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
     var mb = f.size / 1048576;
     if(mb > LIMITE_MB){
       $('edStatus').textContent = 'Arquivo de ' + mb.toFixed(1) + ' MB — o limite é ' + LIMITE_MB +
         ' MB. Envie só o anexo do conteúdo programático, ou cole o texto.';
-      return;
+      return Promise.resolve();
     }
-    PDF64 = null; PDFNOME = f.name; PAGINAS = null;
-    $('dropTxt').textContent = '✓ ' + f.name;
+    PDFNOME = f.name;
 
     if(!ehPdf){
-      var frt = new FileReader();
-      frt.onload = function(){
-        $('edTexto').value = String(frt.result || '').slice(0, 400000);
-        $('edStatus').textContent = 'Texto carregado — confira acima e toque em Analisar meu edital.';
-      };
-      frt.readAsText(f);
-      return;
+      return new Promise(function(pronto){
+        var frt = new FileReader();
+        frt.onload = function(){
+          if(!guardarDoc(f.name, String(frt.result || ''))){
+            $('edTexto').value = String(frt.result || '').slice(0, 400000);
+            $('edStatus').textContent = 'Texto carregado — confira acima e toque em Analisar meu edital.';
+          }
+          pronto();
+        };
+        frt.onerror = function(){ pronto(); };
+        frt.readAsText(f);
+      });
     }
 
-    $('edStatus').textContent = 'Lendo o PDF aqui no seu aparelho…';
-    f.arrayBuffer().then(function(buf){
+    $('edStatus').textContent = 'Lendo "' + f.name + '" aqui no seu aparelho…';
+    return f.arrayBuffer().then(function(buf){
       return carregarPdfJs().then(function(lib){
         return lib.getDocument({ data: new Uint8Array(buf) }).promise;
       }).then(function(doc){
@@ -3160,10 +3336,7 @@
       });
     }).then(function(r){
       if(r.texto.length >= 800){
-        $('edTexto').value = r.texto.slice(0, 400000);
-        PDF64 = null;
-        $('edStatus').textContent = 'Li ' + r.paginas + ' páginas do seu PDF (' + Math.round(r.texto.length / 1000) +
-          ' mil caracteres). Toque em "Analisar meu edital".';
+        guardarDoc(f.name, r.texto);
         return;
       }
       // PDF digitalizado: manda as páginas como imagem, dentro do que cabe
@@ -3172,22 +3345,27 @@
         if(!imgs.length) throw new Error('sem paginas');
         PAGINAS = imgs;
         $('edStatus').textContent = 'PDF digitalizado: vou enviar ' + imgs.length +
-          ' páginas como imagem para a IA ler. Toque em "Analisar meu edital".';
+          ' páginas como imagem para a IA ler. Toque em "Analisar meu edital".' +
+          (DOCS.length ? ' (Um PDF digitalizado não se junta a outros documentos — analise um de cada vez.)' : '');
       });
     }).catch(function(){
       // sem leitor de PDF disponível: caminho antigo, se couber na requisição
-      var fr = new FileReader();
-      fr.onload = function(){
-        var b64 = String(fr.result).split(',')[1] || '';
-        if(b64.length > LIMITE_ENVIO){
-          $('edStatus').textContent = 'Não consegui ler este PDF aqui e ele é grande demais para enviar inteiro. ' +
-            'Envie só o anexo do conteúdo programático, ou cole o texto.';
-          return;
-        }
-        PDF64 = b64;
-        $('edStatus').textContent = 'PDF pronto. Toque em "Analisar meu edital".';
-      };
-      fr.readAsDataURL(f);
+      return new Promise(function(pronto){
+        var fr = new FileReader();
+        fr.onload = function(){
+          var b64 = String(fr.result).split(',')[1] || '';
+          if(b64.length > LIMITE_ENVIO){
+            $('edStatus').textContent = 'Não consegui ler este PDF aqui e ele é grande demais para enviar inteiro. ' +
+              'Envie só o anexo do conteúdo programático, ou cole o texto.';
+            return pronto();
+          }
+          PDF64 = b64;
+          $('edStatus').textContent = 'PDF pronto. Toque em "Analisar meu edital".';
+          pronto();
+        };
+        fr.onerror = function(){ pronto(); };
+        fr.readAsDataURL(f);
+      });
     });
   }
 
@@ -3230,7 +3408,12 @@
         e.preventDefault(); if(ev === 'dragleave' && e.relatedTarget) return;
         z.classList.remove('over');
         if(ev === 'drop' && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
-          usarArquivo(e.dataTransfer.files[0]);
+          // arrastar vários de uma vez: edital + retificações, um depois do outro
+          var fs = Array.prototype.slice.call(e.dataTransfer.files);
+          (function proximo(i){
+            if(i >= fs.length) return;
+            usarArquivo(fs[i]).then(function(){ proximo(i + 1); });
+          })(0);
         }
       });
     });
@@ -7592,7 +7775,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '03/09/2026 · karaokê no seu ritmo + biblioteca com tocador';
+  var VERSAO = '06/09/2026 · edital em etapas + retificações';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
