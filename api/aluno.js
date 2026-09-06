@@ -1,6 +1,6 @@
 // GET: perfil + config do aluno logado (401 sem token — sinaliza que a API existe).
 // POST: salva config {data_prova, horas_dia, dias_semana}.
-const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno } = require('./_lib');
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, editalAtivo } = require('./_lib');
 
 module.exports = async (req, res) => {
   cors(res);
@@ -18,17 +18,16 @@ module.exports = async (req, res) => {
         sql: "SELECT COUNT(*) AS n FROM flashcards WHERE aluno_id = ? AND proxima_revisao <= ?",
         args: [aluno.id, agora()]
       });
-      const ed = await db.execute({
-        sql: 'SELECT id, titulo, data_prova FROM editais WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 1',
-        args: [aluno.id]
-      });
+      // o edital em estudo é o ATIVO, não simplesmente o último cadastrado:
+      // a conta pode guardar vários e o aluno escolhe qual está seguindo
+      const editalAtual = await editalAtivo(db, aluno.id);
       let nTopicos = 0, editalData = null, editalTitulo = null;
-      if (ed.rows.length) {
-        editalData = ed.rows[0].data_prova || null;
-        editalTitulo = ed.rows[0].titulo || null;
+      if (editalAtual) {
+        editalData = editalAtual.data_prova || null;
+        editalTitulo = editalAtual.titulo || null;
         const nt = await db.execute({
           sql: `SELECT COUNT(*) AS n FROM topicos t JOIN disciplinas d ON d.id = t.disciplina_id WHERE d.edital_id = ?`,
-          args: [ed.rows[0].id]
+          args: [editalAtual.id]
         });
         nTopicos = Number(nt.rows[0].n);
       }
@@ -37,7 +36,7 @@ module.exports = async (req, res) => {
         nome: aluno.nome, email: aluno.email,
         assinatura: acesso, admin: acesso.admin,
         config: c.rows[0] || null,
-        tem_edital: ed.rows.length > 0,
+        tem_edital: !!editalAtual,
         edital_titulo: editalTitulo,
         edital_data_prova: editalData,
         n_topicos: nTopicos,

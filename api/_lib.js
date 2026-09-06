@@ -79,7 +79,26 @@ const MIGRACOES = [
   'ALTER TABLE cronograma ADD COLUMN partes INTEGER',
   'ALTER TABLE cronograma ADD COLUMN horas REAL',
   // acesso comprado avulso (Pix, boleto, cartão à vista): vale até esta data
-  'ALTER TABLE assinaturas ADD COLUMN acesso_ate TEXT'
+  'ALTER TABLE assinaturas ADD COLUMN acesso_ate TEXT',
+  // ----- vários editais na mesma conta -----
+  // Antes, cadastrar um edital novo APAGAVA o anterior e todo o cronograma
+  // dele. Agora cada edital vive por conta própria: o aluno escolhe qual está
+  // estudando (config.edital_ativo) e pode voltar para outro sem perder nada.
+  'ALTER TABLE config ADD COLUMN edital_ativo TEXT',
+  'ALTER TABLE editais ADD COLUMN cargo TEXT',
+  'ALTER TABLE cronograma ADD COLUMN edital_id TEXT',
+  // ----- prioridade: o que mais cai na prova -----
+  // incidencia = 0 a 10, o quanto o tópico costuma ser cobrado (estimado pela IA)
+  // questoes   = quantas questões a prova tem daquela disciplina (dito pelo edital)
+  'ALTER TABLE topicos ADD COLUMN incidencia REAL',
+  'ALTER TABLE disciplinas ADD COLUMN questoes INTEGER',
+  // 'prioridade' (o que mais cai primeiro) ou 'edital' (na ordem do documento)
+  'ALTER TABLE config ADD COLUMN ordem_estudo TEXT',
+  // cronogramas antigos ficam ligados ao edital deles (roda uma vez só, na prática)
+  `UPDATE cronograma SET edital_id = (
+     SELECT d.edital_id FROM topicos t JOIN disciplinas d ON d.id = t.disciplina_id
+     WHERE t.id = cronograma.topico_id
+   ) WHERE edital_id IS NULL`
 ];
 
 async function ensureSchema() {
@@ -88,6 +107,41 @@ async function ensureSchema() {
   for (const sql of DDL) await d.execute(sql);
   for (const sql of MIGRACOES) { try { await d.execute(sql); } catch (_) { /* já existe */ } }
   schemaOk = true;
+}
+
+/**
+ * Qual edital o aluno está estudando agora.
+ *
+ * É o marcado em config.edital_ativo; se ele não existir mais (ou nunca foi
+ * marcado, como nas contas antigas), vale o mais recente — e essa escolha fica
+ * gravada, para todas as telas concordarem entre si.
+ */
+async function editalAtivo(db, alunoId) {
+  const cfg = await db.execute({ sql: 'SELECT edital_ativo FROM config WHERE aluno_id = ?', args: [alunoId] });
+  const marcado = (cfg.rows[0] || {}).edital_ativo;
+  if (marcado) {
+    const r = await db.execute({
+      sql: 'SELECT id, titulo, data_prova, banca, cargo, criado_em FROM editais WHERE id = ? AND aluno_id = ?',
+      args: [marcado, alunoId]
+    });
+    if (r.rows.length) return r.rows[0];
+  }
+  const ult = await db.execute({
+    sql: 'SELECT id, titulo, data_prova, banca, cargo, criado_em FROM editais WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 1',
+    args: [alunoId]
+  });
+  if (!ult.rows.length) return null;
+  await marcarEditalAtivo(db, alunoId, ult.rows[0].id);
+  return ult.rows[0];
+}
+
+async function marcarEditalAtivo(db, alunoId, editalId) {
+  await db.execute({
+    sql: `INSERT INTO config (aluno_id, edital_ativo, atualizado_em) VALUES (?,?,?)
+          ON CONFLICT(aluno_id) DO UPDATE SET edital_ativo = excluded.edital_ativo,
+                                              atualizado_em = excluded.atualizado_em`,
+    args: [alunoId, editalId, new Date().toISOString()]
+  });
 }
 
 function agora() { return new Date().toISOString(); }
@@ -386,4 +440,4 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   return geminiComPaciencia(systemText, [{ text: userText }], jsonSchema, modelo);
 }
 
-module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso };
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, editalAtivo, marcarEditalAtivo };

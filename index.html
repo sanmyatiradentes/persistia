@@ -112,6 +112,17 @@
   .ed-tag{flex:none; font-size:.64rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
     padding:3px 7px; border-radius:999px; background:var(--accent-soft); color:var(--accent)}
   .ed-tag.ret{background:var(--warm-soft); color:var(--warm)}
+  /* cartão de cada edital guardado na conta, com a evolução dele */
+  .ed-card{border:1px solid var(--line); border-radius:14px; padding:12px 13px; margin-bottom:10px; background:var(--card)}
+  .ed-card.ativo{border-color:var(--accent); background:var(--accent-soft)}
+  .ed-card .ed-top{display:flex; align-items:flex-start; gap:8px; margin-bottom:5px}
+  .ed-card .ed-top b{flex:1; font-size:.9rem; line-height:1.35}
+  .ed-badge{flex:none; font-size:.62rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+    padding:3px 8px; border-radius:999px; background:var(--accent); color:var(--on-accent)}
+  .ed-card .ed-meta{font-size:.75rem; color:var(--muted); line-height:1.55}
+  .ed-barra{height:6px; border-radius:999px; background:var(--line); overflow:hidden; margin:8px 0 6px}
+  .ed-barra i{display:block; height:100%; background:var(--accent); border-radius:999px; transition:width .4s}
+  .ed-acoes{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:9px}
   .proc{list-style:none; display:flex; flex-direction:column; gap:14px; margin-top:18px}
   .proc li{display:flex; gap:12px; align-items:center; opacity:.28; transition:opacity .3s}
   .proc li.on{opacity:1}
@@ -2379,6 +2390,13 @@
         <p class="muted" style="font-size:.72rem; margin-top:8px" id="assinMsg"></p>
       </div>
 
+      <div id="editaisBox" style="margin-top:16px; border-top:1px solid var(--line); padding-top:14px">
+        <p class="optlbl" style="margin:0 0 4px">Meus editais</p>
+        <p class="muted" style="font-size:.76rem; margin:0 0 10px" id="edQuantos">—</p>
+        <div id="edListaBox"></div>
+        <button class="btn ghost small" style="margin-top:10px" onclick="trocarEdital()">+ Cadastrar outro edital</button>
+      </div>
+
       <div id="ritmoBox" style="margin-top:16px; border-top:1px solid var(--line); padding-top:14px">
         <p class="optlbl" style="margin:0 0 6px">Seu ritmo de estudo</p>
         <p class="muted" style="font-size:.76rem; margin:0 0 10px" id="ritmoAtualTxt">—</p>
@@ -2398,6 +2416,18 @@
           <button class="optchip" data-v="5" onclick="pick(this)">5</button>
           <button class="optchip" data-v="6" onclick="pick(this)">6</button>
           <button class="optchip" data-v="7" onclick="pick(this)">7</button>
+        </div>
+        <p class="optlbl">Por onde começar</p>
+        <div class="optchips" id="rO">
+          <button class="optchip sel" data-o="prioridade" onclick="pickOrdem(this)">O que mais cai primeiro</button>
+          <button class="optchip" data-o="edital" onclick="pickOrdem(this)">Na ordem do edital</button>
+        </div>
+        <p class="muted" style="font-size:.72rem; margin-top:6px" id="rOAjuda">
+          Com "o que mais cai", cada disciplina entra na proporção das questões que vale na prova, e dentro dela os assuntos de maior incidência vêm primeiro. Se o prazo cortar o plano, o corte atinge o que menos cai.
+        </p>
+        <div id="prioBox" style="display:none; margin-top:10px; background:var(--warm-soft); border:1px solid var(--warm); border-radius:12px; padding:11px 13px">
+          <p style="font-size:.8rem; margin:0 0 8px" id="prioTxt">—</p>
+          <button class="btn small" id="prioBtn" onclick="calcularPrioridades()">Avaliar o que mais cai neste edital</button>
         </div>
         <button class="btn small" style="margin-top:12px" id="ritmoBtn" onclick="salvarRitmo()">Aplicar e refazer o cronograma</button>
         <p class="muted" style="font-size:.72rem; margin-top:8px">Mudar aqui redistribui o edital inteiro pelas horas novas. Um dia de 6 h recebe vários assuntos, com intervalo entre eles; o que já foi concluído volta para a fila.</p>
@@ -4014,8 +4044,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   /* ---------- trocar de edital / refazer cronograma ---------- */
+  // Cadastrar outro edital NÃO apaga mais o atual: os dois passam a conviver na
+  // conta e o aluno escolhe qual está estudando, em "Meus editais".
   function trocarEdital(){
-    if(!confirm('Trocar de edital apaga o cronograma atual e monta um novo a partir do edital que você enviar. Seu histórico de estudo continua salvo. Deseja continuar?')) return;
+    if(!confirm('Vou abrir o cadastro para você enviar OUTRO edital. O edital atual continua guardado, com o cronograma e o progresso dele — dá para voltar quando quiser em "Meus editais". Continuar?')) return;
     ESCOLHIDO = null; CONT = null; REAL = null;
     try { localStorage.removeItem('persisteia_topico'); } catch(e){}
     $('paywall').classList.remove('show');
@@ -4025,10 +4057,89 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('ob').style.display = 'block';
     $('edTexto').value = ''; $('edStatus').textContent = '';
     $('cargoBox').style.display = 'none';
-    if($('dropTxt')) $('dropTxt').textContent = 'Enviar o PDF do edital';
+    DOCS = []; renderDocs();
     PDF64 = null; PDFNOME = ''; PAGINAS = null;
     obGo(2);
     window.scrollTo(0, 0);
+  }
+
+  /* ================= MEUS EDITAIS =================
+     A conta guarda todos os editais já cadastrados, cada um com seu cronograma
+     e seu progresso. Aqui eles ficam à vista, com a evolução de cada um, e o
+     aluno volta para qualquer um sem perder nada. */
+  var EDITAIS = [];
+
+  function editaisCarregar(){
+    var pai = $('edListaBox'); if(!pai) return;
+    apiFetch('/api/editais').then(function(r){ return r.json(); }).then(function(d){
+      if(!d || d.erro){ pai.innerHTML = '<p class="muted" style="font-size:.8rem">' + esc((d && d.erro) || 'Não consegui ler seus editais.') + '</p>'; return; }
+      EDITAIS = d.editais || [];
+      if(!EDITAIS.length){ pai.innerHTML = '<p class="muted" style="font-size:.8rem">Nenhum edital cadastrado ainda.</p>'; return; }
+      if($('edQuantos')) $('edQuantos').textContent = EDITAIS.length === 1
+        ? '1 edital nesta conta'
+        : EDITAIS.length + ' editais nesta conta — o progresso de cada um fica guardado separadamente';
+      pai.innerHTML = EDITAIS.map(function(e){
+        var prova = e.data_prova
+          ? (e.dias_para_prova !== null && e.dias_para_prova >= 0
+              ? 'prova em ' + e.dias_para_prova + ' dias · ' + e.data_prova.split('-').reverse().join('/')
+              : 'prova em ' + e.data_prova.split('-').reverse().join('/') + ' (já passou)')
+          : 'sem data de prova';
+        var linha2 = e.n_disciplinas + ' disciplinas · ' + e.n_topicos + ' tópicos' +
+          (e.horas_edital ? ' · ' + fmtHoras(e.horas_edital) + ' de conteúdo' : '');
+        var evolucao = !e.tem_cronograma
+          ? 'cronograma ainda não montado'
+          : (e.concluidas
+              ? e.concluidas + ' de ' + e.sessoes + ' sessões · ' + fmtHoras(e.horas_feitas) + ' estudadas'
+              : 'nenhuma sessão concluída ainda · ' + e.sessoes + ' na fila');
+        return '<div class="ed-card' + (e.ativo ? ' ativo' : '') + '">' +
+          '<div class="ed-top">' +
+            '<b>' + esc(e.titulo) + '</b>' +
+            (e.ativo ? '<span class="ed-badge">estudando agora</span>' : '') +
+          '</div>' +
+          '<div class="ed-meta">' + esc(prova) + (e.banca ? ' · ' + esc(e.banca) : '') + '</div>' +
+          '<div class="ed-meta">' + esc(linha2) + '</div>' +
+          '<div class="ed-barra"><i style="width:' + e.percentual + '%"></i></div>' +
+          '<div class="ed-meta"><b>' + e.percentual + '%</b> · ' + esc(evolucao) + '</div>' +
+          '<div class="ed-acoes">' +
+            (e.ativo
+              ? '<span class="muted" style="font-size:.74rem">Este é o edital das telas Hoje, Plano e Biblioteca.</span>'
+              : '<button class="btn small" onclick="editalAtivar(\'' + e.id + '\')">Estudar este</button>') +
+            '<button class="btn ghost small" onclick="editalApagar(\'' + e.id + '\')">Apagar</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }).catch(function(){
+      pai.innerHTML = '<p class="muted" style="font-size:.8rem">Sem conexão para ler seus editais.</p>';
+    });
+  }
+
+  function editalAtivar(idEd){
+    toast('Voltando para esse edital…');
+    apiFetch('/api/editais', { ativar: idEd }).then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.ok){ toast((d && d.erro) || 'Não consegui trocar agora'); return; }
+      ESCOLHIDO = null; CONT = null;
+      try { localStorage.removeItem('persisteia_topico'); } catch(e){}
+      if(!d.tem_cronograma){
+        // edital guardado que nunca teve plano: monta agora, com o ritmo atual
+        return apiFetch('/api/cronograma', { gerar: true }).then(function(){
+          toast('Agora você está estudando: ' + d.titulo);
+          editaisCarregar(); carregarReal();
+        });
+      }
+      toast('Agora você está estudando: ' + d.titulo);
+      editaisCarregar(); carregarReal();
+    }).catch(function(){ toast('Sem conexão para trocar de edital'); });
+  }
+
+  function editalApagar(idEd){
+    var e = EDITAIS.filter(function(x){ return x.id === idEd; })[0] || {};
+    if(!confirm('Apagar "' + (e.titulo || 'este edital') + '"?\n\nIsso remove as disciplinas, os tópicos, o cronograma e o progresso DESTE edital. Não dá para desfazer.')) return;
+    apiFetch('/api/editais', { apagar: idEd }).then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.ok){ toast((d && d.erro) || 'Não consegui apagar agora'); return; }
+      toast('Edital apagado');
+      editaisCarregar();
+      if(e.ativo){ ESCOLHIDO = null; CONT = null; carregarReal(); }
+    }).catch(function(){ toast('Sem conexão para apagar'); });
   }
   function salvarProva(semData){
     var v = semData ? null : ($('provaInput').value || null);
@@ -4047,7 +4158,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(!confirm('Refazer o cronograma redistribui todos os assuntos do edital pelas horas que você tem por dia. O que já foi concluído volta para a fila. Continuar?')) return;
     toast('Refazendo seu cronograma…');
     // manda o ritmo junto: assim o que está na tela é o que vale
-    apiFetch('/api/cronograma', { gerar: true, horas_dia: selVal('rH', (REAL && REAL.horas_dia) || 2), dias_semana: selVal('rD', (REAL && REAL.dias_semana) || 6) })
+    apiFetch('/api/cronograma', { gerar: true, horas_dia: selVal('rH', (REAL && REAL.horas_dia) || 2), dias_semana: selVal('rD', (REAL && REAL.dias_semana) || 6), ordem_estudo: ordemEscolhida() })
       .then(function(r){ return r.json(); })
       .then(function(x){
         ESCOLHIDO = null; CONT = null; enterLoading(); carregarReal();
@@ -4056,6 +4167,62 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           : 'Cronograma refeito ✓');
       })
       .catch(function(){ toast('Não consegui refazer agora'); });
+  }
+
+  /* ---------- a projeção, dita com honestidade ----------
+     Quando o edital não cabe no prazo, não adianta anunciar a data em que ele
+     fecharia: o que importa é QUANTO dele cabe até a prova e O QUE fica de fora.
+     Como o plano é ordenado pelo que mais cai, o que sobra é o que menos cai —
+     e isso precisa estar escrito, não subentendido. */
+  function textoDaProjecao(d, dd){
+    var c = d.cobertura || {};
+    var base = '<b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>';
+
+    if(!d.data_prova) return base + '. Sem data de prova cadastrada.';
+    if(dd < 0) return base + ' — a data de prova cadastrada já passou; ajuste no seu perfil.';
+    if(!c.tem_prova || !c.fora) return base + ' — prova em ' + fmtData(d.data_prova) + '. <b>Cabe inteiro antes da prova.</b>';
+
+    var criterio = (d.ordem_estudo === 'edital')
+      ? '<b style="color:var(--crit)">O plano está na ordem do edital</b>, então o que fica de fora é simplesmente o que estava no fim do documento — não o que menos cai. ' +
+        'Troque para "O que mais cai primeiro", logo abaixo, e o corte passa a atingir os assuntos menos cobrados.'
+      : 'Ordenei pelo que <b>mais cai</b>: os assuntos de maior incidência entram primeiro, cada disciplina aparece na proporção das questões que vale, e o que sobra para depois da prova é o que menos aparece.';
+
+    return '<b>Este edital não cabe no prazo — e é melhor você saber.</b><br>' +
+      'Até <b>' + fmtData(d.data_prova) + '</b> você cobre <b>' + c.percentual + '%</b> do edital (' +
+      c.dentro + ' de ' + c.sessoes + ' sessões · ' + fmtHoras(c.horas_dentro) + ' de ' + fmtHoras(c.horas_totais) + ').<br>' +
+      'Ficam para depois da prova <b>' + c.assuntos_fora + ' assuntos</b>. ' + criterio +
+      '<br><button class="btn ghost small" style="margin-top:9px" onclick="verOQueFicaDeFora()">Ver o que fica de fora</button>' +
+      ' <button class="btn ghost small" style="margin-top:9px" onclick="irParaRitmo()">Aumentar minhas horas</button>';
+  }
+
+  function verOQueFicaDeFora(){
+    var c = (REAL && REAL.cobertura) || {};
+    var lista = c.exemplos_fora || [];
+    if(!lista.length){ toast('Tudo cabe antes da prova'); return; }
+    var corpo = lista.map(function(x){
+      return '<li>' + esc(x.nome) + (x.disciplina ? ' <span class="muted">· ' + esc(x.disciplina) + '</span>' : '') +
+        (x.incidencia != null ? ' <span class="num" style="opacity:.7">incidência ' + x.incidencia + '/10</span>' : '') + '</li>';
+    }).join('');
+    $('visorTit').textContent = 'O que fica para depois da prova';
+    $('visorBaixar').style.display = 'none';
+    VISOR = null;
+    $('visorBody').innerHTML =
+      '<div style="padding:14px 16px 24px; max-width:640px; margin:0 auto; font-size:.9rem; line-height:1.7">' +
+      '<p>São <b>' + c.assuntos_fora + ' assuntos</b> que não cabem até ' + fmtData(REAL.data_prova) + ' no seu ritmo atual. ' +
+      (lista.length < c.assuntos_fora ? 'Mostro aqui os ' + lista.length + ' primeiros da fila de corte.' : '') + '</p>' +
+      '<ul style="margin:12px 0 0 18px">' + corpo + '</ul>' +
+      '<p class="muted" style="margin-top:16px">Três saídas: aumentar as horas por dia, estudar mais dias por semana, ou aceitar o recorte — que é o que a maioria dos aprovados faz.</p>' +
+      '</div>';
+    $('visor').classList.add('show');
+    empilhar({ tela: 'plano', visor: true }, '#visor');
+  }
+
+  function irParaRitmo(){
+    nav('plano');
+    setTimeout(function(){
+      var el = $('ritmoBox');
+      if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
   }
 
   /* ---------- ritmo de estudo, editável a qualquer momento ----------
@@ -4071,10 +4238,64 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     (alvo || chips[0]).classList.add('sel');
   }
 
+  function pickOrdem(el){
+    el.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
+    el.classList.add('sel');
+  }
+  function ordemEscolhida(){
+    var el = document.querySelector('#rO .sel');
+    return el ? el.dataset.o : ((REAL && REAL.ordem_estudo) || 'prioridade');
+  }
+
+  // Sem nota de incidência, "o que mais cai" não tem o que ordenar. Editais
+  // lidos antes desta funcionalidade caem nesse caso — e o aluno não precisa
+  // reenviar o PDF: a IA lê a lista de tópicos que já está salva.
+  function mostrarEstadoPrioridade(){
+    var box = $('prioBox'); if(!box) return;
+    var p = (REAL && REAL.prioridade_pronta) || null;
+    if(!p || !p.total){ box.style.display = 'none'; return; }
+    if(p.com_nota >= p.total){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    $('prioTxt').innerHTML = p.com_nota
+      ? '<b>' + p.com_nota + ' de ' + p.total + ' assuntos</b> já têm nota de incidência. Falta avaliar o resto para o plano priorizar direito.'
+      : '<b>Este edital ainda não foi avaliado por incidência.</b> Enquanto isso, "o que mais cai" ordena só pelo peso das disciplinas. Leva alguns minutos e é feito uma vez só.';
+  }
+
+  function calcularPrioridades(){
+    var btn = $('prioBtn');
+    btn.disabled = true;
+    apiFetch('/api/prioridade').then(function(r){ return r.json(); }).then(function(d){
+      var faltam = (d.disciplinas || []).filter(function(x){ return x.com_nota < x.topicos; });
+      if(!faltam.length){ btn.disabled = false; toast('Já está tudo avaliado'); mostrarEstadoPrioridade(); return; }
+      var feito = 0;
+      // uma disciplina por requisição: nunca estoura o tempo do servidor
+      return faltam.reduce(function(fila, disc){
+        return fila.then(function(){
+          $('prioTxt').innerHTML = 'Avaliando <b>' + esc(disc.nome) + '</b>… <span class="num">' +
+            (feito + 1) + ' de ' + faltam.length + '</span>';
+          return apiFetch('/api/prioridade', { disciplina_id: disc.id })
+            .then(function(r){ return r.json(); })
+            .then(function(){ feito++; })
+            .catch(function(){ feito++; });
+        });
+      }, Promise.resolve()).then(function(){
+        btn.disabled = false;
+        $('prioTxt').innerHTML = '<b>Pronto.</b> Avaliei ' + feito + ' disciplinas. Toque em "Aplicar e refazer o cronograma" para o plano usar isso.';
+        toast('Prioridades calculadas — agora refaça o cronograma');
+      });
+    }).catch(function(){
+      btn.disabled = false;
+      toast('Não consegui avaliar agora');
+    });
+  }
+
   function mostrarRitmoEstudo(){
     if(!REAL || !$('ritmoBox')) return;
     var h = Number(REAL.horas_dia) || 2, d = Number(REAL.dias_semana) || 6;
     marcarChip('rH', h); marcarChip('rD', d);
+    var ord = REAL.ordem_estudo || 'prioridade';
+    document.querySelectorAll('#rO .optchip').forEach(function(c){ c.classList.toggle('sel', c.dataset.o === ord); });
+    mostrarEstadoPrioridade();
     var res = REAL.resumo || {};
     var porDia = (res.dias && res.total) ? Math.round((res.total / res.dias) * 10) / 10 : 0;
     $('ritmoAtualTxt').textContent = 'Hoje o plano está montado para ' + fmtHoras(h) + ' por dia, ' + d +
@@ -4087,7 +4308,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     btn.disabled = true; btn.textContent = 'Redistribuindo o edital…';
     apiFetch('/api/aluno', { data_prova: PROVA_ISO || null, horas_dia: h, dias_semana: d })
       .catch(function(){})
-      .then(function(){ return apiFetch('/api/cronograma', { gerar: true, horas_dia: h, dias_semana: d }); })
+      .then(function(){ return apiFetch('/api/cronograma', { gerar: true, horas_dia: h, dias_semana: d, ordem_estudo: ordemEscolhida() }); })
       .then(function(r){ return r.json(); })
       .then(function(x){
         btn.disabled = false; btn.textContent = 'Aplicar e refazer o cronograma';
@@ -7887,7 +8108,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '06/09/2026 · ritmo de estudo editável + edital em etapas';
+  var VERSAO = '06/09/2026 · prioridade por incidência + vários editais';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
@@ -8344,6 +8565,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('planoTit').textContent = d.edital || 'Seu plano';
     $('planoCount').textContent = (dd === null) ? 'estudo contínuo' : (dd < 0 ? 'data da prova passou' : 'prova em ' + dd + ' dias');
     mostrarRitmoEstudo();
+    editaisCarregar();
 
     // ----- faixa da semana (navegável) -----
     PLANO_ITENS = itens;
@@ -8352,8 +8574,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     // ----- cronograma completo, por disciplina e tópico -----
     $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> sessões concluídas' +
       (d.resumo.horas_totais ? ' <span class="muted">· ' + fmtHoras(d.resumo.horas_totais) + ' de estudo no edital inteiro</span>' : '');
-    $('planoProj').innerHTML = '<b>Projeção:</b> neste ritmo você fecha 100% do edital em <b>' + fmtData(d.resumo.termina_em) + '</b>' +
-      (d.data_prova ? (dd < 0 ? ' — a data de prova cadastrada já passou; ajuste no seu perfil.' : ' — prova em ' + fmtData(d.data_prova) + '.') : '. Sem data de prova cadastrada.');
+    $('planoProj').innerHTML = textoDaProjecao(d, dd);
 
     PLANO_ITENS = itens;
     renderPlanoLista();

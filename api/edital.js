@@ -16,7 +16,7 @@
 //
 // Sem "etapa" o caminho antigo continua valendo (páginas abertas antes da
 // atualização, e editais pequenos, seguem funcionando).
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGeminiPartes, acessoDoAluno, falhaIA } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, chamarGeminiPartes, acessoDoAluno, falhaIA, marcarEditalAtivo } = require('./_lib');
 
 const REGRA_RETIFICACAO = `
 O material pode vir em MAIS DE UM DOCUMENTO, separados por linhas "===== DOCUMENTO n =====".
@@ -55,7 +55,9 @@ Regras:
   1 a 2 h = tópico comum de uma aula;
   3 a 5 h = assunto extenso, com classificações e exceções (ex.: "licitações: modalidades e procedimento");
   6 a 10 h = bloco muito amplo, que na prática vira várias aulas (ex.: "Direito Penal: parte geral").
-  Seja honesto: NÃO padronize as horas. Tópicos curtos devem receber horas baixas e tópicos amplos, horas altas.` + REGRA_RETIFICACAO;
+  Seja honesto: NÃO padronize as horas. Tópicos curtos devem receber horas baixas e tópicos amplos, horas altas.
+- Para CADA tópico, estime também "incidencia": de 0 a 10, o quanto ESSE tópico costuma ser cobrado em provas desta banca para este cargo. 10 = cai em praticamente toda prova; 7 a 9 = cai com muita frequência; 4 a 6 = cai às vezes; 1 a 3 = raro, periférico. Use o que você sabe sobre o padrão da banca e sobre a importância do assunto na área. NÃO dê a mesma nota para tudo: um edital real tem assuntos que caem sempre e assuntos que quase nunca caem.
+- Para CADA disciplina, informe "questoes": quantas questões da prova objetiva são dessa disciplina, SE o edital disser (procure no quadro de provas). Se o edital não disser, use null — não invente.` + REGRA_RETIFICACAO;
 
 const SYS_DISCIPLINAS = `Você lê editais de concurso público brasileiros e identifica as disciplinas do conteúdo programático de um cargo.
 Devolva apenas os nomes das disciplinas que têm programa para o cargo indicado (conhecimentos gerais/básicos + específicos), na ordem em que aparecem. Não invente disciplinas.` + REGRA_RETIFICACAO;
@@ -81,11 +83,12 @@ const SCHEMA_PROGRAMA = {
         type: 'object',
         properties: {
           nome: { type: 'string' },
+          questoes: { type: 'number', nullable: true },
           topicos: {
             type: 'array',
             items: {
               type: 'object',
-              properties: { nome: { type: 'string' }, horas: { type: 'number' } },
+              properties: { nome: { type: 'string' }, horas: { type: 'number' }, incidencia: { type: 'number' } },
               required: ['nome', 'horas']
             }
           }
@@ -175,8 +178,8 @@ async function gravar(aluno, { titulo, cargo, dataProva, banca, disciplinas }) {
   const tituloFinal = (String(titulo || 'Meu edital') + (cargo ? ' — ' + cargo : '')).slice(0, 220);
 
   await db.execute({
-    sql: 'INSERT INTO editais (id, aluno_id, titulo, data_prova, banca, criado_em) VALUES (?,?,?,?,?,?)',
-    args: [editalId, aluno.id, tituloFinal, dataProva || null, banca || null, agora()]
+    sql: 'INSERT INTO editais (id, aluno_id, titulo, data_prova, banca, cargo, criado_em) VALUES (?,?,?,?,?,?,?)',
+    args: [editalId, aluno.id, tituloFinal, dataProva || null, banca || null, cargo || null, agora()]
   });
 
   let nTop = 0;
@@ -184,9 +187,13 @@ async function gravar(aluno, { titulo, cargo, dataProva, banca, disciplinas }) {
     const d = disciplinas[i];
     if (!d || !d.nome) continue;
     const discId = id();
+    // quantas questões a prova tem desta disciplina, quando o edital diz:
+    // é o sinal mais confiável de peso que existe num edital
+    let qtdQuestoes = Number(d.questoes);
+    if (!isFinite(qtdQuestoes) || qtdQuestoes <= 0) qtdQuestoes = null;
     await db.execute({
-      sql: 'INSERT INTO disciplinas (id, edital_id, nome, ordem) VALUES (?,?,?,?)',
-      args: [discId, editalId, String(d.nome).slice(0, 200), i]
+      sql: 'INSERT INTO disciplinas (id, edital_id, nome, ordem, questoes) VALUES (?,?,?,?,?)',
+      args: [discId, editalId, String(d.nome).slice(0, 200), i, qtdQuestoes]
     });
     const tops = (d.topicos || []).slice(0, 400);
     for (let j = 0; j < tops.length; j++) {
@@ -197,27 +204,23 @@ async function gravar(aluno, { titulo, cargo, dataProva, banca, disciplinas }) {
       let horas = (t && typeof t === 'object') ? Number(t.horas) : NaN;
       if (!isFinite(horas) || horas <= 0) horas = 1.5;
       horas = Math.min(12, Math.max(0.5, Math.round(horas * 2) / 2));
+      // incidência: o quanto o assunto costuma cair. É o que decide a ORDEM de
+      // estudo quando o edital não cabe inteiro antes da prova.
+      let inc = (t && typeof t === 'object') ? Number(t.incidencia) : NaN;
+      if (!isFinite(inc)) inc = null; else inc = Math.min(10, Math.max(0, Math.round(inc * 10) / 10));
       await db.execute({
-        sql: 'INSERT INTO topicos (id, disciplina_id, nome, ordem, peso) VALUES (?,?,?,?,?)',
-        args: [id(), discId, nome.slice(0, 300), j, horas]
+        sql: 'INSERT INTO topicos (id, disciplina_id, nome, ordem, peso, incidencia) VALUES (?,?,?,?,?,?)',
+        args: [id(), discId, nome.slice(0, 300), j, horas, inc]
       });
       nTop++;
     }
   }
 
-  // Trocar de edital: o anterior sai de cena junto com o cronograma dele.
-  await db.execute({ sql: 'DELETE FROM cronograma WHERE aluno_id = ?', args: [aluno.id] });
-  const antigos = await db.execute({
-    sql: 'SELECT id FROM editais WHERE aluno_id = ? AND id <> ?', args: [aluno.id, editalId]
-  });
-  for (const velho of antigos.rows) {
-    await db.execute({
-      sql: `DELETE FROM topicos WHERE disciplina_id IN (SELECT id FROM disciplinas WHERE edital_id = ?)`,
-      args: [velho.id]
-    });
-    await db.execute({ sql: 'DELETE FROM disciplinas WHERE edital_id = ?', args: [velho.id] });
-    await db.execute({ sql: 'DELETE FROM editais WHERE id = ?', args: [velho.id] });
-  }
+  // Os editais anteriores FICAM. Antes eles eram apagados aqui, junto com todo
+  // o cronograma e o progresso — quem cadastrava um concurso novo perdia o
+  // anterior sem aviso. Agora o novo apenas passa a ser o edital ativo, e o
+  // aluno volta para qualquer outro quando quiser, do ponto onde parou.
+  await marcarEditalAtivo(db, aluno.id, editalId);
 
   return { editalId, tituloFinal, nTop };
 }
