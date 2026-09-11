@@ -227,12 +227,21 @@
 
   /* typing */
   .lei{background:var(--card2); border-radius:12px; padding:12px; font-size:.88rem; line-height:1.9}
+  /* Lacuna do "completar de memória".
+     Tinha largura fixa de 90px: qualquer resposta um pouco longa
+     ("impessoalidade", "privado da liberdade") era digitada certa mas aparecia
+     cortada, e a aluna não conseguia conferir o que tinha escrito. Agora a
+     largura acompanha o tamanho da resposta esperada (definida em ch no
+     próprio input) e nunca passa da linha. */
   .gap-in{
     border:none; border-bottom:2px solid var(--warn); background:transparent; color:inherit;
-    font:inherit; width:90px; text-align:center; padding:0 2px;
+    font:inherit; width:9ch; min-width:5ch; max-width:100%; text-align:center; padding:0 2px;
+    box-sizing:content-box;
   }
   .gap-in.ok{border-bottom-color:var(--good); color:var(--good); font-weight:700}
   .gap-in.bad{border-bottom-color:var(--crit); color:var(--crit)}
+  /* resposta mostrada pelo botão: não conta como acerto, e fica claro que não conta */
+  .gap-in.revelada{border-bottom-color:var(--muted); color:var(--muted); font-style:italic}
 
   /* quiz */
   .q-enun{font-size:.9rem; background:var(--card2); border-radius:12px; padding:12px; margin-bottom:12px}
@@ -2150,6 +2159,12 @@
             <input class="gap-in" data-ans="publicidade" oninput="gap(this)" aria-label="lacuna 4"> e
             <input class="gap-in" data-ans="eficiência" oninput="gap(this)" aria-label="lacuna 5">…"
           </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px">
+            <span class="num" id="gapConta" style="font-size:.78rem; color:var(--muted)">0 de 0 preenchidas</span>
+            <span style="flex:1"></span>
+            <button class="btn ghost small" onclick="dicaLacuna()">Dica na travada</button>
+            <button class="btn ghost small" onclick="revelarLacunas()">Mostrar respostas</button>
+          </div>
           <p class="muted" style="font-size:.75rem; margin-top:8px">Digitar de memória usa o efeito de geração: fixa mais do que reler dez vezes.</p>
         </div></div>
       </div>
@@ -5095,15 +5110,29 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
 
     // mnemônico
+    //
+    // Cada significado era cortado em 62 caracteres, no meio da palavra: "só
+    // pode fazer o que a lei perm". O macete existe justamente para ser lido
+    // inteiro — cortado, ele não ensina nada. Agora o texto quebra em quantas
+    // linhas precisar e a caixa cresce junto.
     if(d.sigla){
-      corpo += '<rect x="64" y="' + y + '" width="' + (W - 128) + '" height="' + (96 + d.itensSigla.length * 34) + '" rx="20" fill="' + verde + '"/>';
+      var linhasItens = d.itensSigla.map(function(t){ return quebrarSvg(String(t), 62); });
+      var totalLinhas = linhasItens.reduce(function(n, l){ return n + l.length; }, 0);
+      var altura = 96 + totalLinhas * 34 + (d.itensSigla.length - 1) * 8;
+      corpo += '<rect x="64" y="' + y + '" width="' + (W - 128) + '" height="' + altura + '" rx="20" fill="' + verde + '"/>';
       corpo += '<text x="108" y="' + (y + 60) + '" font-family="Bricolage Grotesque, sans-serif" font-size="44" font-weight="800" fill="#FFFFFF" letter-spacing="6">' +
                esc(d.sigla.slice(0, 14)) + '</text>';
-      d.itensSigla.forEach(function(t, i){
-        corpo += '<text x="108" y="' + (y + 104 + i * 34) + '" font-family="Albert Sans, sans-serif" font-size="25" fill="rgba(255,255,255,.92)">' +
-                 esc(String(t).slice(0, 62)) + '</text>';
+      var yl = y + 104;
+      linhasItens.forEach(function(linhas){
+        linhas.forEach(function(linha, k){
+          // as continuações entram recuadas, para a letra do macete continuar destacada
+          corpo += '<text x="' + (k === 0 ? 108 : 134) + '" y="' + yl + '" font-family="Albert Sans, sans-serif" font-size="25" fill="rgba(255,255,255,' + (k === 0 ? '.92' : '.78') + ')">' +
+                   esc(linha) + '</text>';
+          yl += 34;
+        });
+        yl += 8;
       });
-      y += 96 + d.itensSigla.length * 34 + 40;
+      y += altura + 40;
     }
 
     // pegadinhas
@@ -5648,6 +5677,22 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c];
     });
   }
+  // Quebra em quantas linhas forem necessárias, sempre entre palavras.
+  // (linhasSvg, logo abaixo, força no máximo duas linhas — serve para títulos,
+  // não para texto que precisa aparecer inteiro.)
+  function quebrarSvg(txt, max){
+    var pal = String(txt || '').trim().split(/\s+/).filter(Boolean);
+    if(!pal.length) return [''];
+    var linhas = [''];
+    pal.forEach(function(p){
+      var ultima = linhas[linhas.length - 1];
+      var tent = (ultima + ' ' + p).trim();
+      if(!ultima || tent.length <= max) linhas[linhas.length - 1] = tent;
+      else linhas.push(p);
+    });
+    return linhas;
+  }
+
   function linhasSvg(txt, max){
     var pal = String(txt || '').split(/\s+/), linhas = [''], i;
     for(i = 0; i < pal.length; i++){
@@ -5925,7 +5970,16 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function semMd(t){
     return String(t == null ? '' : t).replace(/\*\*|__|\*|`|#{1,6}\s/g, '');
   }
+  // largura em "ch" (largura de um caractere), com piso e teto
+  function larguraDaLacuna(resposta){
+    var n = String(resposta || '').length;
+    return Math.max(6, Math.min(28, n + 2)) + 'ch';
+  }
+
   function gap(inp){
+    // a caixa acompanha o que está sendo digitado: nunca esconde o texto
+    var precisa = Math.max(String(inp.dataset.ans || '').length, inp.value.length);
+    inp.style.width = larguraDaLacuna('x'.repeat(precisa));
     var ok = norm(inp.value) === norm(inp.dataset.ans);
     var partial = norm(inp.dataset.ans).indexOf(norm(inp.value)) === 0;
     inp.classList.toggle('ok', ok);
@@ -5934,6 +5988,47 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       inp.dataset.counted = '1'; inp.disabled = true; gapsDone++;
       if(gapsDone === gapsTotal){ toast('Trecho completo de memória! Verbo "digitar" concluído ✓'); evento('lei_seca', 'digitar', { lacunas: gapsTotal }, 'concluido'); }
     }
+    contarLacunas();
+  }
+
+  function contarLacunas(){
+    var el = $('gapConta'); if(!el) return;
+    var todas = document.querySelectorAll('#leiBox .gap-in');
+    var feitas = 0;
+    todas.forEach(function(i){ if(i.dataset.counted) feitas++; });
+    gapsTotal = todas.length || gapsTotal;
+    gapsDone = feitas;
+    el.textContent = feitas + ' de ' + todas.length + ' preenchidas';
+  }
+
+  // Dica: revela a primeira letra que falta na lacuna em que o aluno está
+  // travado — sem entregar a palavra. Antes não havia saída nenhuma: uma
+  // lacuna que não saía deixava o exercício inacabável.
+  function dicaLacuna(){
+    var pendentes = Array.prototype.filter.call(
+      document.querySelectorAll('#leiBox .gap-in'), function(i){ return !i.dataset.counted; });
+    if(!pendentes.length){ toast('Você já completou tudo'); return; }
+    var alvo = pendentes.filter(function(i){ return i.value; })[0] || pendentes[0];
+    var resp = String(alvo.dataset.ans || '');
+    var quanto = Math.min(resp.length - 1, (alvo.value || '').length + 1);
+    alvo.value = resp.slice(0, Math.max(1, quanto));
+    alvo.focus();
+    gap(alvo);
+    toast('Mais uma letra: continue');
+  }
+
+  function revelarLacunas(){
+    if(!confirm('Mostrar as respostas preenche o trecho inteiro. Serve para conferir, mas não conta como concluído. Continuar?')) return;
+    document.querySelectorAll('#leiBox .gap-in').forEach(function(i){
+      if(i.dataset.counted) return;
+      i.value = i.dataset.ans || '';
+      i.style.width = larguraDaLacuna(i.value);
+      i.classList.remove('bad');
+      i.classList.add('revelada');
+      i.disabled = true;
+    });
+    contarLacunas();
+    toast('Respostas à mostra — tente de novo depois, de memória');
   }
 
   /* ---------- Feynman: explicar em voz alta de verdade ---------- */
@@ -8154,7 +8249,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '11/09/2026 · podcast em duas vozes + prioridade por incidência';
+  var VERSAO = '11/09/2026 · macete inteiro + lacunas que cabem';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
@@ -8463,10 +8558,14 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var lei = esc(c.trecho_chave || c.lei_seca || ''), n = 0;
     lei = lei.replace(/\[\[(.+?)\]\]/g, function(_, w){
       n++;
-      return '<input class="gap-in" data-ans="' + w.trim() + '" oninput="gap(this)" aria-label="lacuna ' + n + '">';
+      // a caixa nasce do tamanho da resposta: cabe inteira, e o aluno enxerga
+      // o que digitou (antes eram 90px para tudo, e a palavra sumia)
+      return '<input class="gap-in" data-ans="' + w.trim() + '" oninput="gap(this)" ' +
+             'style="width:' + larguraDaLacuna(w.trim()) + '" aria-label="lacuna ' + n + '">';
     });
     gapsTotal = n || 1; gapsDone = 0;
     $('leiBox').innerHTML = '"' + lei + '"';
+    contarLacunas();
 
     $('qBanca').textContent = c.banca
       ? 'Questões no estilo da banca ' + c.banca + ' — troque o formato quando quiser.'
