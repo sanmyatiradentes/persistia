@@ -1,7 +1,7 @@
 // Áudio do assunto: podcast (diálogo em duas vozes) e música (letra recitada/cantada).
 // POST {topico_id, tipo:'podcast'|'musica'} → {audio_base64, mime:'audio/wav'}
 // Usa o TTS do Gemini (mesma GEMINI_API_KEY). Guarda em cache no Turso quando couber.
-const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, falhaIA } = require('./_lib');
+const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, falhaIA, ehAdmin } = require('./_lib');
 
 const VOZ_A = process.env.GEMINI_VOZ_A || 'Kore';   // ANA
 const VOZ_B = process.env.GEMINI_VOZ_B || 'Puck';   // LÉO
@@ -172,6 +172,30 @@ module.exports = async (req, res) => {
   const partes = Number(body.partes || q.get('partes')) || 0;
   const chave = (partes > 1 && parte) ? String(topico_id) + ':' + parte + '/' + partes : String(topico_id);
   const kind = (tipo === 'musica') ? 'musica' : 'podcast';
+
+  /* ---------- teste da voz de estúdio (só gestora) ----------
+     Responde de uma vez: a voz de estúdio está funcionando em produção, e com
+     quantos locutores? Sem isto, a única forma de saber era gerar um episódio
+     inteiro e ouvir — e confundir com a voz do navegador era fácil demais. */
+  if ((body.teste === true || q.get('teste') === '1')) {
+    if (!ehAdmin(aluno.email)) return res.status(403).json({ erro: 'Só a gestora pode testar a voz' });
+    const roteiro = 'ANA: Oi! Aqui é a Ana, e esta é a minha voz.\nLEO: E eu sou o Leo. Se você ouviu duas vozes diferentes, está tudo certo.';
+    try {
+      const t0 = Date.now();
+      const wav = await falar(
+        'Leia em voz alta esta conversa de podcast em português do Brasil, entre ANA e LEO, ' +
+        'cada fala na voz de quem a diz:\n\n' + roteiro, true);
+      return res.status(200).json({
+        ok: true, audio_base64: wav, mime: 'audio/wav',
+        vozes: 2, voz_ana: VOZ_A, voz_leo: VOZ_B,
+        modelos: TTS_MODELS, segundos: Math.round((Date.now() - t0) / 100) / 10,
+        kb: Math.round(Buffer.from(wav, 'base64').length / 1024)
+      });
+    } catch (e) {
+      return res.status(200).json({ ok: false, erro: String(e && e.message).slice(0, 300), modelos: TTS_MODELS });
+    }
+  }
+
   if (!topico_id) return res.status(400).json({ erro: 'topico_id é obrigatório' });
 
   const db = getDb();
@@ -253,7 +277,11 @@ module.exports = async (req, res) => {
       });
     } catch (_) {}
 
-    return res.status(200).json({ audio_base64: wav, mime: 'audio/wav', vozes: dois ? 2 : 1, aviso });
+    return res.status(200).json({
+      audio_base64: wav, mime: 'audio/wav',
+      vozes: dois ? 2 : 1, aviso,
+      voz_ana: VOZ_A, voz_leo: dois ? VOZ_B : null
+    });
   } catch (e) {
     const f = falhaIA(e, 'Falha ao gerar o áudio');
     return res.status(f.status).json(f.corpo);

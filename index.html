@@ -2099,6 +2099,7 @@
             <button class="iconbtn" onclick="pararTodosOsSons()" title="Parar tudo" aria-label="Parar o áudio" style="width:30px;height:30px">■</button>
           </div>
           <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
+          <p id="podVozes" style="display:none; font-size:.74rem; margin-top:6px; font-weight:600; color:var(--accent)"></p>
           <p class="muted" style="font-size:.72rem; margin-top:8px">
             Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.
             <button class="lg-alt" style="display:inline; margin:0 0 0 4px; font-size:.72rem" onclick="regravarPodcast()">Saiu numa voz só? Regravar</button>
@@ -2107,10 +2108,10 @@
           <div class="pod-tx" id="podTx"><p class="muted" style="font-size:.85rem">A transcrição aparece assim que o episódio for gerado.</p></div>
           <div class="bloco-ctl">
             <button class="btn ghost small" style="margin:0; padding:6px 12px; font-size:.76rem" id="btnOuvirTx"
-                    onclick="ouvirBloco('podTx','transcricao',this)">🔊 Ler a transcrição</button>
+                    onclick="ouvirBloco('podTx','transcricao',this)">🔊 Ler com a voz do aparelho</button>
             <button class="iconbtn velbtn" onclick="velProxima()" title="Velocidade da leitura">1×</button>
             <button class="lg-alt" onclick="expandirBloco('podTx', this)">expandir</button>
-            <span class="muted" style="font-size:.72rem">role dentro da caixa para acompanhar</span>
+            <span class="muted" style="font-size:.72rem">leitura robótica do texto — <b>não</b> é o episódio com a Ana e o Léo</span>
           </div>
         </div></div>
       </div>
@@ -2839,9 +2840,11 @@
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; align-items:center">
       <button class="btn ghost small" style="margin:0" onclick="admTestarEmail()">✉ Testar o envio de e-mail</button>
+      <button class="btn ghost small" style="margin:0" onclick="admTestarVoz()">🎙️ Testar a voz de estúdio</button>
       <span class="muted" style="font-size:.7rem">versão publicada: <b id="admVersao">—</b></span>
     </div>
     <p class="muted" id="admEmailMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></p>
+    <div id="admVozMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></div>
 
     <div class="adm-l" id="admLista"></div>
 
@@ -4401,6 +4404,31 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(el) el.textContent = VERSAO;
   }
 
+  // Responde em segundos a pergunta "a voz de estúdio está funcionando?".
+  // Grava duas frases fixas, uma da Ana e uma do Léo, sem depender de nenhum
+  // assunto e sem mexer no cache — dá para ouvir a diferença na hora.
+  function admTestarVoz(){
+    var box = $('admVozMsg');
+    box.innerHTML = '<span class="muted">Gravando duas frases de teste com o Gemini… leva até 1 minuto.</span>';
+    apiFetch('/api/audio', { teste: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.erro && !('ok' in d)){ box.innerHTML = '<b style="color:var(--crit)">' + esc(d.erro) + '</b>'; return; }
+        if(!d.ok){
+          box.innerHTML = '<b style="color:var(--crit)">A voz de estúdio NÃO está funcionando.</b><br>' +
+            '<span class="num" style="font-size:.72rem">' + esc(d.erro || '') + '</span><br>' +
+            '<span class="muted">Modelos tentados: ' + esc((d.modelos || []).join(', ')) + '</span>';
+          return;
+        }
+        box.innerHTML = '<b style="color:var(--accent)">Voz de estúdio funcionando.</b> ' +
+          'Ana = <b>' + esc(d.voz_ana) + '</b>, Léo = <b>' + esc(d.voz_leo) + '</b> · ' +
+          d.kb + ' KB em ' + d.segundos + ' s.<br>' +
+          '<span class="muted">Se as duas frases abaixo saírem com a mesma voz, o problema é do modelo, não do código.</span>' +
+          '<audio controls src="data:audio/wav;base64,' + d.audio_base64 + '" style="width:100%; margin-top:8px; height:36px"></audio>';
+      })
+      .catch(function(){ box.innerHTML = '<b style="color:var(--crit)">Sem conexão para testar.</b>'; });
+  }
+
   function admTestarEmail(){
     var msg = $('admEmailMsg');
     msg.textContent = 'Enviando um e-mail de teste para você…';
@@ -4863,7 +4891,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     apiFetch('/api/audio' + q)
       .then(function(r){ return r.json(); })
       .then(function(d){
-        if(d && d.audio_base64){ aplicarAudio(tipo, d.audio_base64, el); return; }
+        if(d && d.audio_base64){ aplicarAudio(tipo, d.audio_base64, el, d); return; }
         gerarVoz(tipo, it, el);
       })
       .catch(function(){ gerarVoz(tipo, it, el); });
@@ -4891,7 +4919,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .then(function(x){
         GERANDO_VOZ = false;
         if(x.s === 200 && x.d.audio_base64){
-          aplicarAudio('podcast', x.d.audio_base64, $('audPod'));
+          aplicarAudio('podcast', x.d.audio_base64, $('audPod'), x.d);
           toast(x.d.vozes === 2
             ? 'Pronto — episódio regravado com as vozes da Ana e do Léo'
             : 'Regravei, mas o roteiro deste assunto não tem diálogo: saiu numa voz. Gere o assunto de novo para ter o roteiro em dupla.');
@@ -4934,9 +4962,20 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
-        if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64, el); }
+        if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64, el, x.d); }
         else {
           estadoVoz(tipo, 'ouvir');
+          // a falha fica escrita no cartão: um toast some antes de ser lido, e
+          // a aluna acabava usando a leitura do aparelho achando que era o episódio
+          if(tipo === 'podcast'){
+            var pv = $('podVozes');
+            if(pv){
+              pv.style.display = 'block'; pv.style.color = 'var(--crit)';
+              pv.textContent = 'Não consegui gravar a voz de estúdio agora: ' +
+                ((x.d && x.d.erro) || 'falha na geração') + '. O botão "Ler com a voz do aparelho", ' +
+                'abaixo, é só uma leitura robótica — não é o episódio.';
+            }
+          }
           toast(x.d.erro || 'Não consegui gerar a voz agora — tente de novo em instantes');
         }
       })
@@ -4947,8 +4986,26 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       });
   }
 
-  function aplicarAudio(tipo, b64, el){
+  // Mostra, embaixo do player, de quem é a voz que vai tocar. Sem isso não
+  // havia como distinguir o episódio de estúdio da leitura robótica do
+  // aparelho — e as duas moram no mesmo cartão.
+  function mostrarVozes(d){
+    var el = $('podVozes'); if(!el) return;
+    if(!d){ el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    if(d.vozes === 2){
+      el.style.color = 'var(--accent)';
+      el.textContent = '🎙️ Vozes de estúdio: Ana (' + (d.voz_ana || 'Kore') + ') e Léo (' + (d.voz_leo || 'Puck') + ')';
+    } else {
+      el.style.color = 'var(--warm)';
+      el.textContent = '🎙️ Voz de estúdio, mas em UMA voz só — o roteiro deste assunto não veio em diálogo. ' +
+                       'Gere o assunto de novo para ter Ana e Léo.';
+    }
+  }
+
+  function aplicarAudio(tipo, b64, el, meta){
     pararTodosOsSons();
+    if(tipo === 'podcast') mostrarVozes(meta || null);
     AUD[tipo] = 'data:audio/wav;base64,' + b64;
     el = el || $(tipo === 'musica' ? 'audMus' : 'audPod');
     el.src = AUD[tipo]; el.style.display = 'block';
@@ -8249,7 +8306,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '11/09/2026 · macete inteiro + lacunas que cabem';
+  var VERSAO = '11/09/2026 · teste da voz de estúdio + macete inteiro';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
