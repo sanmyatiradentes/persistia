@@ -2090,7 +2090,10 @@
             <button class="iconbtn" onclick="pararTodosOsSons()" title="Parar tudo" aria-label="Parar o áudio" style="width:30px;height:30px">■</button>
           </div>
           <audio id="audPod" preload="none" style="width:100%; margin-top:10px; display:none" controls></audio>
-          <p class="muted" style="font-size:.72rem; margin-top:8px">Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.</p>
+          <p class="muted" style="font-size:.72rem; margin-top:8px">
+            Episódio com as vozes de estúdio da Ana e do Léo. O primeiro play de cada assunto grava o áudio; depois ele abre na hora.
+            <button class="lg-alt" style="display:inline; margin:0 0 0 4px; font-size:.72rem" onclick="regravarPodcast()">Saiu numa voz só? Regravar</button>
+          </p>
           <p class="eyebrow" style="margin:12px 0 6px">Transcrição do episódio</p>
           <div class="pod-tx" id="podTx"><p class="muted" style="font-size:.85rem">A transcrição aparece assim que o episódio for gerado.</p></div>
           <div class="bloco-ctl">
@@ -4851,6 +4854,43 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .catch(function(){ gerarVoz(tipo, it, el); });
   }
 
+  // Regrava o episódio jogando fora o áudio guardado.
+  //
+  // O áudio fica em cache por assunto e não expira. Os episódios gravados antes
+  // do conserto das duas vozes continuariam saindo numa voz só para sempre —
+  // este botão é a única forma de trocá-los.
+  function regravarPodcast(){
+    var it = itemAtivo();
+    if(!it){ toast('Abra um assunto primeiro'); return; }
+    if(GERANDO_VOZ){ toast('Já estou gravando um áudio — espere terminar'); return; }
+    AUD.podcast = null;
+    var el = $('audPod');
+    if(el){ try { el.pause(); } catch(e){} el.removeAttribute('src'); el.style.display = 'none'; }
+    GERANDO_VOZ = true;
+    pararTodosOsSons();
+    estadoVoz('podcast', 'regravando…');
+    toast('Regravando com as duas vozes — leva até 2 minutos');
+    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: 'podcast',
+                             parte: it.parte || 1, partes: it.partes || 1, refazer: true })
+      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        GERANDO_VOZ = false;
+        if(x.s === 200 && x.d.audio_base64){
+          aplicarAudio('podcast', x.d.audio_base64, $('audPod'));
+          toast(x.d.vozes === 2
+            ? 'Pronto — episódio regravado com as vozes da Ana e do Léo'
+            : 'Regravei, mas o roteiro deste assunto não tem diálogo: saiu numa voz. Gere o assunto de novo para ter o roteiro em dupla.');
+        } else {
+          estadoVoz('podcast', 'ouvir');
+          toast((x.d && x.d.erro) || 'Não consegui regravar agora');
+        }
+      })
+      .catch(function(){
+        GERANDO_VOZ = false; estadoVoz('podcast', 'ouvir');
+        toast('Sem conexão para regravar');
+      });
+  }
+
   var GERANDO_VOZ = false, VOZ_TIMER = null;
 
   function estadoVoz(tipo, txt){
@@ -5532,14 +5572,17 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(!est || !au) return;
     if(bt) bt.style.display = 'none';
     est.textContent = gerar
-      ? 'Gravando com as vozes da IA — leva até 2 minutos, só na primeira vez…'
+      ? (gerar === 'refazer' ? 'Regravando com as duas vozes — leva até 2 minutos…'
+                             : 'Gravando com as vozes da IA — leva até 2 minutos, só na primeira vez…')
       : 'Buscando o áudio…';
 
     var pronto = function(b64){
       pararTodosOsSons();
       au.src = 'data:audio/wav;base64,' + b64;
       au.style.display = 'block';
-      est.textContent = 'Pronto — use ▶ para ouvir. A barra mostra o tempo.';
+      est.innerHTML = 'Pronto — use ▶ para ouvir. A barra mostra o tempo.' +
+        (tipo === 'podcast' ? ' <button class="lg-alt" style="display:inline;margin:0 0 0 4px;font-size:.74rem" ' +
+          'onclick="buscarSomDaBiblioteca(' + JSON.stringify(it).replace(/"/g, '&quot;') + ', \'podcast\', \'refazer\')">Saiu numa voz só? Regravar</button>' : '');
       try { au.playbackRate = VEL; } catch(e){}
       au.play().catch(function(){});
     };
@@ -5556,8 +5599,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
     var q = '?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
             '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1);
+    // gerar === 'refazer' joga fora o áudio guardado (episódios antigos saíram
+    // numa voz só e ficariam presos no cache para sempre)
     var pedido = gerar
-      ? apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
+      ? apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1,
+                                 partes: it.partes || 1, refazer: gerar === 'refazer' })
       : apiFetch('/api/audio' + q);
 
     pedido.then(function(r){ return r.json(); })
@@ -8108,7 +8154,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '06/09/2026 · prioridade por incidência + vários editais';
+  var VERSAO = '11/09/2026 · podcast em duas vozes + prioridade por incidência';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece

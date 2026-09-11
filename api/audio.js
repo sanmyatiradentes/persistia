@@ -31,6 +31,62 @@ function pcmParaWav(pcmBase64, taxa) {
   return Buffer.concat([cab, pcm]).toString('base64');
 }
 
+/* ---------- normalização do roteiro do podcast ----------
+   O TTS de duas vozes do Gemini casa a fala com a voz pelo RÓTULO do locutor:
+   só sai na voz da Ana o que vier depois de exatamente "ANA:", e na do Léo o que
+   vier depois de "LEO:". Quando o rótulo não bate, o modelo lê tudo numa voz só.
+
+   O modelo escreve o roteiro do jeito dele: "Ana:", "Léo:", "**Ana:**",
+   "— Léo:". O código antigo só trocava "LÉO" por "LEO" — e era sensível a
+   maiúsculas —, então qualquer roteiro em title case (a forma mais comum) saía
+   inteiro numa voz. O front-end já lidava com todas essas variações; o áudio não.
+
+   Aqui cada linha de fala vira "ANA:" ou "LEO:" cravado, a narração entre
+   parênteses some (senão vira texto lido em voz alta) e as linhas soltas grudam
+   na fala anterior, para nenhuma sobra ficar sem dono. */
+function normalizarRoteiro(bruto) {
+  const linhas = String(bruto || '').split(/\r?\n/);
+  const falas = [];
+
+  for (let linha of linhas) {
+    // tira marcas de lista/markdown do começo: "— ", "- ", "* ", "**"
+    let l = linha.replace(/^\s*[-–—*]+\s*/, '').trim();
+    if (!l) continue;
+    l = l.replace(/^\*\*\s*/, '').replace(/^__\s*/, '');
+
+    // "Ana:", "ANA :", "**Léo**:", "Leo -" … tudo vira o rótulo cravado
+    const m = l.match(/^\**\s*(ana|l[éeè]o|leo)\s*\**\s*[:\-–]\s*(.*)$/i);
+    if (m) {
+      const quem = /^a/i.test(m[1]) ? 'ANA' : 'LEO';
+      const dito = limparNarracao(m[2]);
+      if (dito) falas.push({ quem, texto: dito });
+      continue;
+    }
+
+    // linha sem rótulo: continua a fala anterior (não pode virar órfã)
+    const dito = limparNarracao(l);
+    if (!dito) continue;
+    if (falas.length) falas[falas.length - 1].texto += ' ' + dito;
+    else falas.push({ quem: 'ANA', texto: dito });
+  }
+
+  return {
+    texto: falas.map(f => f.quem + ': ' + f.texto).join('\n'),
+    anas: falas.filter(f => f.quem === 'ANA').length,
+    leos: falas.filter(f => f.quem === 'LEO').length
+  };
+}
+
+// Rubrica de roteiro — "(rindo)", "[pausa]" — não é fala: seria lida em voz alta.
+function limparNarracao(t) {
+  return String(t)
+    .replace(/\*\*/g, '')
+    .replace(/\[[^\]]{0,60}\]/g, ' ')
+    .replace(/\((?:rindo|risos|pausa|silêncio|som[^)]{0,40}|vinheta[^)]{0,40})\)/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // Quebra o roteiro em pedaços que cabem numa chamada, sem cortar fala no meio.
 function pedacos(texto, max) {
   const linhas = String(texto).split(/\n+/);
@@ -137,25 +193,38 @@ module.exports = async (req, res) => {
         : res.status(200).json({ cache: false });
     }
 
-    const cache = await db.execute({
-      sql: 'SELECT dados FROM audios WHERE topico_id = ? AND tipo = ?',
-      args: [chave, kind]
-    });
-    if (cache.rows.length) {
-      return res.status(200).json({ audio_base64: cache.rows[0].dados, mime: 'audio/wav', cache: true });
+    // "refazer" joga fora o áudio guardado e grava de novo. Sem isso, um
+    // podcast que saiu com defeito ficaria para sempre: o cache é por tópico e
+    // nunca expira — foi o que manteve em circulação os episódios gravados
+    // numa voz só, mesmo depois do conserto.
+    const refazer = body.refazer === true || q.get('refazer') === '1';
+    if (refazer) {
+      await db.execute({ sql: 'DELETE FROM audios WHERE topico_id = ? AND tipo = ?', args: [chave, kind] });
+    } else {
+      const cache = await db.execute({
+        sql: 'SELECT dados FROM audios WHERE topico_id = ? AND tipo = ?',
+        args: [chave, kind]
+      });
+      if (cache.rows.length) {
+        return res.status(200).json({ audio_base64: cache.rows[0].dados, mime: 'audio/wav', cache: true });
+      }
     }
 
     const c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
     if (!c.rows.length) return res.status(404).json({ erro: 'Conteúdo do tópico ainda não foi gerado' });
     const pacote = JSON.parse(c.rows[0].json);
 
-    let texto, dois;
+    let texto, dois, aviso = null;
     if (kind === 'podcast') {
-      dois = true;
-      const roteiro = String(pacote.podcast || '').slice(0, 9000)
-        .replace(/L[ÉE]O/g, 'LEO')
-        .replace(/^\s*[-–]\s*/gm, '');
-      texto = 'Leia este roteiro de podcast de estudos em português do Brasil, com naturalidade e ritmo de conversa:\n\n' + roteiro;
+      const r = normalizarRoteiro(String(pacote.podcast || '').slice(0, 9000));
+      // duas vozes só quando há mesmo dois locutores no roteiro; com um só,
+      // pedir multi-locutor faz o modelo devolver tudo numa voz de qualquer jeito
+      dois = r.anas > 0 && r.leos > 0;
+      if (!dois) aviso = 'roteiro_sem_dialogo';
+      texto = dois
+        ? 'Leia em voz alta esta conversa de podcast de estudos em português do Brasil, entre ANA e LEO, ' +
+          'com naturalidade e ritmo de conversa — cada fala na voz de quem a diz:\n\n' + r.texto
+        : 'Leia este roteiro de podcast de estudos em português do Brasil, com naturalidade:\n\n' + r.texto;
     } else {
       dois = false;
       const letra = String((pacote.musica || {}).letra || '').slice(0, 1800);
@@ -164,8 +233,12 @@ module.exports = async (req, res) => {
               estilo + ', marcando bem o refrão:\n\n' + letra;
     }
 
-    // roteiro grande vira 2 ou 3 chamadas e volta como um áudio só
-    const blocos = pedacos(texto, 2600).slice(0, 4);
+    // Roteiro grande vira 2 ou 3 chamadas e volta como um áudio só. Cada pedaço
+    // leva a instrução junto: antes só o primeiro levava, e os seguintes
+    // chegavam ao modelo como texto solto, sem dizer que era uma conversa.
+    const cabecalho = texto.split('\n\n')[0] + '\n\n';
+    const corpo = texto.slice(cabecalho.length);
+    const blocos = pedacos(corpo, 2400).slice(0, 4).map(b => cabecalho + b);
     const wavs = [];
     for (const bloco of blocos) {
       wavs.push(await falar(bloco, dois));
@@ -180,7 +253,7 @@ module.exports = async (req, res) => {
       });
     } catch (_) {}
 
-    return res.status(200).json({ audio_base64: wav, mime: 'audio/wav' });
+    return res.status(200).json({ audio_base64: wav, mime: 'audio/wav', vozes: dois ? 2 : 1, aviso });
   } catch (e) {
     const f = falhaIA(e, 'Falha ao gerar o áudio');
     return res.status(f.status).json(f.corpo);
