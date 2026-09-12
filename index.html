@@ -42,8 +42,8 @@
     GOOGLE_ADS: 'AW-991525776',   // Google Ads — conta PersisteIA
     META_PIXEL: '',   // ex.: '123456789012345'
     // rótulo da conversão de assinatura no Google Ads (o trecho depois da barra)
-    ADS_CONVERSAO_ASSINATURA: '',   // ex.: 'AbCdEfGhIj-KlMnOpQ'
-    ADS_CONVERSAO_CADASTRO: ''
+    ADS_CONVERSAO_ASSINATURA: '4-yfCNK2z_UcEJD35dgD',
+    ADS_CONVERSAO_CADASTRO: '76DpCLqJz_UcEJD35dgD'
   };
   (function(){
     var M = window.PIA_MEDICAO;
@@ -4085,6 +4085,12 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         '<br><button class="btn small" style="margin-top:8px" onclick="copiarEndereco()">Copiar o endereço do site</button>';
       return;
     }
+    // pacote avulso também é início de compra: o Google Ads precisa saber
+    var pacote = (PIX_PACOTES || []).filter(function(p){ return Number(p.meses) === Number(meses); })[0];
+    rastrear('assinatura_iniciada', {
+      value: (pacote && Number(pacote.cheio)) || (Number(meses) * 59.9),
+      currency: 'BRL', meses: Number(meses)
+    });
     document.querySelectorAll('.pix-op').forEach(function(b){ b.disabled = true; });
     if(btn) btn.querySelector('.per b').textContent = 'Abrindo o pagamento…';
     $('pixMsg').textContent = '';
@@ -4111,6 +4117,15 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .then(function(d){
         if(d && d.estado){ aplicarAcesso(d); }
         if(d && d.liberado){
+          // Só conta como conversão quando ESTE pagamento acabou de ser
+          // creditado. "liberado" sozinho ficaria verdadeiro em toda conferência
+          // e a mesma venda seria contada várias vezes.
+          if(d.creditado){
+            rastrear('assinatura_confirmada', {
+              value: Number(d.valor) || (Number(d.meses || 1) * 59.9),
+              currency: 'BRL', meses: Number(d.meses) || 1, meio: d.meio || 'avulso'
+            });
+          }
           toast('Pagamento confirmado! Acesso liberado' + (d.acesso_ate ? ' até ' + fmtData(d.acesso_ate) : '') + '.');
           return;
         }
@@ -8501,7 +8516,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '12/09/2026 · Analytics + Google Ads ligados';
+  var VERSAO = '12/09/2026 · medição completa (GA4 + Ads + conversões)';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece

@@ -80,18 +80,28 @@ module.exports = async (req, res) => {
       const busca = await mp('/v1/payments/search?sort=date_created&criteria=desc&limit=10' +
         '&external_reference=' + encodeURIComponent(aluno.id));
       const achados = (busca && busca.results) || [];
-      let creditou = null;
+      let creditou = null, valorPago = 0, mesesPagos = 0, meioPago = null;
       for (const pg of achados) {
         if (pg.status !== 'approved') continue;
         const meses = Number(String(pg.metadata && pg.metadata.meses || '').trim())
           || Number(String(pg.additional_info && pg.additional_info.items && pg.additional_info.items[0] && pg.additional_info.items[0].quantity || 0));
         if (!meses) continue;
         const r = await creditarAcesso(pg.id, aluno.id, meses, pg.transaction_amount, pg.payment_method_id);
-        if (r.creditado) { creditou = r; break; }
+        if (r.creditado) {
+          creditou = r;
+          // o valor real da compra volta para o app: é ele que vai para o
+          // Google Ads como receita. Sem isso, um pacote de 12 meses valeria
+          // o mesmo que uma mensalidade na hora de julgar o anúncio.
+          valorPago = Number(pg.transaction_amount) || 0;
+          mesesPagos = meses;
+          meioPago = pg.payment_method_id || null;
+          break;
+        }
       }
       const acesso = await acessoDoAluno(aluno);
       return res.status(200).json(Object.assign({}, acesso, {
         pacotes, creditado: !!creditou,
+        valor: valorPago, meses: mesesPagos, meio: meioPago,
         pendente: achados.some(p => p.status === 'pending' || p.status === 'in_process')
       }));
     }
