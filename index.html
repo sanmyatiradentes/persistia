@@ -3,14 +3,94 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="PersisteIA — envie seu edital; o resto e com a gente. Cronograma proporcional e conteudo de estudo nos 8 verbos, para concursos publicos.">
+<title>PersisteIA — cronograma de estudos para concurso a partir do seu edital</title>
+<meta name="description" content="Envie o PDF do edital e receba um cronograma até o dia da prova, com o conteúdo de cada assunto em 8 formatos: podcast, mapa mental, flashcards e questões no estilo da banca. 7 dias grátis, sem cartão.">
+<link rel="canonical" href="https://www.persisteia.com.br/">
 <meta name="theme-color" content="#0E8F6E">
-<meta property="og:title" content="PersisteIA — Aprovacao nao e sorte. E metodo.">
-<meta property="og:description" content="Envie o edital do seu concurso e receba cronograma proporcional e material de estudo em 8 formatos. 7 dias gratis, sem cartao.">
+<meta property="og:site_name" content="PersisteIA">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Envie o edital. O cronograma sai pronto.">
+<meta property="og:description" content="A IA lê o edital do seu concurso, monta o plano até o dia da prova e gera o material de estudo em 8 formatos. 7 dias grátis, sem cartão.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://persisteia.com.br">
+<meta property="og:url" content="https://www.persisteia.com.br/">
+<meta property="og:image" content="https://www.persisteia.com.br/og-persisteia.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PersisteIA — envie o edital, o cronograma sai pronto.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Envie o edital. O cronograma sai pronto.">
+<meta name="twitter:description" content="A IA lê o edital do seu concurso e monta o plano até o dia da prova. 7 dias grátis, sem cartão.">
+<meta name="twitter:image" content="https://www.persisteia.com.br/og-persisteia.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
 <link rel="apple-touch-icon" href="icone-180.png">
+
+<!-- ===================== MEDIÇÃO =====================
+     Preencha os três códigos abaixo com os SEUS identificadores. Enquanto um
+     deles ficar vazio, aquela ferramenta simplesmente não carrega — nada quebra
+     e nenhum script de terceiro é baixado à toa.
+
+       GA4        : Google Analytics → Admin → Fluxos de dados → "G-XXXXXXXXXX"
+       GOOGLE_ADS : Google Ads → Ferramentas → Conversões → tag → "AW-XXXXXXXXX"
+       META_PIXEL : Meta Events Manager → Fontes de dados → o número do pixel
+
+     Onde os eventos são disparados está em rastrear() no corpo da página:
+     cadastro → edital_enviado → plano_pronto → assinatura_iniciada → assinatura_confirmada.
+     São eles que dizem qual anúncio trouxe aluno de verdade, e não só clique. -->
+<script>
+  window.PIA_MEDICAO = {
+    GA4: '',          // ex.: 'G-ABC1234567'
+    GOOGLE_ADS: '',   // ex.: 'AW-123456789'
+    META_PIXEL: '',   // ex.: '123456789012345'
+    // rótulo da conversão de assinatura no Google Ads (o trecho depois da barra)
+    ADS_CONVERSAO_ASSINATURA: '',   // ex.: 'AbCdEfGhIj-KlMnOpQ'
+    ADS_CONVERSAO_CADASTRO: ''
+  };
+  (function(){
+    var M = window.PIA_MEDICAO;
+    // ---- Google (GA4 e/ou Google Ads usam a mesma biblioteca) ----
+    var idGoogle = M.GA4 || M.GOOGLE_ADS;
+    if (idGoogle) {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function(){ dataLayer.push(arguments); };
+      gtag('js', new Date());
+      if (M.GA4) gtag('config', M.GA4);
+      if (M.GOOGLE_ADS) gtag('config', M.GOOGLE_ADS);
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(idGoogle);
+      document.head.appendChild(s);
+    }
+    // ---- Meta (Instagram e Facebook) ----
+    if (M.META_PIXEL) {
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+      (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', M.META_PIXEL);
+      fbq('track', 'PageView');
+    }
+  })();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "PersisteIA",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "url": "https://www.persisteia.com.br/",
+  "description": "Plataforma de estudos para concursos públicos: o candidato envia o edital e recebe um cronograma proporcional até a data da prova, com conteúdo gerado por IA em oito formatos de estudo.",
+  "inLanguage": "pt-BR",
+  "offers": {
+    "@type": "Offer",
+    "price": "59.90",
+    "priceCurrency": "BRL",
+    "description": "Assinatura mensal, com 7 dias de teste grátis sem cartão."
+  }
+}
+</script>
 </head>
 <body>
 <title>PersisteIA</title>
@@ -123,6 +203,15 @@
   .ed-barra{height:6px; border-radius:999px; background:var(--line); overflow:hidden; margin:8px 0 6px}
   .ed-barra i{display:block; height:100%; background:var(--accent); border-radius:999px; transition:width .4s}
   .ed-acoes{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:9px}
+  /* funil da gestora */
+  .fn-passo{margin-bottom:11px}
+  .fn-topo{display:flex; align-items:baseline; gap:8px; font-size:.84rem; margin-bottom:4px}
+  .fn-topo b{flex:1}
+  .fn-topo .num{color:var(--muted); font-size:.78rem}
+  .fn-barra{height:9px; border-radius:999px; background:var(--line); overflow:hidden}
+  .fn-barra i{display:block; height:100%; background:var(--accent); border-radius:999px; transition:width .4s}
+  .fn-passo.alerta .fn-barra i{background:var(--crit)}
+  .fn-nota{font-size:.72rem; color:var(--crit); font-weight:600; margin-top:3px}
   .proc{list-style:none; display:flex; flex-direction:column; gap:14px; margin-top:18px}
   .proc li{display:flex; gap:12px; align-items:center; opacity:.28; transition:opacity .3s}
   .proc li.on{opacity:1}
@@ -2846,6 +2935,19 @@
     <p class="muted" id="admEmailMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></p>
     <div id="admVozMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></div>
 
+    <div class="card" id="admFunilCard" style="margin:0 0 16px; display:none">
+      <h2 style="font-size:.98rem">Onde as pessoas param</h2>
+      <p class="muted" style="font-size:.74rem; margin-bottom:10px">
+        Cada degrau é um passo até a assinatura. A maior queda entre dois degraus é onde está o vazamento —
+        é lá que a verba de anúncio se perde.
+      </p>
+      <div class="optchips" style="margin-bottom:10px">
+        <button class="optchip sel" data-p="ultimos_30" onclick="admFunilPeriodo(this)">Últimos 30 dias</button>
+        <button class="optchip" data-p="sempre" onclick="admFunilPeriodo(this)">Desde o começo</button>
+      </div>
+      <div id="admFunil"></div>
+    </div>
+
     <div class="adm-l" id="admLista"></div>
 
     <div class="card" style="margin-top:18px">
@@ -3039,6 +3141,7 @@
           $('login').classList.remove('show');
           fecharSite();
           toast('Bem-vinda(o), ' + (NOME || 'concurseira(o)') + '! Seu progresso fica salvo a partir de agora.');
+          if(x.d.novo !== false) rastrear('cadastro');
           initReal();
         } else {
           $('lgErr').textContent = x.d.erro || 'Não deu certo — confira os dados';
@@ -3254,6 +3357,7 @@
       } else {
         $('dtSub').textContent = 'não encontrei a data no edital — informe acima';
       }
+      rastrear('edital_enviado', { disciplinas: d.n_disciplinas, topicos: d.n_topicos });
       if(ED.falhou && ED.falhou.length){
         toast('Salvei ' + d.n_disciplinas + ' disciplinas. Não consegui ler: ' + ED.falhou.join(', '));
       } else {
@@ -3557,6 +3661,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         JA_CONFIG = true;
         if(btn){ btn.disabled = false; btn.textContent = 'Gerar meu cronograma'; }
         if(x && x.ok){
+          rastrear('plano_pronto', { dias: x.dias, horas_dia: x.horas_dia });
           toast('Cronograma montado: ' + fmtHoras(x.horas_dia) + ' por dia, ' +
                 x.sessoes_por_dia + ' assunto' + (x.sessoes_por_dia > 1 ? 's' : '') + ' por dia em média.');
         }
@@ -3912,6 +4017,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       toast('Abra no Chrome ou Safari para pagar');
       return;
     }
+    rastrear('assinatura_iniciada', { value: (typeof PRECO !== 'undefined' ? PRECO : 59.9), currency: 'BRL' });
     var b = $('pwBtn'); if(b){ b.disabled = true; b.textContent = 'Abrindo o pagamento…'; }
     apiFetch('/api/assinatura', { assinar: true })
       .then(function(r){ return r.json(); })
@@ -4054,6 +4160,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       .then(function(r){ return r.json(); })
       .then(function(d){
         aplicarAcesso(d);
+        if(d.estado === 'ativa'){
+          rastrear('assinatura_confirmada', { value: (typeof PRECO !== 'undefined' ? PRECO : 59.9), currency: 'BRL' });
+        }
         toast(d.estado === 'ativa' ? 'Assinatura ativa. Bons estudos!' : 'Pagamento ainda em processamento — te aviso assim que cair.');
       }).catch(function(){});
   }
@@ -4351,6 +4460,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('admLista').innerHTML = '<p class="muted" style="font-size:.85rem">Carregando…</p>';
     apiFetch('/api/admin').then(function(r){ return r.json(); }).then(function(d){
       if(d.erro){ $('admLista').innerHTML = '<p class="muted">' + esc(d.erro) + '</p>'; return; }
+      FUNIL = d.funil || null; admFunilRender();
       var m = d.metricas;
       $('admMetricas').innerHTML =
         '<div><b class="num">' + m.alunos + '</b><span>alunos</span></div>' +
@@ -4402,6 +4512,46 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function admVersaoMostrar(){
     var el = $('admVersao');
     if(el) el.textContent = VERSAO;
+  }
+
+  /* ---------- funil da gestora ---------- */
+  var FUNIL = null, FUNIL_P = 'ultimos_30';
+
+  function admFunilPeriodo(btn){
+    btn.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
+    btn.classList.add('sel');
+    FUNIL_P = btn.dataset.p;
+    admFunilRender();
+  }
+
+  function admFunilRender(){
+    var box = $('admFunil'); if(!box || !FUNIL) return;
+    var f = FUNIL[FUNIL_P] || {};
+    $('admFunilCard').style.display = 'block';
+    var passos = [
+      { rot: 'Criaram conta',            n: f.cadastraram,     pct: 100 },
+      { rot: 'Enviaram um edital',       n: f.enviaram_edital, pct: f.pct_edital },
+      { rot: 'Receberam o cronograma',   n: f.montaram_plano,  pct: f.pct_plano },
+      { rot: 'Estudaram pelo menos 1 assunto', n: f.estudaram_1, pct: f.pct_estudou },
+      { rot: 'Voltaram (3 ou mais assuntos)',  n: f.estudaram_3, pct: f.pct_voltou },
+      { rot: 'Assinaram',                n: f.assinaram,       pct: f.pct_assinou }
+    ];
+    // a maior queda entre dois degraus é o que interessa
+    var pior = -1, piorQueda = -1;
+    for(var i = 1; i < passos.length; i++){
+      var queda = passos[i-1].pct - passos[i].pct;
+      if(queda > piorQueda){ piorQueda = queda; pior = i; }
+    }
+    box.innerHTML = passos.map(function(p, i){
+      var alerta = i === pior && piorQueda > 0;
+      return '<div class="fn-passo' + (alerta ? ' alerta' : '') + '">' +
+        '<div class="fn-topo"><b>' + esc(p.rot) + '</b>' +
+          '<span class="num">' + (p.n || 0) + ' · ' + (p.pct || 0) + '%</span></div>' +
+        '<div class="fn-barra"><i style="width:' + (p.pct || 0) + '%"></i></div>' +
+        (alerta ? '<div class="fn-nota">maior queda: ' + piorQueda + ' pontos perdidos aqui</div>' : '') +
+      '</div>';
+    }).join('') +
+    (!f.cadastraram ? '<p class="muted" style="font-size:.8rem">Ninguém se cadastrou neste período.</p>' : '');
   }
 
   // Responde em segundos a pergunta "a voz de estúdio está funcionando?".
@@ -7677,6 +7827,51 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     marcaVerbo(verbo || 'escrever');
   }
 
+  /* ================= MEDIÇÃO DO FUNIL =================
+     Um evento por degrau da escada, sempre com o mesmo nome nas três
+     ferramentas. É isto que responde "qual anúncio trouxe aluno de verdade" —
+     clique e visita não respondem, porque o dinheiro só volta em assinatura.
+
+     Os identificadores ficam em PIA_MEDICAO, lá no topo da página. Enquanto
+     estiverem vazios, esta função não faz nada: nenhum erro, nenhum pedido.
+
+     Degraus: cadastro → edital_enviado → plano_pronto →
+              assinatura_iniciada → assinatura_confirmada                      */
+  var META_PADRAO = {
+    cadastro: 'CompleteRegistration',
+    assinatura_iniciada: 'InitiateCheckout',
+    assinatura_confirmada: 'Purchase'
+  };
+
+  function rastrear(evento, dados){
+    try {
+      var M = window.PIA_MEDICAO || {};
+      dados = dados || {};
+
+      // Google Analytics 4 e Google Ads
+      if(typeof gtag === 'function'){
+        gtag('event', evento, dados);
+        // conversão de verdade no Google Ads (só se a etiqueta estiver preenchida)
+        var etiqueta = evento === 'assinatura_confirmada' ? M.ADS_CONVERSAO_ASSINATURA
+                     : evento === 'cadastro' ? M.ADS_CONVERSAO_CADASTRO : '';
+        if(M.GOOGLE_ADS && etiqueta){
+          gtag('event', 'conversion', {
+            send_to: M.GOOGLE_ADS + '/' + etiqueta,
+            value: dados.value || 0,
+            currency: 'BRL'
+          });
+        }
+      }
+
+      // Meta (Instagram e Facebook)
+      if(typeof fbq === 'function'){
+        var padrao = META_PADRAO[evento];
+        if(padrao) fbq('track', padrao, dados);
+        else fbq('trackCustom', evento, dados);
+      }
+    } catch(e){ /* medição nunca pode derrubar a tela */ }
+  }
+
   /* ================= WHATSAPP DA DESENVOLVEDORA ================= */
   var WHATSAPP = '5592991521031';   // (92) 99152-1031
   function linkWhats(){
@@ -8306,7 +8501,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem">Preparando o roteiro…</p>';
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '11/09/2026 · teste da voz de estúdio + macete inteiro';
+  var VERSAO = '12/09/2026 · medição do funil + vitrine para busca';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece

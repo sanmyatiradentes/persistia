@@ -323,6 +323,30 @@ module.exports = async (req, res) => {
       };
     });
 
+    /* ---------- funil: em qual degrau as pessoas param ----------
+       Com poucas adesões, a pergunta que importa não é "quantos entraram" e sim
+       "onde eles param". Cada degrau abaixo é um passo que o aluno precisa dar
+       para chegar à assinatura; a queda entre dois degraus é o vazamento. */
+    const dias = n => Date.now() - n * 86400000;
+    const novos30 = lista.filter(a => new Date(a.criado_em) >= dias(30));
+    function degraus(base) {
+      const n = base.length || 0;
+      const comEdital = base.filter(a => a.edital).length;
+      const comPlano = base.filter(a => a.sessoes > 0).length;
+      const estudou = base.filter(a => a.concluidas > 0).length;
+      const voltou = base.filter(a => a.concluidas >= 3).length;
+      const assinou = base.filter(a => a.situacao === 'assinante').length;
+      const pct = x => n ? Math.round((x / n) * 100) : 0;
+      return {
+        cadastraram: n,
+        enviaram_edital: comEdital, pct_edital: pct(comEdital),
+        montaram_plano: comPlano, pct_plano: pct(comPlano),
+        estudaram_1: estudou, pct_estudou: pct(estudou),
+        estudaram_3: voltou, pct_voltou: pct(voltou),
+        assinaram: assinou, pct_assinou: pct(assinou)
+      };
+    }
+
     const cont = k => lista.filter(a => a.situacao === k).length;
     const ativos7 = lista.filter(a => a.ultimo_evento && (Date.now() - new Date(a.ultimo_evento)) < 7 * 86400000).length;
     const conteudos = await db.execute('SELECT COUNT(*) AS n FROM conteudos');
@@ -343,6 +367,7 @@ module.exports = async (req, res) => {
         catalogo_conteudos: Number(conteudos.rows[0].n) || 0,
         catalogo_audios: audios
       },
+      funil: { sempre: degraus(lista), ultimos_30: degraus(novos30) },
       alunos: lista
     });
   } catch (e) {
