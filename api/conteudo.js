@@ -299,7 +299,7 @@ module.exports = async (req, res) => {
     const chave = partes > 1 ? topicoId + ':' + parte + '/' + partes : topicoId;
     // ?refazer=1 joga fora o conteúdo guardado e gera outro do zero
     if (url.searchParams.get('refazer')) {
-      await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id = ?', args: [chave] });
+      await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id = ? OR topico_id LIKE ?', args: [chave, chave + '::%'] });
     } else {
       const cache = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
       if (cache.rows.length) {
@@ -320,53 +320,121 @@ module.exports = async (req, res) => {
       (partes > 1 ? `Sessão: parte ${parte} de ${partes}\n` : '') +
       `Duração prevista da sessão: ${horas} h\n\n`;
 
-    // A teoria é o texto grande e o que mais corta: se vier pela metade, refaz
-    // antes de mostrar — e, se ainda assim vier truncada, não vai para o cache.
+    // ============ GERAÇÃO EM BLOCOS ============
+    // Antes as quatro chamadas à IA saíam juntas e o aluno só via alguma coisa
+    // quando TODAS voltavam: 35 s de tela parada no melhor caso e, quando uma
+    // delas precisava de segunda tentativa, a função estourava os 60 s da Vercel
+    // e ele recebia erro. Era aí que três de cada quatro alunos desistiam.
+    //
+    // Agora cada requisição faz UMA chamada e devolve o seu pedaço. O site pede
+    // a teoria primeiro — que é o que ele vai ler — e busca o resto enquanto ele
+    // já está lendo. Nenhuma requisição sozinha chega perto do limite de tempo.
     const PEDIDO_TEXTO = 'Gere APENAS estes campos: subtitulo, resumo e explicacao_simples. O "resumo" é o material principal do aluno — desenvolva-o na extensão pedida, sem economizar.';
-    let [texto, apoio, midia, pratica] = await Promise.all([
-      gerar(sis, cabecalho + PEDIDO_TEXTO, S_TEXTO),
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas e cenas.', S_APOIO),
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: podcast e musica.', S_MIDIA),
-      gerar(sis, cabecalho + 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.', S_PRATICA)
-    ]);
-    // a aula escrita é a parte longa: se vier cortada, refaz só ela
-    if (!terminaInteiro(texto && texto.resumo)) {
-      try {
-        texto = await gerar(
-          sis,
-          cabecalho + PEDIDO_TEXTO + '\n\nATENÇÃO: a tentativa anterior foi cortada no meio. ' +
-          'Mantenha a profundidade, mas TERMINE todas as frases e feche o JSON.',
-          S_TEXTO, 2
-        );
-      } catch (_) {}
-    }
-    const teoria = Object.assign({}, texto, apoio, midia);
-    const pacote = Object.assign({}, teoria, pratica);
+    const PEDIDOS = {
+      texto: PEDIDO_TEXTO,
+      apoio: 'Gere APENAS estes campos: acronimo, trecho_chave, dispositivos, palavras_chave, mapa, numeros, pegadinhas e cenas.',
+      midia: 'Gere APENAS estes campos: podcast e musica.',
+      pratica: 'Gere APENAS estes campos: questoes, questoes_me, flashcards e feynman.'
+    };
+    const SCHEMAS = { texto: S_TEXTO, apoio: S_APOIO, midia: S_MIDIA, pratica: S_PRATICA };
+    const ORDEM = ['texto', 'apoio', 'midia', 'pratica'];
+    const chaveBloco = b => chave + '::' + b;
 
-    // Conferência da lei seca: cada dispositivo ganha o link da fonte oficial e
-    // passa por uma segunda leitura independente. O que não se confirma vai
-    // marcado para o aluno — nunca apagado às escondidas.
-    try {
-      pacote.dispositivos = await conferirDispositivos(pacote.dispositivos, t.rows[0].topico);
-    } catch (_) { /* a conferência é melhor-esforço: sem ela o conteúdo ainda vale */ }
-    pacote.palavras_resumo = String(pacote.resumo || '').split(/\s+/).filter(Boolean).length;
-    pacote.topico = t.rows[0].topico;
-    pacote.disciplina = t.rows[0].disciplina;
-    pacote.banca = t.rows[0].banca || null;
-    pacote.parte = parte;
-    pacote.partes = partes;
-    pacote.horas = horas;
-    pacote.lei_seca = pacote.trecho_chave; // compatibilidade com pacotes antigos
-
-    const inteiro = pacoteCompleto(pacote, alvo.paragrafos);
-    pacote.incompleto = !inteiro;
-    if (inteiro) {
+    const lerBloco = async b => {
+      const r = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chaveBloco(b)] });
+      if (!r.rows.length) return null;
+      try { return JSON.parse(r.rows[0].json); } catch (_) { return null; }
+    };
+    const salvarBloco = async (b, obj) => {
       await db.execute({
         sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
-        args: [chave, JSON.stringify(pacote), agora()]
+        args: [chaveBloco(b), JSON.stringify(obj), agora()]
       });
+    };
+    const metadados = p => {
+      p.palavras_resumo = String(p.resumo || '').split(/\s+/).filter(Boolean).length;
+      p.topico = t.rows[0].topico;
+      p.disciplina = t.rows[0].disciplina;
+      p.banca = t.rows[0].banca || null;
+      p.parte = parte;
+      p.partes = partes;
+      p.horas = horas;
+      p.lei_seca = p.trecho_chave; // compatibilidade com pacotes antigos
+      return p;
+    };
+
+    // Gera um bloco (ou devolve o que já está guardado dele).
+    const produzir = async b => {
+      const guardado = await lerBloco(b);
+      if (guardado) return guardado;
+      let dados = await gerar(sis, cabecalho + PEDIDOS[b], SCHEMAS[b]);
+      // a aula escrita é a parte longa: se vier cortada, refaz só ela
+      if (b === 'texto' && !terminaInteiro(dados && dados.resumo)) {
+        try {
+          dados = await gerar(
+            sis,
+            cabecalho + PEDIDO_TEXTO + '\n\nATENÇÃO: a tentativa anterior foi cortada no meio. ' +
+            'Mantenha a profundidade, mas TERMINE todas as frases e feche o JSON.',
+            S_TEXTO, 2
+          );
+        } catch (_) {}
+      }
+      // A lei seca é conferida aqui, junto com o bloco que a produz: assim o
+      // aluno já lê o dispositivo com o selo, sem uma segunda espera depois.
+      if (b === 'apoio') {
+        try {
+          dados.dispositivos = await conferirDispositivos(dados.dispositivos, t.rows[0].topico);
+        } catch (_) { /* a conferência é melhor-esforço */ }
+      }
+      await salvarBloco(b, dados);
+      return dados;
+    };
+
+    // Junta os quatro blocos num pacote só e guarda — é o que faz a próxima
+    // abertura deste assunto ser instantânea.
+    const consolidar = async () => {
+      const partesGeradas = {};
+      for (const b of ORDEM) {
+        partesGeradas[b] = await lerBloco(b);
+        if (!partesGeradas[b]) return null;
+      }
+      const pacote = metadados(Object.assign({}, partesGeradas.texto, partesGeradas.apoio,
+        partesGeradas.midia, partesGeradas.pratica));
+      const inteiro = pacoteCompleto(pacote, alvo.paragrafos);
+      pacote.incompleto = !inteiro;
+      if (inteiro) {
+        await db.execute({
+          sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
+          args: [chave, JSON.stringify(pacote), agora()]
+        });
+        await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id LIKE ?', args: [chave + '::%'] });
+      }
+      return pacote;
+    };
+
+    // ?finalizar=1 — o site avisa que já recebeu os quatro blocos
+    if (url.searchParams.get('finalizar')) {
+      const pacote = await consolidar();
+      if (!pacote) return res.status(202).json({ pendente: true });
+      return res.status(200).json(pacote);
     }
-    return res.status(200).json(pacote);
+
+    // ?bloco=texto|apoio|midia|pratica — uma chamada à IA, um pedaço de volta
+    const bloco = String(url.searchParams.get('bloco') || '').trim();
+    if (bloco) {
+      if (!PEDIDOS[bloco]) return res.status(400).json({ erro: 'Bloco desconhecido' });
+      const dados = await produzir(bloco);
+      const resp = metadados(Object.assign({}, dados));
+      resp.bloco = bloco;
+      resp.parcial = true;
+      return res.status(200).json(resp);
+    }
+
+    // Sem bloco: caminho antigo, para a Biblioteca e para versões antigas do
+    // site. Reaproveita os blocos que já existirem em vez de pagar duas vezes.
+    for (const b of ORDEM) await produzir(b);
+    const pacote = await consolidar();
+    return res.status(200).json(pacote || metadados({ incompleto: true }));
   } catch (e) {
     const f = falhaIA(e, 'Falha ao gerar o conteúdo');
     return res.status(f.status).json(f.corpo);

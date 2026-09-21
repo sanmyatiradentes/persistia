@@ -84,9 +84,32 @@ module.exports = async (req, res) => {
   const db = getDb();
 
   try {
-    const c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
-    if (!c.rows.length) return res.status(404).json({ erro: 'Gere o conteúdo deste assunto primeiro' });
+    // O conteúdo de um assunto pode estar em dois estados: já consolidado numa
+    // linha só, ou ainda em blocos (texto, apoio, midia, pratica), que é como
+    // ele fica enquanto o aluno está estudando o assunto pela primeira vez.
+    // Antes esta função só conhecia o primeiro estado e devolvia 404 — "gere o
+    // conteúdo primeiro" — justamente para quem estava com o conteúdo aberto.
+    const chavePratica = chave + '::pratica';
+    let alvo = chave;
+    let c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
+    if (!c.rows.length) {
+      c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chavePratica] });
+      if (!c.rows.length) return res.status(404).json({ erro: 'Gere o conteúdo deste assunto primeiro' });
+      alvo = chavePratica;
+    }
     const pacote = JSON.parse(c.rows[0].json);
+
+    // Disciplina, tópico e banca vêm do banco, não do pacote: o bloco de
+    // prática não carrega esses campos, e a banca pode ter mudado desde que o
+    // conteúdo foi escrito.
+    const ctx = await db.execute({
+      sql: `SELECT t.nome AS topico, d.nome AS disciplina, e.banca AS banca FROM topicos t
+            JOIN disciplinas d ON d.id = t.disciplina_id
+            JOIN editais e ON e.id = d.edital_id WHERE t.id = ?`,
+      args: [String(topico_id)]
+    });
+    const info = ctx.rows[0] || {};
+    const banca = info.banca || pacote.banca || null;
 
     const jaTem = (pacote[tipo] || []).slice(-14)
       .map(x => x.enunciado || x.frente || '')
@@ -95,11 +118,11 @@ module.exports = async (req, res) => {
 
     const sis = `Você produz material de estudo para concursos públicos brasileiros, em português do Brasil.
 Gere ${cfg.n} ${cfg.regra}, sobre o tópico indicado.
-${pacote.banca ? 'A banca do concurso é ' + pacote.banca + '; siga o estilo dela.' : 'Estilo clássico de concurso, sem imitar banca específica.'}
+${banca ? 'A banca do concurso é ' + banca + '; siga o estilo dela.' : 'Estilo clássico de concurso, sem imitar banca específica.'}
 Cobre pontos DIFERENTES dos que já foram usados. Quando afirmar regra jurídica, cite o dispositivo; se não tiver certeza da fonte, omita a citação.`;
 
-    const pedido = `Disciplina: ${pacote.disciplina || ''}\nTópico: ${pacote.topico || ''}` +
-      (Number(pacote.partes) > 1 ? `\nRecorte: ${pacote.subtitulo || ('parte ' + pacote.parte)}` : '') +
+    const pedido = `Disciplina: ${info.disciplina || pacote.disciplina || ''}\nTópico: ${info.topico || pacote.topico || ''}` +
+      (Number(partes) > 1 ? `\nRecorte: ${pacote.subtitulo || ('parte ' + parte + ' de ' + partes)}` : '') +
       (jaTem ? `\n\nJá foram usados (não repita nem reformule):\n- ${jaTem}` : '');
 
     const bruto = await chamarGemini(sis, pedido, cfg.schema);
@@ -109,7 +132,7 @@ Cobre pontos DIFERENTES dos que já foram usados. Quando afirmar regra jurídica
     pacote[tipo] = (pacote[tipo] || []).concat(novos);
     await db.execute({
       sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
-      args: [chave, JSON.stringify(pacote), agora()]
+      args: [alvo, JSON.stringify(pacote), agora()]
     });
 
     return res.status(200).json({ ok: true, tipo, novos, total: pacote[tipo].length });

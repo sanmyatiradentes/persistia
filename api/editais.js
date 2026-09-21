@@ -68,6 +68,22 @@ module.exports = async (req, res) => {
         return res.status(200).json({ ok: true });
       }
 
+      // A banca é o que define o ESTILO das questões. A IA nem sempre acha o
+      // nome no PDF, e há quem esteja estudando por um edital antigo sabendo
+      // qual banca vai aplicar a prova nova. Então o aluno pode dizer.
+      if (body.banca !== undefined) {
+        const alvoId = String(body.edital_id || '').trim();
+        const nova = String(body.banca || '').trim().slice(0, 80) || null;
+        const r = await db.execute({
+          sql: alvoId
+            ? 'UPDATE editais SET banca = ? WHERE id = ? AND aluno_id = ?'
+            : 'UPDATE editais SET banca = ? WHERE id = (SELECT edital_ativo FROM config WHERE aluno_id = ?) AND aluno_id = ?',
+          args: alvoId ? [nova, alvoId, aluno.id] : [nova, aluno.id, aluno.id]
+        });
+        if (!r.rowsAffected) return res.status(404).json({ erro: 'Edital não encontrado' });
+        return res.status(200).json({ ok: true, banca: nova });
+      }
+
       if (body.apagar) {
         const alvoId = String(body.apagar);
         const existe = await db.execute({
@@ -97,7 +113,7 @@ module.exports = async (req, res) => {
         return res.status(200).json({ ok: true, ativo: novoAtivo });
       }
 
-      return res.status(400).json({ erro: 'Diga o que fazer: ativar, renomear ou apagar' });
+      return res.status(400).json({ erro: 'Diga o que fazer: ativar, renomear, apagar ou banca' });
     }
 
     /* ---------------- GET: a lista com a evolução ---------------- */

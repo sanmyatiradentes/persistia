@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
 
       const dono = await db.execute({ sql: 'SELECT nome FROM alunos WHERE id = ?', args: [t.aluno_id] });
       const novoToken = await novaSessao(db, t.aluno_id);
-      return res.status(200).json({ token: novoToken, nome: (dono.rows[0] || {}).nome || '' });
+      return res.status(200).json({ token: novoToken, nome: (dono.rows[0] || {}).nome || '', novo: false });
     }
 
     // ---------- cadastro e login ----------
@@ -129,7 +129,10 @@ module.exports = async (req, res) => {
         rodape: 'Guarde este e-mail: é por ele que você recupera o acesso se esquecer a senha.'
       }).catch(function () {});
 
-      return res.status(200).json({ token: tk, nome: String(nome).trim() });
+      // "novo" diz ao site se isto foi um cadastro de verdade. Sem ele, o front
+      // contava conversão de "Inscrição" em TODO login, e o Google Ads aprendia
+      // com número inflado — otimizando para quem já era aluno.
+      return res.status(200).json({ token: tk, nome: String(nome).trim(), novo: true });
     }
 
     // login
@@ -137,7 +140,7 @@ module.exports = async (req, res) => {
     const a = r.rows[0];
     if (!a || hashSenha(senha, a.sal) !== a.senha_hash) return res.status(401).json({ erro: 'E-mail ou senha incorretos' });
     const tk = await novaSessao(db, a.id);
-    return res.status(200).json({ token: tk, nome: a.nome });
+    return res.status(200).json({ token: tk, nome: a.nome, novo: false });
   } catch (e) {
     return res.status(500).json({ erro: 'Erro interno', detalhe: String(e).slice(0, 200) });
   }

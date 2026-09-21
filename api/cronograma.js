@@ -473,7 +473,7 @@ module.exports = async (req, res) => {
     });
 
     return res.status(200).json({
-      edital: edital.titulo, edital_id: edital.id, data_prova: dataProvaFinal,
+      edital: edital.titulo, edital_id: edital.id, banca: edital.banca || null, data_prova: dataProvaFinal,
       // o app precisa saber com que ritmo o plano foi montado, para mostrar e
       // deixar a aluna corrigir sem refazer o edital inteiro
       horas_dia: horasDiaAtual, dias_semana: diasSemanaAtual,
