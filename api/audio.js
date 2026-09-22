@@ -224,6 +224,8 @@ module.exports = async (req, res) => {
     const refazer = body.refazer === true || q.get('refazer') === '1';
     if (refazer) {
       await db.execute({ sql: 'DELETE FROM audios WHERE topico_id = ? AND tipo = ?', args: [chave, kind] });
+      // os pedaços meio-gravados também vão embora, senão o refazer reaproveita
+      await db.execute({ sql: "DELETE FROM audios WHERE topico_id = ? AND tipo LIKE ?", args: [chave, kind + ':%'] });
     } else {
       const cache = await db.execute({
         sql: 'SELECT dados FROM audios WHERE topico_id = ? AND tipo = ?',
@@ -234,7 +236,14 @@ module.exports = async (req, res) => {
       }
     }
 
-    const c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
+    // O roteiro pode estar no pacote consolidado ou ainda no bloco "midia",
+    // que é onde ele nasce enquanto o aluno está com o assunto aberto pela
+    // primeira vez. Procurar só no primeiro lugar dava "conteúdo ainda não
+    // foi gerado" justamente para quem estava lendo o assunto.
+    let c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave] });
+    if (!c.rows.length) {
+      c = await db.execute({ sql: 'SELECT json FROM conteudos WHERE topico_id = ?', args: [chave + '::midia'] });
+    }
     if (!c.rows.length) return res.status(404).json({ erro: 'Conteúdo do tópico ainda não foi gerado' });
     const pacote = JSON.parse(c.rows[0].json);
 
@@ -263,11 +272,49 @@ module.exports = async (req, res) => {
     const cabecalho = texto.split('\n\n')[0] + '\n\n';
     const corpo = texto.slice(cabecalho.length);
     const blocos = pedacos(corpo, 2400).slice(0, 4).map(b => cabecalho + b);
-    const wavs = [];
-    for (const bloco of blocos) {
-      wavs.push(await falar(bloco, dois));
+    const total = blocos.length;
+
+    // ============ UM PEDAÇO POR REQUISIÇÃO ============
+    // Um roteiro de podcast vira até quatro chamadas de voz. Antes as quatro
+    // aconteciam dentro da MESMA requisição: cada uma leva de 20 a 45 segundos,
+    // e a função na Vercel morre aos 60. O aluno via "gravando…" por dois
+    // minutos e recebia "sem conexão" — que não era a conexão dele, era a
+    // função sendo desligada no meio. (O teste da gestora sempre funcionou
+    // porque são duas frases curtas: uma chamada só.)
+    //
+    // Agora cada requisição grava UM pedaço e o guarda. O app chama de novo até
+    // terminar, mostrando o progresso. Nenhuma requisição chega perto do limite.
+    const chavePedaco = i => kind + ':' + i + '/' + total;
+    const gravados = [];
+    for (let i = 0; i < total; i++) {
+      const r = await db.execute({
+        sql: 'SELECT dados FROM audios WHERE topico_id = ? AND tipo = ?',
+        args: [chave, chavePedaco(i)]
+      });
+      gravados.push(r.rows.length ? r.rows[0].dados : null);
     }
-    const wav = wavs.length > 1 ? juntarWav(wavs) : wavs[0];
+
+    const proximo = gravados.indexOf(null);
+    if (proximo >= 0) {
+      const pedacoWav = await falar(blocos[proximo], dois);
+      gravados[proximo] = pedacoWav;
+      try {
+        await db.execute({
+          sql: 'INSERT OR REPLACE INTO audios (topico_id, tipo, dados, criado_em) VALUES (?,?,?,?)',
+          args: [chave, chavePedaco(proximo), pedacoWav, agora()]
+        });
+      } catch (_) { /* sem cache do pedaço, a próxima chamada regrava só ele */ }
+    }
+
+    const falta = gravados.indexOf(null);
+    if (falta >= 0) {
+      return res.status(200).json({
+        parcial: true, feito: gravados.filter(Boolean).length, total,
+        vozes: dois ? 2 : 1, voz_ana: VOZ_A, voz_leo: dois ? VOZ_B : null
+      });
+    }
+
+    const wav = total > 1 ? juntarWav(gravados) : gravados[0];
 
     // cache best-effort (áudio grande pode não caber numa linha)
     try {
@@ -275,6 +322,7 @@ module.exports = async (req, res) => {
         sql: 'INSERT OR REPLACE INTO audios (topico_id, tipo, dados, criado_em) VALUES (?,?,?,?)',
         args: [chave, kind, wav, agora()]
       });
+      await db.execute({ sql: "DELETE FROM audios WHERE topico_id = ? AND tipo LIKE ?", args: [chave, kind + ':%'] });
     } catch (_) {}
 
     return res.status(200).json({

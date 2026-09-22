@@ -5120,29 +5120,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     AUD.podcast = null;
     var el = $('audPod');
     if(el){ try { el.pause(); } catch(e){} el.removeAttribute('src'); el.style.display = 'none'; }
-    GERANDO_VOZ = true;
-    pararTodosOsSons();
-    estadoVoz('podcast', 'regravando…');
     toast('Regravando com as duas vozes — leva até 2 minutos');
-    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: 'podcast',
-                             parte: it.parte || 1, partes: it.partes || 1, refazer: true })
-      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
-      .then(function(x){
-        GERANDO_VOZ = false;
-        if(x.s === 200 && x.d.audio_base64){
-          aplicarAudio('podcast', x.d.audio_base64, $('audPod'), x.d);
-          toast(x.d.vozes === 2
-            ? 'Pronto — episódio regravado com as vozes da Ana e do Léo'
-            : 'Regravei, mas o roteiro deste assunto não tem diálogo: saiu numa voz. Gere o assunto de novo para ter o roteiro em dupla.');
-        } else {
-          estadoVoz('podcast', 'ouvir');
-          toast((x.d && x.d.erro) || 'Não consegui regravar agora');
-        }
-      })
-      .catch(function(){
-        GERANDO_VOZ = false; estadoVoz('podcast', 'ouvir');
-        toast('Sem conexão para regravar');
-      });
+    // mesmo caminho de sempre, pedaço por pedaço, só que jogando fora o que havia
+    gerarVoz('podcast', it, el, true);
   }
 
   var GERANDO_VOZ = false, VOZ_TIMER = null;
@@ -5152,49 +5132,75 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(tipo === 'musica' && $('musDur')) $('musDur').textContent = txt;
   }
 
-  function gerarVoz(tipo, it, el){
+  // Grava a voz de estúdio pedindo UM pedaço por vez.
+  //
+  // O roteiro de um podcast vira até quatro trechos de fala. Antes o servidor
+  // gravava os quatro na mesma requisição e era desligado no meio do caminho —
+  // o aluno via "gravando…" por dois minutos e recebia "sem conexão", que não
+  // era a conexão dele. Agora cada chamada traz um pedaço e diz quanto falta.
+  function gerarVoz(tipo, it, el, refazer){
     GERANDO_VOZ = true;
     pararTodosOsSons();
-    estadoVoz(tipo, 'gerando…');
+    estadoVoz(tipo, 'gravando…');
     toast(tipo === 'musica'
       ? 'Gravando a música com a voz da IA — leva até 2 minutos, só na primeira vez'
       : 'Gravando o podcast com as vozes da IA — leva até 2 minutos, só na primeira vez');
 
-    // se passar de 3 minutos, avisa em vez de ficar rodando para sempre
-    clearTimeout(VOZ_TIMER);
-    VOZ_TIMER = setTimeout(function(){
-      if(!GERANDO_VOZ) return;
-      GERANDO_VOZ = false;
-      estadoVoz(tipo, 'ouvir');
-      toast('A gravação está demorando demais. Tente de novo em instantes.');
-    }, 180000);
+    var MAX = 8;   // trava de segurança: nunca mais que isto de idas ao servidor
 
-    apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 })
-      .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
-      .then(function(x){
-        GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
-        if(x.s === 200 && x.d.audio_base64){ aplicarAudio(tipo, x.d.audio_base64, el, x.d); }
-        else {
-          estadoVoz(tipo, 'ouvir');
-          // a falha fica escrita no cartão: um toast some antes de ser lido, e
-          // a aluna acabava usando a leitura do aparelho achando que era o episódio
-          if(tipo === 'podcast'){
-            var pv = $('podVozes');
-            if(pv){
-              pv.style.display = 'block'; pv.style.color = 'var(--crit)';
-              pv.textContent = 'Não consegui gravar a voz de estúdio agora: ' +
-                ((x.d && x.d.erro) || 'falha na geração') + '. O botão "Ler com a voz do aparelho", ' +
-                'abaixo, é só uma leitura robótica — não é o episódio.';
-            }
-          }
-          toast(x.d.erro || 'Não consegui gerar a voz agora — tente de novo em instantes');
+    function falhou(msg, erroDeRede){
+      GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
+      estadoVoz(tipo, 'ouvir');
+      // a falha fica escrita no cartão: um toast some antes de ser lido, e a
+      // aluna acabava usando a leitura do aparelho achando que era o episódio
+      if(tipo === 'podcast'){
+        var pv = $('podVozes');
+        if(pv){
+          pv.style.display = 'block'; pv.style.color = 'var(--crit)';
+          pv.textContent = 'Não consegui gravar a voz de estúdio agora: ' + msg +
+            '. O botão "Ler com a voz do aparelho", abaixo, é só uma leitura robótica — não é o episódio.';
         }
-      })
-      .catch(function(){
-        GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
-        estadoVoz(tipo, 'ouvir');
-        toast('Sem conexão para gerar a voz');
-      });
+      }
+      toast(erroDeRede ? 'Sem conexão para gerar a voz' : (msg || 'Não consegui gerar a voz agora'));
+    }
+
+    function passo(n){
+      if(!GERANDO_VOZ) return;
+      if(n >= MAX){ falhou('a gravação está demorando demais — tente de novo em instantes'); return; }
+
+      // cada pedaço tem o seu próprio relógio: 3 min é folga de sobra para um
+      clearTimeout(VOZ_TIMER);
+      VOZ_TIMER = setTimeout(function(){
+        if(!GERANDO_VOZ) return;
+        falhou('a gravação está demorando demais — tente de novo em instantes');
+      }, 180000);
+
+      var carga = { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 };
+      if(refazer && n === 0) carga.refazer = true;   // só a primeira ida limpa o que havia
+
+      apiFetch('/api/audio', carga)
+        .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; })
+                                          .catch(function(){ return { s: r.status, d: null }; }); })
+        .then(function(x){
+          if(!GERANDO_VOZ) return;
+          clearTimeout(VOZ_TIMER);
+
+          if(x.s === 200 && x.d && x.d.audio_base64){
+            GERANDO_VOZ = false;
+            aplicarAudio(tipo, x.d.audio_base64, el, x.d);
+            return;
+          }
+          if(x.s === 200 && x.d && x.d.parcial){
+            estadoVoz(tipo, 'gravando ' + x.d.feito + '/' + x.d.total + '…');
+            passo(n + 1);          // volta e pede o próximo pedaço
+            return;
+          }
+          falhou((x.d && x.d.erro) || ('o servidor respondeu ' + x.s));
+        })
+        .catch(function(){ if(GERANDO_VOZ) falhou('', true); });
+    }
+
+    passo(0);
   }
 
   // Mostra, embaixo do player, de quem é a voz que vai tocar. Sem isso não
@@ -5900,20 +5906,34 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
     var q = '?topico_id=' + encodeURIComponent(it.topico_id) + '&tipo=' + tipo +
             '&parte=' + (it.parte || 1) + '&partes=' + (it.partes || 1);
-    // gerar === 'refazer' joga fora o áudio guardado (episódios antigos saíram
-    // numa voz só e ficariam presos no cache para sempre)
-    var pedido = gerar
-      ? apiFetch('/api/audio', { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1,
-                                 partes: it.partes || 1, refazer: gerar === 'refazer' })
-      : apiFetch('/api/audio' + q);
 
-    pedido.then(function(r){ return r.json(); })
-      .then(function(d){
-        if(d && d.audio_base64) return pronto(d.audio_base64);
-        if(gerar) return semAudio((d && d.erro) || 'Não consegui gerar a voz agora — tente de novo em instantes.');
-        semAudio();
-      })
-      .catch(function(){ semAudio('Sem conexão para buscar o áudio.'); });
+    // Sem gerar: só pergunta se o áudio já existe (GET, custo zero).
+    if(!gerar){
+      apiFetch('/api/audio' + q).then(function(r){ return r.json(); })
+        .then(function(d){ if(d && d.audio_base64) return pronto(d.audio_base64); semAudio(); })
+        .catch(function(){ semAudio('Sem conexão para buscar o áudio.'); });
+      return;
+    }
+
+    // Gerando: um pedaço por requisição, como na tela Hoje. Antes era uma
+    // chamada só, que estourava o tempo do servidor em roteiro longo.
+    var MAX = 8;
+    (function passo(n){
+      if(n >= MAX){ semAudio('A gravação está demorando demais — tente de novo em instantes.'); return; }
+      var carga = { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 };
+      if(n === 0 && gerar === 'refazer') carga.refazer = true;
+      apiFetch('/api/audio', carga)
+        .then(function(r){ return r.json().catch(function(){ return null; }); })
+        .then(function(d){
+          if(d && d.audio_base64) return pronto(d.audio_base64);
+          if(d && d.parcial){
+            est.textContent = 'Gravando… parte ' + d.feito + ' de ' + d.total;
+            return passo(n + 1);
+          }
+          semAudio((d && d.erro) || 'Não consegui gerar a voz agora — tente de novo em instantes.');
+        })
+        .catch(function(){ semAudio('Sem conexão para buscar o áudio.'); });
+    })(0);
   }
 
   function abrirSimplesDaBiblioteca(c){
@@ -8639,7 +8659,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     } catch(e){}
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '20/09/2026 · mais questões, Persi, banca editável e troca de assunto sem mistura';
+  var VERSAO = '22/09/2026 · voz de estúdio gravada em pedaços (não estoura mais o tempo do servidor)';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
