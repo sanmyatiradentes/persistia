@@ -5146,7 +5146,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       ? 'Gravando a música com a voz da IA — leva até 2 minutos, só na primeira vez'
       : 'Gravando o podcast com as vozes da IA — leva até 2 minutos, só na primeira vez');
 
-    var MAX = 8;   // trava de segurança: nunca mais que isto de idas ao servidor
+    // Trava de segurança. Um roteiro longo vira uma dúzia de pedaços, e um
+    // trecho lento pode precisar de uma segunda tentativa — daí a folga.
+    var MAX = 24;
 
     function falhou(msg, erroDeRede){
       GERANDO_VOZ = false; clearTimeout(VOZ_TIMER);
@@ -5192,7 +5194,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           }
           if(x.s === 200 && x.d && x.d.parcial){
             estadoVoz(tipo, 'gravando ' + x.d.feito + '/' + x.d.total + '…');
-            passo(n + 1);          // volta e pede o próximo pedaço
+            // "lento" = aquele trecho demorou e foi abortado de propósito;
+            // o que já estava gravado continua salvo, então é só insistir.
+            setTimeout(function(){ passo(n + 1); }, x.d.lento ? 1200 : 0);
             return;
           }
           falhou((x.d && x.d.erro) || ('o servidor respondeu ' + x.s));
@@ -5917,7 +5921,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
     // Gerando: um pedaço por requisição, como na tela Hoje. Antes era uma
     // chamada só, que estourava o tempo do servidor em roteiro longo.
-    var MAX = 8;
+    var MAX = 24;
     (function passo(n){
       if(n >= MAX){ semAudio('A gravação está demorando demais — tente de novo em instantes.'); return; }
       var carga = { topico_id: it.topico_id, tipo: tipo, parte: it.parte || 1, partes: it.partes || 1 };
@@ -5928,7 +5932,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           if(d && d.audio_base64) return pronto(d.audio_base64);
           if(d && d.parcial){
             est.textContent = 'Gravando… parte ' + d.feito + ' de ' + d.total;
-            return passo(n + 1);
+            return setTimeout(function(){ passo(n + 1); }, d.lento ? 1200 : 0);
           }
           semAudio((d && d.erro) || 'Não consegui gerar a voz agora — tente de novo em instantes.');
         })
@@ -8659,7 +8663,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     } catch(e){}
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '22/09/2026 · voz de estúdio gravada em pedaços (não estoura mais o tempo do servidor)';
+  var VERSAO = '22/09/2026 · voz de estúdio gravada em pedaços menores e relógio próprio (fim dos 504)';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece

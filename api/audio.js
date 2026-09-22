@@ -108,7 +108,13 @@ function juntarWav(lista) {
   return pcmParaWav(pcm.toString('base64'), taxa);
 }
 
-async function falar(texto, doisLocutores) {
+// Quanto tempo uma única chamada de voz pode durar antes de desistirmos.
+// A função na Vercel morre aos 60 s; se a chamada não tem relógio próprio, ela
+// leva a função junto e o aluno recebe um 504 — sem áudio e sem explicação.
+// Cortando nós mesmos, sobra tempo para responder direito e guardar o que deu.
+const TTS_TIMEOUT_MS = Number(process.env.TTS_TIMEOUT_MS) || 35000;
+
+async function falar(texto, doisLocutores, limiteMs) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY não configurada');
 
@@ -123,19 +129,34 @@ async function falar(texto, doisLocutores) {
       }
     : { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOZ_A } } };
 
+  const teto = Math.max(6000, Math.min(TTS_TIMEOUT_MS, Number(limiteMs) || TTS_TIMEOUT_MS));
   let r = null, ultimoErro = '';
   for (const modelo of TTS_MODELS) {
-    r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: texto }] }],
-          generationConfig: { responseModalities: ['AUDIO'], speechConfig }
-        })
+    const corte = new AbortController();
+    const alarme = setTimeout(() => corte.abort(), teto);
+    try {
+      r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: texto }] }],
+            generationConfig: { responseModalities: ['AUDIO'], speechConfig }
+          }),
+          signal: corte.signal
+        }
+      );
+    } catch (e) {
+      clearTimeout(alarme);
+      if (e && e.name === 'AbortError') {
+        const lento = new Error('A voz demorou demais neste trecho');
+        lento.lento = true;
+        throw lento;
       }
-    );
+      throw e;
+    }
+    clearTimeout(alarme);
     if (r.ok) break;
     ultimoErro = 'TTS HTTP ' + r.status + ' (' + modelo + '): ' + (await r.text()).slice(0, 200);
     // 404/400 = modelo indisponível → tenta o próximo; outros erros param aqui
@@ -198,6 +219,7 @@ module.exports = async (req, res) => {
 
   if (!topico_id) return res.status(400).json({ erro: 'topico_id é obrigatório' });
 
+  const comecou = Date.now();
   const db = getDb();
   try {
     await db.execute(`CREATE TABLE IF NOT EXISTS audios (
@@ -271,7 +293,10 @@ module.exports = async (req, res) => {
     // chegavam ao modelo como texto solto, sem dizer que era uma conversa.
     const cabecalho = texto.split('\n\n')[0] + '\n\n';
     const corpo = texto.slice(cabecalho.length);
-    const blocos = pedacos(corpo, 2400).slice(0, 4).map(b => cabecalho + b);
+    // Pedaços menores. Com 2400 caracteres, um único trecho de diálogo já
+    // passava de 60 s na API de voz e derrubava a função inteira (504). Com
+    // ~1100, cada trecho fica na casa dos 15 a 25 s, bem dentro do limite.
+    const blocos = pedacos(corpo, 1100).slice(0, 12).map(b => cabecalho + b);
     const total = blocos.length;
 
     // ============ UM PEDAÇO POR REQUISIÇÃO ============
@@ -296,7 +321,24 @@ module.exports = async (req, res) => {
 
     const proximo = gravados.indexOf(null);
     if (proximo >= 0) {
-      const pedacoWav = await falar(blocos[proximo], dois);
+      // sobra de tempo desta requisição, para não começar o que não dá para terminar
+      const sobra = 45000 - (Date.now() - comecou);
+      if (sobra < 8000) {
+        return res.status(200).json({ parcial: true, feito: gravados.filter(Boolean).length, total, lento: true });
+      }
+      let pedacoWav;
+      try {
+        pedacoWav = await falar(blocos[proximo], dois, sobra);
+      } catch (e) {
+        // Trecho lento não é erro do aluno: devolvemos o que já existe e o app
+        // pede de novo. O que já foi gravado continua salvo — nada se perde.
+        if (e && e.lento) {
+          return res.status(200).json({
+            parcial: true, feito: gravados.filter(Boolean).length, total, lento: true
+          });
+        }
+        throw e;
+      }
       gravados[proximo] = pedacoWav;
       try {
         await db.execute({
