@@ -164,24 +164,66 @@ function ehAdmin(email) {
   return !!email && lista.includes(String(email).toLowerCase());
 }
 
-// Estado de acesso do aluno. O teste começa no primeiro acesso e dura TRIAL_DIAS.
-// Admin e cortesia nunca são bloqueados.
+// O teste NÃO começa no cadastro: começa na primeira atividade de estudo
+// concluída (ver iniciarTeste, chamado por /api/evento). Antes disso o aluno
+// está "em teste, não iniciado" — fim_teste fica vazio e o acesso é liberado.
+// Quem cadastrava e só voltava dias depois já chegava com o teste quase vencido.
+// Para não deixar a porta aberta para sempre, o relógio dispara sozinho
+// TESTE_ESPERA_MAX dias depois do cadastro, mesmo sem estudo.
+const TESTE_ESPERA_MAX = Number(process.env.TESTE_ESPERA_MAX) || 14;
+
+function somarDias(iso, n) {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + n);
+  return d.toISOString();
+}
+// Último instante possível do teste de quem ainda não começou a estudar.
+function fimTesteLimite(criadoEm) {
+  return criadoEm ? somarDias(criadoEm, TESTE_ESPERA_MAX + TRIAL_DIAS) : null;
+}
+
+// Dispara o relógio do teste na primeira atividade de estudo. Não faz nada se
+// ele já estiver correndo, nem para assinante, cortesia ou teste reiniciado pela gestora.
+async function iniciarTeste(alunoId) {
+  const d = getDb();
+  const r = await d.execute({
+    sql: `SELECT s.estado, s.fim_teste, a.criado_em FROM assinaturas s
+          JOIN alunos a ON a.id = s.aluno_id WHERE s.aluno_id = ?`,
+    args: [alunoId]
+  });
+  const s = r.rows[0];
+  if (!s || s.estado !== 'teste' || s.fim_teste) return;
+  const limite = fimTesteLimite(s.criado_em);
+  let fim = emDias(TRIAL_DIAS);
+  if (limite && limite < fim) fim = limite;
+  await d.execute({
+    sql: `UPDATE assinaturas SET inicio_teste = ?, fim_teste = ?, atualizado_em = ?
+          WHERE aluno_id = ? AND estado = 'teste' AND fim_teste IS NULL`,
+    args: [agora(), fim, agora(), alunoId]
+  });
+}
+
+// Estado de acesso do aluno. Admin e cortesia nunca são bloqueados.
 async function acessoDoAluno(aluno) {
   const d = getDb();
-  let r = await d.execute({ sql: 'SELECT * FROM assinaturas WHERE aluno_id = ?', args: [aluno.id] });
+  const sel = `SELECT s.*, a.criado_em AS aluno_criado_em FROM assinaturas s
+               JOIN alunos a ON a.id = s.aluno_id WHERE s.aluno_id = ?`;
+  let r = await d.execute({ sql: sel, args: [aluno.id] });
   if (!r.rows.length) {
     await d.execute({
       sql: `INSERT INTO assinaturas (aluno_id, estado, inicio_teste, fim_teste, valor, atualizado_em)
             VALUES (?,?,?,?,?,?)`,
-      args: [aluno.id, 'teste', agora(), emDias(TRIAL_DIAS), PRECO, agora()]
+      args: [aluno.id, 'teste', null, null, PRECO, agora()]
     });
-    r = await d.execute({ sql: 'SELECT * FROM assinaturas WHERE aluno_id = ?', args: [aluno.id] });
+    r = await d.execute({ sql: sel, args: [aluno.id] });
   }
   const a = r.rows[0];
   const hoje = agora();
   const admin = ehAdmin(aluno.email);
   const cortesia = a.cortesia_ate && a.cortesia_ate > hoje;
-  const emTeste = a.estado === 'teste' && a.fim_teste && a.fim_teste > hoje;
+  const naoIniciado = a.estado === 'teste' && !a.fim_teste;
+  const limite = naoIniciado ? fimTesteLimite(a.aluno_criado_em) : null;
+  const emTeste = a.estado === 'teste' && (naoIniciado ? (!limite || limite > hoje) : a.fim_teste > hoje);
   const ativa = a.estado === 'ativa';
   const bloqueado = a.estado === 'bloqueada';
   // Quem cancela não perde o que já pagou: segue com acesso até a data da
@@ -200,13 +242,18 @@ async function acessoDoAluno(aluno) {
   else if (emTeste) estado = 'teste';
 
   const fim = estado === 'cortesia' ? a.cortesia_ate : (estado === 'avulso' ? a.acesso_ate : a.fim_teste);
-  const dias = fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null;
+  let dias = fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null;
+  if (estado === 'teste' && naoIniciado) {
+    dias = TRIAL_DIAS;
+    if (limite) dias = Math.min(dias, Math.max(0, Math.ceil((new Date(limite) - new Date()) / 86400000)));
+  }
 
   return {
     estado,
     estado_bruto: a.estado || null,
     liberado: estado !== 'expirado' && estado !== 'bloqueada',
     dias_restantes: (estado === 'teste' || estado === 'cortesia' || estado === 'avulso') ? dias : null,
+    teste_iniciado: estado === 'teste' ? !naoIniciado : null,
     acesso_ate: a.acesso_ate || null,
     fim_teste: a.fim_teste || null,
     proxima_cobranca: a.proxima_cobranca || null,
@@ -440,4 +487,4 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   return geminiComPaciencia(systemText, [{ text: userText }], jsonSchema, modelo);
 }
 
-module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, editalAtivo, marcarEditalAtivo };
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, iniciarTeste, fimTesteLimite, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, editalAtivo, marcarEditalAtivo };

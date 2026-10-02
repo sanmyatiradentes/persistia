@@ -8,7 +8,7 @@
 // POST {aluno_id, acao:'senha_provisoria'}      → define uma senha na hora e devolve para repassar
 // POST {acao:'avisar', assunto, mensagem, para} → aviso por e-mail (todos ou um grupo)
 // POST {acao:'testar_email', para?}             → confere se o Resend está ligado
-const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, hashSenha, PRECO, TRIAL_DIAS } = require('./_lib');
+const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, hashSenha, PRECO, TRIAL_DIAS, fimTesteLimite } = require('./_lib');
 const { enviarEmail, remetente, remetenteProprio } = require('./_email');
 const crypto = require('crypto');
 
@@ -127,14 +127,16 @@ module.exports = async (req, res) => {
           const r = await db.execute({ sql: 'SELECT nome, email FROM alunos WHERE id = ?', args: [aluno_id] });
           destinos = r.rows;
         } else {
-          const r = await db.execute('SELECT a.nome, a.email, s.estado, s.fim_teste, s.cortesia_ate, s.acesso_ate FROM alunos a LEFT JOIN assinaturas s ON s.aluno_id = a.id LIMIT 500');
+          const r = await db.execute('SELECT a.nome, a.email, a.criado_em, s.estado, s.fim_teste, s.cortesia_ate, s.acesso_ate FROM alunos a LEFT JOIN assinaturas s ON s.aluno_id = a.id LIMIT 500');
           const hoje2 = agora();
+          // teste ainda não iniciado (sem fim_teste) vale até o limite de espera
+          const fimEf = x => x.fim_teste || ((x.estado || 'teste') === 'teste' ? fimTesteLimite(x.criado_em) : null);
           destinos = r.rows.filter(x => {
             if (para === 'assinantes') return x.estado === 'ativa' || (x.acesso_ate && x.acesso_ate > hoje2);
-            if (para === 'teste') return (x.estado || 'teste') === 'teste' && x.fim_teste && x.fim_teste > hoje2;
+            if (para === 'teste') return (x.estado || 'teste') === 'teste' && fimEf(x) && fimEf(x) > hoje2;
             if (para === 'expirados') {
               const vivo = x.estado === 'ativa' || (x.acesso_ate && x.acesso_ate > hoje2) ||
-                           (x.cortesia_ate && x.cortesia_ate > hoje2) || (x.fim_teste && x.fim_teste > hoje2);
+                           (x.cortesia_ate && x.cortesia_ate > hoje2) || (fimEf(x) && fimEf(x) > hoje2);
               return !vivo;
             }
             return true;
@@ -302,7 +304,11 @@ module.exports = async (req, res) => {
     const hoje = agora();
     const lista = alunos.rows.map(r => {
       const cortesia = r.cortesia_ate && r.cortesia_ate > hoje;
-      const emTeste = (r.estado || 'teste') === 'teste' && r.fim_teste && r.fim_teste > hoje;
+      // com estado 'teste' e sem fim_teste, o aluno ainda não estudou: o relógio não começou
+      const naoIniciado = r.estado === 'teste' && !r.fim_teste;
+      const fimNaoIniciado = naoIniciado ? fimTesteLimite(r.criado_em) : null;
+      const emTeste = (r.estado || 'teste') === 'teste' &&
+        (naoIniciado ? fimNaoIniciado > hoje : (r.fim_teste && r.fim_teste > hoje));
       let situacao = 'expirado';
       if (r.estado === 'bloqueada') situacao = 'bloqueado';
       else if (r.estado === 'ativa') situacao = 'assinante';
@@ -313,6 +319,7 @@ module.exports = async (req, res) => {
       return {
         id: r.id, nome: r.nome, email: r.email, criado_em: r.criado_em,
         situacao,
+        teste_nao_iniciado: situacao === 'teste' && naoIniciado,
         dias_restantes: fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null,
         proxima_cobranca: r.proxima_cobranca || null,
         edital: r.edital || null,

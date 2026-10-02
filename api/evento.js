@@ -1,6 +1,6 @@
 // Registra um evento de estudo e atualiza o progresso do verbo.
 // POST {tipo, assunto, verbo, status?, detalhe?}
-const { getDb, ensureSchema, agora, id, alunoDoToken, cors } = require('./_lib');
+const { getDb, ensureSchema, agora, id, alunoDoToken, cors, iniciarTeste } = require('./_lib');
 
 module.exports = async (req, res) => {
   cors(res);
@@ -26,6 +26,8 @@ module.exports = async (req, res) => {
               ON CONFLICT(aluno_id, assunto, verbo) DO UPDATE SET status=excluded.status, atualizado_em=excluded.atualizado_em`,
         args: [aluno.id, String(assunto), String(verbo), status || 'concluido', agora()]
       });
+      // primeira atividade de estudo concluída: é aqui que os dias de teste começam a contar
+      if ((status || 'concluido') === 'concluido') await iniciarTeste(aluno.id);
     }
     return res.status(200).json({ ok: true });
   } catch (e) {

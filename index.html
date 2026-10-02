@@ -1544,7 +1544,7 @@
         <button class="btn ghost" onclick="document.getElementById('stTelas').scrollIntoView({behavior:'smooth'})">Ver o sistema por dentro</button>
       </div>
       <div class="st-trust">
-        <span>7 dias grátis, sem cartão</span>
+        <span>7 dias grátis, sem cartão — contados do seu primeiro dia de estudo</span>
         <span>Cronograma proporcional ao edital</span>
         <span>Cancele quando quiser</span>
       </div>
@@ -1796,7 +1796,7 @@
           <li>Painel de evolução e suporte no WhatsApp</li>
         </ul>
         <button class="btn" onclick="abrirConta('cadastro')">Começar meus 7 dias grátis</button>
-        <p class="muted" style="font-size:.75rem; margin-top:11px">No 8.º dia você decide se continua. Nada é cobrado antes disso.</p>
+        <p class="muted" style="font-size:.75rem; margin-top:11px">Os 7 dias só começam a contar quando você estuda o primeiro assunto — cadastrar e voltar depois não gasta o seu teste. No fim, você decide se continua. Nada é cobrado antes disso.</p>
       </div>
 
       <div class="st-pacotes">
@@ -3890,7 +3890,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var f = $('faixaTeste'), t = $('faixaTxt');
     if(a.estado === 'teste' || a.estado === 'cortesia'){
       f.classList.add('show');
-      t.textContent = a.dias_restantes === 0
+      t.textContent = (a.estado === 'teste' && a.teste_iniciado === false)
+        ? 'Seus ' + a.dias_restantes + ' dias grátis começam quando você estudar o primeiro assunto'
+        : a.dias_restantes === 0
         ? 'Último dia do seu teste grátis'
         : (a.dias_restantes === 1 ? 'Falta 1 dia de teste grátis' : 'Faltam ' + a.dias_restantes + ' dias de teste grátis');
     } else {
@@ -3949,7 +3951,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       det = 'Acesso liberado sem cobrança.';
       acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>';
     } else if(est === 'teste'){
-      titulo = 'Teste grátis · ' + (a.dias_restantes === 0 ? 'último dia' : (a.dias_restantes + ' dias restantes'));
+      titulo = 'Teste grátis · ' + (a.teste_iniciado === false ? a.dias_restantes + ' dias, contados a partir do seu primeiro estudo'
+        : a.dias_restantes === 0 ? 'último dia' : (a.dias_restantes + ' dias restantes'));
       det = 'Depois do teste, ' + moeda(a.valor || 59.9) + ' por mês. Você pode assinar antes para não perder o ritmo — a cobrança só começa quando o teste acabar.';
       acoes.innerHTML = '<button class="btn small" onclick="assinar()">Assinar agora</button>' +
                         '<button class="btn ghost small" onclick="abrirPacotes()">Pagar sem cartão (Pix)</button>';
@@ -4543,7 +4546,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('admLista').innerHTML = lista.map(function(a){
       return '<div class="adm-a">' +
         '<div class="lin"><b>' + esc(a.nome) + '</b><span class="sit ' + a.situacao + '">' + a.situacao +
-          (a.dias_restantes !== null && (a.situacao === 'teste' || a.situacao === 'cortesia') ? ' · ' + a.dias_restantes + 'd' : '') + '</span></div>' +
+          (a.teste_nao_iniciado ? ' · não começou' :
+           (a.dias_restantes !== null && (a.situacao === 'teste' || a.situacao === 'cortesia') ? ' · ' + a.dias_restantes + 'd' : '')) + '</span></div>' +
         '<div class="lin"><small>' + esc(a.email) + '</small></div>' +
         '<div class="lin"><small>' + (a.edital ? esc(a.edital) : 'sem edital') + ' · ' + a.concluidas + '/' + a.sessoes + ' sessões · ' + a.eventos + ' ações' +
           (a.ultimo_evento ? ' · último acesso ' + fmtData(String(a.ultimo_evento).slice(0,10)) : '') + '</small></div>' +
@@ -9201,7 +9205,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         : est === 'admin' ? 'acesso de gestora'
         : est === 'encerrando' ? 'assinatura cancelada · acesso até ' + fmtData(ACESSO.proxima_cobranca)
         : est === 'cortesia' ? 'cortesia · ' + ACESSO.dias_restantes + ' dias'
-        : est === 'teste' ? 'teste grátis · ' + ACESSO.dias_restantes + ' dias restantes'
+        : est === 'teste' ? 'teste grátis · ' + ACESSO.dias_restantes + (ACESSO.teste_iniciado === false ? ' dias, ainda não iniciado' : ' dias restantes')
         : 'sem assinatura';
       $('planoConta').textContent = (NOME || 'Minha conta') + ' · ' + sit;
     }
