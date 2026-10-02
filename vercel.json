@@ -4,5 +4,19 @@
     "api/*.js": {
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/assuntos",
+      "destination": "/api/assuntos"
+    },
+    {
+      "source": "/assuntos/:slug",
+      "destination": "/api/assuntos?slug=:slug"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/assuntos?sitemap=1"
+    }
+  ]
 }

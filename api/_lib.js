@@ -51,6 +51,8 @@ const DDL = [
     aluno_id TEXT PRIMARY KEY, estado TEXT NOT NULL DEFAULT 'teste',
     inicio_teste TEXT, fim_teste TEXT, preapproval_id TEXT, valor REAL,
     proxima_cobranca TEXT, cortesia_ate TEXT, atualizado_em TEXT)`,
+  // páginas públicas de assunto que a gestora tirou do ar (api/assuntos.js)
+  `CREATE TABLE IF NOT EXISTS paginas_ocultas (slug TEXT PRIMARY KEY, criado_em TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS sugestoes (
     id TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, nome TEXT, email TEXT,
     texto TEXT NOT NULL, print TEXT, pagina TEXT,
