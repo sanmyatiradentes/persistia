@@ -295,6 +295,9 @@ module.exports = async (req, res) => {
              s.estado, s.fim_teste, s.cortesia_ate, s.proxima_cobranca,
              (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id) AS eventos,
              (SELECT MAX(criado_em) FROM eventos e WHERE e.aluno_id = a.id) AS ultimo_evento,
+             (SELECT tipo FROM eventos e WHERE e.aluno_id = a.id ORDER BY criado_em DESC LIMIT 1) AS ultimo_tipo,
+             (SELECT detalhe FROM eventos e WHERE e.aluno_id = a.id AND e.tipo = 'espera_aula' ORDER BY criado_em LIMIT 1) AS primeira_espera,
+             (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id AND e.tipo = 'saiu_esperando') AS saidas_esperando,
              (SELECT titulo FROM editais ed WHERE ed.aluno_id = a.id ORDER BY ed.criado_em DESC LIMIT 1) AS edital,
              (SELECT COUNT(*) FROM cronograma c WHERE c.aluno_id = a.id) AS sessoes,
              (SELECT COUNT(*) FROM cronograma c WHERE c.aluno_id = a.id AND c.status = 'concluido') AS concluidas
@@ -302,6 +305,9 @@ module.exports = async (req, res) => {
       ORDER BY a.criado_em DESC LIMIT 500`);
 
     const hoje = agora();
+    const esperaSeg = det => {
+      try { const ms = Number(JSON.parse(det || '{}').ms); return ms > 0 ? Math.round(ms / 1000) : null; } catch (_) { return null; }
+    };
     const lista = alunos.rows.map(r => {
       const cortesia = r.cortesia_ate && r.cortesia_ate > hoje;
       // com estado 'teste' e sem fim_teste, o aluno ainda não estudou: o relógio não começou
@@ -326,7 +332,11 @@ module.exports = async (req, res) => {
         sessoes: Number(r.sessoes) || 0,
         concluidas: Number(r.concluidas) || 0,
         eventos: Number(r.eventos) || 0,
-        ultimo_evento: r.ultimo_evento || null
+        ultimo_evento: r.ultimo_evento || null,
+        // o que a aluna fez por último e quanto esperou a primeira aula aparecer
+        ultimo_tipo: r.ultimo_tipo || null,
+        primeira_espera_s: esperaSeg(r.primeira_espera),
+        saidas_esperando: Number(r.saidas_esperando) || 0
       };
     });
 
@@ -355,6 +365,9 @@ module.exports = async (req, res) => {
     }
 
     const cont = k => lista.filter(a => a.situacao === k).length;
+    const esperas = lista.map(a => a.primeira_espera_s).filter(v => v != null).sort((x, y) => x - y);
+    const espera_mediana_s = esperas.length ? esperas[Math.floor(esperas.length / 2)] : null;
+    const sairam_esperando = lista.filter(a => a.saidas_esperando > 0).length;
     const ativos7 = lista.filter(a => a.ultimo_evento && (Date.now() - new Date(a.ultimo_evento)) < 7 * 86400000).length;
     const conteudos = await db.execute('SELECT COUNT(*) AS n FROM conteudos');
     let audios = 0;
@@ -372,7 +385,10 @@ module.exports = async (req, res) => {
         receita_mensal: Math.round(cont('assinante') * PRECO * 100) / 100,
         preco: PRECO,
         catalogo_conteudos: Number(conteudos.rows[0].n) || 0,
-        catalogo_audios: audios
+        catalogo_audios: audios,
+        espera_mediana_s,
+        sairam_esperando,
+        medidos_espera: esperas.length
       },
       funil: { sempre: degraus(lista), ultimos_30: degraus(novos30) },
       alunos: lista

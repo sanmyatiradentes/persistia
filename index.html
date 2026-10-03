@@ -642,6 +642,23 @@
     max-width:90%; text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  /* primeiro assunto guiado: só explicação simples, teoria e questões */
+  .so-primeiro{display:none}
+  #scr-hoje.primeiro .so-primeiro{display:block}
+  #scr-hoje.primeiro .so-depois{display:none !important}
+  #scr-hoje.primeiro .sess{display:flex; flex-direction:column}
+  #scr-hoje.primeiro #guiaPrimeiro{order:-2}
+  #scr-hoje.primeiro #t-simples{order:-1}
+  .guia{border:2px solid var(--accent)}
+  .guia-passos{list-style:none; margin:0; padding:0; counter-reset:gp}
+  .guia-passos li{counter-increment:gp; display:flex; gap:10px; align-items:baseline; padding:7px 0; border-top:1px solid var(--line)}
+  .guia-passos li:first-child{border-top:0}
+  .guia-passos li:before{content:counter(gp); flex:none; width:22px; height:22px; border-radius:50%; display:inline-grid; place-items:center; font-size:.75rem; font-weight:700; background:var(--accent-soft); color:var(--accent)}
+  .guia-passos li.feito:before{content:"✓"; background:var(--accent); color:var(--on-accent)}
+  .guia-passos li.feito b{text-decoration:line-through; opacity:.6}
+  .guia-passos b{flex:none}
+  .guia-passos span{color:var(--muted); font-size:.85rem}
+  .linkbtn{background:none; border:0; padding:0; color:var(--accent); font:inherit; text-decoration:underline; cursor:pointer}
   .demo-note{font-size:.68rem; color:var(--muted); text-align:center; margin-top:18px}
 
   /* ---------- onboarding: data + tempo ---------- */
@@ -2091,7 +2108,7 @@
       <button class="seta" id="hnProx" onclick="mudarDiaEstudo(1)" aria-label="Próximo dia do cronograma" title="Próximo dia">›</button>
     </div>
 
-    <div class="card ringwrap">
+    <div class="card ringwrap so-depois">
       <svg id="ring" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="Progresso do dia"></svg>
       <div class="ringlbl">
         <b style="font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem">0 de 8 verbos hoje</b>
@@ -2113,6 +2130,19 @@
     </div>
 
     <div class="sess">
+
+      <!-- PRIMEIRO ASSUNTO: um caminho só, sem os 8 verbos de uma vez -->
+      <div class="card guia so-primeiro" id="guiaPrimeiro">
+        <p class="eyebrow" style="margin-bottom:4px">Seu primeiro assunto</p>
+        <h2 style="font-size:1.05rem; margin-bottom:10px">Três passos e você fecha o primeiro assunto</h2>
+        <ol class="guia-passos">
+          <li id="gp1"><b>Entenda</b><span>a explicação simples, logo abaixo · 5 min</span></li>
+          <li id="gp2"><b>Aprofunde</b><span>a teoria completa no Leitor</span></li>
+          <li id="gp3"><b>Teste</b><span>as questões no estilo da banca, depois conclua o assunto</span></li>
+        </ol>
+        <p class="muted" style="font-size:.74rem; margin:10px 0 0">Podcast, música, flashcards, mapa mental e os outros verbos aparecem a partir do segundo assunto.
+          <button class="linkbtn" onclick="mostrarTodosVerbos()">Quero ver tudo agora</button></p>
+      </div>
 
       <!-- LER -->
       <div class="card task open" id="t-ler" style="border-color:var(--accent)">
@@ -2153,7 +2183,7 @@
       </div>
 
       <!-- CINEMA MENTAL -->
-      <div class="card task" id="t-cine">
+      <div class="card task so-depois" id="t-cine">
         <button class="task-h" onclick="tg('t-cine')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg></span>
           <span><b>Cinema Mental · a metáfora do assunto</b><small>Uma imagem que você recupera na hora da prova</small></span>
@@ -2166,7 +2196,7 @@
       </div>
 
       <!-- O MACETE DO ASSUNTO -->
-      <div class="card task" id="t-mnemo">
+      <div class="card task so-depois" id="t-mnemo">
         <button class="task-h" onclick="tg('t-mnemo')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.3.2.5.6.5 1V15h6v-.1c0-.4.2-.8.5-1A6 6 0 0012 3z"/></svg></span>
           <span><b>O macete do assunto</b><small>O mnemônico com o significado de cada letra</small></span>
@@ -2181,7 +2211,7 @@
       </div>
 
       <!-- OUVIR -->
-      <div class="card task" id="t-ouvir">
+      <div class="card task so-depois" id="t-ouvir">
         <button class="task-h" onclick="tg('t-ouvir')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12v3a2 2 0 002 2h1v-7H5a2 2 0 00-2 2zm18 0v3a2 2 0 01-2 2h-1v-7h1a2 2 0 012 2zM6 10a6 6 0 0112 0"/></svg></span>
           <span><b>Ouvir · Podcast do dia</b><small>Externo: ouviu no trajeto? Um toque e pronto</small></span>
@@ -2213,7 +2243,7 @@
       </div>
 
       <!-- FALAR -->
-      <div class="card task" id="t-falar">
+      <div class="card task so-depois" id="t-falar">
         <button class="task-h" onclick="tg('t-falar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span>
           <span><b>Falar · Explique como se ensinasse</b><small>A IA ouve, transcreve e aponta o que faltou</small></span>
@@ -2242,7 +2272,7 @@
       </div>
 
       <!-- DIGITAR -->
-      <div class="card task" id="t-digitar">
+      <div class="card task so-depois" id="t-digitar">
         <button class="task-h" onclick="tg('t-digitar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
           <span><b>Digitar · Trecho-chave</b><small>Complete de memória o trecho que a prova cobra</small></span>
@@ -2267,7 +2297,7 @@
       </div>
 
       <!-- ESCREVER -->
-      <div class="card task" id="t-escrever">
+      <div class="card task so-depois" id="t-escrever">
         <button class="task-h" onclick="tg('t-escrever')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
           <span><b>Escrever · Mapa mental à mão</b><small>Externo: fez no caderno? Confirme com um toque</small></span>
@@ -2295,7 +2325,7 @@
           <div id="quizBox">
           <div id="q1">
             <p class="q-src">Questão 1 · estilo certo/errado</p>
-            <p class="q-enun">O princípio da publicidade impede, em qualquer hipótese, a restrição de acesso a informações produzidas pela Administração Pública.</p>
+            <p class="q-enun muted">As questões deste assunto aparecem aqui assim que forem escritas.</p>
             <p class="conf">Quanto você confia na sua resposta? <b class="num" id="c1v">70%</b></p>
             <div class="conf"><input type="range" min="50" max="100" value="70" oninput="c1v.textContent=this.value+'%'" aria-label="Confiança na resposta"></div>
             <div class="q-btns">
@@ -2306,7 +2336,7 @@
           </div>
           <div id="q2" style="display:none; margin-top:16px">
             <p class="q-src">Questão 2 · estilo certo/errado</p>
-            <p class="q-enun">A veiculação de nomes ou imagens que caracterizem promoção pessoal de autoridade em publicidade oficial viola o princípio da impessoalidade.</p>
+            <p class="q-enun muted"></p>
             <div class="q-btns">
               <button class="btn ghost small" onclick="ans(2,true)">Certo</button>
               <button class="btn ghost small" onclick="ans(2,false)">Errado</button>
@@ -2319,7 +2349,7 @@
       </div>
 
       <!-- TREINAR -->
-      <div class="card task" id="t-treinar">
+      <div class="card task so-depois" id="t-treinar">
         <button class="task-h" onclick="tg('t-treinar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="15" rx="2"/><path d="M8 3h13v15"/></svg></span>
           <span><b>Treinar · Flashcards</b><small id="fcSub">Revisão espaçada no ritmo do seu esquecimento</small></span>
@@ -2336,8 +2366,8 @@
           </div>
           <div class="fc" id="fc" onclick="this.classList.toggle('flip')" role="button" tabindex="0" aria-label="Virar flashcard">
             <div class="fc-in">
-              <div class="fc-f" id="fcF">O que o §1º do art. 37 veda na publicidade dos órgãos públicos?</div>
-              <div class="fc-b" id="fcB">Promoção pessoal: nomes, símbolos ou imagens de autoridades ou servidores. A publicidade deve ter caráter educativo, informativo ou de orientação social.</div>
+              <div class="fc-f" id="fcF">Os flashcards deste assunto aparecem aqui.</div>
+              <div class="fc-b" id="fcB">Toque para virar o cartão.</div>
             </div>
           </div>
           <div class="fc-acts">
@@ -2349,7 +2379,7 @@
       </div>
 
       <!-- RESUMO VISUAL -->
-      <div class="card task" id="t-visual">
+      <div class="card task so-depois" id="t-visual">
         <button class="task-h" onclick="tg('t-visual')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l4-4 3 3 4-5 7 7"/></svg></span>
           <span><b>Bônus · Resumo visual</b><small>Uma página do assunto para salvar, imprimir e compartilhar</small></span>
@@ -2365,7 +2395,7 @@
       </div>
 
       <!-- MÚSICA -->
-      <div class="card task warm" id="t-musica">
+      <div class="card task so-depois warm" id="t-musica">
         <button class="task-h" onclick="tg('t-musica')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V6l11-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="15" r="2.5"/></svg></span>
           <span><b id="musCard">Bônus · Música do assunto</b><small>O refrão que não sai mais da sua cabeça</small></span>
@@ -2393,7 +2423,7 @@
       </div>
 
       <!-- PERGUNTAR -->
-      <div class="card task" id="t-perguntar">
+      <div class="card task so-depois" id="t-perguntar">
         <button class="task-h" onclick="tg('t-perguntar')">
           <span class="task-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 01-8 8H4l2.2-2.6A8 8 0 1121 12z"/><path d="M9.6 9.2a2.6 2.6 0 115 1c-.6 1-1.6 1.2-1.6 2.3M13 15.8h.01"/></svg></span>
           <span><b>Perguntar · Interrogue o assunto</b><small>Formule 2 perguntas suas e tire com o Persi</small></span>
@@ -2419,7 +2449,7 @@
         <div id="slotConcluir"></div>
       </div>
 
-      <div class="card" style="margin-top:14px">
+      <div class="card so-depois" style="margin-top:14px">
         <h2 style="font-size:.95rem">Algo neste assunto saiu errado?</h2>
         <p class="muted" style="font-size:.78rem; margin:6px 0 10px">
           Ao entrar no dia, o sistema escreve de uma vez o pacote inteiro deste assunto: teoria, lei seca,
@@ -2429,16 +2459,14 @@
         <button class="btn ghost small" style="margin:0" onclick="refazerConteudo()">↻ Gerar este assunto de novo</button>
       </div>
 
-      <p class="eyebrow" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
-      <div class="revchips" id="revChips">
-      <div class="rev"><span>24 h</span><b>Atos administrativos</b>5 flashcards · 4 min</div>
-      <div class="rev"><span>7 dias</span><b>Crase</b>ditado relâmpago · 3 min</div>
-      <div class="rev"><span>30 dias</span><b>Cadeia de custódia</b>3 questões · 5 min</div>
+      <p class="eyebrow so-depois" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
+      <div class="revchips so-depois" id="revChips">
+      <div class="rev"><b>Suas revisões aparecem aqui</b>depois do seu primeiro assunto</div>
       </div>
 
 
       <!-- MINHA VOZ -->
-      <div class="card">
+      <div class="card so-depois">
         <h2 style="font-size:.98rem">Minha Voz · suas gravações</h2>
         <p class="muted" style="font-size:.74rem; margin-bottom:6px">Toda leitura em voz alta que você grava no Leitor fica aqui, no seu aparelho, pronta para reouvir no trajeto.</p>
         <div id="mvLista"><p class="muted" style="font-size:.8rem">Nenhuma gravação ainda. Leia a teoria em voz alta no Leitor e sua faixa aparece aqui.</p></div>
@@ -2446,7 +2474,7 @@
       </div>
 
     </div>
-    <p class="muted" style="font-size:.74rem; margin-top:14px">A ordem é sugestão: adiante o que quiser ou deixe para depois — eu recalculo e nada se perde. O que você faz aqui dentro eu marco sozinho; só o que é externo (ouvir fora do app, escrever no caderno) pede um toque seu no "Feito".</p>
+    <p class="muted so-depois" style="font-size:.74rem; margin-top:14px">A ordem é sugestão: adiante o que quiser ou deixe para depois — eu recalculo e nada se perde. O que você faz aqui dentro eu marco sozinho; só o que é externo (ouvir fora do app, escrever no caderno) pede um toque seu no "Feito".</p>
   </section>
 
   <!-- ================= PLANO ================= -->
@@ -3656,7 +3684,8 @@
     $('fab').classList.add('show');
     $('scr-hoje').classList.add('active');
     drawRing(); drawWave(); vozCarregar();
-    $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
+    $('lerIntro').textContent = 'A IA está escrevendo a aula deste assunto agora. Na primeira vez leva alguns segundos — depois ele abre na hora.';
+    evento('abriu_hoje');
 
     $('leiBox').innerHTML = '<span class="muted">Carregando o trecho para você completar de memória…</span>';
     $('quizBox').innerHTML = '<p class="muted" style="font-size:.85rem">Gerando questões inéditas no estilo da banca…</p>';
@@ -4543,11 +4572,24 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         '<div><b class="num">' + m.expirados + '</b><span>teste expirado</span></div>' +
         '<div><b class="num">R$ ' + Number(m.receita_mensal).toFixed(2).replace('.', ',') + '</b><span>receita recorrente</span></div>' +
         '<div><b class="num">' + m.catalogo_conteudos + '</b><span>conteúdos no catálogo</span></div>' +
-        '<div><b class="num">' + m.catalogo_audios + '</b><span>áudios de estúdio</span></div>';
+        '<div><b class="num">' + m.catalogo_audios + '</b><span>áudios de estúdio</span></div>' +
+        '<div><b class="num">' + (m.espera_mediana_s == null ? '—' : m.espera_mediana_s + ' s') + '</b><span>espera típica pela 1ª aula' +
+          (m.medidos_espera ? ' (' + m.medidos_espera + ' medidos)' : '') + '</span></div>' +
+        '<div><b class="num">' + (m.sairam_esperando || 0) + '</b><span>fecharam o app esperando a aula</span></div>';
       ADM = d.alunos || [];
       admFiltrar();
     }).catch(function(){ $('admLista').innerHTML = '<p class="muted">Falha ao carregar.</p>'; });
   }
+  // nomes legíveis para a "última ação" de cada aluno no Painel
+  var NOME_EVENTO = {
+    abriu_hoje: 'abriu a tela Hoje', espera_aula: 'viu a aula aparecer', saiu_esperando: 'saiu esperando a aula',
+    leitura_teoria: 'leu a teoria', questao: 'respondeu questão', flashcard_revisado: 'revisou flashcard',
+    podcast_ouvido: 'ouviu o podcast', musica_ouvida: 'ouviu a música', pergunta: 'perguntou ao Persi',
+    feynman: 'explicou em voz alta', lei_seca: 'completou a lei seca', explicacao_simples_ouvida: 'ouviu a explicação simples',
+    externo_confirmado: 'marcou atividade externa', resumo_visual: 'abriu o resumo visual', video_assunto: 'viu o vídeo',
+    teoria_ouvida: 'ouviu a teoria', voz_alta: 'leu em voz alta', recap: 'fez a revisão rápida', eco: 'usou o eco',
+    viu_8_verbos: 'abriu os 8 verbos antes da hora'
+  };
   function admFiltrar(){
     var q = norm(($('admBusca') || {}).value || '');
     var lista = ADM.filter(function(a){ return !q || norm(a.nome + ' ' + a.email).indexOf(q) > -1; });
@@ -4559,7 +4601,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
            (a.dias_restantes !== null && (a.situacao === 'teste' || a.situacao === 'cortesia') ? ' · ' + a.dias_restantes + 'd' : '')) + '</span></div>' +
         '<div class="lin"><small>' + esc(a.email) + '</small></div>' +
         '<div class="lin"><small>' + (a.edital ? esc(a.edital) : 'sem edital') + ' · ' + a.concluidas + '/' + a.sessoes + ' sessões · ' + a.eventos + ' ações' +
-          (a.ultimo_evento ? ' · último acesso ' + fmtData(String(a.ultimo_evento).slice(0,10)) : '') + '</small></div>' +
+          (a.ultimo_evento ? ' · último acesso ' + fmtData(String(a.ultimo_evento).slice(0,10)) : '') +
+          (a.ultimo_tipo ? ' · última ação: ' + esc(NOME_EVENTO[a.ultimo_tipo] || a.ultimo_tipo) : '') +
+          (a.primeira_espera_s != null ? ' · esperou ' + a.primeira_espera_s + ' s pela 1ª aula' : '') +
+          (a.saidas_esperando ? ' · <b style="color:var(--crit)">fechou o app esperando a aula</b>' : '') + '</small></div>' +
         '<div class="lin" style="margin-top:8px">' +
           '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'cortesia\',30)">+30 dias grátis</button>' +
           '<button class="btn ghost small" onclick="admAcao(\'' + a.id + '\',\'resetar_teste\',7)">reiniciar teste</button>' +
@@ -5969,7 +6014,35 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   /* ---------- expanders ---------- */
-  function tg(id, abrir){ var el = $(id); if(!el) return; if(abrir) el.classList.add('open'); else el.classList.toggle('open'); }
+  function tg(id, abrir){ var el = $(id); if(!el) return; if(abrir) el.classList.add('open'); else el.classList.toggle('open'); if(id === 't-simples' && !abrir) passoGuia(1); }
+
+  /* ---------- primeiro assunto guiado ----------
+     Quem chega vê 8 verbos, 2 bônus, revisões e gravações de uma vez — e metade
+     parava antes de terminar o primeiro assunto. Até concluir o primeiro, a tela
+     Hoje mostra um caminho só: explicação simples → teoria → questões. */
+  var MODO_PRIMEIRO = false;
+  function aplicarModoPrimeiro(d){
+    var visto = false;
+    try { visto = localStorage.getItem('persisteia_8verbos') === '1'; } catch(e){}
+    var concluidos = d && d.resumo ? Number(d.resumo.concluidos) || 0 : 1;
+    MODO_PRIMEIRO = concluidos === 0 && !visto;
+    $('scr-hoje').classList.toggle('primeiro', MODO_PRIMEIRO);
+    if(MODO_PRIMEIRO){
+      tg('t-simples', true);
+      if(FEITOS.ler) passoGuia(2);
+      if(FEITOS.raciocinar) passoGuia(3);
+    }
+  }
+  function passoGuia(n){
+    var li = $('gp' + n); if(li) li.classList.add('feito');
+    if(n > 1) passoGuia(n - 1);
+  }
+  function mostrarTodosVerbos(){
+    try { localStorage.setItem('persisteia_8verbos', '1'); } catch(e){}
+    MODO_PRIMEIRO = false;
+    $('scr-hoje').classList.remove('primeiro');
+    evento('viu_8_verbos');
+  }
 
   /* ---------- LIMPE ---------- */
   function limpe(txt){ if($('limpeWord')) $('limpeWord').textContent = txt; }
@@ -8593,7 +8666,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function enterLoading(){
     CONT_TOKEN = '';      // blocos do assunto anterior param de valer
     Q_INICIO = 0;
-    $('lerIntro').textContent = 'Carregando a teoria do seu assunto…';
+    $('lerIntro').textContent = 'A IA está escrevendo a aula deste assunto agora. Na primeira vez leva alguns segundos — depois ele abre na hora.';
     if($('mnemBox')) $('mnemBox').innerHTML = '<p class="muted" style="font-size:.85rem">Montando o macete…</p>';
     if($('cineBox')) $('cineBox').innerHTML = '<p class="muted" style="font-size:.85rem">Desenhando as cenas do assunto…</p>';
     if($('simplesBox')) $('simplesBox').innerHTML = '<h3>Explicando como se você tivesse 12 anos</h3><p class="muted">Escrevendo a explicação simples…</p>';
@@ -8617,39 +8690,86 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
            '&parte=' + (it.parte || 1) + (bloco ? '&bloco=' + bloco : '');
   }
 
+  // Os quatro blocos do assunto saem juntos, cada um na sua requisição.
+  // Antes a teoria vinha primeiro e só DEPOIS dela os outros três eram
+  // pedidos: no primeiro acesso a aluna esperava a aula inteira ser escrita
+  // e, em seguida, as questões. Agora tudo é escrito ao mesmo tempo.
+  // O bloco que chega antes da teoria fica guardado em ESPERA e entra na tela
+  // assim que a teoria aparecer. Se o assunto já estava pronto no banco, cada
+  // pedido devolve o pacote guardado — nada é escrito duas vezes.
+  var ESPERA = null, CONT_DONO = '';   // CONT_DONO: de qual assunto é o CONT na tela
+
   function buscarRestante(it){
     var blocos = ['apoio', 'midia', 'pratica'];
-    var faltam = blocos.length;
     // Crachá deste assunto. Se a aluna trocar de assunto enquanto os blocos
     // ainda estão vindo, as respostas atrasadas do assunto ANTERIOR chegariam
     // e seriam coladas por cima do novo — macete, questões e música do assunto
     // errado. Com o crachá, a resposta fora de hora é descartada em silêncio.
     var cracha = String(it.cron_id || (it.topico_id + ':' + (it.parte || 1)));
     CONT_TOKEN = cracha;
+    var e = ESPERA = { cracha: cracha, it: it, guardados: {}, faltam: blocos.length + 1, completo: false };
     blocos.forEach(function(b){
       apiFetch(urlConteudo(it, b))
         .then(function(r){ return r.json(); })
         .then(function(d){
-          if(CONT_TOKEN !== cracha) return;          // já é outro assunto na tela
-          if(d && !d.erro && CONT){
-            // junta o pedaço novo ao que já está na tela
-            Object.keys(d).forEach(function(k){
-              if(k !== 'bloco' && k !== 'parcial') CONT[k] = d[k];
-            });
-            aplicarBloco(b, CONT);
-          }
+          if(CONT_TOKEN !== cracha || e.completo) return;   // outro assunto, ou já veio tudo pronto
+          if(!d || d.erro) return;
+          if(CONT && CONT_DONO === cracha) juntarBloco(b, d);
+          else e.guardados[b] = d;                          // a teoria ainda não chegou
         })
         .catch(function(){})
-        .then(function(){
-          if(CONT_TOKEN !== cracha) return;
-          if(--faltam === 0 && CONT){
-            // avisa o servidor para guardar o assunto inteiro: da próxima vez
-            // que alguém abrir este tópico, ele vem pronto na hora
-            apiFetch(urlConteudo(it) + '&finalizar=1').catch(function(){});
-            CONT.parcial = false;
-          }
-        });
+        .then(function(){ blocoTerminou(e); });
     });
+  }
+
+  // ---- medição: onde a aluna trava no primeiro contato ----
+  // Metade de quem monta o cronograma nunca termina o 1º assunto. Estes três
+  // eventos dizem por quê no Painel: quanto tempo a aula levou para aparecer,
+  // se ela abriu a tela Hoje e se fechou o app enquanto a aula ainda era escrita.
+  var ESPERA_DESDE = 0, SAIDA_AVISADA = false;
+  function medirEspera(ms, doBanco){
+    ESPERA_DESDE = 0;
+    evento('espera_aula', null, { ms: ms, pronta: !!doBanco });
+  }
+  function avisarSaidaNaEspera(){
+    if(!ESPERA_DESDE || SAIDA_AVISADA || !TOKEN) return;
+    SAIDA_AVISADA = true;
+    try {
+      fetch('/api/evento', {
+        method: 'POST', keepalive: true,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+        body: JSON.stringify({ tipo: 'saiu_esperando', assunto: ASSUNTO || null, detalhe: { ms: Date.now() - ESPERA_DESDE } })
+      }).catch(function(){});
+    } catch(e){}
+  }
+  window.addEventListener('pagehide', avisarSaidaNaEspera);
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') avisarSaidaNaEspera(); });
+
+  function juntarBloco(b, d){
+    Object.keys(d).forEach(function(k){
+      if(k !== 'bloco' && k !== 'parcial') CONT[k] = d[k];
+    });
+    aplicarBloco(b, CONT);
+  }
+
+  // Chamado quando a teoria chega. completo = o assunto veio inteiro do banco.
+  function teoriaChegou(cracha, completo){
+    var e = ESPERA;
+    if(!e || e.cracha !== cracha) return;
+    if(completo){ e.completo = true; e.guardados = {}; return; }
+    Object.keys(e.guardados).forEach(function(b){ juntarBloco(b, e.guardados[b]); });
+    e.guardados = {};
+    blocoTerminou(e);
+  }
+
+  function blocoTerminou(e){
+    if(CONT_TOKEN !== e.cracha || e.completo) return;
+    if(--e.faltam === 0 && CONT){
+      // avisa o servidor para guardar o assunto inteiro: da próxima vez
+      // que alguém abrir este tópico, ele vem pronto na hora
+      apiFetch(urlConteudo(e.it) + '&finalizar=1').catch(function(){});
+      CONT.parcial = false;
+    }
   }
 
   // Desenha só a parte que acabou de chegar, sem redesenhar a aula que o aluno
@@ -8676,7 +8796,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     } catch(e){}
   }
   // Carimbo da versão: some a dúvida sobre o que está realmente no ar.
-  var VERSAO = '22/09/2026 · voz de estúdio gravada em pedaços menores e relógio próprio (fim dos 504)';
+  var VERSAO = '02/10/2026 · primeiro assunto guiado, aula com os 4 blocos em paralelo e medição da espera no Painel';
   var PAL = ['var(--d1)','var(--d2)','var(--d3)','var(--d4)','var(--d5)','var(--d6)','var(--d7)'];
 
   // A cor de cada disciplina é decidida uma vez, pela ordem em que ela aparece
@@ -8782,6 +8902,13 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       // (macete, mapa, podcast, questões, flashcards) chega em segundo plano,
       // enquanto ele já está lendo. Antes tudo vinha junto e a tela ficava
       // parada até a última chamada da IA voltar.
+      // Ao refazer, a teoria apaga os blocos antigos no servidor: os outros
+      // três só podem ser pedidos depois dela, senão voltariam os velhos.
+      var refazendo = REFAZER, t0 = Date.now();
+      ESPERA_DESDE = t0; SAIDA_AVISADA = false;
+      var cracha = String(it.cron_id || (it.topico_id + ':' + (it.parte || 1)));
+      ESPERA = null;
+      if(!refazendo) buscarRestante(it);
       apiFetch(urlConteudo(it, 'texto') + (REFAZER ? '&refazer=1' : ''))
         .then(function(r){ return r.json().then(function(c){ if(r.status === 402){ checar402({ s: 402, d: c }); return null; } return c; }); })
         .then(function(c){
@@ -8789,9 +8916,12 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           REFAZER = false;
           if(!c) return;
           if(c && c.resumo){
-            CONT = c;
+            CONT = c; CONT_DONO = cracha;
             aplicarConteudoReal(c);
-            if(c.parcial) buscarRestante(it);
+            // quanto a aluna esperou a aula aparecer (o painel da gestora mostra)
+            medirEspera(Date.now() - t0, !c.parcial);
+            if(refazendo){ if(c.parcial) buscarRestante(it); }
+            else teoriaChegou(cracha, !c.parcial);
           }
           else { $('lerIntro').textContent = 'Não consegui gerar o conteúdo agora. Recarregue a página em alguns instantes.'; }
         })
@@ -8813,6 +8943,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     chips.forEach(function(c){
       if(norm(c.textContent) === norm(v)) { c.classList.remove('now'); c.classList.add('done'); }
     });
+    if(v === 'ler') passoGuia(2);
+    if(v === 'raciocinar') passoGuia(3);
     var sb = $('sb' + v.charAt(0).toUpperCase() + v.slice(1));
     if(sb){ sb.className = 'stbadge auto num'; sb.textContent = '✓ concluído'; }
     var n = Object.keys(FEITOS).length;
@@ -8852,6 +8984,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   function aplicarHojeReal(d, it){
     it = it || d.hoje;
+    aplicarModoPrimeiro(d);
     if(it.cron_id === d.hoje.cron_id){
       (d.verbos_hoje || []).forEach(function(v){ if(v.status === 'concluido') marcaVerbo(v.verbo); });
     }
@@ -8894,7 +9027,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       b.onclick = function(){
         var alvo = itemAtivo();
         apiFetch('/api/cronograma', { concluir: alvo.cron_id }).then(function(){
-          toast('Assunto concluído! Puxando o próximo do cronograma…');
+          toast(MODO_PRIMEIRO ? 'Primeiro assunto concluído! 🎉 A partir de agora, todos os 8 verbos ficam liberados.'
+                              : 'Assunto concluído! Puxando o próximo do cronograma…');
           ESCOLHIDO = null; try { localStorage.removeItem('persisteia_topico'); } catch(e){}
           FEITOS = {}; CONT = null; enterLoading(); carregarReal();
         }).catch(function(){});
