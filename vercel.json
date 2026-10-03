@@ -7,6 +7,10 @@
   },
   "rewrites": [
     {
+      "source": "/pericia",
+      "destination": "/api/assuntos?area=pericia"
+    },
+    {
       "source": "/assuntos",
       "destination": "/api/assuntos"
     },

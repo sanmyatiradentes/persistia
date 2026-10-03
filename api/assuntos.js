@@ -285,6 +285,10 @@ ${qs.map((q, i) => `<details class="q"><summary><b>${i + 1}.</b> ${esc(q.enuncia
 
   sec.push(cta('fim'));
 
+  if (ehForense(item)) {
+    sec.push(`<p class="nota" style="margin:18px 0 0"><a href="/pericia">Concurso de perícia? Veja todos os assuntos forenses →</a></p>`);
+  }
+
   if (relacionados.length) {
     sec.push(`<section><h2>Outros assuntos de ${esc(disciplina)}</h2>
 <ul class="rel">${relacionados.map(r => `<li><a href="/assuntos/${esc(r.slug)}">${esc(r.topico)}</a></li>`).join('')}</ul></section>`);
@@ -353,11 +357,57 @@ ${discs.map(d => `<h2 class="disc" id="${esc(slugDe(d))}">${esc(d)}</h2>
   });
 }
 
+// ---------- /pericia: página de chegada para concursos de perícia ----------
+// Quem busca "concurso perito criminal" e cai na lista geral vê primeiro
+// Administração e Língua Portuguesa. Aqui as matérias forenses vêm primeiro,
+// com quem fez o sistema e o convite para o teste — é a página do anúncio de
+// perícia, do link da bio e da busca do Google.
+const FORENSE = /medicina legal|forens|odontoleg|odonto-?legal|per[ií]cia|perito|tanatolog|traumatolog|les(ões|oes) corporais|marcas de mordida|desastres? em massa|corpo de delito|cadeia de cust|criminal[ií]stica|papilosc|bal[ií]stic|toxicolog|identifica[cç][aã]o humana|dna/i;
+function ehForense(it) { return FORENSE.test(it.disciplina) || FORENSE.test(it.topico); }
+
+function paginaPericia(itens) {
+  const forenses = itens.filter(ehForense);
+  const porDisc = new Map();
+  for (const it of forenses) {
+    const d = FORENSE.test(it.disciplina) ? it.disciplina : 'Perícia em outras matérias';
+    if (!porDisc.has(d)) porDisc.set(d, []);
+    porDisc.get(d).push(it);
+  }
+  const discs = [...porDisc.keys()].sort((a, b) =>
+    (a === 'Perícia em outras matérias') - (b === 'Perícia em outras matérias') || a.localeCompare(b, 'pt-BR'));
+  const botao = local => `<a class="cta" href="/?comecar=1&amp;origem=pericia" onclick="gtag('event','cta_assunto',{local:'pericia-${local}'})">
+  <strong>Envie o edital do seu concurso de perícia</strong>
+  <span>A PersisteIA monta o cronograma até a prova e entrega cada assunto em 8 formatos — aula completa, podcast, mapa mental, flashcards e questões no estilo da banca.</span>
+  <span class="btn">Começar meus 7 dias grátis →</span>
+</a>`;
+  const corpo = `<nav class="migalha"><a href="/assuntos">Assuntos</a> › Perícia</nav>
+<h1>Concurso de perícia? Estude pelo seu edital.</h1>
+<p class="sub">Medicina legal, criminalística, odontologia legal e as matérias que a banca cobra de perito — explicadas de um jeito simples, com macete, mapa mental e questões com gabarito.</p>
+${botao('topo')}
+<section class="card"><span class="rotulo">Quem fez</span>
+<h2>Feito por uma perita oficial</h2>
+<p>A PersisteIA foi criada por Sanmya Tiradentes, Perita Odontolegista da Polícia Civil do Amazonas, aprovada em três concursos públicos. O método por trás do sistema é o que ela gostaria de ter tido quando estudava: o edital vira um plano diário, cada assunto do tamanho que ele merece, e o estudo ativo no lugar da releitura.</p>
+<p class="nota">O material é gerado por inteligência artificial, com a lei seca conferida por uma segunda leitura e link para o texto oficial.</p></section>
+<section><h2>${forenses.length} assuntos de perícia para estudar agora, grátis</h2>
+${discs.map(d => `<h2 class="disc" id="${esc(slugDe(d))}">${esc(d)}</h2>
+<ul class="idx">${porDisc.get(d).sort((a, b) => a.topico.localeCompare(b.topico, 'pt-BR'))
+  .map(it => `<li><a href="/assuntos/${esc(it.slug)}">${esc(it.topico)}</a></li>`).join('')}</ul>`).join('\n')}
+</section>
+${botao('fim')}
+<p class="nota" style="margin-top:18px">Seu concurso cobra também português, informática e direito? Veja <a href="/assuntos">todos os assuntos</a>.</p>`;
+  return casca({
+    titulo: 'Concurso de perícia: medicina legal, criminalística e odontologia legal | PersisteIA',
+    descricao: 'Assuntos de concurso de perito explicados de forma simples: medicina legal, tanatologia, traumatologia, odontologia legal e mais. Cronograma pelo seu edital, 7 dias grátis.',
+    caminho: '/pericia', corpo
+  });
+}
+
 function sitemap(itens) {
   const hoje = agora().slice(0, 10);
   const urls = [
     `<url><loc>${SITE}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
     `<url><loc>${SITE}/assuntos</loc><lastmod>${hoje}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`,
+    `<url><loc>${SITE}/pericia</loc><lastmod>${hoje}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>`,
     ...itens.map(it => `<url><loc>${SITE}/assuntos/${it.slug}</loc><lastmod>${String(it.criado_em || hoje).slice(0, 10)}</lastmod><priority>0.6</priority></url>`)
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
@@ -407,6 +457,7 @@ module.exports = async (req, res) => {
 
     const slug = url.searchParams.get('slug');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    if (url.searchParams.get('area') === 'pericia') return res.status(200).send(paginaPericia(itens));
     if (!slug) return res.status(200).send(paginaIndice(itens));
 
     const item = itens.find(it => it.slug === slug);
