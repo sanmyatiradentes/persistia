@@ -60,7 +60,8 @@ Regras:
 - Para CADA disciplina, informe "questoes": quantas questões da prova objetiva são dessa disciplina, SE o edital disser (procure no quadro de provas). Se o edital não disser, use null — não invente.` + REGRA_RETIFICACAO;
 
 const SYS_DISCIPLINAS = `Você lê editais de concurso público brasileiros e identifica as disciplinas do conteúdo programático de um cargo.
-Devolva apenas os nomes das disciplinas que têm programa para o cargo indicado (conhecimentos gerais/básicos + específicos), na ordem em que aparecem. Não invente disciplinas.` + REGRA_RETIFICACAO;
+Devolva apenas os nomes das disciplinas que têm programa para o cargo indicado (conhecimentos gerais/básicos + específicos), na ordem em que aparecem. Não invente disciplinas.
+Muitos editais (Cebraspe, por exemplo) trazem o conteúdo específico do cargo direto em itens numerados, sem título de disciplina logo abaixo do nome do cargo. Nesse caso esse conteúdo é UMA disciplina: chame-a "Conhecimentos Específicos — <área do cargo>" (ex.: "Conhecimentos Específicos — Serviço Social"). Nunca deixe o conteúdo específico de fora.` + REGRA_RETIFICACAO;
 
 const SCHEMA_DISCIPLINAS = {
   type: 'object',
@@ -139,14 +140,55 @@ function recorteProgramatico(texto) {
   return corte.length > 1500 ? corte : texto;
 }
 
+// Edital com muitos cargos (Perícia do MA: 22 cargos, 100 mil caracteres só de
+// programa) mandava o programa de TODOS a cada passo, e a IA passava dos 60
+// segundos. Escolhido o cargo, fica só a parte comum (antes do primeiro
+// "CARGO n:") e o bloco daquele cargo. Se não der para achar com segurança,
+// devolve o texto como veio.
+function semAcento(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+function recorteDoCargo(texto, cargo) {
+  if (!texto || !cargo || texto.length < 12000) return texto;
+  const re = /\bCARGO\s+(\d{1,3})\s*[:\-–—]/g;
+  const cab = [];
+  let m;
+  while ((m = re.exec(texto)) !== null) cab.push({ pos: m.index, num: m[1], linha: texto.slice(m.index, m.index + 220) });
+  if (cab.length < 3) return texto;
+
+  // o mesmo número pode aparecer de novo adiante (anexos): vale a 1ª vez
+  const vistos = new Set();
+  const blocos = cab.filter(c => !vistos.has(c.num) && vistos.add(c.num));
+  const numPedido = (String(cargo).match(/cargo\s+(\d{1,3})/i) || [])[1];
+  const palavras = semAcento(cargo).split(/[^a-z0-9]+/).filter(p => p.length > 3 && !['cargo', 'especialidade'].includes(p));
+
+  let alvo = numPedido ? blocos.find(c => c.num === numPedido) : null;
+  if (!alvo && palavras.length) {
+    let melhor = 0;
+    for (const c of blocos) {
+      const linha = semAcento(c.linha);
+      const nota = palavras.filter(p => linha.includes(p)).length / palavras.length;
+      if (nota > melhor) { melhor = nota; alvo = c; }
+    }
+    if (melhor < 0.6) alvo = null;
+  }
+  if (!alvo) return texto;
+
+  const prox = cab.find(c => c.pos > alvo.pos);
+  const comum = texto.slice(0, blocos[0].pos);
+  const bloco = texto.slice(alvo.pos, prox ? prox.pos : texto.length);
+  if (bloco.length < 300) return texto;
+  return comum + '\n\n' + bloco;
+}
+
 // Vários documentos (edital + retificações) viram um texto só, marcado, para a
 // IA saber o que altera o quê. Recorta cada um antes de juntar: assim uma
 // retificação de 3 páginas não some no meio de um edital de 60.
-function juntarDocumentos(docs) {
+function juntarDocumentos(docs, cargo) {
   return docs.map((d, i) => {
     const rotulo = d.rotulo || (i === 0 ? 'EDITAL' : 'RETIFICAÇÃO / ADITAMENTO');
     const nome = d.nome ? ' — ' + String(d.nome).slice(0, 80) : '';
-    return `===== DOCUMENTO ${i + 1}: ${rotulo}${nome} =====\n` + recorteProgramatico(String(d.texto || ''));
+    return `===== DOCUMENTO ${i + 1}: ${rotulo}${nome} =====\n` + recorteDoCargo(recorteProgramatico(String(d.texto || '')), cargo);
   }).join('\n\n');
 }
 
@@ -286,7 +328,10 @@ module.exports = async (req, res) => {
     return res.status(413).json({ erro: 'Este PDF é grande demais para enviar inteiro. Envie só o anexo do conteúdo programático, ou cole o texto.' });
   }
 
-  const textoBase = docs.length ? juntarDocumentos(docs).slice(0, 500000) : recorteProgramatico(texto);
+  // na etapa 'cargos' ainda não há cargo escolhido: aí o recorte não age
+  const textoBase = docs.length
+    ? juntarDocumentos(docs, cargoEscolhido).slice(0, 500000)
+    : recorteDoCargo(recorteProgramatico(texto), cargoEscolhido);
   const alvo = cargoEscolhido;
   const instrucao = alvo
     ? `Extraia o conteúdo programático completo do cargo "${alvo}" (conhecimentos gerais/básicos + específicos), além do título e da data da prova objetiva.`
