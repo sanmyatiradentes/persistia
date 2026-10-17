@@ -66,6 +66,23 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS tokens_senha (
     token TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, expira_em TEXT NOT NULL,
     usado INTEGER NOT NULL DEFAULT 0, criado_em TEXT NOT NULL)`,
+  // revisão espaçada de cada sessão estudada (assunto ou parte): etapa 0 → volta
+  // em 1 dia; acertou ≥ 70% → sobe de etapa (7, 30, 60 dias); errou → recomeça
+  `CREATE TABLE IF NOT EXISTS revisoes (
+    aluno_id TEXT NOT NULL, edital_id TEXT, topico_id TEXT NOT NULL,
+    parte INTEGER NOT NULL DEFAULT 1, partes INTEGER NOT NULL DEFAULT 1,
+    etapa INTEGER NOT NULL DEFAULT 0, proxima TEXT NOT NULL,
+    nota REAL, reforco INTEGER NOT NULL DEFAULT 0, feitas INTEGER NOT NULL DEFAULT 0,
+    atualizado_em TEXT NOT NULL,
+    PRIMARY KEY (aluno_id, topico_id, parte))`,
+  // caderno de erros: cada questão errada volta até ser acertada duas vezes seguidas
+  `CREATE TABLE IF NOT EXISTS erros (
+    id TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, edital_id TEXT, topico_id TEXT,
+    parte INTEGER, partes INTEGER, chave TEXT NOT NULL, questao TEXT NOT NULL,
+    acertos_seguidos INTEGER NOT NULL DEFAULT 0, vezes_errada INTEGER NOT NULL DEFAULT 1,
+    proxima TEXT NOT NULL, dominado INTEGER NOT NULL DEFAULT 0,
+    criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL,
+    UNIQUE (aluno_id, chave))`,
   `CREATE TABLE IF NOT EXISTS duvidas (
     id TEXT PRIMARY KEY, aluno_id TEXT, assunto TEXT, pergunta TEXT NOT NULL,
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`

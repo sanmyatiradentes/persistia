@@ -3,6 +3,7 @@
 // POST {concluir: id}      → marca um item como concluído
 // GET                      → {hoje, proximos, resumo}
 const { getDb, ensureSchema, agora, id, alunoDoToken, cors, editalAtivo } = require('./_lib');
+const { agendarRevisao } = require('./_revisao');
 
 function hojeISO() { return new Date().toISOString().slice(0, 10); }
 
@@ -217,6 +218,13 @@ module.exports = async (req, res) => {
         sql: 'SELECT topico_id, edital_id, ordem, parte, partes, data FROM cronograma WHERE id = ? AND aluno_id = ?',
         args: [String(req.body.concluir), aluno.id]
       })).rows[0];
+      // a sessão entra na revisão espaçada (volta amanhã); com a nota das
+      // questões, um assunto abaixo de 70% já entra marcado como reforço
+      if (feita) {
+        const nota = req.body.nota;
+        await agendarRevisao(db, aluno.id, feita.edital_id, feita.topico_id, feita.parte || 1, feita.partes || 1,
+          nota == null ? null : Number(nota));
+      }
       if (feita && Number(feita.partes) > 1 && Number(feita.parte) < Number(feita.partes)) {
         const seg = (await db.execute({
           sql: `SELECT id, ordem, status, data FROM cronograma

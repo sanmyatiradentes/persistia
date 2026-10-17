@@ -855,6 +855,23 @@
   .lr-vu{height:6px; border-radius:99px; background:var(--line); overflow:hidden}
   .lr-vu i{display:block; height:100%; width:0; border-radius:99px; background:var(--crit); transition:width .12s linear}
   /* ---------- baralho completo ---------- */
+  /* revisão do dia e caderno de erros: mesma janela do baralho */
+  #revModal, #cadModal{position:fixed; inset:0; z-index:96; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
+  #revModal.open, #cadModal.open{display:flex}
+  @media(min-width:520px){#revModal, #cadModal{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  .rv-card{border:2px solid var(--warm)}
+  .rv-card .rv-linha{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 12px}
+  .rv-pill{font-size:.72rem; font-weight:700; padding:4px 10px; border-radius:999px; background:var(--card); border:1px solid var(--line)}
+  .rv-pill.ref{border-color:var(--crit); color:var(--crit)}
+  .rv-prog{height:6px; border-radius:999px; background:var(--line); overflow:hidden; margin:0 0 14px}
+  .rv-prog i{display:block; height:100%; background:var(--accent); width:0; transition:width .3s}
+  .rv-tag{display:inline-block; font-size:.66rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin-bottom:6px}
+  .rv-tag.erro{color:var(--crit)}
+  .rv-res{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:10px}
+  .rv-res b{display:block; font-size:.88rem}
+  .rv-res small{font-size:.75rem; color:var(--muted)}
+  .cad-st{float:right; margin:0 0 4px 8px; font-size:.66rem; font-weight:800; color:var(--crit)}
+  .cad-st.ok{color:var(--good)}
   #baralho{position:fixed; inset:0; z-index:95; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
   #baralho.open{display:flex}
   @media(min-width:520px){#baralho{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
@@ -2125,6 +2142,19 @@
       <button class="btn small" onclick="assinar()">Assinar</button>
     </div>
 
+    <!-- REVISÃO DO DIA: abre o dia antes do assunto novo -->
+    <div class="card rv-card" id="revHoje" style="display:none; margin:0 0 14px">
+      <p class="eyebrow" style="margin-bottom:4px">Antes do assunto novo</p>
+      <h2 style="font-size:1.02rem" id="rvTit">Revisão de hoje</h2>
+      <p class="muted" style="font-size:.78rem; margin-top:4px" id="rvSub"></p>
+      <div class="rv-linha" id="rvLinha"></div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px">
+        <button class="btn small" id="rvBtn" onclick="abrirRevisao()">Começar a revisão</button>
+        <button class="btn ghost small" id="rvFc" style="display:none" onclick="irRevisar()">Cartões vencidos</button>
+        <button class="btn ghost small" id="rvCad" style="display:none" onclick="abrirCaderno()">Caderno de erros</button>
+      </div>
+    </div>
+
     <div id="sessoesDia" style="display:none; margin:0 0 14px">
       <p class="eyebrow" style="margin-bottom:6px">Suas sessões de hoje</p>
       <div id="sessoesLista" style="display:flex; flex-wrap:wrap; gap:8px"></div>
@@ -2459,10 +2489,6 @@
         <button class="btn ghost small" style="margin:0" onclick="refazerConteudo()">↻ Gerar este assunto de novo</button>
       </div>
 
-      <p class="eyebrow so-depois" style="margin-bottom:6px" id="revTit">Revisões no ponto certo de hoje</p>
-      <div class="revchips so-depois" id="revChips">
-      <div class="rev"><b>Suas revisões aparecem aqui</b>depois do seu primeiro assunto</div>
-      </div>
 
 
       <!-- MINHA VOZ -->
@@ -2877,6 +2903,28 @@
   </div>
 
   <!-- ================= BARALHO COMPLETO ================= -->
+  <div id="revModal" role="dialog" aria-label="Revisão de hoje">
+    <div class="bk-top">
+      <button class="iconbtn" onclick="fecharRevisao()" aria-label="Fechar">←</button>
+      <div class="ttl"><b>Revisão de hoje</b><small id="rvmSub">—</small></div>
+    </div>
+    <div class="bk-body" id="rvmBody"></div>
+  </div>
+
+  <div id="cadModal" role="dialog" aria-label="Caderno de erros">
+    <div class="bk-top">
+      <button class="iconbtn" onclick="fecharCaderno()" aria-label="Fechar">←</button>
+      <div class="ttl"><b>Caderno de erros</b><small id="cadSub">carregando…</small></div>
+    </div>
+    <div class="bk-bar">
+      <div class="lmode" style="flex:1">
+        <button id="cadFAtivos" class="sel" onclick="cadFiltro('ativos')">Para dominar</button>
+        <button id="cadFTodos" onclick="cadFiltro('todos')">Todos</button>
+      </div>
+    </div>
+    <div class="bk-body" id="cadBody"></div>
+  </div>
+
   <div id="baralho" role="dialog" aria-label="Todos os flashcards">
     <div class="bk-top">
       <button class="iconbtn" onclick="fecharBaralho()" aria-label="Fechar">←</button>
@@ -8697,6 +8745,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   limparVerbosTela();   // guarda como os selos vêm do HTML
   function enterLoading(){
     limparVerbosTela();
+    RESP = {};
     CONT_TOKEN = '';      // blocos do assunto anterior param de valer
     Q_INICIO = 0;
     $('lerIntro').textContent = 'A IA está escrevendo a aula deste assunto agora. Na primeira vez leva alguns segundos — depois ele abre na hora.';
@@ -8982,12 +9031,17 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var temProx = Number(it.partes) > 1 && Number(it.parte) < Number(it.partes);
     var feito = it.status === 'concluido' || (it.cron_id in SEGUIR);
     var tit = $('fechoTit'), txt = $('fechoTxt');
+    var nt = notaSessao();
     if(tit){
       tit.textContent = feito ? (temProx ? 'Parte ' + it.parte + ' concluída ✓' : 'Assunto concluído ✓') : 'Terminou o assunto de hoje?';
       txt.textContent = feito
         ? (temProx ? 'A parte ' + (Number(it.parte) + 1) + ' continua de onde esta parou — siga quando quiser. Os outros verbos desta parte continuam abertos.'
                    : 'Os outros verbos continuam abertos para reforçar. Quando quiser, siga para o próximo assunto.')
         : 'Quando você terminar a teoria e as questões, eu concluo o assunto sozinha e deixo o próximo pronto aqui.';
+      if(feito && nt != null){
+        txt.textContent = 'Você acertou ' + Math.round(nt * 100) + '% das questões. ' +
+          (nt < 0.7 ? 'Ficou abaixo de 70%: este assunto volta amanhã na revisão como reforço, e os erros já estão no caderno. ' : 'Ele volta para revisão amanhã, depois em 7 e em 30 dias. ') + txt.textContent;
+      }
     }
     if($('nextT')) $('nextT').textContent = (feito ? 'Rever a teoria: ' : 'Continuar: ') + it.topico +
       (Number(it.partes) > 1 ? ' · parte ' + it.parte + ' de ' + it.partes : '');
@@ -9002,7 +9056,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
   }
   function concluirNoServidor(it){
-    return apiFetch('/api/cronograma', { concluir: it.cron_id })
+    return apiFetch('/api/cronograma', { concluir: it.cron_id, nota: notaSessao() })
       .then(function(r){ return r.json(); })
       .then(function(d){
         it.status = 'concluido';
@@ -9032,6 +9086,204 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       seguirPara(prox);
     }).catch(function(){ toast('Não consegui concluir agora — tente de novo'); });
   }
+  /* ---------- nota da sessão e caderno de erros ----------
+     Cada questão conta só na primeira resposta. A nota do assunto vai junto
+     ao concluir: abaixo de 70%, ele volta amanhã na revisão como reforço.
+     Questão errada vai para o caderno e volta até ser acertada duas vezes. */
+  var RESP = {};
+  function registrarResposta(fmt, q, item, acertou){
+    var k = fmt + ':' + q;
+    if(k in RESP) return;
+    RESP[k] = !!acertou;
+    var it = itemAtivo();
+    if(!acertou && it && API && TOKEN){
+      apiFetch('/api/revisao', { erro: { topico_id: it.topico_id, parte: it.parte || 1, partes: it.partes || 1, questao: item } }).catch(function(){});
+    }
+  }
+  function notaSessao(){
+    var ks = Object.keys(RESP);
+    if(ks.length < 3) return null;
+    return ks.filter(function(k){ return RESP[k]; }).length / ks.length;
+  }
+
+  /* ---------- revisão do dia ----------
+     Abre o dia antes do assunto novo: questões dos assuntos que venceram na
+     escada de revisão (1, 7, 30, 60 dias) e do caderno de erros, misturadas
+     entre as disciplinas, como na prova. Depois, os cartões vencidos. */
+  var REV = null, RV = null;
+  function carregarRevisao(){
+    if(!API || !TOKEN) return;
+    apiFetch('/api/revisao').then(function(r){ return r.json(); }).then(function(d){
+      if(!d || d.erro) return;
+      REV = d; desenharRevisao();
+    }).catch(function(){});
+  }
+  function desenharRevisao(){
+    var box = $('revHoje'); if(!box || !REV) return;
+    var nq = (REV.questoes || []).length, fc = REV.fc_vencidos || 0, cad = (REV.caderno || {}).ativos || 0;
+    if(!nq && !fc && !cad){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    var partes = [];
+    if((REV.assuntos || []).length) partes.push(REV.assuntos.length + (REV.assuntos.length === 1 ? ' assunto' : ' assuntos'));
+    if(REV.erros_vencidos) partes.push(REV.erros_vencidos + (REV.erros_vencidos === 1 ? ' erro do caderno' : ' erros do caderno'));
+    if(fc) partes.push(fc + (fc === 1 ? ' cartão vencido' : ' cartões vencidos'));
+    if(nq){
+      $('rvTit').textContent = 'Revisão de hoje · ~' + REV.minutos + ' min';
+      $('rvSub').textContent = partes.join(' · ') + '. Relembrar agora, no ponto certo, é o que impede o esquecimento — e leva poucos minutos.';
+    } else {
+      $('rvTit').textContent = fc ? 'Cartões para revisar' : 'Revisão em dia ✓';
+      $('rvSub').textContent = fc ? partes.join(' · ') + '. Nenhum assunto venceu hoje.' : 'Nenhum assunto venceu hoje. Seus erros voltam no dia certo.';
+    }
+    $('rvLinha').innerHTML = (REV.assuntos || []).map(function(a){
+      return '<span class="rv-pill' + (a.reforco ? ' ref' : '') + '">' + (a.reforco ? 'reforço · ' : '') + esc(String(a.topico).slice(0, 48)) +
+        (Number(a.partes) > 1 ? ' · parte ' + a.parte : '') + '</span>';
+    }).join('');
+    $('rvBtn').style.display = nq ? '' : 'none';
+    $('rvFc').style.display = fc ? '' : 'none';
+    $('rvFc').textContent = 'Cartões vencidos (' + fc + ')';
+    $('rvCad').style.display = (REV.caderno || {}).total ? '' : 'none';
+    $('rvCad').textContent = 'Caderno de erros (' + cad + ')';
+  }
+  function abrirRevisao(){
+    if(!REV || !(REV.questoes || []).length){ toast('Nada para revisar agora ✓'); return; }
+    RV = { qs: REV.questoes.slice(), i: 0, resp: [], respondida: false };
+    $('revModal').classList.add('open');
+    evento('revisao_aberta', null, { questoes: RV.qs.length });
+    rvMostrar();
+  }
+  function fecharRevisao(){
+    $('revModal').classList.remove('open');
+    if(RV && RV.resp.length && !RV.enviado) rvEnviar();
+  }
+  function rvMostrar(){
+    var q = RV.qs[RV.i], n = RV.qs.length;
+    $('rvmSub').textContent = 'Questão ' + (RV.i + 1) + ' de ' + n + ' · disciplinas misturadas, como na prova';
+    var h = '<div class="rv-prog"><i style="width:' + Math.round(RV.i / n * 100) + '%"></i></div>' +
+      '<span class="rv-tag' + (q.origem === 'erro' ? ' erro' : '') + '">' + (q.origem === 'erro' ? 'do seu caderno de erros · ' : '') +
+      esc(q.disciplina || '') + '</span>' +
+      '<p class="q-src" style="margin:0 0 6px">' + esc(q.topico || '') + (Number(q.partes) > 1 ? ' · parte ' + q.parte : '') + '</p>' +
+      '<p class="q-enun">' + esc(q.enunciado) + '</p>';
+    if(q.tipo === 'me'){
+      h += '<div class="q-btns" style="flex-direction:column; gap:8px">' + (q.alternativas || []).map(function(alt, k){
+        return '<button class="btn ghost small" style="text-align:left; justify-content:flex-start" onclick="rvResponder(' + k + ')">' +
+          String.fromCharCode(65 + k) + ') ' + esc(alt) + '</button>';
+      }).join('') + '</div>';
+    } else {
+      h += '<div class="q-btns"><button class="btn ghost small" onclick="rvResponder(true)">Certo</button>' +
+           '<button class="btn ghost small" onclick="rvResponder(false)">Errado</button></div>';
+    }
+    h += '<div class="fb" id="rvFb"></div><div id="rvProx" style="display:none; margin-top:12px"></div>';
+    $('rvmBody').innerHTML = h; $('rvmBody').scrollTop = 0;
+    RV.respondida = false;
+  }
+  function rvResponder(escolha){
+    if(RV.respondida) return;
+    RV.respondida = true;
+    var q = RV.qs[RV.i], acertou, gab;
+    if(q.tipo === 'me'){ acertou = escolha === Number(q.correta); gab = 'A correta é a ' + String.fromCharCode(65 + Number(q.correta)) + ').'; }
+    else { acertou = escolha === !!q.gabarito; gab = 'O gabarito é ' + (q.gabarito ? 'Certo' : 'Errado') + '.'; }
+    RV.resp.push({ q: q, acertou: acertou });
+    // erro de assunto revisado também entra no caderno
+    if(!acertou && q.origem === 'revisao'){
+      apiFetch('/api/revisao', { erro: { topico_id: q.topico_id, parte: q.parte, partes: q.partes, questao: q } }).catch(function(){});
+    }
+    evento('questao_revisao', null, { origem: q.origem, respondeu_certo: acertou });
+    var fb = $('rvFb');
+    fb.className = 'fb ' + (acertou ? 'ok' : 'no');
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : gab) + '</b>' + md(q.comentario || '') +
+      (q.origem === 'erro' ? '<small class="muted" style="display:block; margin-top:6px">' +
+        (acertou ? '↳ acerte mais uma vez, em outro dia, e ela sai do caderno' : '↳ continua no caderno e volta amanhã') + '</small>' : '');
+    var ult = RV.i + 1 >= RV.qs.length;
+    $('rvProx').style.display = 'block';
+    $('rvProx').innerHTML = '<button class="btn small" onclick="' + (ult ? 'rvFim()' : 'rvAvancar()') + '">' + (ult ? 'Ver resultado' : 'Próxima →') + '</button>';
+  }
+  function rvAvancar(){ RV.i++; rvMostrar(); }
+  function rvEnviar(){
+    RV.enviado = true;
+    var porTop = {}, erros = [];
+    RV.resp.forEach(function(r){
+      if(r.q.origem === 'erro'){ erros.push({ id: r.q.erro_id, acertou: r.acertou }); return; }
+      var k = r.q.topico_id + ':' + (r.q.parte || 1);
+      porTop[k] = porTop[k] || { topico_id: r.q.topico_id, parte: r.q.parte || 1, acertos: 0, total: 0 };
+      porTop[k].total++; if(r.acertou) porTop[k].acertos++;
+    });
+    var topicos = Object.keys(porTop).map(function(k){ return porTop[k]; });
+    return apiFetch('/api/revisao', { resultado: { topicos: topicos, erros: erros } })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ carregarRevisao(); return d; });
+  }
+  function rvFim(){
+    var certos = RV.resp.filter(function(r){ return r.acertou; }).length, n = RV.resp.length;
+    evento('revisao_concluida', null, { questoes: n, acertos: certos });
+    $('rvmSub').textContent = 'Resultado';
+    $('rvmBody').innerHTML = '<div class="rv-prog"><i style="width:100%"></i></div>' +
+      '<h2 style="font-size:1.15rem; margin-bottom:6px">' + certos + ' de ' + n + ' certas · ' + Math.round(certos / n * 100) + '%</h2>' +
+      '<p class="muted" style="font-size:.8rem; margin-bottom:14px">Calculando os próximos dias de cada assunto…</p><div id="rvResLista"></div>';
+    var mapa = {};
+    (REV.assuntos || []).forEach(function(a){ mapa[a.topico_id + ':' + a.parte] = a; });
+    rvEnviar().then(function(d){
+      var linhas = ((d && d.topicos) || []).map(function(t){
+        var a = mapa[t.topico_id + ':' + t.parte] || {};
+        var dt = new Date(t.proxima + 'T12:00:00');
+        var quando = dt.getDate() + '/' + (dt.getMonth() + 1);
+        return '<div class="rv-res"><b>' + esc(a.topico || 'Assunto') + (Number(a.partes) > 1 ? ' · parte ' + a.parte : '') + '</b>' +
+          '<small>' + Math.round(t.nota * 100) + '% · ' + (t.passou ? 'firme — próxima revisão em ' + quando
+            : 'precisa de reforço — volta amanhã (' + quando + ')') + '</small>' +
+          (!t.passou && a.cron_id ? '<div style="margin-top:8px"><button class="btn ghost small" onclick="fecharRevisao(); estudarTopico(\'' + a.cron_id + '\')">Reestudar este assunto</button></div>' : '') +
+          '</div>';
+      }).join('');
+      var errosQ = RV.resp.filter(function(r){ return r.q.origem === 'erro'; });
+      if(errosQ.length){
+        var ok = errosQ.filter(function(r){ return r.acertou; }).length;
+        linhas += '<div class="rv-res"><b>Caderno de erros</b><small>' + ok + ' de ' + errosQ.length + ' acertadas agora — cada uma sai do caderno quando você acerta duas vezes seguidas</small></div>';
+      }
+      $('rvResLista').innerHTML = linhas;
+      var p = $('rvmBody').querySelector('p.muted'); if(p) p.textContent = 'Assunto firme espaça a revisão; assunto fraco volta logo. É assim que o que você estudou continua seu até a prova.';
+      var fc = REV ? REV.fc_vencidos : 0;
+      $('rvResLista').insertAdjacentHTML('beforeend', '<div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px">' +
+        (fc ? '<button class="btn small" onclick="fecharRevisao(); irRevisar()">Revisar os cartões vencidos</button>' : '') +
+        '<button class="btn ' + (fc ? 'ghost ' : '') + 'small" onclick="fecharRevisao(); window.scrollTo(0,0)">Ir para o assunto de hoje</button></div>');
+    }).catch(function(){ $('rvResLista').innerHTML = '<p class="muted">Não consegui salvar agora — tente de novo em instantes.</p>'; });
+  }
+
+  /* ---------- caderno de erros ---------- */
+  var CAD = { erros: [], filtro: 'ativos' };
+  function abrirCaderno(){
+    $('cadModal').classList.add('open');
+    $('cadSub').textContent = 'carregando…';
+    $('cadBody').innerHTML = '<p class="muted" style="font-size:.85rem">Buscando suas questões…</p>';
+    apiFetch('/api/revisao?caderno=1').then(function(r){ return r.json(); }).then(function(d){
+      CAD.erros = d.erros || []; cadRender();
+    }).catch(function(){ $('cadBody').innerHTML = '<p class="muted" style="font-size:.85rem">Não consegui carregar o caderno agora.</p>'; });
+  }
+  function fecharCaderno(){ $('cadModal').classList.remove('open'); }
+  function cadFiltro(f){
+    CAD.filtro = f;
+    $('cadFAtivos').classList.toggle('sel', f === 'ativos');
+    $('cadFTodos').classList.toggle('sel', f === 'todos');
+    cadRender();
+  }
+  function cadRender(){
+    var ativos = CAD.erros.filter(function(e){ return !e.dominado; }).length;
+    $('cadSub').textContent = ativos + ' para dominar · ' + (CAD.erros.length - ativos) + ' já dominadas';
+    var lista = CAD.erros.filter(function(e){ return CAD.filtro === 'todos' || !e.dominado; });
+    if(!lista.length){
+      $('cadBody').innerHTML = '<p class="muted" style="font-size:.85rem">' + (CAD.erros.length ? 'Nenhuma questão pendente — tudo dominado ✓' : 'Seu caderno começa quando você errar a primeira questão. Errar aqui é bom: é aqui que a banca não te pega depois.') + '</p>';
+      return;
+    }
+    $('cadBody').innerHTML = lista.map(function(e){
+      var q = e.questao || {}, resp;
+      if(q.tipo === 'me') resp = 'Correta: ' + String.fromCharCode(65 + Number(q.correta)) + ') ' + esc((q.alternativas || [])[q.correta] || '');
+      else resp = 'Gabarito: ' + (q.gabarito ? 'Certo' : 'Errado');
+      var tp = (e.topico || 'Assunto') + (Number(e.partes) > 1 ? ' · parte ' + e.parte : '');
+      return '<div class="bk-item" style="--kc:' + (e.dominado ? 'var(--good)' : 'var(--crit)') + '" onclick="this.classList.toggle(\'open\')">' +
+        '<span class="cad-st' + (e.dominado ? ' ok' : '') + '">' + (e.dominado ? 'dominada ✓' : (e.devido ? 'volta hoje' : 'errada ' + e.vezes_errada + 'x')) + '</span>' +
+        '<span class="tp">' + esc(tp) + '</span>' +
+        '<div class="fr">' + esc(q.enunciado) + '</div>' +
+        '<div class="vs"><b>' + resp + '</b><br>' + md(q.comentario || '') + '</div></div>';
+    }).join('');
+  }
+
   function autoConcluir(){
     if(!(FEITOS.ler && FEITOS.raciocinar) || !API || !TOKEN) return;
     var it = itemAtivo();
@@ -9039,7 +9291,12 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     SEGUIR[it.cron_id] = null;     // trava: um pedido só
     concluirNoServidor(it).then(function(prox){
       passoGuia(3);
-      evento('assunto_concluido_auto');
+      evento('assunto_concluido_auto', null, { nota: notaSessao() });
+      var nt = notaSessao();
+      if(nt != null && nt < 0.7){
+        toast('Você acertou ' + Math.round(nt * 100) + '% — concluído, e o assunto volta amanhã na revisão como reforço');
+        return;
+      }
       toast(prox ? 'Parte ' + it.parte + ' concluída ✓ — a parte ' + (Number(it.parte) + 1) + ' já está liberada no botão abaixo'
                  : 'Assunto concluído ✓ — os outros verbos continuam abertos; o próximo assunto está no botão abaixo');
     }).catch(function(){ delete SEGUIR[it.cron_id]; });
@@ -9363,7 +9620,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var acertou = (escolha === item.correta);
     var letra = String.fromCharCode(65 + item.correta);
     fb.className = 'fb ' + (acertou ? 'ok' : 'no');
-    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('A correta é a ' + letra + ').')) + '</b>' + md(item.comentario);
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('A correta é a ' + letra + ').')) + '</b>' + md(item.comentario) +
+      (acertou ? '' : '<small class="muted" style="display:block; margin-top:6px">↳ foi para o seu caderno de erros e volta na revisão</small>');
+    registrarResposta('me', q, item, acertou);
     evento('questao', 'raciocinar', { n: q + 1, formato: 'me', respondeu_certo: acertou },
            (q + 1 >= (CONT.questoes_me || []).length) ? 'concluido' : 'em_andamento');
     var prox = $('rq_' + (q + 1));
@@ -9375,7 +9634,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var fb = $('rfb_' + q);
     var acertou = (escolha === !!item.gabarito);
     fb.className = 'fb ' + (acertou ? 'ok' : 'no');
-    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('O gabarito é ' + (item.gabarito ? 'Certo' : 'Errado') + '.')) + '</b>' + md(item.comentario);
+    fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : ('O gabarito é ' + (item.gabarito ? 'Certo' : 'Errado') + '.')) + '</b>' + md(item.comentario) +
+      (acertou ? '' : '<small class="muted" style="display:block; margin-top:6px">↳ foi para o seu caderno de erros e volta na revisão</small>');
+    registrarResposta('ce', q, item, acertou);
     evento('questao', 'raciocinar', { n: q + 1, respondeu_certo: acertou }, (q + 1 >= CONT.questoes.length) ? 'concluido' : 'em_andamento');
     var prox = $('rq_' + (q + 1));
     if(prox) prox.style.display = 'block';
@@ -9698,16 +9959,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('hdrData').textContent = DIA[hoje.getDay()] + ', ' + hoje.getDate() + ' de ' + MES[hoje.getMonth()];
     $('hdrOla').textContent = 'Olá' + (NOME ? ', ' + NOME.split(' ')[0] : '') + '! Dia ' + dd.dia_jornada + ' da jornada';
     $('streakN').textContent = dd.constancia_dias + (dd.constancia_dias === 1 ? ' dia' : ' dias');
-    var rev = dd.revisoes || [];
-    if(rev.length){
-      $('revTit').textContent = 'Revisões no ponto certo de hoje';
-      $('revChips').innerHTML = rev.map(function(r){
-        return '<button class="rev" style="cursor:pointer; text-align:left; font:inherit; color:inherit" onclick="irRevisar()"><span>agora</span><b>' + esc(String(r.frente).slice(0, 46)) + '</b>flashcard · 1 min</button>';
-      }).join('');
-    } else {
-      $('revTit').textContent = 'Revisões';
-      $('revChips').innerHTML = '<div class="rev"><b>Nada vencido agora ✓</b>suas revisões voltam no momento certo</div>';
-    }
+    // as revisões (assuntos, erros e cartões) ficam no cartão "Revisão de hoje", no topo
+    carregarRevisao();
     drawLine(dd.semanas);
     drawHeat(dd.dias_ativos);
 
