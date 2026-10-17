@@ -642,10 +642,11 @@
     max-width:90%; text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
-  /* primeiro assunto guiado: só explicação simples, teoria e questões */
+  /* primeiro assunto guiado: o caminho curto vem no topo, mas os 8 verbos
+     ficam todos à vista desde o início (antes ficavam escondidos até concluir
+     o primeiro assunto, e a maioria nunca chegava a vê-los) */
   .so-primeiro{display:none}
   #scr-hoje.primeiro .so-primeiro{display:block}
-  #scr-hoje.primeiro .so-depois{display:none !important}
   #scr-hoje.primeiro .sess{display:flex; flex-direction:column}
   #scr-hoje.primeiro #guiaPrimeiro{order:-2}
   #scr-hoje.primeiro #t-simples{order:-1}
@@ -2140,8 +2141,7 @@
           <li id="gp2"><b>Aprofunde</b><span>a teoria completa no Leitor</span></li>
           <li id="gp3"><b>Teste</b><span>as questões no estilo da banca, depois conclua o assunto</span></li>
         </ol>
-        <p class="muted" style="font-size:.74rem; margin:10px 0 0">Podcast, música, flashcards, mapa mental e os outros verbos aparecem a partir do segundo assunto.
-          <button class="linkbtn" onclick="mostrarTodosVerbos()">Quero ver tudo agora</button></p>
+        <p class="muted" style="font-size:.74rem; margin:10px 0 0">Podcast, música, flashcards, mapa mental e os outros verbos já estão logo abaixo — use os que quiser. Quando você terminar a teoria e as questões, eu marco o assunto como concluído sozinha.</p>
       </div>
 
       <!-- LER -->
@@ -2438,8 +2438,8 @@
 
       <!-- FECHO DO DIA -->
       <div class="card" style="border:2px solid var(--accent)">
-        <h2 style="font-size:1rem">Terminou o assunto de hoje?</h2>
-        <p class="muted" style="font-size:.78rem; margin-bottom:10px">Retome a teoria quando quiser. Quando marcar como concluído, eu puxo o próximo assunto do cronograma.</p>
+        <h2 style="font-size:1rem" id="fechoTit">Terminou o assunto de hoje?</h2>
+        <p class="muted" style="font-size:.78rem; margin-bottom:10px" id="fechoTxt">Quando você terminar a teoria e as questões, eu concluo o assunto sozinha e deixo o próximo pronto aqui.</p>
         <button class="nextcard" onclick="openLeitor()">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" style="flex:none"><path d="M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2V5zm16 0a2 2 0 00-2-2h-5v18h5a2 2 0 002-2V5z"/></svg>
       <span><b id="nextT">Continuar: Teoria no Leitor</b><small id="nextS">faltam ~4 min · depois eu te levo ao próximo verbo</small></span>
@@ -6749,6 +6749,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   var fcI = 0, FC_MODO = 'hoje', FC_HOJE = null, FC_REV = [];
+  // Treinar conta como feito quando a aluna passa por todos os cartões do
+  // assunto (até 8) ou zera a fila de revisões. Antes nenhum caminho marcava
+  // o verbo como concluído e o anel nunca chegava a 8 de 8.
+  var FC_AVAL = {};
+  function treinarFeito(n){ evento('flashcards_concluidos', 'treinar', { cartoes: n, modo: FC_MODO }, 'concluido'); }
   var fcLabels = ['Errei — volta em 10 min', 'Quase — volta em 1 dia', 'Fácil — volta em 4 dias'];
 
   function irRevisar(){
@@ -6862,6 +6867,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function fcNext(grade){
     toast(fcLabels[grade]);
     evento('flashcard_revisado', 'treinar', { nota: grade, modo: FC_MODO }, 'em_andamento');
+    if(FC_MODO === 'hoje' && fcs[fcI]){
+      FC_AVAL[fcs[fcI][0]] = true;
+      var meta = Math.min((FC_HOJE || fcs).length, 8), feitos = Object.keys(FC_AVAL).length;
+      if(feitos >= meta && !FEITOS.treinar){ treinarFeito(feitos); toast('Treino do assunto concluído ✓'); }
+    }
     if(FC_MODO === 'revisao' && FC_REV[fcI] && FC_REV[fcI].id){
       apiFetch('/api/flashcard', { revisar: FC_REV[fcI].id, nota: grade }).catch(function(){});
       FC_REV.splice(fcI, 1); fcs.splice(fcI, 1);
@@ -6870,6 +6880,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         $('fcF').textContent = 'Revisões em dia ✓';
         $('fcB').textContent = 'Você zerou a fila de hoje. Os cartões voltam no momento certo.';
         $('fcSub').textContent = 'Nenhuma revisão pendente';
+        if(!FEITOS.treinar) treinarFeito(0);
         carregarReal();
         return;
       }
@@ -8663,7 +8674,29 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     enterLoading();
     carregarReal();
   }
+  // Ao trocar de assunto, o anel e os selos "✓ concluído" do assunto anterior
+  // ficavam na tela: a parte 2 abria mostrando "2 de 8" com Ler já marcado.
+  var SELOS_ORIG = null;
+  function limparVerbosTela(){
+    var selos = document.querySelectorAll('[id^="sb"].stbadge');
+    if(!SELOS_ORIG){
+      SELOS_ORIG = {};
+      [].forEach.call(selos, function(el){ SELOS_ORIG[el.id] = [el.className, el.textContent]; });
+      return;     // primeira carga: a tela ainda está como veio do HTML
+    }
+    [].forEach.call(selos, function(el){
+      var o = SELOS_ORIG[el.id]; if(o){ el.className = o[0]; el.textContent = o[1]; }
+    });
+    document.querySelectorAll('.ringlbl .chip').forEach(function(c, i){ c.className = 'chip' + (i === 0 ? ' now' : ''); });
+    if($('ring')) drawRing(0);
+    var lbl = document.querySelector('.ringlbl b'); if(lbl) lbl.textContent = '0 de 8 verbos hoje';
+    // mesmo assunto (refazer o conteúdo): o que já estava feito volta a aparecer
+    var ja = Object.keys(FEITOS); FEITOS = {};
+    ja.forEach(function(v){ marcaVerbo(v); });
+  }
+  limparVerbosTela();   // guarda como os selos vêm do HTML
   function enterLoading(){
+    limparVerbosTela();
     CONT_TOKEN = '';      // blocos do assunto anterior param de valer
     Q_INICIO = 0;
     $('lerIntro').textContent = 'A IA está escrevendo a aula deste assunto agora. Na primeira vez leva alguns segundos — depois ele abre na hora.';
@@ -8936,6 +8969,81 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
 
   var VERBOS = ['ler','ouvir','falar','digitar','escrever','raciocinar','treinar','perguntar'];
   var FEITOS = {};
+
+  /* ---------- concluir e seguir ----------
+     O assunto se conclui sozinho quando a aluna termina a teoria (Ler) e as
+     questões (Raciocinar) — antes dependia de um botão que quase ninguém
+     tocava, e o cronograma ficava parado no mesmo assunto. Os outros verbos
+     continuam abertos depois disso. Se o assunto foi dividido em partes, o
+     botão leva direto à parte seguinte, que o servidor já puxou para a frente. */
+  var SEGUIR = {};      // cron_id concluído → cron_id da parte seguinte (ou null)
+  function rotuloConcluir(it){
+    var b = $('btnConcluir'); if(!b || !it) return;
+    var temProx = Number(it.partes) > 1 && Number(it.parte) < Number(it.partes);
+    var feito = it.status === 'concluido' || (it.cron_id in SEGUIR);
+    var tit = $('fechoTit'), txt = $('fechoTxt');
+    if(tit){
+      tit.textContent = feito ? (temProx ? 'Parte ' + it.parte + ' concluída ✓' : 'Assunto concluído ✓') : 'Terminou o assunto de hoje?';
+      txt.textContent = feito
+        ? (temProx ? 'A parte ' + (Number(it.parte) + 1) + ' continua de onde esta parou — siga quando quiser. Os outros verbos desta parte continuam abertos.'
+                   : 'Os outros verbos continuam abertos para reforçar. Quando quiser, siga para o próximo assunto.')
+        : 'Quando você terminar a teoria e as questões, eu concluo o assunto sozinha e deixo o próximo pronto aqui.';
+    }
+    if($('nextT')) $('nextT').textContent = (feito ? 'Rever a teoria: ' : 'Continuar: ') + it.topico +
+      (Number(it.partes) > 1 ? ' · parte ' + it.parte + ' de ' + it.partes : '');
+    if(feito){
+      b.className = 'btn small';
+      b.textContent = temProx ? 'Seguir para a parte ' + (Number(it.parte) + 1) + ' de ' + it.partes + ' →'
+                              : 'Ir para o próximo assunto →';
+    } else {
+      b.className = 'btn ghost small';
+      b.textContent = temProx ? 'Concluir e seguir para a parte ' + (Number(it.parte) + 1) + ' →'
+                              : 'Concluir assunto ✓';
+    }
+  }
+  function concluirNoServidor(it){
+    return apiFetch('/api/cronograma', { concluir: it.cron_id })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        it.status = 'concluido';
+        SEGUIR[it.cron_id] = (d && d.proximo) || null;
+        (REAL && REAL.itens || []).forEach(function(x){ if(x.cron_id === it.cron_id) x.status = 'concluido'; });
+        rotuloConcluir(it);
+        return SEGUIR[it.cron_id];
+      });
+  }
+  function seguirPara(prox){
+    if(prox){ estudarTopico(prox); return; }
+    ESCOLHIDO = null; try { localStorage.removeItem('persisteia_topico'); } catch(e){}
+    FEITOS = {}; CONT = null; enterLoading(); carregarReal();
+  }
+  function concluirOuSeguir(){
+    var it = itemAtivo(); if(!it) return;
+    if(it.cron_id in SEGUIR){ seguirPara(SEGUIR[it.cron_id]); return; }
+    if(it.status === 'concluido'){
+      // assunto concluído em outro dia: a parte seguinte é a do mesmo tópico
+      var prox = (REAL.itens || []).filter(function(x){
+        return x.topico_id === it.topico_id && Number(x.parte) === Number(it.parte) + 1 && x.status !== 'concluido';
+      })[0];
+      seguirPara(prox ? prox.cron_id : null); return;
+    }
+    concluirNoServidor(it).then(function(prox){
+      toast(prox ? 'Parte concluída! Abrindo a próxima parte…' : 'Assunto concluído! Puxando o próximo do cronograma…');
+      seguirPara(prox);
+    }).catch(function(){ toast('Não consegui concluir agora — tente de novo'); });
+  }
+  function autoConcluir(){
+    if(!(FEITOS.ler && FEITOS.raciocinar) || !API || !TOKEN) return;
+    var it = itemAtivo();
+    if(!it || it.status === 'concluido' || (it.cron_id in SEGUIR)) return;
+    SEGUIR[it.cron_id] = null;     // trava: um pedido só
+    concluirNoServidor(it).then(function(prox){
+      passoGuia(3);
+      evento('assunto_concluido_auto');
+      toast(prox ? 'Parte ' + it.parte + ' concluída ✓ — a parte ' + (Number(it.parte) + 1) + ' já está liberada no botão abaixo'
+                 : 'Assunto concluído ✓ — os outros verbos continuam abertos; o próximo assunto está no botão abaixo');
+    }).catch(function(){ delete SEGUIR[it.cron_id]; });
+  }
   function marcaVerbo(v){
     if(!v || FEITOS[v]) return;
     FEITOS[v] = true;
@@ -8945,6 +9053,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     });
     if(v === 'ler') passoGuia(2);
     if(v === 'raciocinar') passoGuia(3);
+    autoConcluir();
     var sb = $('sb' + v.charAt(0).toUpperCase() + v.slice(1));
     if(sb){ sb.className = 'stbadge auto num'; sb.textContent = '✓ concluído'; }
     var n = Object.keys(FEITOS).length;
@@ -9017,26 +9126,20 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     desenharSessoesDia(d, it);
     $('nextT').textContent = 'Continuar: ' + it.topico + parteTxt;
     $('nextS').textContent = 'teoria no Leitor · depois eu te levo aos outros verbos';
+    rotuloConcluir(it);
     $('leitorTitle').textContent = it.topico;
     var chatSub = document.querySelector('#chat .c-top small');
     if(chatSub) chatSub.textContent = 'no assunto: ' + it.topico;
     if(!$('btnConcluir')){
       var b = document.createElement('button');
       b.className = 'btn ghost small'; b.id = 'btnConcluir';
-      b.style.margin = '0 0 14px'; b.textContent = 'Concluir assunto de hoje ✓';
-      b.onclick = function(){
-        var alvo = itemAtivo();
-        apiFetch('/api/cronograma', { concluir: alvo.cron_id }).then(function(){
-          toast(MODO_PRIMEIRO ? 'Primeiro assunto concluído! 🎉 A partir de agora, todos os 8 verbos ficam liberados.'
-                              : 'Assunto concluído! Puxando o próximo do cronograma…');
-          ESCOLHIDO = null; try { localStorage.removeItem('persisteia_topico'); } catch(e){}
-          FEITOS = {}; CONT = null; enterLoading(); carregarReal();
-        }).catch(function(){});
-      };
+      b.style.margin = '0 0 14px';
+      b.onclick = concluirOuSeguir;
       b.style.margin = '4px 0 0';
       var slot = $('slotConcluir');
       if(slot) slot.appendChild(b);
       else { var next = document.querySelector('.nextcard'); next.parentNode.insertBefore(b, next.nextSibling); }
+      rotuloConcluir(it);
     }
   }
 
@@ -9147,7 +9250,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function aplicarFlashcards(c){
     if(!(c.flashcards && c.flashcards.length)) return;
     fcs = c.flashcards.map(function(x){ return [x.frente, x.verso]; });
-    FC_HOJE = fcs.slice(); FC_MODO = 'hoje';
+    FC_HOJE = fcs.slice(); FC_MODO = 'hoje'; FC_AVAL = {};
     if($('fcModoHoje')){ $('fcModoHoje').classList.add('sel'); $('fcModoRev').classList.remove('sel'); }
     fcI = 0; $('fcF').textContent = semMd(fcs[0][0]); $('fcB').textContent = semMd(fcs[0][1]);
     var it = itemAtivo();

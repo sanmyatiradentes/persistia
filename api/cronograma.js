@@ -207,7 +207,45 @@ module.exports = async (req, res) => {
         sql: "UPDATE cronograma SET status='concluido' WHERE id = ? AND aluno_id = ?",
         args: [String(req.body.concluir), aluno.id]
       });
-      return res.status(200).json({ ok: true });
+      // Assunto dividido em partes: a parte seguinte vem logo depois desta.
+      // Antes ela ficava onde a fila tinha posto — às vezes seis semanas
+      // adiante —, e a aluna terminava a parte 1 sem achar a parte 2.
+      // Aqui ela vira a primeira sessão do próximo dia de estudo (o resto do
+      // dia de hoje não perde a vez), e o app oferece seguir para ela já.
+      let proximo = null;
+      const feita = (await db.execute({
+        sql: 'SELECT topico_id, edital_id, ordem, parte, partes, data FROM cronograma WHERE id = ? AND aluno_id = ?',
+        args: [String(req.body.concluir), aluno.id]
+      })).rows[0];
+      if (feita && Number(feita.partes) > 1 && Number(feita.parte) < Number(feita.partes)) {
+        const seg = (await db.execute({
+          sql: `SELECT id, ordem, status, data FROM cronograma
+                WHERE aluno_id = ? AND edital_id = ? AND topico_id = ? AND parte = ?`,
+          args: [aluno.id, feita.edital_id, feita.topico_id, Number(feita.parte) + 1]
+        })).rows[0];
+        if (seg && seg.status !== 'concluido') {
+          proximo = seg.id;
+          const cfgC = await db.execute({ sql: 'SELECT dias_semana FROM config WHERE aluno_id = ?', args: [aluno.id] });
+          const diasSem = Number((cfgC.rows[0] || {}).dias_semana) || 6;
+          const base = feita.data > hojeISO() ? feita.data : hojeISO();
+          const proxData = proximasDatas(14, diasSem).find(d => d > base);
+          // último item do dia em que a parte foi feita: a próxima entra depois dele
+          const fimDoDia = Number((await db.execute({
+            sql: 'SELECT MAX(ordem) AS m FROM cronograma WHERE aluno_id = ? AND edital_id = ? AND data <= ?',
+            args: [aluno.id, feita.edital_id, base]
+          })).rows[0].m);
+          const ate = Number(seg.ordem);
+          if (proxData && seg.data > proxData && ate > fimDoDia + 1) {
+            await db.batch([
+              { sql: `UPDATE cronograma SET ordem = ordem + 1
+                      WHERE aluno_id = ? AND edital_id = ? AND ordem > ? AND ordem < ?`,
+                args: [aluno.id, feita.edital_id, fimDoDia, ate] },
+              { sql: 'UPDATE cronograma SET ordem = ?, data = ? WHERE id = ?', args: [fimDoDia + 1, proxData, seg.id] }
+            ], 'write');
+          }
+        }
+      }
+      return res.status(200).json({ ok: true, proximo });
     }
 
     if (req.method === 'POST' && (req.body || {}).gerar) {
@@ -319,9 +357,18 @@ module.exports = async (req, res) => {
       if (ordemEscolhida === 'edital') {
         const filas = Array.from(sessoesPorDisc.values());
         let restam = filas.reduce((n, f) => n + f.length, 0);
+        let ontemEd = new Set();
         while (restam > 0 && guarda++ < 20000) {
           const dia = [];
           let usadas = 0, topicosNoDia = new Set(), avancou = true;
+          // a continuação de ontem abre o dia (ver o comentário no modo prioridade)
+          for (const fila of filas) {
+            const s = fila[0];
+            if (s && s.parte > 1 && ontemEd.has(s.topico_id + ':' + (s.parte - 1)) &&
+                (!dia.length || usadas + s.horas <= horasDia + 0.25)) {
+              fila.shift(); dia.push(s); usadas += s.horas; topicosNoDia.add(s.topico_id); restam--;
+            }
+          }
           while (avancou) {
             avancou = false;
             for (let i = 0; i < filas.length; i++) {
@@ -338,6 +385,7 @@ module.exports = async (req, res) => {
           }
           if (!dia.length) break;
           plano.push(dia);
+          ontemEd = new Set(dia.map(s => s.topico_id + ':' + s.parte));
         }
       } else {
         // Fila única, montada em duas camadas:
@@ -367,12 +415,25 @@ module.exports = async (req, res) => {
         fila.sort((a, b) => (a.chave - b.chave) || (b.prioridade - a.prioridade)
           || (a.ordemEdital[0] - b.ordemEdital[0]) || (a.parte - b.parte));
 
+        let ontem = new Set();
         while (fila.length && guarda++ < 20000) {
           const dia = [];
           let usadas = 0;
           const topicosNoDia = new Set(), porDisc = {};
           // teto de sessões da mesma disciplina no dia: metade, no mínimo 1
           const tetoDisc = Math.max(1, Math.ceil(Math.max(1, horasDia / 2) / 2));
+          // A continuação abre o dia: a parte seguinte de um tópico estudado
+          // ontem vem antes de tudo. Sem isso, as outras disciplinas passavam
+          // na frente e a parte 2 caía dias (às vezes semanas) depois da parte 1.
+          for (let i = 0; i < fila.length; ) {
+            const s = fila[i];
+            const cabe = !dia.length || usadas + s.horas <= horasDia + 0.25;
+            if (s.parte > 1 && cabe && ontem.has(s.topico_id + ':' + (s.parte - 1))) {
+              fila.splice(i, 1); dia.push(s); usadas += s.horas;
+              topicosNoDia.add(s.topico_id);
+              porDisc[s.disc_id] = (porDisc[s.disc_id] || 0) + 1;
+            } else i++;
+          }
           for (let i = 0; i < fila.length; ) {
             const s = fila[i];
             const cheio = dia.length && usadas + s.horas > horasDia + 0.25;
@@ -391,6 +452,7 @@ module.exports = async (req, res) => {
             dia.push(s);
           }
           plano.push(dia);
+          ontem = new Set(dia.map(s => s.topico_id + ':' + s.parte));
         }
       }
 

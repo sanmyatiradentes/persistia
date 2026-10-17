@@ -23,7 +23,11 @@ module.exports = async (req, res) => {
     if (assunto && verbo) {
       await db.execute({
         sql: `INSERT INTO progresso (aluno_id, assunto, verbo, status, atualizado_em) VALUES (?,?,?,?,?)
-              ON CONFLICT(aluno_id, assunto, verbo) DO UPDATE SET status=excluded.status, atualizado_em=excluded.atualizado_em`,
+              ON CONFLICT(aluno_id, assunto, verbo) DO UPDATE SET
+                -- verbo concluído não volta para "em andamento" (rever um cartão
+                -- ou responder mais uma questão depois de terminar desfazia o feito)
+                status = CASE WHEN progresso.status = 'concluido' THEN 'concluido' ELSE excluded.status END,
+                atualizado_em=excluded.atualizado_em`,
         args: [aluno.id, String(assunto), String(verbo), status || 'concluido', agora()]
       });
       // primeira atividade de estudo concluída: é aqui que os dias de teste começam a contar
