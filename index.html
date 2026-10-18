@@ -4400,6 +4400,22 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
      A IA nem sempre acha o nome da banca no PDF, e tem gente estudando por um
      edital antigo já sabendo qual banca vai aplicar a prova nova. O estilo das
      questões depende disso, então quem manda é o aluno. */
+  // A banca que vale é a do edital (a aluna pode ter corrigido em Minha conta).
+  // O assunto guarda a banca de quando foi escrito: se ele nasceu antes de a
+  // banca ser conhecida, a tela dizia "banca não identificada" mesmo com a
+  // banca cadastrada. "Quero mais questões" já usa a banca do edital.
+  function textoBanca(bancaDoAssunto){
+    var banca = (REAL && REAL.banca) || bancaDoAssunto || '';
+    if(!banca) return 'Banca ainda não identificada: questões em estilo clássico. Informe a banca em Plano › Minha conta para as próximas saírem no estilo dela.';
+    if(bancaDoAssunto && mesmaBanca(bancaDoAssunto, banca)) return 'Questões no estilo da banca ' + banca + ' — troque o formato quando quiser.';
+    return 'Banca do seu concurso: ' + banca + '. Estas questões foram escritas antes de a banca atual ser cadastrada — toque em "Quero mais questões deste assunto" para receber questões no estilo dela.';
+  }
+  // "Cebraspe", "CESPE/CEBRASPE" e "Cespe" são a mesma banca: basta um nome em comum
+  function mesmaBanca(a, b){
+    var pa = norm(a).split(/[^a-z0-9]+/).filter(function(x){ return x.length >= 3; });
+    var pb = norm(b).split(/[^a-z0-9]+/).filter(function(x){ return x.length >= 3; });
+    return pa.some(function(x){ return pb.indexOf(x) >= 0; });
+  }
   function salvarBanca(){
     var v = ($('bancaInput').value || '').trim();
     var av = $('bancaAviso');
@@ -4411,9 +4427,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         if(REAL) REAL.banca = d.banca;
         if(CONT) CONT.banca = d.banca;
         if($('qBanca')){
-          $('qBanca').textContent = d.banca
-            ? 'Questões no estilo da banca ' + d.banca + ' — troque o formato quando quiser.'
-            : 'Banca ainda não identificada: questões em estilo clássico. Escolha o formato que sua prova cobra.';
+          $('qBanca').textContent = textoBanca(CONT && CONT.banca);
         }
         av.innerHTML = d.banca
           ? '<b style="color:var(--accent)">Banca salva: ' + esc(d.banca) + '.</b> Vale para o conteúdo gerado daqui para frente. ' +
@@ -9592,9 +9606,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     aplicarLeiSeca(c);
     if(c.trecho_chave || c.lei_seca || !parcial) montarLacunas(c);
 
-    $('qBanca').textContent = c.banca
-      ? 'Questões no estilo da banca ' + c.banca + ' — troque o formato quando quiser.'
-      : 'Banca ainda não identificada: questões em estilo clássico. Escolha o formato que sua prova cobra.';
+    $('qBanca').textContent = textoBanca(c.banca);
     if(c.questoes || c.questoes_me || !parcial) renderQuestoes();
 
     aplicarFlashcards(c);
