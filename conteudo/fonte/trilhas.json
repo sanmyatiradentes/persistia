@@ -1,0 +1,344 @@
+[
+  {
+    "id": "rotina-do-zero",
+    "nome": "Rotina de estudo do zero",
+    "subtitulo": "Em 21 dias, você troca o ciclo de começar e parar por um hábito diário pequeno que cresce com você.",
+    "para_quem": "Para quem já começou a estudar muitas vezes e sempre parou no meio do caminho.",
+    "fontes": "Peter Gollwitzer (intenções de implementação), BJ Fogg (Micro-hábitos / Tiny Habits), James Clear (Hábitos Atômicos), Wendy Wood (Bons hábitos, maus hábitos)",
+    "dias": [
+      {
+        "titulo": "Escolha a hora e o lugar",
+        "acao": "Escreva uma frase só: \"Quando for [hora] e eu estiver em [lugar], vou abrir o material de estudo.\" Cole essa frase onde você vai ver amanhã. Depois, estude 5 minutos, só para estrear.",
+        "por_que": "Peter Gollwitzer mostrou que planos no formato \"quando X, então Y\" aumentam a chance de a gente agir. A decisão já fica tomada antes da hora chegar."
+      },
+      {
+        "titulo": "Comece ridiculamente pequeno",
+        "acao": "Estude só 10 minutos hoje, nem um a mais. Se der vontade de continuar, pare mesmo assim e anote onde parou.",
+        "por_que": "BJ Fogg ensina que hábitos começam minúsculos. O objetivo agora é aparecer todo dia, não render muito."
+      },
+      {
+        "titulo": "Cole o estudo num hábito antigo",
+        "acao": "Escolha algo que você já faz todo dia, como tomar café ou chegar em casa. Escreva: \"Depois que eu [hábito antigo], eu abro o material.\" Faça isso hoje e estude 10 minutos.",
+        "por_que": "É o que Fogg chama de âncora e James Clear chama de empilhamento de hábitos. O hábito antigo vira o gatilho do novo."
+      },
+      {
+        "titulo": "Comemore logo depois",
+        "acao": "Estude 10 minutos. Ao terminar, comemore na hora: um \"isso!\", um sorriso, um punho fechado. Parece bobo, faça mesmo assim.",
+        "por_que": "Para BJ Fogg, a emoção positiva logo após o comportamento ajuda o hábito a se fixar. O cérebro aprende que aquilo é bom."
+      },
+      {
+        "titulo": "Arrume o canto de estudo",
+        "acao": "Deixe pronto o lugar de amanhã: material aberto, caneta, água. Tire da mesa o que não é estudo. Depois estude 12 minutos ali.",
+        "por_que": "Wendy Wood e James Clear mostram que o ambiente pesa mais do que a força de vontade. Quando o estudo está à vista, fica mais fácil começar."
+      },
+      {
+        "titulo": "Afaste o celular",
+        "acao": "Antes de começar, deixe o celular em outro cômodo ou dentro de uma gaveta, no silencioso. Estude 15 minutos sem ele.",
+        "por_que": "James Clear propõe tornar o mau hábito invisível e difícil. Um pequeno obstáculo entre você e a distração já ajuda."
+      },
+      {
+        "titulo": "Primeira revisão da semana",
+        "acao": "Responda por escrito: em quantos dias eu estudei? O que ajudou? O que atrapalhou? Mude uma coisa só para a próxima semana. Depois estude 15 minutos.",
+        "por_que": "Olhar para a semana transforma tentativa em aprendizado. Ajustar o plano é melhor do que se culpar."
+      },
+      {
+        "titulo": "Crie o plano para dia ruim",
+        "acao": "Escreva sua versão mínima de estudo: o que você faz no pior dia possível, em até 5 minutos. Exemplo: ler um resumo ou fazer duas questões. Hoje, estude 15 minutos normais.",
+        "por_que": "James Clear sugere ter um padrão mínimo para os dias difíceis. Assim o hábito sobrevive ao cansaço e ao imprevisto."
+      },
+      {
+        "titulo": "Combine com o obstáculo",
+        "acao": "Pense no que mais costuma te tirar do estudo. Escreva: \"Se [obstáculo] acontecer, então eu [resposta].\" Estude 18 minutos hoje.",
+        "por_que": "Gollwitzer também estudou planos \"se-então\" para obstáculos. Quem já decidiu como reagir se desvia menos."
+      },
+      {
+        "titulo": "Nunca falhe dois dias seguidos",
+        "acao": "Escreva num papel: \"Se eu falhar um dia, no dia seguinte faço pelo menos a versão mínima.\" Guarde junto do material. Estude 18 minutos.",
+        "por_que": "James Clear lembra que perder um dia é acidente, perder dois começa a virar padrão. Voltar logo é o que conta."
+      },
+      {
+        "titulo": "Marque o progresso à vista",
+        "acao": "Pegue um calendário ou uma folha e faça um X em cada dia estudado desde o início da trilha. Deixe essa folha visível. Estude 20 minutos.",
+        "por_que": "James Clear fala do rastreador de hábitos: ver a sequência motiva a continuar. O progresso fica concreto."
+      },
+      {
+        "titulo": "Comece a medir horas líquidas",
+        "acao": "Hoje, cronometre só o tempo em que você está de fato estudando. Pause o cronômetro em qualquer interrupção. Anote o total ao final de 20 minutos de sessão.",
+        "por_que": "Hora líquida é tempo de foco real, sem as pausas no meio. Medir mostra a verdade e ajuda a ajustar o plano sem ilusão."
+      },
+      {
+        "titulo": "Faça suas primeiras questões",
+        "acao": "Depois de estudar um assunto, resolva de 5 a 10 questões de prova sobre ele. Não se preocupe com acertos. Só anote quais você errou.",
+        "por_que": "Questões mostram como a banca cobra e o que você ainda não sabe. Errar agora é informação, não fracasso."
+      },
+      {
+        "titulo": "Segunda revisão da semana",
+        "acao": "Some as horas líquidas da semana e conte os dias estudados. Compare com a semana passada. Escolha um ajuste e escreva para a próxima.",
+        "por_que": "A revisão semanal mantém o plano vivo. Você decide com dados, não com a impressão do momento."
+      },
+      {
+        "titulo": "Aumente um pouco a dose",
+        "acao": "Faça hoje uma sessão de 25 minutos de estudo líquido, com cronômetro. Se não couber, faça 20 e anote o motivo, sem culpa.",
+        "por_que": "BJ Fogg mostra que o hábito cresce depois de enraizado. Agora que o costume existe, dá para pedir um pouco mais."
+      },
+      {
+        "titulo": "Planeje o estudo de amanhã",
+        "acao": "Ao terminar 25 minutos de estudo, escreva o que vai estudar amanhã: matéria, assunto e a primeira tarefa. Deixe o material já aberto nessa página.",
+        "por_que": "Decidir antes evita gastar energia escolhendo na hora. É mais uma intenção de implementação, agora para o conteúdo."
+      },
+      {
+        "titulo": "Junte estudo e questões",
+        "acao": "Faça uma sessão de 25 minutos: 15 de teoria e 10 de questões do mesmo assunto. Marque os erros para rever.",
+        "por_que": "Ler e logo depois praticar fecha o ciclo. Você descobre na hora o que entendeu e o que só achou que entendeu."
+      },
+      {
+        "titulo": "Teste o plano para dia ruim",
+        "acao": "Escolha um dia desta semana em que você estiver cansado e faça só a versão mínima, de propósito. Hoje, faça seu estudo normal de 25 minutos.",
+        "por_que": "Ensaiar o plano mínimo prova que ele funciona. Quando o dia ruim chegar de verdade, você já sabe o caminho."
+      },
+      {
+        "titulo": "Duas sessões no mesmo dia",
+        "acao": "Faça duas sessões de 20 minutos com uma pausa de 5 minutos entre elas. Anote as horas líquidas das duas.",
+        "por_que": "Pausas curtas ajudam a manter a atenção. Dividir em blocos deixa o tempo maior mais possível."
+      },
+      {
+        "titulo": "Simule a rotina ideal",
+        "acao": "Escreva como seria sua semana de estudo sustentável: dias, horários, horas líquidas e o plano para dia ruim. Seja realista com sua vida, não com a do outro.",
+        "por_que": "Agora você tem três semanas de dados sobre você. Um plano feito a partir deles tem mais chance de durar."
+      },
+      {
+        "titulo": "Revisão final e próximo passo",
+        "acao": "Conte os X do calendário e some as horas líquidas das três semanas. Escreva o que mudou em você e qual será o compromisso das próximas semanas. Depois, estude 25 minutos.",
+        "por_que": "James Clear diz que cada ação é um voto na pessoa que você quer ser. Olhar o caminho feito reforça essa identidade de quem estuda."
+      }
+    ]
+  },
+  {
+    "id": "estudar-que-fica",
+    "nome": "Estudar para lembrar",
+    "subtitulo": "Em 21 dias, você troca a releitura e o grifo por técnicas que fazem o conteúdo ficar na memória.",
+    "para_quem": "Para quem estuda bastante, sente que entendeu, mas esquece tudo na hora da questão.",
+    "fontes": "Henry L. Roediger III e Jeffrey D. Karpicke (efeito de testagem, 2006), John Dunlosky et al. (Improving Students' Learning With Effective Learning Techniques, 2013), Robert A. Bjork (dificuldades desejáveis), Peter C. Brown, Henry L. Roediger III e Mark A. McDaniel (Fixe o Conhecimento), Nate Kornell e Robert A. Bjork (intercalação, 2008), Doug Rohrer (prática intercalada), Richard Feynman (técnica atribuída), Sebastian Leitner (sistema de caixas de flashcards)",
+    "dias": [
+      {
+        "titulo": "Feche o livro e lembre",
+        "acao": "Leia uma página do seu material. Feche e escreva tudo o que lembrar, sem olhar. Depois abra e confira o que faltou.",
+        "por_que": "Roediger e Karpicke mostraram que tentar lembrar fixa mais do que reler. Puxar da memória é o próprio treino."
+      },
+      {
+        "titulo": "Desconfie da sensação de saber",
+        "acao": "Pegue um assunto que você já releu várias vezes. Sem consultar, explique em voz alta os pontos principais. Anote o que travou.",
+        "por_que": "Em Fixe o Conhecimento, Brown, Roediger e McDaniel explicam que a releitura dá uma ilusão de domínio. O texto parece familiar, mas isso não é lembrar."
+      },
+      {
+        "titulo": "Troque grifo por pergunta",
+        "acao": "Num trecho que você grifaria, escreva na margem uma pergunta cuja resposta é aquele trecho. Faça isso com 5 trechos.",
+        "por_que": "Na revisão de Dunlosky e colegas, de 2013, grifar e reler foram classificados como de baixa utilidade. Perguntas preparam você para se testar depois."
+      },
+      {
+        "titulo": "Responda as perguntas de ontem",
+        "acao": "Volte às 5 perguntas que escreveu ontem. Cubra o texto e responda de memória. Marque as que errou.",
+        "por_que": "Testar-se foi uma das técnicas mais bem avaliadas por Dunlosky e colegas. E cada tentativa mostra o que ainda precisa de atenção."
+      },
+      {
+        "titulo": "Folha em branco",
+        "acao": "Escolha um tema estudado na semana. Numa folha em branco, monte de memória um esquema com tudo o que sabe. Só depois compare com o material e complete com outra cor.",
+        "por_que": "A folha em branco é recuperação ativa pura. A outra cor mostra, de forma visível, onde estão suas lacunas."
+      },
+      {
+        "titulo": "Monte seus primeiros flashcards",
+        "acao": "Crie 10 flashcards de um assunto: pergunta de um lado, resposta curta do outro. Use suas palavras, não copie o texto inteiro.",
+        "por_que": "Flashcards são uma forma prática de se testar. Escrever com as próprias palavras já exige entender."
+      },
+      {
+        "titulo": "Revise com as caixas de Leitner",
+        "acao": "Separe três caixas ou montes: errei, acertei com dúvida, acertei fácil. Passe pelos 10 cartões e distribua. Os do monte \"errei\" voltam amanhã.",
+        "por_que": "O sistema de Sebastian Leitner faz você rever mais o que sabe menos. Assim o tempo vai para onde mais precisa."
+      },
+      {
+        "titulo": "Espace a revisão",
+        "acao": "Na sua agenda, marque revisões do assunto de hoje para daqui a 1 dia, alguns dias depois e uma semana depois. Hoje, faça a primeira recuperação dele.",
+        "por_que": "A prática espaçada também foi das mais bem avaliadas por Dunlosky e colegas. Rever com intervalos dá trabalho, mas segura a memória por mais tempo."
+      },
+      {
+        "titulo": "Aceite que vai ser mais difícil",
+        "acao": "Faça a revisão de um assunto antigo sem olhar nada primeiro. Se custar a lembrar, insista um minuto antes de conferir. Anote como foi.",
+        "por_que": "Robert Bjork chama isso de dificuldade desejável. O esforço para lembrar é justamente o que fortalece o aprendizado."
+      },
+      {
+        "titulo": "Pergunte por quê",
+        "acao": "Pegue 5 regras ou conceitos da matéria. Para cada um, escreva: por que isso é assim? Responda com suas palavras.",
+        "por_que": "Dunlosky e colegas chamam isso de interrogação elaborativa. Ligar o fato a uma razão ajuda a lembrar e a aplicar."
+      },
+      {
+        "titulo": "Explique para si mesmo",
+        "acao": "Resolva 3 questões. Em cada uma, explique em voz alta ou por escrito cada passo: o que fiz e por que fiz. Inclua as que acertou.",
+        "por_que": "A autoexplicação aparece na revisão de Dunlosky e colegas com resultados promissores. Ela revela se o acerto veio de entendimento ou de sorte."
+      },
+      {
+        "titulo": "Abra o caderno de erros",
+        "acao": "Pegue as questões que você errou nos últimos dias. Para cada uma, anote: o assunto, por que errou e a regra certa em uma frase.",
+        "por_que": "Errar e depois receber a correção ajuda a aprender, como mostram os estudos citados em Fixe o Conhecimento. O caderno transforma erro em material de revisão."
+      },
+      {
+        "titulo": "Técnica Feynman, primeira vez",
+        "acao": "Escolha um conceito difícil. Explique por escrito como se fosse para alguém de 12 anos, sem jargão. Onde travar, volte ao material e reescreva mais simples.",
+        "por_que": "A técnica atribuída a Richard Feynman expõe o que você não entendeu de verdade. Se não dá para simplificar, ainda falta compreender."
+      },
+      {
+        "titulo": "Misture as matérias",
+        "acao": "Monte uma lista com 9 questões: 3 de cada uma de três assuntos diferentes. Embaralhe a ordem e resolva tudo.",
+        "por_que": "Isso é intercalação. Pesquisas de Nate Kornell e Robert Bjork, e de Doug Rohrer, mostraram que misturar exemplos e tipos de problema ajuda a distinguir quando usar cada coisa, mesmo parecendo mais difícil."
+      },
+      {
+        "titulo": "Revise o caderno de erros",
+        "acao": "Leia só as perguntas do caderno de erros, cubra as respostas e tente responder. Marque quais erros já viraram acertos.",
+        "por_que": "O caderno de erros também precisa de recuperação ativa e espaçamento. Relê-lo passivamente seria cair de novo na releitura."
+      },
+      {
+        "titulo": "Crie questões no estilo da banca",
+        "acao": "Leia uma questão da sua banca. Depois escreva 2 questões parecidas sobre o mesmo assunto, com uma alternativa errada bem pensada.",
+        "por_que": "Para criar a pegadinha você precisa entender o detalhe que separa o certo do errado. É uma forma de elaboração."
+      },
+      {
+        "titulo": "Feynman com o assunto mais temido",
+        "acao": "Aplique a técnica Feynman ao assunto que você mais evita. Explique em voz alta, grave se quiser, e anote três lacunas para estudar.",
+        "por_que": "Bjork lembra que o que parece fácil nem sempre ensina. Encarar o difícil com método é onde está o maior ganho."
+      },
+      {
+        "titulo": "Revisão espaçada de tudo",
+        "acao": "Passe por todos os seus flashcards e pelo caderno de erros, só respondendo de memória. Reorganize as caixas de Leitner conforme o resultado.",
+        "por_que": "Juntar espaçamento e testagem reúne as duas técnicas mais bem avaliadas na revisão de Dunlosky e colegas."
+      },
+      {
+        "titulo": "Simulado curto e cronometrado",
+        "acao": "Faça 15 a 20 questões misturadas, com tempo marcado e sem consulta. Corrija só no fim.",
+        "por_que": "O simulado é recuperação em condição parecida com a da prova. Roediger e Karpicke mostraram que se testar ajuda a lembrar depois."
+      },
+      {
+        "titulo": "Transforme o simulado em estudo",
+        "acao": "Para cada erro de ontem, escreva no caderno de erros a causa: não sabia, confundi, li errado ou faltou tempo. Crie um flashcard para os de conteúdo.",
+        "por_que": "O valor do simulado está na análise depois. Saber o tipo de erro mostra o que mudar no estudo."
+      },
+      {
+        "titulo": "Monte seu ciclo de estudo",
+        "acao": "Escreva seu jeito de estudar daqui em diante: estudar, fechar e lembrar, fazer questões misturadas, registrar erros e revisar com intervalos. Defina quando entra cada parte na semana.",
+        "por_que": "Brown, Roediger e McDaniel defendem que aprender bem é um hábito de método, não de esforço bruto. Agora o método é seu."
+      }
+    ]
+  },
+  {
+    "id": "mente-em-dia",
+    "nome": "Mente em dia até a prova",
+    "subtitulo": "Em 21 dias, você aprende a cuidar da ansiedade, do sono e do corpo sem largar o estudo.",
+    "para_quem": "Para quem estuda sob pressão, se cobra muito e sente o peso da prova no corpo e na cabeça.",
+    "fontes": "Gerardo Ramirez e Sian Beilock (escrita expressiva, Science, 2011), Alison Wood Brooks (reavaliação da ansiedade como entusiasmo, 2014), Jeremy Jamieson (reavaliação do estresse), Kristin Neff (autocompaixão), Marily Oppezzo e Daniel Schwartz (caminhada e criatividade, 2014), Melissa Hunt et al. (limitar redes sociais, 2018), Melis Yilmaz Balban et al. (respiração e humor, 2023), Teresa Amabile e Steven Kramer (O Princípio do Progresso)",
+    "dias": [
+      {
+        "titulo": "Dê nome ao que sente",
+        "acao": "Antes de estudar, escreva em uma linha como você está hoje: cansado, ansioso, animado, com medo. Só registrar, sem julgar. Depois estude normalmente.",
+        "por_que": "Perceber o que sente é o primeiro passo para cuidar disso. Kristin Neff chama essa atenção sem julgamento de mindfulness, um dos pilares da autocompaixão."
+      },
+      {
+        "titulo": "Respire mais devagar",
+        "acao": "Sente-se e faça 5 minutos de respiração lenta: inspire pelo nariz, solte o ar devagar pela boca, com a expiração mais longa que a inspiração. Depois volte ao estudo.",
+        "por_que": "Respirar devagar, com expiração longa, ajuda o corpo a sair do modo alerta. Um estudo de Balban e colegas, de 2023, viu melhora no humor com exercícios diários de respiração."
+      },
+      {
+        "titulo": "Caminhe sem o celular",
+        "acao": "Faça uma caminhada de 10 a 15 minutos, de preferência sem o celular na mão. Ao voltar, estude.",
+        "por_que": "Oppezzo e Schwartz, em Stanford, viram que caminhar aumentou a geração de ideias. Movimentar o corpo também ajuda a baixar a tensão."
+      },
+      {
+        "titulo": "Fale com você como amigo",
+        "acao": "Pense numa cobrança dura que você se fez esta semana. Reescreva a frase como diria a um amigo querido na mesma situação.",
+        "por_que": "Kristin Neff mostra que a bondade consigo mesmo não é preguiça. Tratar-se bem ajuda a levantar depois do erro."
+      },
+      {
+        "titulo": "Você não está sozinho",
+        "acao": "Escreva: \"Muita gente que estuda para concurso sente isso também.\" Depois, anote uma dificuldade sua e lembre que ela é humana, não defeito seu.",
+        "por_que": "Neff chama isso de humanidade compartilhada. Saber que o sofrimento é comum diminui a sensação de isolamento."
+      },
+      {
+        "titulo": "Prepare a noite para dormir",
+        "acao": "Escolha um horário para encerrar telas e estudo hoje à noite. Deixe o quarto mais escuro e silencioso. Anote a que horas dormiu e acordou.",
+        "por_que": "O sono participa da consolidação da memória. Dormir mal custa caro justamente para quem precisa lembrar o que estudou."
+      },
+      {
+        "titulo": "Marque o progresso do dia",
+        "acao": "Ao final do estudo, escreva três coisas que você avançou hoje, por menores que sejam. Uma questão entendida já conta.",
+        "por_que": "Teresa Amabile e Steven Kramer descobriram que pequenos avanços percebidos estão entre o que mais melhora o ânimo no dia a dia. Registrar ajuda a enxergar."
+      },
+      {
+        "titulo": "Mapeie seu uso de redes",
+        "acao": "Veja no celular quanto tempo você passou em redes sociais ontem. Anote, sem se culpar. Só observe.",
+        "por_que": "Não dá para mudar o que você não enxerga. O número real costuma surpreender."
+      },
+      {
+        "titulo": "Coloque um limite nas redes",
+        "acao": "Defina um limite diário para redes sociais e ative o temporizador do celular. Escolha também um horário sem redes, como a primeira hora do dia.",
+        "por_que": "Hunt e colegas, em 2018, viram que universitários que limitaram as redes tiveram menos solidão e menos sintomas depressivos. Limite é cuidado, não castigo."
+      },
+      {
+        "titulo": "Ansiedade é energia",
+        "acao": "Antes de começar as questões de hoje, diga em voz alta: \"Estou animado.\" Note o coração acelerado como energia para o desafio.",
+        "por_que": "Alison Wood Brooks mostrou que dizer \"estou animado\" funcionou melhor do que tentar se acalmar. A ansiedade e a empolgação têm um corpo parecido."
+      },
+      {
+        "titulo": "O corpo está se preparando",
+        "acao": "Faça 10 questões com tempo marcado. Quando sentir o corpo tenso, pense: \"Meu corpo está me preparando para render.\" Anote como foi.",
+        "por_que": "Jeremy Jamieson e colegas viram que entender a ativação do estresse como útil melhorou o desempenho em provas. Muda o significado, não o sintoma."
+      },
+      {
+        "titulo": "Escreva as preocupações antes",
+        "acao": "Antes de uma sessão de questões, escreva por 10 minutos tudo o que te preocupa sobre a prova, com sinceridade. Depois resolva as questões.",
+        "por_que": "Ramirez e Beilock mostraram que escrever sobre as preocupações antes de uma prova melhorou o desempenho de estudantes ansiosos. A escrita libera a cabeça para pensar."
+      },
+      {
+        "titulo": "Cuide do dia depois do erro",
+        "acao": "Pegue um resultado ruim recente, em simulado ou questão. Escreva o que aconteceu, o que você sentiu e uma frase gentil para você. Depois, uma ação para amanhã.",
+        "por_que": "Kristin Neff mostra que a autocompaixão ajuda a assumir o erro e seguir em frente. A autocrítica dura costuma travar."
+      },
+      {
+        "titulo": "Peça ajuda quando pesar",
+        "acao": "Escreva os nomes de duas pessoas com quem você pode conversar quando a pressão apertar. Se o sofrimento estiver intenso ou durando muito, procure ajuda profissional, como um psicólogo ou o posto de saúde. Em crise, o CVV atende de graça pelo 188.",
+        "por_que": "Estudar não precisa ser feito em silêncio e sozinho. Sofrimento intenso merece cuidado profissional, e pedir ajuda é força, não fraqueza."
+      },
+      {
+        "titulo": "Durma e acorde no mesmo horário",
+        "acao": "Escolha um horário fixo para acordar, inclusive no fim de semana, e mantenha nos próximos dias. Anote hoje como foi a noite.",
+        "por_que": "Um horário regular ajuda o relógio do corpo a se ajustar. A prova tem hora marcada, e o seu sono pode se acostumar a ela."
+      },
+      {
+        "titulo": "Pausas que descansam de verdade",
+        "acao": "Estude em blocos e, em cada pausa, levante, beba água, olhe para longe ou alongue. Nada de rolar a tela nas pausas.",
+        "por_que": "Rolar redes na pausa ainda ocupa a atenção. Descanso de verdade ajuda a voltar ao estudo com a cabeça mais leve."
+      },
+      {
+        "titulo": "Treine o dia da prova",
+        "acao": "Faça um simulado curto no horário da sua prova. Antes, use a escrita das preocupações e a frase \"estou animado\". Depois anote o que ajudou.",
+        "por_que": "Juntar as estratégias num ensaio cria segurança. No dia, você usa o que já testou, não algo novo."
+      },
+      {
+        "titulo": "Monte seu kit de crise",
+        "acao": "Escreva num cartão o que fazer quando a ansiedade subir: respiração lenta, uma frase gentil, uma caminhada, uma pessoa para ligar. Guarde com o material.",
+        "por_que": "Na hora do aperto fica difícil pensar. Um plano pronto, escrito por você mesmo, encurta o caminho."
+      },
+      {
+        "titulo": "Reveja seus avanços",
+        "acao": "Releia os registros de progresso das últimas semanas. Escreva o que mudou no seu estudo e em você.",
+        "por_que": "Amabile e Kramer chamam isso de princípio do progresso. Ver o caminho feito alimenta a motivação para o que falta."
+      },
+      {
+        "titulo": "Combine a rotina de cuidado",
+        "acao": "Escreva sua rotina semanal de cuidado: horário de sono, limite de redes, caminhadas e momentos de respiração. Encaixe junto com o estudo, não no lugar dele.",
+        "por_que": "Cuidar da mente faz parte da preparação. Um plano que cabe na vida real tem mais chance de durar até a prova."
+      },
+      {
+        "titulo": "Carta para você no dia da prova",
+        "acao": "Escreva uma carta curta para ler na véspera da prova: o que você enfrentou, o que aprendeu sobre si e o que quer lembrar naquele dia. Guarde em lugar seguro.",
+        "por_que": "A carta une as três ideias de Kristin Neff: perceber, ser gentil e lembrar que você não está sozinho. Sua história de esforço vale, seja qual for o resultado."
+      }
+    ]
+  }
+]

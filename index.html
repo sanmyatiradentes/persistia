@@ -95,6 +95,7 @@
 <body>
 <title>PersisteIA</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Albert+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap">
+<link rel="stylesheet" href="/css/leitura.css?v=1">
 <style>
   :root{
     --bg:#EFF5F0; --card:#FFFFFF; --card2:#F7FAF7; --ink:#16241D; --muted:#5C6E64;
@@ -1592,6 +1593,14 @@
       </div>
     </div>
 
+    <!-- ================= LEITURA DO DIA (js/leitura.js) ================= -->
+    <div class="st-sec" id="leitura">
+      <div class="st-olho"><span>Leitura do dia</span></div>
+      <h2>Cinco minutos para estudar <em>melhor</em> hoje</h2>
+      <p class="sub">Como o cérebro aprende, método, constância, mente, corpo e estratégia de prova — uma ideia com base em pesquisa, uma técnica e um artigo da Constituição por dia. De graça, para qualquer concurseiro.</p>
+      <div class="ld-raiz" data-modo="site"></div>
+    </div>
+
     <!-- ================= TELAS REAIS ================= -->
     <div class="st-secTelas" id="stTelas">
     <div class="st-sec">
@@ -2479,6 +2488,9 @@
         <div id="slotConcluir"></div>
       </div>
 
+      <!-- convite para a leitura do dia (js/leitura.js), depois do estudo -->
+      <div class="card" id="ldTeaser" style="margin-top:14px"></div>
+
       <div class="card so-depois" style="margin-top:14px">
         <h2 style="font-size:.95rem">Algo neste assunto saiu errado?</h2>
         <p class="muted" style="font-size:.78rem; margin:6px 0 10px">
@@ -2722,6 +2734,11 @@
         <h2 style="font-size:1.25rem">A Esteira de Aprendizado Ativo</h2>
       </div>
       <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
+    </div>
+    <div class="card" style="margin-bottom:18px">
+      <p class="eyebrow" style="margin-bottom:4px">Leitura do dia</p>
+      <h2 style="font-size:1.1rem; margin-bottom:12px">Cinco minutos para estudar melhor hoje</h2>
+      <div class="ld-raiz" data-modo="app"></div>
     </div>
     <p class="muted" style="font-size:.85rem; margin-bottom:14px">Cada assunto do edital passa por oito verbos. Não é variedade por variedade: cada verbo aciona um efeito comprovado pela ciência da aprendizagem.</p>
     <div class="met">
@@ -10103,5 +10120,5 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); this.classList.toggle('flip'); }
   });
 </script>
-
-
+<script src="/conteudo/diario.js?v=1" defer></script>
+<script src="/js/leitura.js?v=1" defer></script>

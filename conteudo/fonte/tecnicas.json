@@ -1,0 +1,783 @@
+[
+  {
+    "nome": "Recuperação ativa com folha em branco",
+    "origem": "Pesquisa sobre o efeito de testagem (Roediger & Karpicke, 2006; Karpicke & Blunt, 2011)",
+    "em_uma_frase": "Depois de estudar, você fecha o material e escreve numa folha em branco tudo o que lembra, sem consultar nada.",
+    "como_usar": [
+      "Estude um tópico curto por 25 a 40 minutos.",
+      "Feche o livro, o PDF e a videoaula.",
+      "Escreva na folha tudo o que lembrar: conceitos, exceções, prazos e exemplos.",
+      "Abra o material e marque em outra cor o que faltou ou saiu errado.",
+      "Comece a próxima revisão desse tópico pelo que ficou marcado."
+    ],
+    "exemplo": "Juliana terminou o capítulo de atos administrativos e pegou uma folha A4. Lembrou dos atributos e dos elementos, mas esqueceu a diferença entre revogação e anulação. Marcou isso em vermelho e começou a revisão do dia seguinte justamente por ali.",
+    "armadilha": "Espiar o material \"só para lembrar o começo\" transforma o exercício em releitura. O desconforto de não lembrar faz parte do processo."
+  },
+  {
+    "nome": "Revisão espaçada 1-7-30",
+    "origem": "Prática consolidada de preparação para concursos, apoiada no efeito de espaçamento (Ebbinghaus, 1885; Cepeda et al., 2006)",
+    "em_uma_frase": "Você revisa cada assunto 1 dia, 7 dias e 30 dias depois do primeiro estudo, em vez de revisar tudo de uma vez.",
+    "como_usar": [
+      "Ao terminar um assunto, anote a data do estudo na sua planilha ou agenda.",
+      "Agende as revisões para o dia seguinte, para uma semana depois e para um mês depois.",
+      "Faça cada revisão com questões ou recuperação ativa, não só relendo.",
+      "Se errar muito numa revisão, encurte o próximo intervalo."
+    ],
+    "exemplo": "Rafael estudou crase numa segunda-feira. Na terça, fez 10 questões; na segunda seguinte, mais 15; e no mês seguinte, uma bateria mista. Na terceira revisão, levou poucos minutos para relembrar a regra.",
+    "armadilha": "Tratar os números 1, 7 e 30 como regra científica fixa. São uma convenção prática; o que importa é espaçar e ajustar os intervalos ao seu desempenho."
+  },
+  {
+    "nome": "Intercalação de disciplinas e assuntos",
+    "origem": "Pesquisa sobre prática intercalada (Rohrer & Taylor, 2007; Kornell & Bjork, 2008)",
+    "em_uma_frase": "Em vez de fazer 50 questões seguidas do mesmo assunto, você mistura assuntos parecidos para treinar a escolha do raciocínio certo.",
+    "como_usar": [
+      "Escolha dois ou três assuntos que você já estudou e que costumam ser confundidos.",
+      "Monte uma lista de questões com esses assuntos embaralhados.",
+      "Antes de resolver cada questão, diga em voz baixa de qual assunto ela é.",
+      "Anote quais confusões aparecem com mais frequência."
+    ],
+    "exemplo": "Marcos misturou questões de porcentagem, juros simples e juros compostos numa mesma lista. Percebeu que errava porque aplicava juros simples em questões de compostos. Passou a identificar o tipo de questão antes de calcular.",
+    "armadilha": "Intercalar assuntos que você nunca estudou gera só confusão. A técnica funciona melhor depois do primeiro contato com cada tema."
+  },
+  {
+    "nome": "Técnica Feynman",
+    "origem": "Inspirada no modo de ensinar do físico Richard Feynman; o nome \"técnica Feynman\" foi popularizado depois, não por ele",
+    "em_uma_frase": "Você explica um assunto com palavras simples, como se fosse para um leigo, e descobre onde sua explicação trava.",
+    "como_usar": [
+      "Escreva o nome do assunto no topo de uma folha.",
+      "Explique o tema por escrito, sem jargão, como para alguém de 12 anos.",
+      "Marque os pontos em que você travou ou precisou usar termo técnico sem explicar.",
+      "Volte ao material só nesses pontos e reescreva a explicação."
+    ],
+    "exemplo": "Patrícia tentou explicar controle de constitucionalidade difuso e concentrado para a sobrinha, por escrito. Travou ao explicar quem pode propor uma ação direta. Voltou ao material, anotou a lista e refez o texto.",
+    "armadilha": "Copiar a linguagem do livro e achar que entendeu. Se você não consegue dizer com suas palavras, ainda não domina o ponto."
+  },
+  {
+    "nome": "Pomodoro",
+    "origem": "Francesco Cirillo, método criado no fim dos anos 1980",
+    "em_uma_frase": "Você estuda em blocos cronometrados de 25 minutos com pausas curtas, protegendo o foco durante cada bloco.",
+    "como_usar": [
+      "Defina a tarefa exata do bloco antes de ligar o cronômetro.",
+      "Estude 25 minutos sem celular, mensagens ou abas paralelas.",
+      "Faça uma pausa de 5 minutos longe da tela.",
+      "A cada quatro blocos, faça uma pausa maior, de 15 a 30 minutos."
+    ],
+    "exemplo": "Fernanda chega cansada do trabalho e não conseguia começar. Passou a fazer três pomodoros por noite: um de lei seca, um de questões e um de revisão. Saber que o bloco termina em 25 minutos ajudou a sentar e começar.",
+    "armadilha": "Usar a pausa de 5 minutos para abrir rede social e voltar 20 minutos depois. A pausa deve descansar a cabeça, não puxar sua atenção para outro lugar."
+  },
+  {
+    "nome": "Sistema de Leitner",
+    "origem": "Sebastian Leitner, no livro So lernt man lernen (1972)",
+    "em_uma_frase": "Você organiza flashcards em caixas numeradas: o que acerta sobe e é revisado com menos frequência, o que erra volta para a primeira caixa.",
+    "como_usar": [
+      "Separe de três a cinco caixas ou baralhos numerados.",
+      "Coloque todos os cartões novos na caixa 1, que é revisada todos os dias.",
+      "Acertou, o cartão sobe uma caixa; errou, volta para a caixa 1.",
+      "Revise as caixas mais altas em intervalos maiores, como a cada 3 dias, semanalmente e quinzenalmente."
+    ],
+    "exemplo": "Bruno fez cartões com os prazos da Lei 8.112/90. Os prazos que sempre esquecia ficaram presos na caixa 1 e passaram a aparecer todos os dias. Os que já sabia subiram e quase não tomavam tempo.",
+    "armadilha": "Promover um cartão porque você \"quase acertou\". Só sobe o que você respondeu certo e sem hesitar."
+  },
+  {
+    "nome": "Caderno de erros",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você registra cada questão errada com o motivo do erro e a regra correta, e revisa esse caderno antes das provas.",
+    "como_usar": [
+      "Ao errar uma questão, anote o assunto e o trecho que te enganou.",
+      "Classifique o motivo: não sabia, confundi, li errado ou faltou tempo.",
+      "Escreva a regra correta em uma ou duas linhas, com suas palavras.",
+      "Releia o caderno toda semana e antes de cada simulado."
+    ],
+    "exemplo": "Ana percebeu no caderno que metade dos seus erros em português era por ler rápido demais o comando. Não era falta de conteúdo. Passou a sublinhar o que a questão pedia antes de olhar as alternativas.",
+    "armadilha": "Copiar a questão inteira e o comentário do professor. O caderno vira um segundo livro que você nunca vai reler; registre só o essencial."
+  },
+  {
+    "nome": "Autoexplicação",
+    "origem": "Pesquisa sobre autoexplicação (Chi et al., 1989; revisão de Dunlosky et al., 2013)",
+    "em_uma_frase": "Enquanto estuda, você explica para si mesmo como cada passo ou frase se liga ao que já sabe.",
+    "como_usar": [
+      "Leia um parágrafo ou um passo de resolução.",
+      "Pare e diga: o que isso significa e como se liga ao que veio antes?",
+      "Quando não conseguir explicar, marque o trecho para revisar.",
+      "Ao fim da página, explique em uma frase a ideia principal."
+    ],
+    "exemplo": "Diego estudava uma questão resolvida de raciocínio lógico. Em cada linha, se perguntava por que o professor tinha negado aquela proposição daquele jeito. Descobriu que não sabia as leis de De Morgan e foi estudar isso primeiro.",
+    "armadilha": "Parafrasear sem conectar nada, só repetindo o texto em outras palavras. A explicação precisa responder \"por que isso vem aqui?\"."
+  },
+  {
+    "nome": "Mapa de incidência do edital",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você levanta quais assuntos mais caíram nas provas anteriores do cargo e da banca para decidir onde investir mais tempo.",
+    "como_usar": [
+      "Reúna as provas anteriores do mesmo cargo ou de cargos parecidos.",
+      "Conte quantas questões caíram de cada assunto do edital atual.",
+      "Ordene os assuntos do mais cobrado para o menos cobrado.",
+      "Distribua suas horas considerando a incidência e o peso que o edital dá a cada disciplina."
+    ],
+    "exemplo": "Carla contou as questões de Direito Administrativo nas últimas provas do cargo. Licitações e agentes públicos apareciam muito mais que outros temas. Reorganizou o ciclo para começar por eles.",
+    "armadilha": "Ignorar os assuntos de baixa incidência. O histórico não garante o que vai cair; ele ajuda a priorizar, não a cortar o edital."
+  },
+  {
+    "nome": "Ciclo de estudos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Em vez de amarrar disciplinas a dias da semana, você segue uma sequência fixa de matérias e continua de onde parou na próxima sessão.",
+    "como_usar": [
+      "Liste as disciplinas do edital e defina quantas horas cada uma recebe por volta do ciclo.",
+      "Coloque as disciplinas numa sequência, alternando as mais pesadas com as mais leves.",
+      "Em cada sessão, estude a próxima matéria da fila pelo tempo previsto.",
+      "Ao fechar uma volta completa, avalie se precisa ajustar as horas."
+    ],
+    "exemplo": "Thiago perdia o estudo de quarta sempre que tinha plantão, e Contabilidade ficava para trás. Com o ciclo, quando falta um dia, ele só continua na próxima matéria da sequência. Nenhuma disciplina fica esquecida.",
+    "armadilha": "Montar um ciclo com tempo igual para todas as matérias. O ciclo deve refletir o peso no edital e as suas dificuldades."
+  },
+  {
+    "nome": "Leitura ativa da lei seca",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você lê o texto da lei com caneta na mão, marcando prazos, exceções, competências e palavras que mudam o sentido da regra.",
+    "como_usar": [
+      "Defina um código de cores: por exemplo, prazos em uma cor, exceções em outra e competências em uma terceira.",
+      "Leia o artigo inteiro antes de marcar qualquer coisa.",
+      "Marque só o que costuma virar pegadinha: \"salvo\", \"exceto\", \"vedado\", \"poderá\", \"deverá\" e números.",
+      "Ao fim de cada capítulo, escreva na margem a regra geral e a exceção principal."
+    ],
+    "exemplo": "Luana leu o capítulo de licença e afastamentos do estatuto marcando os prazos de uma cor e as palavras \"salvo\" de outra. Na hora das questões, os itens trocavam justamente esses pontos. Ela reconhecia a pegadinha pela marcação que tinha feito.",
+    "armadilha": "Grifar o artigo inteiro. Se tudo está marcado, nada se destaca na revisão."
+  },
+  {
+    "nome": "Perguntas de elaboração \"por quê?\"",
+    "origem": "Pesquisa sobre interrogação elaborativa (Pressley et al., 1987; revisão de Dunlosky et al., 2013)",
+    "em_uma_frase": "Para cada regra que você estuda, pergunta \"por que é assim?\" e tenta responder com lógica, antes de seguir.",
+    "como_usar": [
+      "Ao ler uma regra, transforme-a numa pergunta \"por quê?\".",
+      "Tente responder sozinho, usando o que você já sabe da matéria.",
+      "Confira a resposta no material ou com o professor.",
+      "Anote a razão ao lado da regra, numa linha."
+    ],
+    "exemplo": "Henrique estudava que o servidor em estágio probatório não pode ser cedido, salvo exceções previstas. Perguntou por quê e chegou à ideia de que a Administração precisa avaliá-lo no próprio cargo. Com essa lógica, lembrou mais fácil da regra e das exceções.",
+    "armadilha": "Inventar uma justificativa e não conferir. Uma explicação errada fixa a regra errada."
+  },
+  {
+    "nome": "Resumo de uma página",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você condensa um assunto inteiro numa única página, o que obriga a escolher só o que realmente importa.",
+    "como_usar": [
+      "Termine o estudo do assunto antes de começar o resumo.",
+      "Escreva de memória primeiro e só depois consulte o material para completar.",
+      "Use tópicos, setas e tabelas pequenas, nunca parágrafos longos.",
+      "Se passar de uma página, corte o que você já sabe bem."
+    ],
+    "exemplo": "Simone resumiu Lei de Acesso à Informação numa folha: prazos de resposta, graus de sigilo e quem classifica cada um. Na semana da prova, revisou a lei inteira em poucos minutos com essa folha.",
+    "armadilha": "Fazer o resumo copiando o livro em letra pequena. O valor está em escolher o que entra, não em caber tudo."
+  },
+  {
+    "nome": "Palácio da memória",
+    "origem": "Método de loci, tradição atribuída a Simônides de Ceos e descrita por Cícero em De Oratore",
+    "em_uma_frase": "Você associa itens de uma lista a lugares de um percurso que conhece bem, como os cômodos da sua casa.",
+    "como_usar": [
+      "Escolha um percurso conhecido com pontos em ordem fixa, como portão, sala, cozinha e quarto.",
+      "Crie uma imagem exagerada para cada item e coloque-a num ponto do percurso.",
+      "Para lembrar, percorra mentalmente o caminho na mesma ordem.",
+      "Revise o percurso algumas vezes nos dias seguintes."
+    ],
+    "exemplo": "Pedro precisava decorar os princípios da Administração Pública do art. 37 da Constituição. Imaginou uma lei gigante no portão, um homem impessoal sem rosto na sala, um padre na cozinha para a moralidade, um outdoor na varanda para a publicidade e um relógio no quarto para a eficiência. Na prova, refez o caminho.",
+    "armadilha": "Usar para conceitos que precisam ser entendidos, não só listados. O método ajuda com listas e sequências, não substitui a compreensão."
+  },
+  {
+    "nome": "Mnemônicos e acrônimos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você transforma uma lista em uma palavra ou frase fácil de lembrar, usando as iniciais de cada item.",
+    "como_usar": [
+      "Escolha uma lista curta que você precisa saber em ordem ou completa.",
+      "Pegue as iniciais e monte uma palavra ou frase.",
+      "Teste se consegue reconstruir a lista inteira só a partir do mnemônico.",
+      "Revise o mnemônico junto com o significado de cada item."
+    ],
+    "exemplo": "Camila usa o clássico LIMPE para os princípios do art. 37. Para cada letra, ela também lembra um exemplo prático. Assim, não sabe só a palavra, sabe o que cada princípio quer dizer.",
+    "armadilha": "Criar mnemônicos para tudo, até para o que você já sabe. Eles valem para listas que teimam em fugir da memória."
+  },
+  {
+    "nome": "Estudo em blocos de 50 minutos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você divide o estudo em blocos de cerca de 50 minutos com 10 minutos de pausa, tempo suficiente para aprofundar sem cansar demais.",
+    "como_usar": [
+      "Antes de começar, escreva o que vai fazer naquele bloco.",
+      "Estude 50 minutos sem interrupções.",
+      "Faça 10 minutos de pausa de verdade: levante, beba água, olhe pela janela.",
+      "Ao fim do dia, conte quantos blocos completos você fez."
+    ],
+    "exemplo": "Eduardo achava os 25 minutos do Pomodoro curtos para Direito Constitucional. Passou a usar blocos de 50 minutos para teoria e manteve blocos menores para questões. Hoje ele planeja o dia em número de blocos.",
+    "armadilha": "Achar que 50 minutos é o número certo para todos. É um ponto de partida; ajuste ao seu foco real."
+  },
+  {
+    "nome": "Timeboxing",
+    "origem": "Técnica de gestão do tempo difundida em métodos ágeis de gestão de projetos",
+    "em_uma_frase": "Você define um tempo máximo para cada tarefa e, quando ele acaba, encerra e segue, mesmo que não esteja perfeito.",
+    "como_usar": [
+      "Liste as tarefas do dia de estudo.",
+      "Dê a cada uma um limite de tempo fechado, como 40 minutos para o resumo.",
+      "Quando o tempo acabar, pare e anote onde parou.",
+      "Compare no fim da semana o tempo previsto com o realizado."
+    ],
+    "exemplo": "Mariana passava duas horas fazendo um resumo bonito. Com o timeboxing, deu 40 minutos ao resumo e o restante a questões. O resumo ficou mais simples, e ela passou a resolver muito mais questões por semana.",
+    "armadilha": "Estourar o tempo \"só desta vez\" todos os dias. Sem respeitar o limite, a técnica vira só uma estimativa."
+  },
+  {
+    "nome": "Lista de matar matéria",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você mantém uma lista dos assuntos que ainda não domina e risca cada um só quando acerta questões dele com segurança.",
+    "como_usar": [
+      "Liste os assuntos do edital em que você está fraco.",
+      "Defina um critério para riscar, como acertar bem uma bateria de questões do assunto.",
+      "Escolha um ou dois itens por semana para atacar.",
+      "Risque apenas quando bater o critério, não quando terminar a teoria."
+    ],
+    "exemplo": "Lucas tinha pavor de análise combinatória e a deixava sempre para depois. Colocou o assunto no topo da lista e dedicou duas semanas a ele. Quando atingiu o critério que tinha definido, riscou e partiu para o próximo.",
+    "armadilha": "Riscar o assunto porque terminou a videoaula. Ver a aula não é o mesmo que saber resolver."
+  },
+  {
+    "nome": "Revisão pelo índice",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você olha só o índice ou o sumário do material e tenta lembrar o conteúdo de cada tópico, antes de abrir as páginas.",
+    "como_usar": [
+      "Abra apenas o sumário do livro, da apostila ou do edital.",
+      "Para cada tópico, fale ou escreva em poucas linhas o que lembra.",
+      "Marque os tópicos em que deu branco.",
+      "Abra o material só nesses tópicos marcados."
+    ],
+    "exemplo": "Vanessa revisou Direito Penal olhando o sumário da parte geral. Lembrou bem de crime tentado e consumado, mas deu branco em arrependimento posterior. Foi direto a essa página e ganhou tempo em vez de reler tudo.",
+    "armadilha": "Ler o título do tópico e pensar \"isso eu sei\" sem dizer nada. Se não falou ou escreveu, não houve teste."
+  },
+  {
+    "nome": "Flashcards de mão dupla",
+    "origem": "Prática consolidada de preparação para concursos, apoiada na pesquisa sobre recuperação ativa",
+    "em_uma_frase": "Você faz cartões que podem ser revisados nos dois sentidos: do conceito para a definição e da definição para o conceito.",
+    "como_usar": [
+      "Escreva um conceito de um lado e a definição curta do outro.",
+      "Revise primeiro olhando o conceito e dizendo a definição.",
+      "Depois inverta: olhe a definição e diga qual é o conceito.",
+      "Separe os cartões que você só acerta num sentido."
+    ],
+    "exemplo": "Gabriel sabia dizer o que era peculato quando via a palavra. Mas, na questão que descrevia a conduta, travava. Quando passou a treinar do lado da descrição, começou a reconhecer o crime pelo caso concreto.",
+    "armadilha": "Fazer cartões com textos longos. Cada lado deve ter uma ideia só, curta o bastante para ser lembrada de uma vez."
+  },
+  {
+    "nome": "Teste antes de estudar",
+    "origem": "Pesquisa sobre pré-teste (Richland, Kornell & Kao, 2009; Kornell, Hays & Bjork, 2009)",
+    "em_uma_frase": "Você responde algumas questões de um assunto antes de estudá-lo, mesmo errando, para preparar a mente para o que vai aprender.",
+    "como_usar": [
+      "Escolha poucas questões do assunto que vai estudar.",
+      "Responda sem consultar nada, do jeito que conseguir.",
+      "Não se preocupe com a nota; anote só o que pareceu estranho.",
+      "Estude o assunto prestando atenção nas respostas daquelas questões."
+    ],
+    "exemplo": "Isabela ia começar Direito Tributário do zero. Fez algumas questões antes da primeira aula e errou quase todas. Durante a aula, reconheceu os termos das questões e prestou atenção exatamente neles.",
+    "armadilha": "Desanimar com os erros do pré-teste. Errar ali é esperado; o objetivo é preparar a atenção, não medir o quanto você sabe."
+  },
+  {
+    "nome": "Questões filtradas por assunto e banca",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você resolve questões filtradas pelo assunto que acabou de estudar e pela banca do seu concurso, para treinar o estilo de cobrança.",
+    "como_usar": [
+      "No banco de questões, filtre pelo assunto exato e pela banca do seu edital.",
+      "Comece pelas questões mais recentes.",
+      "Resolva em blocos e anote a porcentagem de acerto.",
+      "Observe os padrões: o que a banca costuma trocar, inverter ou omitir."
+    ],
+    "exemplo": "Rodrigo estudou controle externo e filtrou questões só da banca do seu concurso. Percebeu que ela gostava de trocar as competências do Tribunal de Contas com as do Congresso. Passou a revisar essa diferença com atenção.",
+    "armadilha": "Fazer só questões de uma banca e estranhar qualquer formato diferente. Banca pode mudar; o que vale para o seu concurso é o que o edital define."
+  },
+  {
+    "nome": "Questões comentadas",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você estuda o comentário de cada questão, inclusive das que acertou, para entender por que cada alternativa está certa ou errada.",
+    "como_usar": [
+      "Resolva a questão antes de olhar qualquer comentário.",
+      "Leia o comentário mesmo quando acertou, para confirmar o raciocínio.",
+      "Para cada alternativa errada, identifique o ponto exato do erro.",
+      "Leve para o caderno de erros o que for novidade."
+    ],
+    "exemplo": "Tatiane acertou uma questão de concordância por intuição. Ao ler o comentário, descobriu que tinha acertado pelo motivo errado. Anotou a regra verdadeira e evitou errar a próxima parecida.",
+    "armadilha": "Ler o comentário antes de tentar resolver. Assim você só confirma a resposta e não treina o raciocínio."
+  },
+  {
+    "nome": "Explicar para a parede",
+    "origem": "Prática consolidada de preparação para concursos; relacionada à pesquisa sobre aprender ensinando (Fiorella & Mayer, 2013)",
+    "em_uma_frase": "Você explica o assunto em voz alta, como numa aula, para uma plateia imaginária, sem olhar o material.",
+    "como_usar": [
+      "Escolha um tópico que estudou hoje.",
+      "Fique de pé e dê uma aula curta em voz alta, sem consultar nada.",
+      "Inclua um exemplo e uma pegadinha que a banca poderia cobrar.",
+      "Anote os pontos em que você gaguejou ou parou."
+    ],
+    "exemplo": "Felipe explica para o armário do quarto toda noite um tema do dia. No começo se sentiu bobo, mas percebeu que travava sempre nos mesmos detalhes. São esses detalhes que ele revisa no dia seguinte.",
+    "armadilha": "Ler as anotações em voz alta e chamar isso de explicar. Sem o material fechado, a técnica perde a força."
+  },
+  {
+    "nome": "Gravação de áudio da própria voz",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você grava sua própria voz explicando ou lendo os pontos-chave e escuta nos momentos em que não pode abrir o material.",
+    "como_usar": [
+      "Grave áudios curtos, de poucos minutos, sobre um tema por vez.",
+      "Fale com suas palavras e inclua exceções e prazos.",
+      "Ouça no trânsito, na fila ou durante tarefas domésticas.",
+      "De vez em quando, pause o áudio e tente completar a frase antes de ouvir."
+    ],
+    "exemplo": "Cláudia pega ônibus por uma hora todo dia. Gravou áudios curtos com os prazos processuais que mais esquecia. No trajeto, pausa antes de cada prazo e tenta dizer o número sozinha.",
+    "armadilha": "Contar o tempo de áudio como hora de estudo principal. Ouvir passivamente ajuda a manter contato com o conteúdo, mas não substitui questões e recuperação ativa."
+  },
+  {
+    "nome": "Plano semanal com folga",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você planeja a semana deixando de propósito um espaço livre para absorver imprevistos, sem que o plano todo desmorone.",
+    "como_usar": [
+      "Liste quantas horas você realmente tem livres na semana.",
+      "Planeje o estudo usando só parte desse tempo e deixe o restante livre.",
+      "Reserve um período fixo, como sábado à tarde, para repor o que atrasou.",
+      "Se nada atrasar, use a folga para revisão ou descanso."
+    ],
+    "exemplo": "Roberta planejava 20 horas por semana e nunca cumpria, o que a deixava frustrada. Passou a planejar menos horas e deixou o sábado à tarde como folga. Quando o filho ficou doente na quarta, repôs no sábado e fechou a semana.",
+    "armadilha": "Encher a folga de matéria nova logo no primeiro dia. Ela existe para os imprevistos; sem ela, o primeiro atraso derruba a semana."
+  },
+  {
+    "nome": "Regra dos dois minutos",
+    "origem": "James Clear, Hábitos Atômicos (2018), adaptando a regra de dois minutos de David Allen",
+    "em_uma_frase": "Quando a vontade de estudar não vem, você se compromete com apenas dois minutos de uma tarefa bem pequena para vencer a inércia.",
+    "como_usar": [
+      "Escolha uma tarefa mínima, como abrir o material e ler um artigo de lei.",
+      "Diga para si mesmo que só precisa fazer isso por dois minutos.",
+      "Comece imediatamente, sem arrumar a mesa nem checar o celular.",
+      "Ao fim dos dois minutos, decida se continua; muitas vezes você continua."
+    ],
+    "exemplo": "Mateus chegava em casa exausto e adiava o estudo até dormir. Combinou consigo só abrir o banco de questões e fazer uma questão. Na maioria das noites, uma questão virou uma bateria inteira.",
+    "armadilha": "Usar a regra todos os dias para fazer só dois minutos. Ela serve para começar, não como meta de estudo."
+  },
+  {
+    "nome": "Codificação dupla: texto e esquema",
+    "origem": "Teoria da codificação dupla de Allan Paivio (1971) e pesquisa sobre aprendizagem multimídia de Richard Mayer",
+    "em_uma_frase": "Você combina palavras com um desenho, esquema ou fluxograma do mesmo conteúdo, para guardar a informação por dois caminhos.",
+    "como_usar": [
+      "Depois de ler um tema, desenhe um esquema dele: fluxograma, linha do tempo ou diagrama.",
+      "Faça o desenho com o material fechado e depois confira.",
+      "Explique o esquema em voz alta, conectando cada parte.",
+      "Na revisão, tente redesenhar o esquema de memória."
+    ],
+    "exemplo": "Rebeca não conseguia guardar as fases do processo legislativo. Desenhou um fluxograma da iniciativa à promulgação, com setas e as casas legislativas. Na prova, lembrou do desenho e foi seguindo as setas mentalmente.",
+    "armadilha": "Gastar mais tempo deixando o esquema bonito do que entendendo o conteúdo. Um rabisco claro vale mais que um pôster."
+  },
+  {
+    "nome": "Método SQ3R de leitura",
+    "origem": "Francis P. Robinson, no livro Effective Study (1946)",
+    "em_uma_frase": "Você lê um capítulo em cinco etapas: examinar, perguntar, ler, recitar e revisar.",
+    "como_usar": [
+      "Examine: folheie títulos, destaques e quadros do capítulo.",
+      "Pergunte: transforme cada título numa pergunta.",
+      "Leia buscando responder às perguntas que criou.",
+      "Recite e revise: responda às perguntas sem olhar e depois confira."
+    ],
+    "exemplo": "Daniela tinha um capítulo longo de Direito Previdenciário. Transformou o título sobre segurados obrigatórios na pergunta \"quem são e quais as categorias?\". Leu procurando essa resposta e, no fim, conseguiu listar as categorias sem olhar.",
+    "armadilha": "Pular a etapa de perguntar e ler direto. Sem perguntas, a leitura volta a ser passiva."
+  },
+  {
+    "nome": "Anotações no método Cornell",
+    "origem": "Walter Pauk, Universidade Cornell, no livro How to Study in College",
+    "em_uma_frase": "Você divide a folha em três áreas: anotações, perguntas-chave na margem e um resumo no rodapé.",
+    "como_usar": [
+      "Trace uma coluna estreita à esquerda e uma faixa no rodapé da folha.",
+      "Durante a aula ou leitura, anote na área maior da direita.",
+      "Depois, escreva na coluna da esquerda perguntas que as anotações respondem.",
+      "No rodapé, resuma a página em poucas linhas e, na revisão, cubra a direita e responda às perguntas."
+    ],
+    "exemplo": "Otávio assistia às aulas e anotava sem critério. Com o método Cornell, passou a escrever na margem perguntas como \"qual a diferença entre greve e lockout?\". Na revisão, cobre as anotações e responde só olhando a margem.",
+    "armadilha": "Deixar a coluna de perguntas e o resumo para \"depois\" e nunca fazer. Sem essas duas partes, é só um caderno comum."
+  },
+  {
+    "nome": "Intenções de implementação \"se-então\"",
+    "origem": "Peter Gollwitzer, pesquisa sobre intenções de implementação (Gollwitzer, 1999)",
+    "em_uma_frase": "Você transforma a meta de estudar num plano concreto do tipo \"se acontecer X, então eu faço Y\".",
+    "como_usar": [
+      "Escolha um momento ou situação que acontece todo dia.",
+      "Escreva a frase: \"Se for X, então eu faço Y\", com uma tarefa específica.",
+      "Crie também um plano para o obstáculo mais comum.",
+      "Deixe a frase visível, como no papel de parede do celular."
+    ],
+    "exemplo": "Priscila escreveu: \"Se eu terminar o jantar, então sento e faço 20 questões\". E outra: \"Se eu sentir vontade de abrir o Instagram, então deixo o celular na sala\". Com o plano escrito, ela parou de decidir na hora se ia estudar.",
+    "armadilha": "Escrever planos vagos como \"se tiver tempo, eu estudo\". A situação e a ação precisam ser concretas."
+  },
+  {
+    "nome": "WOOP: desejo, resultado, obstáculo, plano",
+    "origem": "Gabriele Oettingen, pesquisa sobre contraste mental, no livro Rethinking Positive Thinking (2014)",
+    "em_uma_frase": "Você imagina o que deseja, o melhor resultado, o obstáculo interno que pode atrapalhar e um plano para enfrentá-lo.",
+    "como_usar": [
+      "Desejo: defina uma meta realista para a semana.",
+      "Resultado: imagine por alguns instantes como seria cumpri-la.",
+      "Obstáculo: identifique o que em você costuma impedir essa meta.",
+      "Plano: escreva \"se aparecer esse obstáculo, então eu faço tal coisa\"."
+    ],
+    "exemplo": "Leonardo queria fechar Direito Constitucional no mês. Imaginou a sensação de acertar as questões no simulado. O obstáculo era a mania de assistir a aulas inteiras em velocidade normal, então o plano foi acelerar o vídeo e pular para as questões depois de cada tópico.",
+    "armadilha": "Ficar só na parte de imaginar o sucesso. O ganho vem de encarar o obstáculo e planejar a resposta."
+  },
+  {
+    "nome": "Celular fora do ambiente de estudo",
+    "origem": "Prática consolidada; há pesquisa sobre distração por smartphones (por exemplo, Ward et al., 2017), com resultados ainda debatidos",
+    "em_uma_frase": "Você deixa o celular em outro cômodo durante o estudo, em vez de apenas virá-lo para baixo na mesa.",
+    "como_usar": [
+      "Antes de começar, avise quem precisa saber que você ficará offline por um tempo.",
+      "Leve o celular para outro cômodo ou guarde numa gaveta fora do alcance.",
+      "Se precisar do celular para estudar, ative o modo foco e bloqueie os aplicativos que distraem.",
+      "Pegue o celular só nas pausas planejadas."
+    ],
+    "exemplo": "Natália checava o celular a cada notificação e perdia o raciocínio. Passou a deixar o aparelho carregando na cozinha durante os blocos de estudo. Nos primeiros dias sentiu falta, depois começou a render mais.",
+    "armadilha": "Trocar o celular pelo computador com redes sociais abertas. A distração muda de aparelho, mas continua lá."
+  },
+  {
+    "nome": "Calibração da confiança",
+    "origem": "Pesquisa sobre metacognição e excesso de confiança no estudo (por exemplo, Dunlosky & Rawson, 2012)",
+    "em_uma_frase": "Antes de conferir o gabarito, você marca o quanto tinha certeza de cada resposta, para descobrir se sua confiança é confiável.",
+    "como_usar": [
+      "Ao responder cada questão, marque C para certeza, D para dúvida ou X para chute.",
+      "Confira o gabarito e conte quanto você acertou em cada marcação.",
+      "Observe se você erra muito nas questões marcadas como certeza.",
+      "Revise primeiro os assuntos em que tinha certeza e errou."
+    ],
+    "exemplo": "Sérgio achava que dominava atos administrativos. Ao marcar a confiança, descobriu que errava uma parte das questões em que marcava certeza. Esse era o assunto mais perigoso, porque ele nem desconfiava que precisava revisar.",
+    "armadilha": "Marcar a confiança depois de ver a resposta. A marcação só tem valor se for feita antes."
+  },
+  {
+    "nome": "Revisão leve antes de dormir",
+    "origem": "Pesquisa sobre o papel do sono na consolidação da memória (Diekelmann & Born, 2010)",
+    "em_uma_frase": "Você faz uma revisão breve dos pontos do dia antes de dormir e protege suas horas de sono, em vez de virar a noite estudando.",
+    "como_usar": [
+      "Separe uns 10 a 15 minutos antes de dormir para revisar o essencial do dia.",
+      "Use flashcards ou sua folha de recuperação, não matéria nova.",
+      "Desligue as telas depois da revisão.",
+      "Mantenha um horário de sono parecido todos os dias."
+    ],
+    "exemplo": "Aline estudava até as 2 horas da manhã e acordava sem lembrar nada. Passou a parar mais cedo, fazer uma revisão curta dos cartões e dormir. Rendeu menos horas no relógio, mas lembrava mais no dia seguinte.",
+    "armadilha": "Cortar sono para ganhar horas de estudo como rotina. A conta costuma sair no cansaço e na memória dos dias seguintes."
+  },
+  {
+    "nome": "Quadro comparativo de institutos parecidos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você monta uma tabela comparando lado a lado institutos que a banca costuma confundir, ponto por ponto.",
+    "como_usar": [
+      "Escolha dois ou três institutos que você costuma confundir.",
+      "Crie colunas para cada um e linhas para os critérios: conceito, prazo, quem pratica, efeito.",
+      "Preencha de memória e depois confira no material.",
+      "Destaque as linhas em que os institutos mais se diferenciam."
+    ],
+    "exemplo": "Renato confundia prescrição e decadência. Montou um quadro com linhas para o que se perde, se pode ser suspenso ou interrompido e quem pode alegar. Na prova, a questão trocava exatamente uma dessas linhas.",
+    "armadilha": "Copiar quadros prontos da internet sem montar o seu. O ganho está em comparar enquanto preenche."
+  },
+  {
+    "nome": "Edital verticalizado",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você transforma o conteúdo do edital numa lista de tópicos com colunas de acompanhamento, para saber exatamente o que já estudou, revisou e treinou.",
+    "como_usar": [
+      "Copie todos os tópicos do edital, um por linha, numa planilha ou caderno.",
+      "Crie colunas: teoria, primeira revisão, questões e porcentagem de acerto.",
+      "Marque cada coluna conforme avança.",
+      "Use a planilha para decidir o que estudar a seguir."
+    ],
+    "exemplo": "Karina achava que já tinha estudado Direito Administrativo inteiro. Ao verticalizar o edital, viu que nunca tinha feito questões de improbidade. Colocou o tópico no ciclo da semana seguinte.",
+    "armadilha": "Passar dias montando a planilha perfeita sem estudar. Uma lista simples e atualizada vale mais."
+  },
+  {
+    "nome": "Banco de repertório para discursiva",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você mantém um caderno com dados, leis, conceitos e exemplos que podem ser usados em vários temas de redação e discursiva.",
+    "como_usar": [
+      "Liste os temas mais prováveis para a área do seu cargo.",
+      "Para cada tema, anote uma lei, um conceito e um exemplo concreto, sempre com a fonte.",
+      "Escreva uma frase pronta de como usaria cada item num texto.",
+      "Revise o banco antes de treinar uma discursiva."
+    ],
+    "exemplo": "Vinícius, que estuda para um cargo de controle, anotou no banco artigos da Lei de Responsabilidade Fiscal e o conceito de transparência ativa. Quando caiu um tema sobre gestão pública, usou os dois itens. Não precisou inventar nada na hora.",
+    "armadilha": "Anotar números e dados sem conferir a fonte. Um dado errado na discursiva pesa contra você."
+  },
+  {
+    "nome": "Lacunas no próprio resumo",
+    "origem": "Pesquisa sobre o efeito de geração (Slamecka & Graf, 1978)",
+    "em_uma_frase": "Você apaga palavras-chave do seu resumo e, na revisão, precisa gerar a palavra em vez de apenas lê-la.",
+    "como_usar": [
+      "Pegue um resumo seu e faça uma cópia.",
+      "Na cópia, substitua prazos, termos técnicos e exceções por lacunas.",
+      "Na revisão, preencha as lacunas sem consultar.",
+      "Confira com o original e repita o que errou."
+    ],
+    "exemplo": "Elaine transformou seu resumo de processo civil numa folha cheia de lacunas, só com os prazos apagados. Preenchia toda manhã antes do trabalho. Em pouco tempo, deixou de confundir os prazos de contestação e de recurso.",
+    "armadilha": "Apagar palavras óbvias, como artigos e preposições. As lacunas devem estar no que a banca cobra."
+  },
+  {
+    "nome": "Um exemplo concreto por conceito",
+    "origem": "Pesquisa sobre exemplos concretos na aprendizagem (Weinstein, Madan & Sumeracki, 2018)",
+    "em_uma_frase": "Para cada conceito abstrato que estuda, você cria ou busca um exemplo concreto do dia a dia.",
+    "como_usar": [
+      "Leia a definição do conceito.",
+      "Escreva um exemplo concreto, de preferência do seu cotidiano ou do cargo que quer.",
+      "Crie também um contraexemplo, que parece mas não é.",
+      "Confira os dois com o material ou com questões."
+    ],
+    "exemplo": "Cristiano estudava a diferença entre poder vinculado e poder discricionário. Usou a concessão de aposentadoria que preenche os requisitos como exemplo de vinculado, e a escolha do momento de uma obra como discricionário. A distinção ficou clara.",
+    "armadilha": "Usar sempre o mesmo exemplo do livro. Gerar o seu próprio exemplo é o que testa se você entendeu."
+  },
+  {
+    "nome": "Registro de horas líquidas",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você anota só o tempo efetivamente estudado, descontando interrupções, e acompanha o número semana a semana.",
+    "como_usar": [
+      "Use um cronômetro e pause sempre que parar de estudar, mesmo por pouco tempo.",
+      "No fim do dia, anote o total líquido, a matéria e quantas questões fez.",
+      "Some o total no domingo e compare com a semana anterior.",
+      "Ajuste o plano da próxima semana a partir dos números reais."
+    ],
+    "exemplo": "Bianca dizia que estudava quatro horas por noite. Quando passou a pausar o cronômetro nas interrupções, viu que o tempo líquido era bem menor. Com o número real, montou um plano que cabia na vida dela.",
+    "armadilha": "Usar as horas como única medida de progresso. Hora estudada não é igual a conteúdo aprendido; olhe também o desempenho nas questões."
+  },
+  {
+    "nome": "Parar no meio de propósito",
+    "origem": "Hábito atribuído a Ernest Hemingway, que recomendava parar de escrever quando ainda sabia o que viria a seguir",
+    "em_uma_frase": "Você encerra a sessão num ponto em que sabe exatamente o próximo passo, para facilitar o recomeço no dia seguinte.",
+    "como_usar": [
+      "Quando o tempo estiver acabando, não comece um tópico novo do zero.",
+      "Pare no meio de um tópico que você está entendendo bem.",
+      "Anote numa linha qual é o próximo passo.",
+      "No dia seguinte, comece exatamente por essa anotação."
+    ],
+    "exemplo": "Samuel sempre terminava a sessão no fim de um capítulo e, no dia seguinte, demorava a escolher o que fazer. Passou a parar na metade da lista de questões, com um bilhete \"continuar da questão 16\". Agora ele começa em segundos.",
+    "armadilha": "Parar no meio de um ponto que você não entendeu. O recomeço fica mais difícil, não mais fácil."
+  },
+  {
+    "nome": "Transformar o item errado em certo",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Em questões de Certo ou Errado e em alternativas falsas, você reescreve o trecho errado para torná-lo verdadeiro.",
+    "como_usar": [
+      "Ao encontrar um item errado, sublinhe o trecho exato que o torna falso.",
+      "Reescreva a frase corrigindo só esse trecho.",
+      "Confira a correção no material ou no comentário da questão.",
+      "Leve as frases corrigidas para seus flashcards."
+    ],
+    "exemplo": "Jéssica marcou como errado um item que trocava \"poderá\" por \"deverá\". Reescreveu a frase com o verbo certo e anotou a diferença. Na revisão, a frase corrigida virou um cartão.",
+    "armadilha": "Corrigir mudando a frase inteira. Se você não sabe apontar o ponto exato do erro, não entendeu a pegadinha."
+  },
+  {
+    "nome": "Mapa mental",
+    "origem": "Tony Buzan, que popularizou o método nos anos 1970",
+    "em_uma_frase": "Você organiza um assunto a partir de um tema central, com ramos para os subtemas e palavras-chave em cada ramo.",
+    "como_usar": [
+      "Escreva o tema no centro de uma folha deitada.",
+      "Puxe um ramo para cada subtema principal.",
+      "Em cada ramo, use só palavras-chave, não frases.",
+      "Na revisão, refaça o mapa de memória e compare com o original."
+    ],
+    "exemplo": "Rogério fez um mapa mental de Direitos Fundamentais, com ramos para direitos individuais, sociais, nacionalidade e políticos. Na véspera de um simulado, refez o mapa de memória e viu que tinha esquecido os casos de perda de nacionalidade.",
+    "armadilha": "Fazer mapas enormes, com frases inteiras, que viram uma apostila desenhada. O mapa deve caber num olhar."
+  },
+  {
+    "nome": "Gestão do tempo por bloco",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Antes da prova, você divide o tempo total entre os blocos de disciplinas e controla, durante a prova, se está no ritmo.",
+    "como_usar": [
+      "Veja no edital o tempo de prova e o número de questões de cada bloco.",
+      "Defina um tempo-alvo para cada bloco e reserve uma sobra no final.",
+      "Anote no caderno de questões os horários em que deve terminar cada bloco.",
+      "Durante a prova, confira o relógio a cada bloco concluído."
+    ],
+    "exemplo": "Cíntia anotou no topo do caderno o horário-limite de cada bloco. Quando viu que estava atrasada em Português, acelerou e deixou as questões longas para a segunda passada. Terminou a tempo de revisar.",
+    "armadilha": "Fazer o plano de tempo e ignorá-lo no dia, para \"resolver só mais esta\". O plano só funciona se você conferir o relógio."
+  },
+  {
+    "nome": "Duas passadas na prova",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Na primeira passada você resolve tudo o que sabe com rapidez; na segunda, volta para as questões difíceis.",
+    "como_usar": [
+      "Na primeira passada, responda às questões que você resolve sem travar.",
+      "Ao encontrar uma questão demorada, pule e siga em frente.",
+      "Ao terminar a primeira passada, veja quanto tempo sobrou.",
+      "Use a segunda passada para as questões puladas, começando pelas que parecem mais acessíveis."
+    ],
+    "exemplo": "No simulado, Maurício ficava preso em questões de matemática e não chegava ao fim. Com as duas passadas, garantiu primeiro as questões de que tinha segurança. Na segunda volta, ainda conseguiu resolver algumas das difíceis.",
+    "armadilha": "Pular questões demais na primeira passada e deixar uma montanha para o fim. Pule só o que realmente vai consumir muito tempo."
+  },
+  {
+    "nome": "Marcar e voltar",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você usa um código de marcação no caderno de questões para saber, na volta, qual questão pulou e por quê.",
+    "como_usar": [
+      "Combine consigo um código simples, como círculo para dúvida entre duas e triângulo para questão não lida até o fim.",
+      "Ao pular uma questão, marque o código ao lado do número.",
+      "Se já eliminou alternativas, risque-as para não refazer o trabalho.",
+      "Na volta, comece pelas questões marcadas como dúvida entre duas."
+    ],
+    "exemplo": "Letícia marcava questões puladas com um simples ponto e, na volta, não lembrava o que tinha pensado. Passou a riscar as alternativas já eliminadas e a usar um círculo para dúvida entre duas. Na volta, resolvia muito mais rápido.",
+    "armadilha": "Marcar e esquecer de voltar. Confira todas as marcas antes de passar o gabarito."
+  },
+  {
+    "nome": "Eliminação de alternativas",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Quando não sabe a resposta de imediato, você descarta as alternativas que tem certeza de que estão erradas, aumentando a chance entre as que restam.",
+    "como_usar": [
+      "Leia todas as alternativas antes de escolher.",
+      "Risque as que contêm um erro que você consegue apontar.",
+      "Compare as que sobraram procurando a diferença entre elas.",
+      "Escolha com base nessa diferença, não na alternativa que \"parece\" mais bonita."
+    ],
+    "exemplo": "Numa questão de Direito Constitucional, Flávia não lembrava a resposta exata. Eliminou duas alternativas que traziam competências claramente erradas. Entre as três restantes, uma tinha \"exclusivamente\", que ela sabia não se aplicar, e decidiu entre as duas que sobraram.",
+    "armadilha": "Eliminar uma alternativa só porque ela é longa ou curta. Elimine pelo conteúdo, não pela aparência."
+  },
+  {
+    "nome": "Palavras absolutas e restritivas",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você destaca no enunciado e nas alternativas palavras como \"sempre\", \"nunca\", \"apenas\", \"exclusivamente\" e \"todos\", que costumam definir se o item está certo.",
+    "como_usar": [
+      "Ao ler cada item, sublinhe palavras absolutas e restritivas.",
+      "Pergunte: existe alguma exceção conhecida a essa regra?",
+      "Se lembrar de uma exceção, o item absoluto provavelmente está errado.",
+      "Não descarte automaticamente: algumas regras são de fato absolutas na lei."
+    ],
+    "exemplo": "César viu um item dizendo que \"é vedada, em qualquer hipótese\", certa conduta do servidor. Lembrou que a lei trazia uma exceção para aquele caso. Marcou errado e acertou.",
+    "armadilha": "Marcar errado todo item com \"sempre\" ou \"nunca\". Há regras realmente absolutas, e a banca sabe disso."
+  },
+  {
+    "nome": "Ler o comando antes do texto",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Em questões com textos de apoio longos, você lê primeiro o que a questão pede e só depois lê o texto, sabendo o que procurar.",
+    "como_usar": [
+      "Leia o comando e, se possível, as alternativas antes do texto.",
+      "Identifique se a questão pede ideia central, um detalhe, inferência ou gramática.",
+      "Leia o texto procurando o que foi pedido.",
+      "Volte ao trecho específico para confirmar a resposta."
+    ],
+    "exemplo": "Os textos de interpretação tomavam tempo demais de Igor. Passou a ler primeiro os comandos das questões ligadas ao texto. Leu o texto uma vez, já sabendo que precisava achar o sentido de uma expressão e a ideia do último parágrafo.",
+    "armadilha": "Ler só o trecho que parece relacionado e pular o resto. Questões de ideia central exigem o texto inteiro."
+  },
+  {
+    "nome": "Passar o gabarito por blocos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você transcreve as respostas para a folha definitiva ao fim de cada bloco, em vez de deixar tudo para os últimos minutos.",
+    "como_usar": [
+      "Leia no edital e na capa da prova as regras da folha de respostas.",
+      "Ao terminar um bloco de questões, passe as respostas desse bloco para a folha.",
+      "Confira o número da questão na folha antes de cada marcação.",
+      "Deixe na folha só as questões que você ainda vai rever, sem marcar nada até decidir."
+    ],
+    "exemplo": "Num simulado, Andreia deixou para passar o gabarito no fim e saltou uma linha, deslocando várias respostas. Na prova seguinte, passou a transcrever ao fim de cada disciplina. Conferia o número da questão antes de cada marcação.",
+    "armadilha": "Marcar na folha questões ainda em dúvida e depois tentar corrigir. Rasuras podem anular a resposta; siga o que o edital e as instruções da prova determinam."
+  },
+  {
+    "nome": "Controle de risco no Certo/Errado",
+    "origem": "Prática consolidada de preparação para concursos, baseada no raciocínio de valor esperado",
+    "em_uma_frase": "Quando o edital prevê que um item errado anula um certo, você decide se responde ou deixa em branco estimando, com honestidade, a sua chance de acerto.",
+    "como_usar": [
+      "Confirme no edital se há desconto por item errado e como ele funciona; é o edital que define a regra.",
+      "Entenda a conta: se o erro anula um acerto, responder vale a pena, em média, quando sua chance real de acerto é maior que 50%.",
+      "Nos simulados, marque sua confiança em cada item e veja se ela bate com sua taxa real de acerto.",
+      "No dia da prova, combine essa estimativa com outros critérios do edital, como notas mínimas por bloco."
+    ],
+    "exemplo": "Nos simulados, Juliano viu que acertava bem os itens em que dizia ter boa dúvida, mas errava quase metade dos que considerava chute. Concluiu que responder os de boa dúvida era vantajoso e que os chutes puros, em média, não ajudavam. Ele passou a decidir com base nos próprios dados, não em fórmula pronta.",
+    "armadilha": "Acreditar que existe um número mágico de itens em branco. A conta depende do seu acerto real, das regras do edital e da sua situação na prova; nenhuma estratégia garante resultado."
+  },
+  {
+    "nome": "Discursiva planejada em tópicos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Antes de escrever a discursiva, você monta no rascunho um roteiro em tópicos com introdução, desenvolvimento e conclusão.",
+    "como_usar": [
+      "Leia o tema e sublinhe cada pergunta ou item que ele exige.",
+      "No rascunho, liste em tópicos o que vai responder em cada parágrafo.",
+      "Confira se todos os itens do comando estão cobertos no roteiro.",
+      "Só então escreva o texto seguindo a ordem dos tópicos."
+    ],
+    "exemplo": "Mirela escrevia direto e esquecia de responder a um dos itens do comando. Passou a reservar alguns minutos para um roteiro com um tópico para cada item pedido. Ao final, conferia se todos estavam no texto.",
+    "armadilha": "Fazer um rascunho completo, palavra por palavra, e ficar sem tempo. O planejamento é um roteiro curto, não um segundo texto."
+  },
+  {
+    "nome": "Reserva de tempo para transcrição",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você separa, antes de começar, um tempo fixo para passar a discursiva do rascunho para a folha definitiva com calma.",
+    "como_usar": [
+      "Nos treinos, cronometre quanto tempo você leva para transcrever um texto do tamanho exigido.",
+      "Some a esse tempo uma margem de segurança.",
+      "No dia da prova, anote o horário em que precisa começar a transcrição.",
+      "Ao chegar esse horário, comece a passar a limpo, mesmo que o rascunho não esteja perfeito."
+    ],
+    "exemplo": "Rodrigo percebeu nos treinos que levava bastante tempo para transcrever sua discursiva com letra legível. Passou a anotar no rascunho o horário-limite para começar. Na prova, transcreveu com tranquilidade e conferiu a ortografia.",
+    "armadilha": "Contar com o mesmo ritmo dos treinos em casa. No dia da prova, o nervosismo costuma deixar a escrita mais lenta."
+  },
+  {
+    "nome": "Questão estranha: siga em frente",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Diante de uma questão que parece mal formulada ou fora do edital, você responde o melhor que puder e segue, sem gastar a prova nela.",
+    "como_usar": [
+      "Se a questão parecer ambígua ou fora do conteúdo, anote o número dela.",
+      "Escolha a alternativa mais defensável e marque para revisar se sobrar tempo.",
+      "Lembre que questões com problema podem ser anuladas ou ter o gabarito alterado após os recursos, conforme as regras do edital.",
+      "Depois da prova, avalie se cabe recurso dentro do prazo do edital."
+    ],
+    "exemplo": "Flávio encontrou uma questão de informática sobre um tema que não estava no edital. Em vez de perder tempo, marcou uma resposta, anotou o número e seguiu. Depois da prova, verificou o conteúdo programático e preparou um recurso dentro do prazo.",
+    "armadilha": "Deixar uma questão estranha abalar o resto da prova. Uma questão não deve custar a concentração para as próximas."
+  },
+  {
+    "nome": "Simulado com cronômetro",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você faz provas completas no mesmo tempo e nas mesmas condições da prova real, para treinar ritmo, cansaço e estratégia.",
+    "como_usar": [
+      "Escolha uma prova anterior do cargo ou um simulado no formato do edital.",
+      "Faça no mesmo horário do dia da prova, se possível, e com o tempo oficial.",
+      "Use folha de respostas e não pause o cronômetro.",
+      "Depois, analise os erros e o tempo gasto em cada bloco."
+    ],
+    "exemplo": "Gisele fazia questões soltas e se dava bem, mas no primeiro simulado completo travou na última hora. Passou a fazer um simulado cronometrado a cada duas semanas, no domingo de manhã. Foi ajustando o ritmo e a ordem dos blocos.",
+    "armadilha": "Fazer o simulado e só olhar a nota. O valor está na análise depois: onde você perdeu tempo e por quê."
+  },
+  {
+    "nome": "Revisão da véspera em uma folha",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Na véspera da prova, você revisa apenas uma folha com os pontos que mais esquece, sem tentar aprender nada novo.",
+    "como_usar": [
+      "Nas semanas anteriores, vá anotando numa folha os pontos que você mais erra.",
+      "Na véspera, leia a folha com calma, algumas vezes ao longo do dia.",
+      "Não abra matéria nova nem faça simulado completo.",
+      "Termine cedo e prepare a rotina do dia seguinte."
+    ],
+    "exemplo": "Antes, Bárbara tentava rever o edital inteiro na véspera e chegava exausta. Agora, ela monta durante o mês uma folha com prazos, exceções e fórmulas que mais esquece. No dia anterior à prova, lê só essa folha e descansa.",
+    "armadilha": "Usar a véspera para estudar tudo o que ficou para trás. Isso aumenta a ansiedade e tira o descanso."
+  },
+  {
+    "nome": "Testar as alternativas em cálculos",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Em questões de matemática e raciocínio lógico, você testa as alternativas na condição do enunciado, em vez de montar a solução do zero.",
+    "como_usar": [
+      "Leia o enunciado e veja se as alternativas são números que podem ser testados.",
+      "Comece por uma alternativa do meio, quando estiverem em ordem.",
+      "Substitua o valor nas condições do enunciado e veja se funciona.",
+      "Se o valor ficou grande ou pequeno demais, teste a alternativa na direção certa."
+    ],
+    "exemplo": "A questão perguntava quantos anos o pai tinha, sabendo relações entre as idades. Wagner não lembrava como montar o sistema. Testou as alternativas na condição do enunciado e encontrou a que fechava todas as relações.",
+    "armadilha": "Usar a técnica em questões com muitos passos, em que testar cada alternativa demora mais que resolver. Ela vale quando o teste é rápido."
+  },
+  {
+    "nome": "Escrita expressiva antes da prova",
+    "origem": "Pesquisa sobre escrita expressiva e ansiedade em provas (Ramirez & Beilock, 2011)",
+    "em_uma_frase": "Pouco antes da prova, você escreve por alguns minutos sobre suas preocupações, para tirá-las da cabeça.",
+    "como_usar": [
+      "No dia da prova, enquanto espera, pegue um papel.",
+      "Escreva livremente por alguns minutos sobre o que te preocupa na prova.",
+      "Não corrija nem releia o que escreveu.",
+      "Guarde ou descarte o papel e volte a atenção para o que você vai fazer."
+    ],
+    "exemplo": "Antes de entrar na sala, Mônica escreveu num papel o medo de dar branco em Contabilidade e de não terminar a tempo. Dobrou o papel e guardou na bolsa. Entrou com a cabeça mais leve.",
+    "armadilha": "Esperar que a técnica acabe com toda a ansiedade. Os estudos mostram efeito em alguns contextos; ela é um apoio, não uma garantia."
+  },
+  {
+    "nome": "Checklist do dia da prova",
+    "origem": "Prática consolidada de preparação para concursos",
+    "em_uma_frase": "Você prepara com antecedência uma lista de tudo o que precisa para o dia da prova, para não gastar energia com imprevistos evitáveis.",
+    "como_usar": [
+      "Leia no edital e no cartão de confirmação o que é permitido e obrigatório levar.",
+      "Liste: documento original com foto, caneta do tipo exigido, comprovante, água e lanche permitidos.",
+      "Confira o local e simule o trajeto com antecedência, considerando trânsito.",
+      "Separe tudo na noite anterior e defina o horário de saída."
+    ],
+    "exemplo": "Na primeira prova, Alexandre descobriu na porta que o edital exigia caneta de corpo transparente. Na seguinte, fez um checklist a partir do edital. Saiu de casa com tudo separado e chegou com folga.",
+    "armadilha": "Fazer o checklist de memória, sem ler o edital daquele concurso. As regras de cada prova são as que o edital define."
+  }
+]

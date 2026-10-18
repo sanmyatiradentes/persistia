@@ -1,0 +1,482 @@
+[
+  {
+    "tema": "Fundamentos da República",
+    "dispositivo": "Art. 1º, CF/88",
+    "o_que_diz": "A República Federativa do Brasil é formada pela união indissolúvel dos Estados, dos Municípios e do Distrito Federal e se organiza como Estado Democrático de Direito. Seus fundamentos são cinco: a soberania, a cidadania, a dignidade da pessoa humana, os valores sociais do trabalho e da livre iniciativa e o pluralismo político. O parágrafo único afirma que todo o poder vem do povo, que o exerce por meio de representantes eleitos ou de forma direta, nos termos da própria Constituição. O mnemônico SO-CI-DI-VA-PLU ajuda a lembrar a lista.",
+    "como_cai": "As bancas apresentam uma lista misturando fundamentos (art. 1º), objetivos (art. 3º) e princípios das relações internacionais (art. 4º) e pedem que o candidato identifique qual item é fundamento.",
+    "pegadinha": "Trocar 'pluralismo político' por 'pluripartidarismo' ou incluir 'independência nacional' e 'erradicar a pobreza' como fundamentos; esses dois últimos estão nos arts. 4º e 3º.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Objetivos fundamentais da República",
+    "dispositivo": "Art. 3º, CF/88",
+    "o_que_diz": "O art. 3º lista as metas que o Estado brasileiro deve perseguir. São elas: construir uma sociedade livre, justa e solidária; garantir o desenvolvimento nacional; erradicar a pobreza e a marginalização e reduzir as desigualdades sociais e regionais; e promover o bem de todos, sem preconceito de origem, raça, sexo, cor, idade ou qualquer outra forma de discriminação. Uma dica clássica é perceber que todos os objetivos começam com verbos no infinitivo (construir, garantir, erradicar, reduzir, promover), o que os diferencia dos fundamentos do art. 1º.",
+    "como_cai": "A cobrança é quase sempre literal: a banca troca um verbo ou mistura objetivos com fundamentos e princípios internacionais, pedindo o item correto ou incorreto.",
+    "pegadinha": "Dizer que o objetivo é 'reduzir a pobreza' ou 'erradicar as desigualdades regionais'. O texto manda erradicar a pobreza e a marginalização e reduzir as desigualdades.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Princípios das relações internacionais",
+    "dispositivo": "Art. 4º, CF/88",
+    "o_que_diz": "Nas relações com outros países, o Brasil se orienta por dez princípios: independência nacional, prevalência dos direitos humanos, autodeterminação dos povos, não intervenção, igualdade entre os Estados, defesa da paz, solução pacífica dos conflitos, repúdio ao terrorismo e ao racismo, cooperação entre os povos para o progresso da humanidade e concessão de asilo político. O parágrafo único acrescenta que o país buscará a integração econômica, política, social e cultural dos povos da América Latina, com vistas a formar uma comunidade latino-americana de nações.",
+    "como_cai": "A banca costuma inserir um fundamento do art. 1º (como soberania ou dignidade da pessoa humana) numa lista de princípios internacionais, ou alterar a abrangência da integração prevista no parágrafo único.",
+    "pegadinha": "Afirmar que a integração do parágrafo único é com os povos 'das Américas' ou 'do Mercosul'; o texto fala em América Latina. Também é erro citar 'soberania' no art. 4º, que traz 'independência nacional'.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Inviolabilidade de domicílio",
+    "dispositivo": "Art. 5º, XI, CF/88",
+    "o_que_diz": "A casa é protegida contra o ingresso de quem não foi autorizado pelo morador. Sem esse consentimento, a entrada só é permitida em quatro situações: flagrante delito, desastre, para prestar socorro ou, durante o dia, por ordem judicial. As três primeiras hipóteses valem a qualquer hora, de dia ou de noite. A ordem judicial, por outro lado, só pode ser cumprida durante o dia. O STF dá ao conceito de casa uma leitura ampla, que alcança, por exemplo, quarto de hotel ocupado e escritório profissional fechado ao público.",
+    "como_cai": "Questões descrevem uma situação concreta (mandado cumprido à noite, entrada em flagrante de madrugada) e pedem que o candidato diga se a entrada foi lícita.",
+    "pegadinha": "Afirmar que a ordem judicial autoriza a entrada a qualquer hora, ou que o flagrante só permite ingresso durante o dia. É exatamente o contrário.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Sigilo das comunicações",
+    "dispositivo": "Art. 5º, XII, CF/88",
+    "o_que_diz": "A Constituição protege o sigilo da correspondência, das comunicações telegráficas, de dados e das comunicações telefônicas. A ressalva expressa recai sobre as comunicações telefônicas, que podem ser interceptadas por ordem judicial, nas hipóteses e na forma estabelecidas em lei, e apenas para investigação criminal ou instrução processual penal. A lei que regulamenta o tema é a Lei nº 9.296/1996. A jurisprudência admite restrições a outros sigilos em casos excepcionais, mas a interceptação telefônica é a única exceção escrita no próprio inciso.",
+    "como_cai": "As bancas perguntam quem pode determinar a interceptação e para que finalidade, frequentemente incluindo CPI, Ministério Público, delegado ou processo civil como alternativas.",
+    "pegadinha": "Dizer que a interceptação telefônica pode ser decretada por CPI, pelo Ministério Público ou para instruir processo civil ou administrativo. Exige-se ordem judicial e finalidade penal.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Direito de reunião",
+    "dispositivo": "Art. 5º, XVI, CF/88",
+    "o_que_diz": "Todos podem se reunir pacificamente, sem armas, em locais abertos ao público, sem necessidade de pedir autorização ao poder público. Há duas condições: a reunião não pode frustrar outra anteriormente convocada para o mesmo local, e a autoridade competente deve ser avisada com antecedência. O aviso prévio serve para que o poder público se organize, por exemplo quanto ao trânsito e à segurança, e não para que decida se a reunião pode ou não acontecer. Se o direito de reunião for ilegalmente impedido, o remédio cabível é o mandado de segurança.",
+    "como_cai": "A banca troca 'aviso prévio' por 'autorização prévia' ou afirma que a autoridade pode escolher o local e a data da manifestação.",
+    "pegadinha": "Afirmar que a reunião depende de autorização da autoridade. A Constituição exige apenas aviso prévio. Outra armadilha é indicar habeas corpus como remédio, quando a liberdade de locomoção não é o foco.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Liberdade de associação",
+    "dispositivo": "Art. 5º, XVII a XXI, CF/88",
+    "o_que_diz": "A associação para fins lícitos é plenamente livre, mas é proibida a de caráter paramilitar. A criação de associações e, na forma da lei, a de cooperativas não depende de autorização, sendo vedada a interferência estatal em seu funcionamento. Uma associação só pode ser dissolvida compulsoriamente ou ter suas atividades suspensas por decisão judicial; para a dissolução, exige-se o trânsito em julgado. Ninguém pode ser obrigado a se associar nem a permanecer associado. Quando expressamente autorizadas, as entidades associativas podem representar seus filiados judicial e extrajudicialmente.",
+    "como_cai": "O ponto preferido das bancas é a diferença entre suspensão das atividades (basta decisão judicial) e dissolução compulsória (exige trânsito em julgado).",
+    "pegadinha": "Dizer que a suspensão das atividades exige trânsito em julgado, ou que a associação pode ser dissolvida por ato administrativo. Também é erro afirmar que a criação de associação depende de autorização estatal.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Direito de petição e certidão",
+    "dispositivo": "Art. 5º, XXXIV, CF/88",
+    "o_que_diz": "Qualquer pessoa pode, sem pagar taxas, dirigir petições aos Poderes Públicos para defender direitos ou para se opor a ilegalidade ou abuso de poder. Também é garantido, sem cobrança de taxas, obter certidões em repartições públicas para defender direitos e esclarecer situações de interesse pessoal. O direito de petição não exige advogado nem demonstração de interesse processual, e pode ser exercido por pessoa física ou jurídica, brasileira ou estrangeira. A gratuidade alcança tanto a petição quanto a certidão nessas finalidades.",
+    "como_cai": "A banca costuma perguntar qual remédio cabe quando a repartição nega a certidão, ou afirmar que o direito de petição depende de advogado.",
+    "pegadinha": "Apontar o habeas data contra a negativa de certidão. Nesse caso, o remédio adequado é o mandado de segurança, pois o direito à certidão é líquido e certo e não se confunde com acesso a dados pessoais em bancos de dados.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Racismo e ação de grupos armados",
+    "dispositivo": "Art. 5º, XLII e XLIV, CF/88",
+    "o_que_diz": "A Constituição prevê apenas dois crimes imprescritíveis. O primeiro é a prática do racismo, que também é inafiançável e sujeita o autor à pena de reclusão, nos termos da lei. O segundo é a ação de grupos armados, civis ou militares, contra a ordem constitucional e o Estado Democrático, que é igualmente inafiançável. O STF entendeu que a injúria racial é espécie de racismo e, portanto, imprescritível, e enquadrou a homofobia e a transfobia no conceito de racismo, até que o Congresso edite lei específica.",
+    "como_cai": "As bancas listam vários crimes graves e perguntam quais são imprescritíveis, ou trocam a pena de reclusão do racismo por detenção.",
+    "pegadinha": "Incluir tortura, tráfico, terrorismo ou crimes hediondos entre os imprescritíveis. Esses crimes são inafiançáveis, mas prescrevem normalmente.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Crimes inafiançáveis e insuscetíveis de graça",
+    "dispositivo": "Art. 5º, XLIII, CF/88",
+    "o_que_diz": "A lei deve considerar inafiançáveis e insuscetíveis de graça ou anistia a tortura, o tráfico ilícito de entorpecentes e drogas afins, o terrorismo e os crimes definidos como hediondos. Respondem por esses crimes os mandantes, os executores e também aqueles que, podendo evitá-los, se omitirem. O mnemônico 3TH (tortura, tráfico, terrorismo e hediondos) ajuda a fixar a lista. A Lei dos Crimes Hediondos (Lei nº 8.072/1990) foi além do texto constitucional e vedou também o indulto para esses delitos.",
+    "como_cai": "A cobrança mais frequente é confundir este inciso com os do racismo e da ação de grupos armados, atribuindo imprescritibilidade ao grupo 3TH.",
+    "pegadinha": "Afirmar que tortura, tráfico, terrorismo e hediondos são imprescritíveis. São inafiançáveis e insuscetíveis de graça e anistia, mas não imprescritíveis.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Extradição de brasileiros e estrangeiros",
+    "dispositivo": "Art. 5º, LI e LII, CF/88",
+    "o_que_diz": "O brasileiro nato nunca será extraditado. O naturalizado pode ser extraditado em apenas duas hipóteses: por crime comum praticado antes da naturalização ou por comprovado envolvimento em tráfico ilícito de entorpecentes e drogas afins, na forma da lei, e neste último caso pouco importa se o fato ocorreu antes ou depois da naturalização. O estrangeiro, por sua vez, não pode ser extraditado por crime político ou de opinião. O julgamento do pedido de extradição feito por Estado estrangeiro cabe ao STF.",
+    "como_cai": "As bancas trocam 'antes' por 'depois' da naturalização no caso do crime comum ou afirmam que o brasileiro nato pode ser extraditado em caso de tráfico.",
+    "pegadinha": "Dizer que o naturalizado pode ser extraditado por crime comum praticado depois da naturalização. Só o tráfico permite extradição por fato posterior.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Devido processo legal",
+    "dispositivo": "Art. 5º, LIV, CF/88",
+    "o_que_diz": "Ninguém pode ser privado da liberdade ou de seus bens sem que antes se observe o devido processo legal. A garantia tem uma dimensão formal, que exige o respeito às regras do procedimento (juiz competente, citação, defesa, recursos), e uma dimensão material ou substancial, da qual a doutrina e o STF extraem os princípios da razoabilidade e da proporcionalidade, usados para controlar leis e atos arbitrários. Vale para processos judiciais e administrativos e para qualquer restrição a liberdade ou patrimônio.",
+    "como_cai": "A banca pergunta de qual princípio decorrem a razoabilidade e a proporcionalidade, ou se o devido processo se aplica apenas a processos judiciais.",
+    "pegadinha": "Afirmar que o devido processo legal protege só a liberdade, deixando de fora os bens, ou que não se aplica ao processo administrativo.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Contraditório e ampla defesa",
+    "dispositivo": "Art. 5º, LV, CF/88",
+    "o_que_diz": "Aos litigantes em processo judicial ou administrativo e aos acusados em geral são garantidos o contraditório e a ampla defesa, com os meios e recursos a ela inerentes. Contraditório é o direito de ser informado dos atos do processo e de reagir a eles; ampla defesa é a possibilidade de usar todos os meios lícitos para se defender. Pela Súmula Vinculante 5, a falta de defesa técnica por advogado no processo administrativo disciplinar não ofende a Constituição. O inquérito policial, por ser procedimento investigatório, não tem contraditório pleno.",
+    "como_cai": "É comum a cobrança das súmulas vinculantes ligadas ao tema, como a SV 5 (advogado no PAD) e a SV 14 (acesso do defensor às provas já documentadas na investigação).",
+    "pegadinha": "Afirmar que a ausência de advogado no processo administrativo disciplinar gera nulidade automática, ou que o inquérito policial exige contraditório e ampla defesa plenos.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Provas ilícitas",
+    "dispositivo": "Art. 5º, LVI, CF/88",
+    "o_que_diz": "São inadmissíveis no processo as provas obtidas por meios ilícitos, isto é, com violação de normas constitucionais ou legais. A jurisprudência, e hoje também o Código de Processo Penal, estende a proibição às provas derivadas das ilícitas (teoria dos frutos da árvore envenenada), salvo quando não houver nexo de causalidade ou quando puderem ser obtidas por fonte independente. A doutrina e a jurisprudência admitem, de forma excepcional, a prova ilícita usada a favor do réu, para evitar a condenação de um inocente.",
+    "como_cai": "A banca descreve uma prova colhida de modo irregular e pergunta se ela, ou a prova que dela decorreu, pode ser usada; também pergunta sobre gravação feita por um dos interlocutores.",
+    "pegadinha": "Afirmar que a gravação de conversa feita por um dos próprios interlocutores, sem conhecimento do outro, é sempre prova ilícita. O STF a considera, em regra, lícita.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Presunção de inocência",
+    "dispositivo": "Art. 5º, LVII, CF/88",
+    "o_que_diz": "Ninguém pode ser considerado culpado antes do trânsito em julgado da sentença penal condenatória. Em 2019, nas ADCs 43, 44 e 54, o STF concluiu que não é possível executar a pena de forma automática após a condenação em segunda instância; o cumprimento da pena exige o trânsito em julgado. Isso não impede prisões cautelares, como a preventiva, desde que fundamentadas nos requisitos legais. Em 2024, o STF admitiu a execução imediata da condenação imposta pelo Tribunal do Júri, em razão da soberania dos veredictos.",
+    "como_cai": "As bancas perguntam se a condenação em segunda instância autoriza a prisão para cumprimento de pena ou se a presunção de inocência impede qualquer prisão antes do trânsito em julgado.",
+    "pegadinha": "Afirmar que a presunção de inocência proíbe toda prisão antes do trânsito em julgado. As prisões cautelares continuam possíveis.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Habeas corpus",
+    "dispositivo": "Art. 5º, LXVIII, CF/88",
+    "o_que_diz": "O habeas corpus é concedido sempre que alguém sofrer, ou estiver ameaçado de sofrer, violência ou coação em sua liberdade de locomoção por ilegalidade ou abuso de poder. Pode ser repressivo, quando a restrição já ocorreu, ou preventivo, diante de ameaça. Qualquer pessoa pode impetrá-lo, em favor próprio ou de terceiro, sem advogado. A ação é gratuita, conforme o inciso LXXVII. Em regra, não cabe quanto ao mérito das punições disciplinares militares, embora o Judiciário possa examinar a legalidade dessas punições.",
+    "como_cai": "A banca pergunta se o habeas corpus exige advogado, se pessoa jurídica pode impetrá-lo e se ele protege direitos diversos da locomoção.",
+    "pegadinha": "Dizer que o habeas corpus protege qualquer direito líquido e certo. Essa é a função do mandado de segurança; o habeas corpus tutela apenas a liberdade de locomoção.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Mandado de segurança individual",
+    "dispositivo": "Art. 5º, LXIX, CF/88",
+    "o_que_diz": "O mandado de segurança protege direito líquido e certo que não esteja amparado por habeas corpus ou habeas data, quando o responsável pela ilegalidade ou pelo abuso de poder for autoridade pública ou agente de pessoa jurídica no exercício de atribuições do Poder Público. Direito líquido e certo é aquele comprovado de plano, por documentos, sem necessidade de produção de provas no processo. É um remédio residual, e a Lei nº 12.016/2009 fixa o prazo de 120 dias para a impetração, contados da ciência do ato.",
+    "como_cai": "Questões perguntam qual remédio cabe em determinada situação e exploram o caráter residual do mandado de segurança, além do prazo legal de impetração.",
+    "pegadinha": "Afirmar que o mandado de segurança admite ampla produção de provas, como perícia e testemunhas. A prova precisa ser pré-constituída.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Mandado de segurança coletivo",
+    "dispositivo": "Art. 5º, LXX, CF/88",
+    "o_que_diz": "O mandado de segurança coletivo pode ser impetrado por partido político com representação no Congresso Nacional e por organização sindical, entidade de classe ou associação legalmente constituída e em funcionamento há pelo menos um ano, em defesa dos interesses de seus membros ou associados. Pela Súmula 629 do STF, a impetração por entidade de classe em favor dos associados não depende de autorização deles. Pela Súmula 630, cabe ainda que o interesse discutido seja de apenas parte da categoria.",
+    "como_cai": "As bancas cobram a lista de legitimados, o requisito de um ano de funcionamento e a dispensa de autorização dos associados.",
+    "pegadinha": "Confundir com a representação do inciso XXI, que exige autorização expressa dos filiados. No mandado de segurança coletivo há substituição processual, e a autorização é dispensada. Também é erro dizer que basta ao partido ter registro, sem representação no Congresso.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Mandado de injunção",
+    "dispositivo": "Art. 5º, LXXI, CF/88",
+    "o_que_diz": "O mandado de injunção é cabível quando a falta de norma regulamentadora torna inviável o exercício de direitos e liberdades constitucionais ou das prerrogativas ligadas à nacionalidade, à soberania e à cidadania. Ele combate a omissão do poder público em regulamentar normas constitucionais de eficácia limitada. A Lei nº 13.300/2016 disciplina o instituto e prevê também a modalidade coletiva. O STF passou a adotar posição concretista, chegando a aplicar a lei de greve do setor privado aos servidores públicos enquanto não editada a lei específica.",
+    "como_cai": "A banca descreve um direito constitucional que não pode ser exercido por falta de lei e pergunta qual remédio é adequado, ou o confunde com a ADI por omissão.",
+    "pegadinha": "Indicar o mandado de injunção para suprir falta de regulamentação de direito previsto apenas em lei ordinária. Ele serve para normas constitucionais.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Habeas data",
+    "dispositivo": "Art. 5º, LXXII, CF/88",
+    "o_que_diz": "O habeas data serve para que a pessoa conheça informações sobre ela mesma constantes de registros ou bancos de dados de entidades governamentais ou de caráter público, e para retificar esses dados quando não preferir fazê-lo por processo sigiloso, judicial ou administrativo. A Lei nº 9.507/1997 acrescenta a possibilidade de anotar explicação ou contestação sobre o dado. Pela Súmula 2 do STJ, não cabe habeas data se não houve recusa de informações por parte da autoridade administrativa. A ação é gratuita.",
+    "como_cai": "As bancas exploram a natureza personalíssima do habeas data e a necessidade de prévio requerimento administrativo negado.",
+    "pegadinha": "Afirmar que o habeas data serve para obter informações de terceiros ou de interesse coletivo. Nesses casos, cabe mandado de segurança.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Ação popular",
+    "dispositivo": "Art. 5º, LXXIII, CF/88",
+    "o_que_diz": "Qualquer cidadão pode propor ação popular para anular ato lesivo ao patrimônio público ou de entidade de que o Estado participe, à moralidade administrativa, ao meio ambiente e ao patrimônio histórico e cultural. Cidadão, aqui, é quem está no gozo dos direitos políticos, comprovado pelo título de eleitor. O autor fica isento de custas judiciais e do ônus da sucumbência, salvo se ficar comprovada sua má-fé. Pela Súmula 365 do STF, pessoa jurídica não tem legitimidade para propor ação popular.",
+    "como_cai": "A banca pergunta quem pode propor a ação, se o autor paga custas e quais bens jurídicos ela protege, às vezes incluindo o Ministério Público como autor.",
+    "pegadinha": "Dizer que o Ministério Público ou uma pessoa jurídica podem propor ação popular. O MP atua como fiscal e pode assumir a ação se o autor desistir, mas não a propõe.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Assistência jurídica integral e gratuita",
+    "dispositivo": "Art. 5º, LXXIV, CF/88",
+    "o_que_diz": "O Estado deve prestar assistência jurídica integral e gratuita a quem comprovar insuficiência de recursos. A expressão 'assistência jurídica' é mais ampla que 'assistência judiciária': abrange não apenas a atuação em processos, mas também orientação, consultoria e atuação extrajudicial. A instituição constitucionalmente encarregada de concretizar esse direito é a Defensoria Pública, conforme o art. 134. O texto exige que a pessoa comprove a falta de recursos, o que não se confunde com a gratuidade automática de algumas ações.",
+    "como_cai": "As bancas trocam 'jurídica' por 'judiciária' ou retiram a exigência de comprovação da insuficiência de recursos.",
+    "pegadinha": "Afirmar que a assistência se limita à atuação em processos judiciais ou que é devida a todos, independentemente de comprovação de necessidade.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Razoável duração do processo",
+    "dispositivo": "Art. 5º, LXXVIII, CF/88",
+    "o_que_diz": "A todos, no âmbito judicial e administrativo, são garantidos a razoável duração do processo e os meios que assegurem a celeridade de sua tramitação. Esse inciso foi incluído pela Emenda Constitucional nº 45/2004, conhecida como Reforma do Judiciário. A Constituição não fixa um prazo numérico para o que seja razoável; a avaliação depende da complexidade da causa, do comportamento das partes e da atuação do poder público. O direito vale tanto para processos judiciais quanto para processos administrativos.",
+    "como_cai": "Costuma ser cobrado o fato de o inciso ter vindo com a EC 45/2004 e de alcançar também os processos administrativos.",
+    "pegadinha": "Afirmar que a garantia está no texto original de 1988, que vale só para processos judiciais ou que a Constituição fixa prazo máximo para o processo.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Tratados de direitos humanos",
+    "dispositivo": "Art. 5º, §3º, CF/88",
+    "o_que_diz": "Os tratados e convenções internacionais sobre direitos humanos aprovados em cada Casa do Congresso Nacional, em dois turnos, por três quintos dos votos dos respectivos membros, equivalem às emendas constitucionais. O parágrafo foi introduzido pela EC 45/2004. Os tratados de direitos humanos que não passarem por esse rito especial têm, segundo o STF, status supralegal: ficam acima das leis, mas abaixo da Constituição. Foi com base nessa hierarquia que o STF afastou a prisão civil do depositário infiel. A Convenção sobre os Direitos das Pessoas com Deficiência foi o primeiro tratado aprovado por esse rito.",
+    "como_cai": "A banca troca o quórum (dois terços, maioria absoluta) ou o número de turnos, ou pergunta qual é a hierarquia dos tratados aprovados sem o rito especial.",
+    "pegadinha": "Afirmar que todo tratado de direitos humanos tem força de emenda constitucional. Só os aprovados pelo rito do §3º; os demais são supralegais, e os tratados comuns têm força de lei ordinária.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Direitos sociais",
+    "dispositivo": "Art. 6º, CF/88",
+    "o_que_diz": "O art. 6º enumera os direitos sociais: educação, saúde, alimentação, trabalho, moradia, transporte, lazer, segurança, previdência social, proteção à maternidade e à infância e assistência aos desamparados. Alguns foram incluídos por emendas: moradia (EC 26/2000), alimentação (EC 64/2010) e transporte (EC 90/2015). A EC 114/2021 acrescentou um parágrafo único prevendo que todo brasileiro em situação de vulnerabilidade social tem direito a uma renda básica familiar, garantida pelo poder público em programa permanente de transferência de renda, nos termos da lei.",
+    "como_cai": "A cobrança é literal: a banca inclui um direito que não está no artigo ou pergunta qual direito foi acrescentado por emenda.",
+    "pegadinha": "Incluir no rol direitos como 'meio ambiente', 'água potável' ou 'acesso à internet'. Nenhum deles consta do art. 6º.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Jornada de trabalho e hora extra",
+    "dispositivo": "Art. 7º, XIII e XVI, CF/88",
+    "o_que_diz": "O trabalho normal não pode passar de oito horas diárias e quarenta e quatro semanais, sendo permitidas a compensação de horários e a redução da jornada mediante acordo ou convenção coletiva de trabalho. Quando houver serviço extraordinário, a remuneração deve ser, no mínimo, cinquenta por cento superior à da hora normal. O art. 39, §3º, estende esses dois direitos aos servidores ocupantes de cargo público. O inciso XIV, vizinho a esses, prevê jornada de seis horas para turnos ininterruptos de revezamento, salvo negociação coletiva.",
+    "como_cai": "As bancas trocam os números (40 horas, 48 horas, adicional de 100%) ou dizem que o adicional é fixo em 50%.",
+    "pegadinha": "Afirmar que o adicional de hora extra é de exatamente 50%. A Constituição fixa um piso: no mínimo 50%, podendo a lei ou a negociação coletiva prever percentual maior.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Brasileiros natos",
+    "dispositivo": "Art. 12, I, CF/88",
+    "o_que_diz": "São brasileiros natos: os nascidos no Brasil, mesmo de pais estrangeiros, desde que estes não estejam a serviço de seu país; os nascidos no estrangeiro de pai ou mãe brasileiros, desde que qualquer deles esteja a serviço do Brasil; e os nascidos no estrangeiro de pai ou mãe brasileiros que sejam registrados em repartição brasileira competente ou que venham a residir no Brasil e optem, a qualquer tempo, depois de atingida a maioridade, pela nacionalidade brasileira. A redação dessa última hipótese foi dada pela EC 54/2007.",
+    "como_cai": "A banca descreve o local de nascimento e a situação dos pais e pergunta se a pessoa é brasileira nata, naturalizada ou estrangeira.",
+    "pegadinha": "Afirmar que basta nascer no Brasil para ser brasileiro nato. Se ambos os pais forem estrangeiros a serviço do próprio país, a criança não será brasileira nata. Também é erro dizer que a opção tem prazo para ser feita.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Cargos privativos de brasileiro nato",
+    "dispositivo": "Art. 12, §3º, CF/88",
+    "o_que_diz": "Somente brasileiros natos podem ocupar os cargos de Presidente e Vice-Presidente da República, Presidente da Câmara dos Deputados, Presidente do Senado Federal, Ministro do Supremo Tribunal Federal, os da carreira diplomática, o de oficial das Forças Armadas e o de Ministro de Estado da Defesa, este último incluído pela EC 23/1999. A lógica é preservar a linha de sucessão presidencial e funções ligadas à soberania e à defesa. Fora dessas hipóteses, a lei não pode distinguir natos e naturalizados, salvo nos casos previstos na própria Constituição.",
+    "como_cai": "A banca lista cargos e pergunta qual pode ser ocupado por naturalizado, misturando Senador, Deputado, Ministro do STJ e Procurador-Geral da República.",
+    "pegadinha": "Afirmar que Deputado Federal, Senador ou Ministro do STJ precisam ser natos. Apenas os Presidentes das Casas e os Ministros do STF integram a lista.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Perda da nacionalidade brasileira",
+    "dispositivo": "Art. 12, §4º, CF/88",
+    "o_que_diz": "Com a redação dada pela EC 131/2023, o brasileiro perde a nacionalidade em duas hipóteses: quando tiver a naturalização cancelada por sentença judicial, em razão de fraude no processo de naturalização ou de atentado contra a ordem constitucional e o Estado Democrático; ou quando fizer pedido expresso de perda da nacionalidade perante autoridade brasileira competente, ressalvadas as situações que gerem apatridia. O novo §5º dispõe que a renúncia não impede que o interessado readquira sua nacionalidade brasileira originária, nos termos da lei.",
+    "como_cai": "As bancas ainda cobram a redação antiga (perda por aquisição de outra nacionalidade) para testar se o candidato conhece a mudança de 2023.",
+    "pegadinha": "Afirmar que o brasileiro nato perde automaticamente a nacionalidade ao adquirir outra. Após a EC 131/2023, a perda voluntária depende de pedido expresso.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Sufrágio, alistamento e voto",
+    "dispositivo": "Art. 14, caput e §§1º e 2º, CF/88",
+    "o_que_diz": "A soberania popular é exercida pelo sufrágio universal e pelo voto direto e secreto, com valor igual para todos, e, nos termos da lei, por plebiscito, referendo e iniciativa popular. O alistamento eleitoral e o voto são obrigatórios para os maiores de dezoito anos e facultativos para os analfabetos, os maiores de setenta anos e os maiores de dezesseis e menores de dezoito. Não podem se alistar como eleitores os estrangeiros e, durante o serviço militar obrigatório, os conscritos.",
+    "como_cai": "A banca troca as idades do voto facultativo (65 em vez de 70) ou inclui os analfabetos entre os que não podem se alistar.",
+    "pegadinha": "Dizer que a obrigatoriedade do voto é cláusula pétrea. O art. 60, §4º, protege o voto direto, secreto, universal e periódico, não o voto obrigatório.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Idades mínimas para candidatura",
+    "dispositivo": "Art. 14, §3º, VI, CF/88",
+    "o_que_diz": "Entre as condições de elegibilidade está a idade mínima, que varia conforme o cargo: trinta e cinco anos para Presidente, Vice-Presidente e Senador; trinta anos para Governador e Vice-Governador de Estado e do Distrito Federal; vinte e um anos para Deputado Federal, Deputado Estadual ou Distrital, Prefeito, Vice-Prefeito e juiz de paz; e dezoito anos para Vereador. A legislação eleitoral (Lei nº 9.504/1997) estabelece que a idade é verificada, em regra, na data da posse, com regra própria para quem disputa aos dezoito anos.",
+    "como_cai": "A cobrança é direta: a banca troca idades entre cargos, especialmente Senador (35) e Governador (30), ou Prefeito (21) e Vereador (18).",
+    "pegadinha": "Afirmar que Senador exige trinta anos, como Governador, ou que Prefeito exige trinta. Senador segue a idade do Presidente, e Prefeito, a do Deputado.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Perda e suspensão dos direitos políticos",
+    "dispositivo": "Art. 15, CF/88",
+    "o_que_diz": "A Constituição proíbe a cassação de direitos políticos. A perda ou a suspensão só ocorre nos casos que ela enumera: cancelamento da naturalização por sentença transitada em julgado; incapacidade civil absoluta; condenação criminal transitada em julgado, enquanto durarem seus efeitos; recusa de cumprir obrigação imposta a todos ou a prestação alternativa, nos termos do art. 5º, VIII; e improbidade administrativa, nos termos do art. 37, §4º. O STF entende que a suspensão por condenação criminal ocorre mesmo quando a pena privativa de liberdade é substituída por restritiva de direitos.",
+    "como_cai": "A banca inclui hipóteses inexistentes, como condenação em primeira instância ou cassação por decisão do Executivo, ou pergunta se a substituição da pena afasta a suspensão.",
+    "pegadinha": "Afirmar que a condenação criminal ainda sem trânsito em julgado suspende os direitos políticos, ou que a Constituição admite cassação de direitos políticos.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Organização político-administrativa",
+    "dispositivo": "Art. 18, CF/88",
+    "o_que_diz": "A organização político-administrativa do Brasil compreende a União, os Estados, o Distrito Federal e os Municípios, todos autônomos, nos termos da Constituição. Brasília é a Capital Federal. Os Territórios Federais integram a União, e sua criação, transformação em Estado ou reintegração ao Estado de origem dependem de lei complementar. Os Estados podem se incorporar, se subdividir ou se desmembrar mediante plebiscito da população diretamente interessada e lei complementar do Congresso. A criação de Municípios depende de lei estadual, no período fixado em lei complementar federal, de plebiscito e de estudos de viabilidade.",
+    "como_cai": "As bancas perguntam quais são os entes federativos, se os Territórios têm autonomia e qual instrumento cria Estados e Municípios.",
+    "pegadinha": "Dizer que os entes federativos são soberanos ou que os Territórios Federais são entes autônomos. Só a República Federativa é soberana, e os Territórios integram a União.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Competências exclusivas e privativas da União",
+    "dispositivo": "Arts. 21 e 22, CF/88",
+    "o_que_diz": "O art. 21 traz as competências exclusivas da União, de natureza administrativa ou material, como manter relações com Estados estrangeiros, declarar guerra, emitir moeda e organizar e manter a polícia civil, a polícia penal, a polícia militar e o corpo de bombeiros militar do Distrito Federal. Essas competências não podem ser delegadas. O art. 22 traz as competências privativas da União para legislar, como direito civil, comercial, penal, processual, eleitoral, agrário, marítimo, aeronáutico, espacial e do trabalho. Seu parágrafo único permite que lei complementar autorize os Estados a legislar sobre questões específicas dessas matérias.",
+    "como_cai": "A banca pergunta se determinada competência pode ser delegada e se ela é material ou legislativa, ou pede para identificar matérias do art. 22.",
+    "pegadinha": "Inverter a delegabilidade: a competência privativa do art. 22 é delegável aos Estados por lei complementar; a exclusiva do art. 21 é indelegável. Outro erro é pôr direito tributário ou penitenciário no art. 22, quando estão no art. 24.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Competência comum e concorrente",
+    "dispositivo": "Arts. 23 e 24, CF/88",
+    "o_que_diz": "O art. 23 trata da competência comum, de natureza administrativa, partilhada por União, Estados, Distrito Federal e Municípios, como zelar pela Constituição, cuidar da saúde, proteger o meio ambiente e combater as causas da pobreza. O art. 24 trata da competência concorrente para legislar, atribuída à União, aos Estados e ao Distrito Federal: a União edita normas gerais, os Estados suplementam e, sem lei federal, exercem competência plena; a lei federal superveniente suspende a eficácia da estadual naquilo que lhe for contrário. Os Municípios suplementam a legislação federal e estadual no que couber (art. 30, II).",
+    "como_cai": "As bancas confundem os dois artigos, perguntando se os Municípios participam da competência concorrente ou se a lei federal superveniente revoga a estadual.",
+    "pegadinha": "Afirmar que a lei federal superveniente revoga a estadual. Ela apenas suspende a eficácia no que for contrário. Também é erro incluir os Municípios no caput do art. 24.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Princípios da administração pública",
+    "dispositivo": "Art. 37, caput, CF/88",
+    "o_que_diz": "A administração pública direta e indireta de qualquer dos Poderes da União, dos Estados, do Distrito Federal e dos Municípios deve obedecer aos princípios da legalidade, impessoalidade, moralidade, publicidade e eficiência. O mnemônico LIMPE ajuda a memorizar. A eficiência não estava no texto original e foi incluída pela EC 19/1998, a chamada Reforma Administrativa. Outros princípios, como supremacia do interesse público, razoabilidade e proporcionalidade, são considerados implícitos na Constituição, embora alguns estejam expressos em leis, como a Lei nº 9.784/1999.",
+    "como_cai": "A banca pergunta quais princípios são expressos no caput, qual foi incluído por emenda ou se eles se aplicam a todos os Poderes e entes.",
+    "pegadinha": "Afirmar que a eficiência consta do texto original de 1988 ou incluir razoabilidade e supremacia do interesse público entre os princípios expressos do caput.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Concurso público",
+    "dispositivo": "Art. 37, II, CF/88",
+    "o_que_diz": "A investidura em cargo ou emprego público depende de aprovação prévia em concurso público de provas ou de provas e títulos, de acordo com a natureza e a complexidade do cargo, na forma da lei. A exceção são as nomeações para cargo em comissão declarado em lei de livre nomeação e exoneração. A exigência alcança a administração direta e indireta, inclusive empresas públicas e sociedades de economia mista. Pela Súmula Vinculante 43, é inconstitucional o provimento que leve o servidor a outro cargo, fora de sua carreira, sem concurso; pela SV 44, só lei pode exigir exame psicotécnico.",
+    "como_cai": "As bancas perguntam se empregados de estatais precisam de concurso, se é possível concurso só de títulos e quando cabe ascensão ou transposição de cargo.",
+    "pegadinha": "Afirmar que é possível concurso apenas de títulos, ou que empresas públicas e sociedades de economia mista estão dispensadas de concurso por seguirem o regime da CLT.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Validade do concurso e prioridade",
+    "dispositivo": "Art. 37, III e IV, CF/88",
+    "o_que_diz": "O prazo de validade do concurso público é de até dois anos, prorrogável uma única vez por igual período. Assim, o edital pode fixar validade menor, e a prorrogação, se houver, terá a mesma duração do prazo original. Durante o prazo improrrogável previsto no edital, quem foi aprovado tem prioridade sobre os aprovados em novo concurso para assumir o cargo ou emprego na carreira. O STF reconhece direito subjetivo à nomeação para o candidato aprovado dentro do número de vagas previsto no edital, salvo situações excepcionais devidamente motivadas.",
+    "como_cai": "A banca troca 'até dois anos' por 'dois anos', admite mais de uma prorrogação ou diz que a prorrogação pode ter duração diferente.",
+    "pegadinha": "Afirmar que todo concurso vale exatamente dois anos, ou que a prorrogação pode ser de até dois anos qualquer que seja o prazo inicial. Um concurso de um ano só pode ser prorrogado por mais um.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Teto remuneratório",
+    "dispositivo": "Art. 37, XI, CF/88",
+    "o_que_diz": "A remuneração e o subsídio dos agentes públicos, incluídas as vantagens pessoais, não podem ultrapassar o subsídio mensal dos Ministros do STF, que é o teto geral. Há subtetos: nos Municípios, o subsídio do Prefeito; nos Estados e no Distrito Federal, o do Governador no Executivo, o dos Deputados Estaduais ou Distritais no Legislativo e o dos Desembargadores do Tribunal de Justiça no Judiciário, este limitado a 90,25% do subsídio dos Ministros do STF. O subteto do Judiciário estadual se aplica também aos membros do Ministério Público, aos Procuradores e aos Defensores Públicos.",
+    "como_cai": "As bancas cobram o percentual de 90,25%, a quem se aplica o subteto do Judiciário e se as parcelas indenizatórias entram no cálculo.",
+    "pegadinha": "Afirmar que as verbas indenizatórias se submetem ao teto. O §11 do art. 37 as exclui. Outro erro é dizer que o subteto dos Procuradores estaduais é o subsídio do Governador.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Acumulação de cargos públicos",
+    "dispositivo": "Art. 37, XVI e XVII, CF/88",
+    "o_que_diz": "Em regra, é proibido acumular cargos públicos remunerados. A exceção exige compatibilidade de horários e alcança três situações: dois cargos de professor; um cargo de professor com outro técnico ou científico; e dois cargos ou empregos privativos de profissionais de saúde com profissões regulamentadas. A proibição se estende a empregos e funções em autarquias, fundações, empresas públicas, sociedades de economia mista, suas subsidiárias e sociedades controladas, direta ou indiretamente, pelo poder público. O STF entende que, nas acumulações permitidas, o teto incide sobre cada vínculo isoladamente.",
+    "como_cai": "A banca descreve dois cargos e pergunta se a acumulação é lícita, ou afirma que a proibição não alcança as empresas estatais.",
+    "pegadinha": "Admitir acumulação de dois cargos técnicos ou científicos. A combinação técnico-científico só é permitida com um cargo de professor.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Improbidade administrativa",
+    "dispositivo": "Art. 37, §4º, CF/88",
+    "o_que_diz": "Os atos de improbidade administrativa levam à suspensão dos direitos políticos, à perda da função pública, à indisponibilidade dos bens e ao ressarcimento ao erário, na forma e na gradação previstas em lei, sem prejuízo da ação penal cabível. A lei que regula o tema é a Lei nº 8.429/1992, profundamente alterada pela Lei nº 14.230/2021, que passou a exigir dolo para a configuração da improbidade. O STF entende que é imprescritível a ação de ressarcimento ao erário fundada em ato doloso de improbidade.",
+    "como_cai": "As bancas cobram as quatro consequências do parágrafo e a independência entre a esfera de improbidade e a penal.",
+    "pegadinha": "Dizer que a improbidade leva à 'cassação' ou à 'perda' dos direitos políticos. O texto fala em suspensão, e a Constituição proíbe a cassação de direitos políticos.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Responsabilidade civil do Estado",
+    "dispositivo": "Art. 37, §6º, CF/88",
+    "o_que_diz": "As pessoas jurídicas de direito público e as de direito privado prestadoras de serviços públicos respondem pelos danos que seus agentes, agindo nessa qualidade, causarem a terceiros. Essa responsabilidade é objetiva, ou seja, independe de prova de culpa, com base na teoria do risco administrativo, que admite excludentes como culpa exclusiva da vítima e força maior. O Estado pode, depois, cobrar o valor do agente em ação regressiva, mas apenas se este tiver agido com dolo ou culpa. O STF fixou que a vítima deve acionar o Estado ou a prestadora, e não diretamente o agente.",
+    "como_cai": "A banca pergunta se a responsabilidade do agente também é objetiva, se a vítima pode processar diretamente o servidor e se a concessionária responde perante não usuários.",
+    "pegadinha": "Afirmar que a responsabilidade do servidor perante o Estado é objetiva. Na ação regressiva, exige-se dolo ou culpa do agente.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Estabilidade do servidor público",
+    "dispositivo": "Art. 41, CF/88",
+    "o_que_diz": "São estáveis, após três anos de efetivo exercício, os servidores nomeados para cargo de provimento efetivo em virtude de concurso público. A aquisição exige também aprovação em avaliação especial de desempenho por comissão instituída para essa finalidade. O servidor estável só perde o cargo por sentença judicial transitada em julgado, por processo administrativo com ampla defesa ou por avaliação periódica de desempenho, na forma de lei complementar, assegurada ampla defesa. O art. 169, §4º, prevê ainda a perda do cargo para adequar a despesa com pessoal aos limites legais.",
+    "como_cai": "As bancas trocam três anos por dois (prazo anterior à EC 19/1998) e perguntam se empregados públicos e ocupantes de cargo em comissão adquirem estabilidade.",
+    "pegadinha": "Afirmar que a estabilidade é adquirida no cargo, ou que alcança comissionados e empregados públicos celetistas. Ela é no serviço público e só para cargo efetivo provido por concurso.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Imunidades parlamentares",
+    "dispositivo": "Art. 53, CF/88",
+    "o_que_diz": "Deputados e Senadores são invioláveis, civil e penalmente, por quaisquer de suas opiniões, palavras e votos; essa é a imunidade material. Desde a expedição do diploma, são julgados pelo STF e não podem ser presos, salvo em flagrante de crime inafiançável; nesse caso, os autos vão em vinte e quatro horas à Casa respectiva, que decide sobre a prisão pelo voto da maioria de seus membros. Recebida denúncia por crime ocorrido após a diplomação, a Casa, por iniciativa de partido nela representado e pelo voto da maioria de seus membros, pode sustar o andamento da ação.",
+    "como_cai": "A banca troca o marco inicial (posse em vez de diplomação), o prazo de vinte e quatro horas ou o quórum de deliberação da Casa.",
+    "pegadinha": "Afirmar que o STF precisa de licença da Casa para receber a denúncia. Desde a EC 35/2001 não há licença prévia; a Casa pode apenas sustar o andamento da ação, e só para crimes posteriores à diplomação.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Comissões parlamentares de inquérito",
+    "dispositivo": "Art. 58, §3º, CF/88",
+    "o_que_diz": "As CPIs têm poderes de investigação próprios das autoridades judiciais, além de outros previstos nos regimentos. São criadas pela Câmara e pelo Senado, em conjunto ou separadamente, mediante requerimento de um terço de seus membros, para apurar fato determinado por prazo certo. Suas conclusões, se for o caso, são enviadas ao Ministério Público para que promova a responsabilidade civil ou criminal dos infratores. O STF entende que a criação é direito da minoria e não depende de aprovação do plenário, e que a CPI pode quebrar sigilos bancário, fiscal e de dados telefônicos por decisão fundamentada.",
+    "como_cai": "As bancas perguntam o que a CPI pode e não pode fazer, o quórum de criação e se ela pode punir os investigados.",
+    "pegadinha": "Afirmar que a CPI pode determinar interceptação telefônica, busca domiciliar ou prisão (salvo flagrante). Esses atos estão sob reserva de jurisdição. Também é erro dizer que a CPI julga ou aplica penas.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Medidas provisórias: requisitos e prazos",
+    "dispositivo": "Art. 62, CF/88",
+    "o_que_diz": "Em caso de relevância e urgência, o Presidente da República pode adotar medidas provisórias com força de lei, devendo submetê-las de imediato ao Congresso Nacional. A medida perde a eficácia desde a edição se não for convertida em lei em sessenta dias, prorrogáveis uma vez por igual período, e esse prazo fica suspenso durante o recesso parlamentar. Se não for apreciada em quarenta e cinco dias da publicação, entra em regime de urgência e tranca a pauta da Casa em que estiver. A votação começa na Câmara dos Deputados, e é vedada a reedição, na mesma sessão legislativa, de medida rejeitada ou que perdeu a eficácia por decurso de prazo.",
+    "como_cai": "As bancas cobram os prazos (60 + 60 e 45 dias), a Casa iniciadora e a vedação de reedição.",
+    "pegadinha": "Afirmar que a medida provisória vale por 120 dias corridos em qualquer caso, sem considerar a suspensão no recesso, ou que a votação começa no Senado.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Matérias vedadas às medidas provisórias",
+    "dispositivo": "Art. 62, §1º, CF/88",
+    "o_que_diz": "Não pode ser objeto de medida provisória matéria relativa a nacionalidade, cidadania, direitos políticos, partidos políticos e direito eleitoral; direito penal, processual penal e processual civil; organização do Judiciário e do Ministério Público e carreira e garantias de seus membros; e planos plurianuais, diretrizes orçamentárias, orçamento e créditos adicionais e suplementares, com ressalva para créditos extraordinários. Também é proibida medida que vise à detenção ou ao sequestro de bens, poupança popular ou outro ativo financeiro, que trate de matéria reservada a lei complementar ou de matéria já aprovada pelo Congresso e pendente de sanção ou veto.",
+    "como_cai": "A banca lista matérias e pergunta qual pode ser tratada por medida provisória, frequentemente incluindo direito tributário, civil ou do trabalho.",
+    "pegadinha": "Afirmar que medida provisória não pode tratar de direito civil ou de tributos. Ambos são possíveis; o que se veda é direito penal e processual, e matéria reservada a lei complementar.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Crimes de responsabilidade do Presidente",
+    "dispositivo": "Arts. 85 e 86, CF/88",
+    "o_que_diz": "São crimes de responsabilidade os atos do Presidente que atentem contra a Constituição, especialmente contra a existência da União, o livre exercício dos Poderes e do Ministério Público, os direitos políticos, individuais e sociais, a segurança interna, a probidade administrativa, a lei orçamentária e o cumprimento das leis e decisões judiciais. Admitida a acusação por dois terços da Câmara, o Presidente é julgado pelo STF nas infrações penais comuns e pelo Senado nos crimes de responsabilidade. Fica suspenso das funções quando o STF recebe a denúncia ou queixa, ou quando o Senado instaura o processo; se o julgamento não terminar em cento e oitenta dias, o afastamento cessa.",
+    "como_cai": "As bancas cobram o quórum de admissão, o órgão julgador de cada tipo de infração e o prazo de afastamento.",
+    "pegadinha": "Inverter os órgãos julgadores, dizendo que o STF julga crimes de responsabilidade, ou afirmar que a admissão exige maioria absoluta da Câmara. São dois terços.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Atribuições delegáveis do Presidente",
+    "dispositivo": "Art. 84, parágrafo único, CF/88",
+    "o_que_diz": "O art. 84 lista as competências privativas do Presidente da República, como sancionar e vetar projetos, expedir decretos, nomear Ministros e celebrar tratados sujeitos a referendo do Congresso. Em regra, essas atribuições são indelegáveis. O parágrafo único autoriza delegar apenas três: dispor por decreto sobre organização e funcionamento da administração federal, quando não houver aumento de despesa nem criação ou extinção de órgãos, e extinguir funções ou cargos vagos (inciso VI); conceder indulto e comutar penas (inciso XII); e prover cargos públicos federais (inciso XXV, primeira parte). A delegação só pode ser feita aos Ministros de Estado, ao Procurador-Geral da República ou ao Advogado-Geral da União.",
+    "como_cai": "A banca pergunta quais competências podem ser delegadas e a quem, incluindo destinatários não previstos, como o Vice-Presidente ou o Presidente do STF.",
+    "pegadinha": "Afirmar que o Presidente pode delegar a extinção de cargos públicos providos ou a competência para vetar projetos. Só se delega a extinção de cargos vagos, e o veto é indelegável.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Garantias e vedações dos juízes",
+    "dispositivo": "Art. 95, CF/88",
+    "o_que_diz": "Os juízes têm três garantias: vitaliciedade, adquirida no primeiro grau após dois anos de exercício, período em que a perda do cargo depende de deliberação do tribunal, e, depois disso, de sentença judicial transitada em julgado; inamovibilidade, salvo por motivo de interesse público; e irredutibilidade de subsídio. Entre as vedações, não podem exercer outro cargo ou função, salvo uma de magistério, receber custas ou participação em processo, dedicar-se a atividade político-partidária nem advogar no juízo ou tribunal do qual se afastaram antes de três anos da aposentadoria ou exoneração.",
+    "como_cai": "As bancas confundem o prazo da vitaliciedade dos juízes (dois anos) com o da estabilidade dos servidores (três anos) e cobram a quarentena de três anos.",
+    "pegadinha": "Afirmar que a vitaliciedade do juiz de primeiro grau é adquirida após três anos, ou que ele pode exercer mais de um cargo de magistério.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "STF: composição e competências",
+    "dispositivo": "Arts. 101 e 102, CF/88",
+    "o_que_diz": "O STF tem onze Ministros, escolhidos entre cidadãos com mais de trinta e cinco e menos de setenta anos, de notável saber jurídico e reputação ilibada, nomeados pelo Presidente da República após aprovação pela maioria absoluta do Senado. O limite de setenta anos foi fixado pela EC 122/2022. Cabe ao STF, principalmente, a guarda da Constituição: julga originariamente a ADI de lei federal ou estadual e a ADC de lei federal, as infrações penais comuns do Presidente, do Vice, dos membros do Congresso, de seus Ministros e do PGR, além da extradição; e julga o recurso extraordinário, que exige repercussão geral.",
+    "como_cai": "A banca pergunta sobre os requisitos de nomeação e sobre quem julga determinada autoridade, ou admite ADC contra lei estadual.",
+    "pegadinha": "Afirmar que o Ministro do STF precisa ser magistrado de carreira ou que basta maioria simples do Senado. Também é erro dizer que cabe ADC de lei estadual: ela é só para lei ou ato normativo federal.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Súmula vinculante",
+    "dispositivo": "Art. 103-A, CF/88",
+    "o_que_diz": "O STF pode, de ofício ou por provocação, aprovar súmula com efeito vinculante, mediante decisão de dois terços de seus membros, após reiteradas decisões sobre matéria constitucional. A súmula vincula os demais órgãos do Poder Judiciário e a administração pública direta e indireta, nas esferas federal, estadual e municipal, e pode ser revista ou cancelada na forma da lei (Lei nº 11.417/2006). Seu objetivo é superar controvérsia atual que gere grave insegurança jurídica e multiplicação de processos. Contra ato ou decisão que contrarie a súmula ou a aplique indevidamente, cabe reclamação ao STF.",
+    "como_cai": "As bancas cobram o quórum de dois terços, os destinatários do efeito vinculante e o instrumento cabível em caso de descumprimento.",
+    "pegadinha": "Afirmar que a súmula vinculante vincula o Poder Legislativo na função de legislar ou o próprio STF. Ela não impede a edição de lei nova nem a revisão pelo próprio Tribunal.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Conselho Nacional de Justiça",
+    "dispositivo": "Art. 103-B, CF/88",
+    "o_que_diz": "O CNJ, criado pela EC 45/2004, é órgão do Poder Judiciário composto por quinze membros, com mandato de dois anos, admitida uma recondução, e é presidido pelo Presidente do STF. Cabe a ele o controle da atuação administrativa e financeira do Judiciário e do cumprimento dos deveres funcionais dos juízes, podendo receber reclamações, avocar processos disciplinares e aplicar sanções administrativas. O Ministro indicado pelo STJ exerce a função de Corregedor. O STF decidiu que o CNJ não tem competência sobre o próprio STF e seus Ministros.",
+    "como_cai": "A banca pergunta se o CNJ exerce função jurisdicional, se pode rever decisões judiciais ou se controla o STF.",
+    "pegadinha": "Afirmar que o CNJ pode reformar decisões judiciais ou que é órgão externo ao Judiciário. Sua atuação é administrativa, financeira e disciplinar, e ele integra o Judiciário.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Legitimados para ADI, ADC e ADPF",
+    "dispositivo": "Art. 103, CF/88",
+    "o_que_diz": "Podem propor ADI e ADC: o Presidente da República; as Mesas do Senado, da Câmara, das Assembleias Legislativas e da Câmara Legislativa do Distrito Federal; os Governadores de Estado e do Distrito Federal; o Procurador-Geral da República; o Conselho Federal da OAB; partido político com representação no Congresso Nacional; e confederação sindical ou entidade de classe de âmbito nacional. A Lei nº 9.882/1999 atribui os mesmos legitimados à ADPF. O STF exige pertinência temática das Mesas legislativas estaduais e distrital, dos Governadores e das confederações e entidades de classe.",
+    "como_cai": "As bancas perguntam se determinado órgão é legitimado e quem precisa demonstrar pertinência temática, incluindo alternativas como Prefeito, sindicato local ou Mesa do Congresso.",
+    "pegadinha": "Incluir Prefeito, Mesa de Câmara Municipal, sindicato ou Mesa do Congresso Nacional entre os legitimados. Também é erro exigir pertinência temática de partido político ou do Conselho Federal da OAB.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Ministério Público: princípios e funções",
+    "dispositivo": "Arts. 127 e 129, CF/88",
+    "o_que_diz": "O Ministério Público é instituição permanente, essencial à função jurisdicional do Estado, encarregada da defesa da ordem jurídica, do regime democrático e dos interesses sociais e individuais indisponíveis. Seus princípios institucionais são a unidade, a indivisibilidade e a independência funcional. Entre suas funções, estão promover privativamente a ação penal pública, instaurar inquérito civil e propor ação civil pública, exercer o controle externo da atividade policial e requisitar diligências investigatórias e a instauração de inquérito policial. É vedado ao MP fazer a representação judicial e a consultoria jurídica de entidades públicas.",
+    "como_cai": "As bancas perguntam quais funções são privativas do MP e cobram a lista de princípios institucionais.",
+    "pegadinha": "Afirmar que a ação civil pública é privativa do MP. Privativa é apenas a ação penal pública; na ação civil pública, há outros legitimados.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Defensoria Pública",
+    "dispositivo": "Art. 134, CF/88",
+    "o_que_diz": "A Defensoria Pública é instituição permanente, essencial à função jurisdicional do Estado, encarregada, como expressão e instrumento do regime democrático, da orientação jurídica, da promoção dos direitos humanos e da defesa, em todos os graus, judicial e extrajudicial, dos direitos individuais e coletivos dos necessitados, de forma integral e gratuita. A redação atual foi dada pela EC 80/2014, que também fixou como princípios a unidade, a indivisibilidade e a independência funcional. Os defensores têm garantia de inamovibilidade e não podem advogar fora das atribuições institucionais.",
+    "como_cai": "A banca pergunta se a Defensoria atua só judicialmente, se defende direitos coletivos e se seus membros podem advogar privadamente.",
+    "pegadinha": "Afirmar que a Defensoria atua apenas em favor de direitos individuais ou só em juízo. Ela também atua extrajudicialmente e em defesa de direitos coletivos.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Advocacia pública",
+    "dispositivo": "Arts. 131 e 132, CF/88",
+    "o_que_diz": "A Advocacia-Geral da União representa a União judicial e extrajudicialmente e presta consultoria e assessoramento jurídico ao Poder Executivo, nos termos de lei complementar. Seu chefe, o Advogado-Geral da União, é de livre nomeação pelo Presidente, entre cidadãos maiores de trinta e cinco anos, de notável saber jurídico e reputação ilibada. Na execução da dívida ativa tributária, a União é representada pela Procuradoria-Geral da Fazenda Nacional. Os Procuradores dos Estados e do Distrito Federal ingressam por concurso de provas e títulos, com participação da OAB em todas as fases, e adquirem estabilidade após três anos de efetivo exercício.",
+    "como_cai": "As bancas cobram a forma de escolha do Advogado-Geral da União e a atuação da PGFN na dívida ativa tributária.",
+    "pegadinha": "Afirmar que a nomeação do Advogado-Geral da União exige aprovação do Senado ou que ele deve ser membro da carreira. A nomeação é livre, sem sabatina.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Segurança pública: órgãos",
+    "dispositivo": "Art. 144, CF/88",
+    "o_que_diz": "A segurança pública é dever do Estado, direito e responsabilidade de todos, exercida para preservar a ordem pública e a incolumidade das pessoas e do patrimônio. O rol federal de órgãos é: polícia federal, polícia rodoviária federal, polícia ferroviária federal, polícias civis, polícias militares e corpos de bombeiros militares, e polícias penais federal, estaduais e distrital, estas incluídas pela EC 104/2019. Às polícias civis, dirigidas por delegados de carreira, cabem a polícia judiciária e a apuração de infrações penais, exceto as militares. A polícia científica não figura no texto federal; quando existe como órgão próprio, decorre da Constituição e das leis estaduais.",
+    "como_cai": "A banca lista órgãos e pergunta qual integra o rol do art. 144, incluindo guarda municipal, polícia legislativa ou polícia científica.",
+    "pegadinha": "Afirmar que a Constituição Federal lista a polícia científica ou a perícia oficial entre os órgãos do art. 144, ou esquecer as polícias penais, acrescentadas em 2019.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Direito à saúde",
+    "dispositivo": "Art. 196, CF/88",
+    "o_que_diz": "A saúde é direito de todos e dever do Estado, garantido por políticas sociais e econômicas que busquem reduzir o risco de doenças e de outros agravos e assegurar acesso universal e igualitário às ações e serviços de promoção, proteção e recuperação. O Sistema Único de Saúde se organiza de forma descentralizada, com atendimento integral e participação da comunidade (art. 198). A assistência à saúde é livre à iniciativa privada, e as instituições privadas podem participar do SUS de forma complementar, com preferência para as filantrópicas e as sem fins lucrativos (art. 199).",
+    "como_cai": "As bancas comparam saúde, previdência e assistência social, perguntando qual delas depende de contribuição, e cobram as diretrizes do SUS.",
+    "pegadinha": "Afirmar que o acesso à saúde pública depende de contribuição. A saúde é universal; a previdência é que tem caráter contributivo.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  },
+  {
+    "tema": "Direito à educação",
+    "dispositivo": "Arts. 205 e 208, CF/88",
+    "o_que_diz": "A educação é direito de todos e dever do Estado e da família, promovida e incentivada com a colaboração da sociedade, com o objetivo de desenvolver plenamente a pessoa, prepará-la para o exercício da cidadania e qualificá-la para o trabalho. O Estado deve garantir educação básica obrigatória e gratuita dos quatro aos dezessete anos, inclusive para quem não teve acesso na idade própria, e educação infantil em creche e pré-escola para crianças de até cinco anos. O acesso ao ensino obrigatório e gratuito é direito público subjetivo, e seu não oferecimento gera responsabilidade da autoridade competente.",
+    "como_cai": "A banca troca a faixa etária da educação obrigatória (antes restrita ao ensino fundamental) ou atribui o dever apenas ao Estado.",
+    "pegadinha": "Afirmar que a educação é dever exclusivo do Estado ou que a obrigatoriedade se limita ao ensino fundamental. O dever é também da família, e a obrigatoriedade vai dos 4 aos 17 anos.",
+    "link": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+  }
+]

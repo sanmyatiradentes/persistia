@@ -1,0 +1,71 @@
+/* Leitura do dia (js/leitura.js) — usa as cores do tema do app (claro e escuro) */
+.ld-topo{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px}
+.ld-nav{display:flex; align-items:center; gap:10px}
+.ld-seta{width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:1.3rem; cursor:pointer; line-height:1}
+.ld-dia{display:flex; flex-direction:column; align-items:center; min-width:150px; text-align:center}
+.ld-dia b{font-size:.95rem}
+.ld-dia span{font-size:.75rem; color:var(--muted)}
+.ld-hoje{border:0; background:none; color:var(--accent); font:inherit; font-size:.72rem; cursor:pointer; padding:2px 0; text-decoration:underline}
+.ld-extra{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.ld-seq{font-size:.75rem; color:var(--muted)}
+
+.ld-grade{display:grid; gap:14px}
+@media(min-width:900px){ .ld-grade{grid-template-columns:1.25fr 1fr; align-items:start} }
+.ld-lado{display:grid; gap:14px}
+.ld-card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; text-align:left; min-width:0}
+.ld-card.principal{border:2px solid color-mix(in srgb, var(--accent) 45%, var(--line))}
+.ld-tag{font-size:.66rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:6px}
+.ld-tit{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; letter-spacing:-.01em; line-height:1.25; margin:0 0 4px}
+.ld-card.principal .ld-tit{font-size:1.35rem}
+.ld-autor{font-size:.75rem; color:var(--muted); margin-bottom:12px}
+.ld-texto{font-size:.92rem; line-height:1.7; margin:0 0 14px}
+.ld-ideia{font-size:.88rem; line-height:1.6; margin:0 0 10px}
+.ld-ex{font-size:.84rem; line-height:1.6; color:var(--muted); margin:0 0 10px}
+.ld-passos{margin:0 0 10px 18px; padding:0; font-size:.86rem; line-height:1.55}
+.ld-passos li{margin-bottom:4px}
+.ld-acao,.ld-alerta{border-radius:12px; padding:10px 12px; margin:0 0 10px; font-size:.85rem; line-height:1.55}
+.ld-acao{background:var(--accent-soft)}
+.ld-alerta{background:var(--warm-soft)}
+.ld-acao strong,.ld-alerta strong{display:block; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px}
+.ld-alerta strong{color:var(--warm)}
+.ld-acao p,.ld-alerta p{margin:0}
+.ld-pergunta{font-style:italic; font-size:.9rem; margin:0 0 8px}
+.ld-frase{font-family:"Playfair Display",serif; font-size:1.05rem; line-height:1.45; margin:0 0 12px; color:var(--accent)}
+.ld-ref{display:inline-block; font-size:.8rem; font-weight:700; color:var(--accent); text-decoration:none; margin-bottom:10px}
+.ld-ref span{font-weight:500; color:var(--muted)}
+.ld-botoes{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+.ld-btn{border:1px solid var(--accent); background:transparent; color:var(--accent); border-radius:999px; padding:7px 14px; font:inherit; font-size:.78rem; font-weight:600; cursor:pointer}
+.ld-btn.discreto{border-color:var(--line); color:var(--muted)}
+.ld-btn.falando{background:var(--accent); color:var(--on-accent)}
+.ld-cta{margin:18px 0 0; padding:16px; border-radius:18px; background:var(--accent-soft); text-align:center}
+.ld-cta p{margin:0 0 10px; font-size:.9rem}
+
+.ld-trilhas{margin-top:26px}
+.ld-sub{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; margin:0 0 4px; text-align:left}
+.ld-subtxt{font-size:.82rem; color:var(--muted); margin:0 0 12px; text-align:left}
+.ld-trilhas-grade{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.ld-trilha{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; text-align:left; display:flex; flex-direction:column; gap:6px}
+.ld-trilha.iniciada{border-color:var(--accent)}
+.ld-trilha b{font-size:.95rem}
+.ld-trilha p{font-size:.82rem; margin:0; line-height:1.5}
+.ld-trilha small{font-size:.74rem; color:var(--muted); line-height:1.45; flex:1}
+.ld-trilha .ld-btn{align-self:flex-start}
+.ld-barra{height:6px; border-radius:999px; background:var(--line); overflow:hidden; margin:4px 0}
+.ld-barra span{display:block; height:100%; background:var(--accent)}
+.ld-detalhe{position:relative; margin-top:14px; background:var(--card); border:2px solid var(--accent); border-radius:20px; padding:18px; text-align:left}
+.ld-fechar{position:absolute; top:10px; right:12px; border:0; background:none; font-size:1.4rem; color:var(--muted); cursor:pointer}
+.ld-diatr{background:var(--card2); border-radius:14px; padding:14px; margin:12px 0}
+.ld-diatr h4{margin:2px 0 6px; font-size:1rem}
+.ld-diatr p{font-size:.88rem; line-height:1.6; margin:0 0 8px}
+.ld-num{font-size:.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.06em}
+.ld-pq{color:var(--muted)}
+.ld-msg{font-weight:600; color:var(--accent)}
+.ld-mapa{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0}
+.ld-mapa span{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; border:1px solid var(--line); color:var(--muted)}
+.ld-mapa span.ok{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.ld-mapa span.agora{border:2px solid var(--accent); color:var(--accent)}
+.ld-fontes{font-size:.72rem; color:var(--muted); margin:6px 0 10px}
+
+/* no site, a seção segue o espaçamento das outras */
+#leitura .ld-raiz{max-width:1180px; margin:0 auto}
+#ldTeaser:empty{display:none}
