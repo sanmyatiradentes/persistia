@@ -2526,15 +2526,18 @@
     <div class="blocks" id="planoDia"></div>
 
     <div class="card" style="margin-top:16px">
-      <h2>Cronograma completo</h2>
-      <p class="muted" style="font-size:.76rem" id="planoHead">—</p>
+      <h2>Sua semana</h2>
+      <p style="font-size:.8rem; line-height:1.55" id="planoHead">—</p>
       <div class="calc" style="margin:10px 0 14px" id="planoProj"></div>
-      <div class="lmode" style="width:fit-content; margin-bottom:14px">
-        <button id="ordEdital" class="sel" onclick="ordenarPlano('edital')">Pela ordem do edital</button>
-        <button id="ordDia" onclick="ordenarPlano('dia')">Dia a dia</button>
-      </div>
-      <div id="planoLista"></div>
-      <p class="muted" style="font-size:.7rem; margin-top:10px" id="planoDica">Toque numa disciplina para abrir os tópicos. Toque num tópico para estudá-lo agora.</p>
+      <details id="planoTodo">
+        <summary class="lg-alt" style="cursor:pointer; padding:4px 0; font-size:.8rem" id="planoTodoSum">Ver o cronograma completo</summary>
+        <div class="lmode" style="width:fit-content; margin:12px 0 14px">
+          <button id="ordEdital" class="sel" onclick="ordenarPlano('edital')">Pela ordem do edital</button>
+          <button id="ordDia" onclick="ordenarPlano('dia')">Dia a dia</button>
+        </div>
+        <div id="planoLista"></div>
+        <p class="muted" style="font-size:.7rem; margin-top:10px" id="planoDica">Toque numa disciplina para abrir os tópicos. Toque num tópico para estudá-lo agora.</p>
+      </details>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -4636,7 +4639,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     feynman: 'explicou em voz alta', lei_seca: 'completou a lei seca', explicacao_simples_ouvida: 'ouviu a explicação simples',
     externo_confirmado: 'marcou atividade externa', resumo_visual: 'abriu o resumo visual', video_assunto: 'viu o vídeo',
     teoria_ouvida: 'ouviu a teoria', voz_alta: 'leu em voz alta', recap: 'fez a revisão rápida', eco: 'usou o eco',
-    viu_8_verbos: 'abriu os 8 verbos antes da hora'
+    viu_8_verbos: 'abriu os 8 verbos antes da hora',
+    assunto_concluido_auto: 'concluiu um assunto', flashcards_concluidos: 'treinou os cartões do assunto',
+    revisao_aberta: 'abriu a revisão do dia', revisao_concluida: 'terminou a revisão do dia',
+    questao_revisao: 'respondeu questão na revisão'
   };
   function admFiltrar(){
     var q = norm(($('admBusca') || {}).value || '');
@@ -4699,8 +4705,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       { rot: 'Criaram conta',            n: f.cadastraram,     pct: 100 },
       { rot: 'Enviaram um edital',       n: f.enviaram_edital, pct: f.pct_edital },
       { rot: 'Receberam o cronograma',   n: f.montaram_plano,  pct: f.pct_plano },
-      { rot: 'Estudaram pelo menos 1 assunto', n: f.estudaram_1, pct: f.pct_estudou },
-      { rot: 'Voltaram (3 ou mais assuntos)',  n: f.estudaram_3, pct: f.pct_voltou },
+      { rot: 'Voltaram em outro dia (2+ dias de uso)', n: f.voltaram_dia2, pct: f.pct_dia2 },
+      { rot: 'Concluíram pelo menos 1 assunto', n: f.estudaram_1, pct: f.pct_estudou },
+      { rot: 'Estudaram 3 ou mais assuntos',  n: f.estudaram_3, pct: f.pct_voltou },
+      { rot: 'Fizeram uma revisão do dia', n: f.fizeram_revisao, pct: f.pct_revisao },
       { rot: 'Assinaram',                n: f.assinaram,       pct: f.pct_assinou }
     ];
     // a maior queda entre dois degraus é o que interessa
@@ -8346,7 +8354,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       var ehHoje = iso === hojeISO, passou = iso < hojeISO;
       var pendentes = t.filter(function(x){ return x.status !== 'concluido'; }).length;
       var etq = ehHoje ? '<span class="sit hj">hoje</span>'
-        : (passou && pendentes ? '<span class="sit atr">atrasado</span>'
+        : (passou && pendentes ? '<span class="sit atr">a retomar</span>'
         : (t.length && !pendentes ? '<span class="sit fim">✓</span>' : ''));
 
       var assuntos = t.map(function(x){
@@ -8838,7 +8846,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function teoriaChegou(cracha, completo){
     var e = ESPERA;
     if(!e || e.cracha !== cracha) return;
-    if(completo){ e.completo = true; e.guardados = {}; return; }
+    if(completo){ e.completo = true; e.guardados = {}; prepararProxima(e.it); return; }
     Object.keys(e.guardados).forEach(function(b){ juntarBloco(b, e.guardados[b]); });
     e.guardados = {};
     blocoTerminou(e);
@@ -8851,7 +8859,42 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       // que alguém abrir este tópico, ele vem pronto na hora
       apiFetch(urlConteudo(e.it) + '&finalizar=1').catch(function(){});
       CONT.parcial = false;
+      prepararProxima(e.it);
     }
+  }
+
+  // A próxima sessão é escrita em segundo plano enquanto a aluna estuda esta:
+  // quando ela tocar em "seguir", a aula abre na hora, sem a espera da IA.
+  // Só a próxima (a parte seguinte, ou o próximo assunto da fila) — nada além.
+  var PREPARADOS = {};
+  function proximaSessao(it){
+    var itens = (REAL && REAL.itens) || [];
+    var atual = itens.filter(function(x){ return x.cron_id === it.cron_id; })[0] || it;
+    if(Number(atual.partes) > 1 && Number(atual.parte) < Number(atual.partes)){
+      var seg = itens.filter(function(x){
+        return x.topico_id === atual.topico_id && Number(x.parte) === Number(atual.parte) + 1;
+      })[0];
+      if(seg && seg.status !== 'concluido') return seg;
+    }
+    return itens.filter(function(x){
+      return x.status !== 'concluido' && x.cron_id !== atual.cron_id && Number(x.ordem) > Number(atual.ordem);
+    })[0] || null;
+  }
+  function prepararProxima(it){
+    if(!API || !TOKEN || !it) return;
+    // revendo um assunto antigo, já concluído: não adianta nada
+    var atual = ((REAL && REAL.itens) || []).filter(function(x){ return x.cron_id === it.cron_id; })[0];
+    if(atual && atual.status === 'concluido') return;
+    var prox = proximaSessao(it);
+    if(!prox || PREPARADOS[prox.cron_id]) return;
+    PREPARADOS[prox.cron_id] = true;
+    setTimeout(function(){
+      Promise.all(['texto', 'apoio', 'midia', 'pratica'].map(function(b){
+        return apiFetch(urlConteudo(prox, b)).catch(function(){});
+      })).then(function(){
+        return apiFetch(urlConteudo(prox) + '&finalizar=1');
+      }).catch(function(){});
+    }, 4000);
   }
 
   // Desenha só a parte que acabou de chegar, sem redesenhar a aula que o aluno
@@ -9373,7 +9416,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       $('hnData').textContent = DIAX[dtx.getDay()] + ', ' + dtx.getDate() + ' de ' + MESX[dtx.getMonth()];
       var tag = $('hnTag');
       if(it.data === hojeISO){ tag.textContent = 'hoje'; tag.className = 'tag'; tag.style.display = 'inline-block'; }
-      else if(it.data < hojeISO){ tag.textContent = 'atrasado'; tag.className = 'tag atr'; tag.style.display = 'inline-block'; }
+      else if(it.data < hojeISO){ tag.textContent = 'retomando'; tag.className = 'tag'; tag.style.display = 'inline-block'; }
       else { tag.textContent = 'adiantando'; tag.className = 'tag fut'; tag.style.display = 'inline-block'; }
       $('hnVoltarHoje').style.display = (it.data === hojeISO) ? 'none' : 'block';
       var dias = diasDoCronograma(), i = dias.indexOf(it.data);
@@ -9699,8 +9742,19 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     renderSemana();
 
     // ----- cronograma completo, por disciplina e tópico -----
-    $('planoHead').innerHTML = '<b class="num" style="color:var(--accent)">' + d.resumo.concluidos + '</b> de <span class="num">' + d.resumo.total + '</span> sessões concluídas' +
-      (d.resumo.horas_totais ? ' <span class="muted">· ' + fmtHoras(d.resumo.horas_totais) + ' de estudo no edital inteiro</span>' : '');
+    // O que importa é a semana: o edital inteiro (às vezes centenas de
+    // sessões) assusta mais do que orienta, e fica recolhido logo abaixo.
+    var fimSem = new Date(hojeISO + 'T12:00:00'); fimSem.setDate(fimSem.getDate() + 6);
+    var fimISO = fimSem.toISOString().slice(0, 10);
+    var semana = itens.filter(function(x){ return x.data >= hojeISO && x.data <= fimISO; });
+    var semFeitas = semana.filter(function(x){ return x.status === 'concluido'; }).length;
+    var semHoras = semana.reduce(function(n, x){ return n + (Number(x.horas) || 0); }, 0);
+    $('planoHead').innerHTML = '<b>Próximos 7 dias:</b> <b class="num" style="color:var(--accent)">' + semana.length + '</b> ' +
+      (semana.length === 1 ? 'sessão' : 'sessões') + (semHoras ? ' · ' + fmtHoras(semHoras) : '') +
+      (semFeitas ? ' · ' + semFeitas + ' já ' + (semFeitas === 1 ? 'feita' : 'feitas') : '') +
+      '. <span class="muted">Faltou um dia? O plano se ajusta sozinho — nada se perde.</span>';
+    if($('planoTodoSum')) $('planoTodoSum').textContent = 'Ver o cronograma completo · ' + d.resumo.concluidos + ' de ' + d.resumo.total + ' sessões' +
+      (d.resumo.horas_totais ? ' · ' + fmtHoras(d.resumo.horas_totais) : '');
     $('planoProj').innerHTML = textoDaProjecao(d, dd);
 
     PLANO_ITENS = itens;
@@ -9825,7 +9879,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       var idd = 'dia_' + k2;
       var aberto = ehHoje ? ' open' : '';
       var etiqueta = ehHoje ? '<span class="chip done" style="font-size:.62rem; padding:2px 8px">hoje</span>'
-        : (passou && !tudoFeito ? '<span class="chip" style="font-size:.62rem; padding:2px 8px; background:var(--warm-soft); color:var(--warm); border-color:var(--warm)">atrasado</span>' : '');
+        : (passou && !tudoFeito ? '<span class="chip" style="font-size:.62rem; padding:2px 8px; background:var(--warm-soft); color:var(--warm); border-color:var(--warm)">a retomar</span>' : '');
       html += '<div class="disc' + aberto + '" id="' + idd + '">' +
         '<button class="disc-h" onclick="document.getElementById(\'' + idd + '\').classList.toggle(\'open\')">' +
           '<span class="dot" style="width:10px;height:10px;border-radius:50%;flex:none;background:' +

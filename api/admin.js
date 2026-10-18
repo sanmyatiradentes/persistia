@@ -300,7 +300,9 @@ module.exports = async (req, res) => {
              (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id AND e.tipo = 'saiu_esperando') AS saidas_esperando,
              (SELECT titulo FROM editais ed WHERE ed.aluno_id = a.id ORDER BY ed.criado_em DESC LIMIT 1) AS edital,
              (SELECT COUNT(*) FROM cronograma c WHERE c.aluno_id = a.id) AS sessoes,
-             (SELECT COUNT(*) FROM cronograma c WHERE c.aluno_id = a.id AND c.status = 'concluido') AS concluidas
+             (SELECT COUNT(*) FROM cronograma c WHERE c.aluno_id = a.id AND c.status = 'concluido') AS concluidas,
+             (SELECT COUNT(DISTINCT substr(e.criado_em, 1, 10)) FROM eventos e WHERE e.aluno_id = a.id) AS dias_ativos,
+             (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id AND e.tipo = 'revisao_concluida') AS revisoes
       FROM alunos a LEFT JOIN assinaturas s ON s.aluno_id = a.id
       ORDER BY a.criado_em DESC LIMIT 500`);
 
@@ -331,6 +333,10 @@ module.exports = async (req, res) => {
         edital: r.edital || null,
         sessoes: Number(r.sessoes) || 0,
         concluidas: Number(r.concluidas) || 0,
+        // em quantos dias diferentes ela usou o app: voltar no 2º dia é o
+        // que separa quem experimentou de quem adotou
+        dias_ativos: Number(r.dias_ativos) || 0,
+        revisoes: Number(r.revisoes) || 0,
         eventos: Number(r.eventos) || 0,
         ultimo_evento: r.ultimo_evento || null,
         // o que a aluna fez por último e quanto esperou a primeira aula aparecer
@@ -352,6 +358,8 @@ module.exports = async (req, res) => {
       const comPlano = base.filter(a => a.sessoes > 0).length;
       const estudou = base.filter(a => a.concluidas > 0).length;
       const voltou = base.filter(a => a.concluidas >= 3).length;
+      const dia2 = base.filter(a => a.dias_ativos >= 2).length;
+      const revisou = base.filter(a => a.revisoes > 0).length;
       const assinou = base.filter(a => a.situacao === 'assinante').length;
       const pct = x => n ? Math.round((x / n) * 100) : 0;
       return {
@@ -359,6 +367,8 @@ module.exports = async (req, res) => {
         enviaram_edital: comEdital, pct_edital: pct(comEdital),
         montaram_plano: comPlano, pct_plano: pct(comPlano),
         estudaram_1: estudou, pct_estudou: pct(estudou),
+        voltaram_dia2: dia2, pct_dia2: pct(dia2),
+        fizeram_revisao: revisou, pct_revisao: pct(revisou),
         estudaram_3: voltou, pct_voltou: pct(voltou),
         assinaram: assinou, pct_assinou: pct(assinou)
       };
