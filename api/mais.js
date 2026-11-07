@@ -3,6 +3,7 @@
 // todos os alunos daquele assunto — e o aluno decide quando gastar.
 // POST {topico_id, parte, partes, tipo:'questoes'|'questoes_me'|'flashcards'}
 const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA } = require('./_lib');
+const { normaLocal, registroDaNorma, regrasDaNorma } = require('./_normas');
 
 const LOTES = {
   questoes: {
@@ -103,7 +104,7 @@ module.exports = async (req, res) => {
     // prática não carrega esses campos, e a banca pode ter mudado desde que o
     // conteúdo foi escrito.
     const ctx = await db.execute({
-      sql: `SELECT t.nome AS topico, d.nome AS disciplina, e.banca AS banca FROM topicos t
+      sql: `SELECT t.nome AS topico, d.nome AS disciplina, e.banca AS banca, e.titulo AS edital FROM topicos t
             JOIN disciplinas d ON d.id = t.disciplina_id
             JOIN editais e ON e.id = d.edital_id WHERE t.id = ?`,
       args: [String(topico_id)]
@@ -111,17 +112,23 @@ module.exports = async (req, res) => {
     const info = ctx.rows[0] || {};
     const banca = info.banca || pacote.banca || null;
 
+    // norma local: mais questões só do texto enviado, ou só de conceitos gerais
+    const norma = normaLocal(info) ? await registroDaNorma(db, topico_id) : null;
+    if (normaLocal(info) && !norma) return res.status(409).json({ erro: 'Envie o texto oficial desta lei primeiro.' });
+    const regraNorma = norma && norma.modo !== 'federal' ? regrasDaNorma(norma, parte, partes) : null;
+
     const jaTem = (pacote[tipo] || []).slice(-14)
       .map(x => x.enunciado || x.frente || '')
       .filter(Boolean)
       .join('\n- ');
 
     const sis = `Você produz material de estudo para concursos públicos brasileiros, em português do Brasil.
+${regraNorma ? regraNorma.recorte : ''}
 Gere ${cfg.n} ${cfg.regra}, sobre o tópico indicado.
 ${banca ? 'A banca do concurso é ' + banca + '; siga o estilo dela.' : 'Estilo clássico de concurso, sem imitar banca específica.'}
 Cobre pontos DIFERENTES dos que já foram usados. Quando afirmar regra jurídica, cite o dispositivo; se não tiver certeza da fonte, omita a citação.`;
 
-    const pedido = `Disciplina: ${info.disciplina || pacote.disciplina || ''}\nTópico: ${info.topico || pacote.topico || ''}` +
+    const pedido = (regraNorma ? regraNorma.anexo : '') + `Disciplina: ${info.disciplina || pacote.disciplina || ''}\nTópico: ${info.topico || pacote.topico || ''}` +
       (Number(partes) > 1 ? `\nRecorte: ${pacote.subtitulo || ('parte ' + parte + ' de ' + partes)}` : '') +
       (jaTem ? `\n\nJá foram usados (não repita nem reformule):\n- ${jaTem}` : '');
 

@@ -83,6 +83,10 @@ const DDL = [
     proxima TEXT NOT NULL, dominado INTEGER NOT NULL DEFAULT 0,
     criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL,
     UNIQUE (aluno_id, chave))`,
+  // norma local (lei municipal/estadual): o que a aluna escolheu e o texto oficial enviado
+  `CREATE TABLE IF NOT EXISTS normas_locais (
+    topico_id TEXT PRIMARY KEY, aluno_id TEXT NOT NULL, modo TEXT NOT NULL,
+    texto TEXT, origem TEXT, criado_em TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS duvidas (
     id TEXT PRIMARY KEY, aluno_id TEXT, assunto TEXT, pergunta TEXT NOT NULL,
     resposta TEXT NOT NULL, criado_em TEXT NOT NULL)`

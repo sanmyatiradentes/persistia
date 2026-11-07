@@ -860,6 +860,12 @@
   #revModal, #cadModal{position:fixed; inset:0; z-index:96; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
   #revModal.open, #cadModal.open{display:flex}
   @media(min-width:520px){#revModal, #cadModal{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  /* norma local: sem o texto oficial, a aula não aparece */
+  #scr-hoje.norma-local .sess > .task, #scr-hoje.norma-local #guiaPrimeiro, #scr-hoje.norma-local .nextcard{display:none}
+  .nl-card{border:2px solid var(--warm); margin:0 0 14px}
+  .nl-card textarea{width:100%; min-height:110px; margin:8px 0; padding:10px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink); font:inherit; font-size:.85rem; box-sizing:border-box}
+  .nl-acoes{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .nl-nota{margin:0 0 14px; padding:10px 12px; border-radius:12px; background:var(--warm-soft); font-size:.8rem; line-height:1.5}
   .rv-card{border:2px solid var(--warm)}
   .rv-card .rv-linha{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 12px}
   .rv-pill{font-size:.72rem; font-weight:700; padding:4px 10px; border-radius:999px; background:var(--card); border:1px solid var(--line)}
@@ -1831,7 +1837,7 @@
           <div class="st-card" style="--tc:#7A4FD6">
             <b>Quem escreve não é quem confere</b>
             <p>Depois de pronta, a lei seca passa por uma segunda leitura independente, que recebe só as transcrições — sem ver a aula — e responde se a citação existe e se a redação bate. O que passa aparece marcado como <b>conferido</b>; o que não passa aparece marcado como <b>a conferir</b>, com o motivo à vista.</p>
-            <span class="st-fonte">Nada é apagado em silêncio: o aluno vê o alerta e decide.</span>
+            <span class="st-fonte">Lei municipal ou estadual não sai de memória: a aula só é feita a partir do texto oficial que você envia.</span>
           </div>
           <div class="st-card" style="--tc:#B97A0F">
             <b>Silêncio vale mais que invenção</b>
@@ -2183,6 +2189,29 @@
       <span id="faixaTxt">—</span>
       <button class="btn small" onclick="assinar()">Assinar</button>
     </div>
+
+    <!-- NORMA LOCAL: lei municipal ou estadual só com o texto oficial -->
+    <div class="card nl-card" id="nlCard" style="display:none">
+      <p class="eyebrow" style="margin-bottom:4px">Lei do seu município ou estado</p>
+      <h2 style="font-size:1.02rem" id="nlTit">Preciso do texto oficial</h2>
+      <p class="muted" style="font-size:.82rem; line-height:1.55; margin-top:6px">A IA não tem o texto desta norma e, escrevendo de memória, poderia inventar artigos. Por isso esta aula só é feita a partir da lei de verdade: envie o arquivo e eu escrevo a aula, as questões e os cartões usando somente o que está nele.</p>
+      <div class="nl-acoes">
+        <label class="btn small" style="margin:0; cursor:pointer">Enviar a lei (PDF ou TXT)
+          <input type="file" accept=".pdf,.txt,application/pdf,text/plain" style="display:none" onchange="nlArquivo(this)"></label>
+        <button class="btn ghost small" onclick="nlMostrarColar()">Colar o texto</button>
+        <a class="btn ghost small" id="nlBuscar" target="_blank" rel="noopener" style="margin:0; text-decoration:none">Procurar a lei na internet ↗</a>
+      </div>
+      <div id="nlColar" style="display:none">
+        <textarea id="nlTexto" placeholder="Cole aqui o texto integral da lei, com os artigos"></textarea>
+        <button class="btn small" onclick="nlEnviarColado()">Usar este texto</button>
+      </div>
+      <p class="muted" id="nlStatus" style="font-size:.8rem; margin-top:8px"></p>
+      <div class="nl-acoes" style="border-top:1px solid var(--line); padding-top:10px">
+        <button class="btn ghost small" onclick="nlEscolher('geral')">Estudar só os conceitos gerais, sem artigos</button>
+        <button class="linkbtn" style="font-size:.78rem" onclick="nlEscolher('federal')">Esta lei é federal: gerar normalmente</button>
+      </div>
+    </div>
+    <div class="nl-nota" id="nlNota" style="display:none"></div>
 
     <!-- REVISÃO DO DIA: abre o dia antes do assunto novo -->
     <div class="card rv-card" id="revHoje" style="display:none; margin:0 0 14px">
@@ -2801,6 +2830,8 @@
         <li><b>Segunda leitura independente.</b> Quem escreve não é quem confere: outra passada recebe só as transcrições,
           sem ver a aula, e responde se a citação existe e se a redação bate. O que passa vem marcado como <b>conferido</b>;
           o que não passa vem marcado como <b>a conferir</b>, com o motivo — nunca some da tela sem você saber.</li>
+        <li><b>Lei local só com o texto oficial.</b> Lei municipal, estadual ou regimento de órgão não é escrita de memória:
+          você envia a lei e a aula usa somente o que está nela, ou escolhe estudar só os conceitos gerais, sem artigos.</li>
         <li><b>Regra de silêncio na dúvida.</b> O gerador é instruído a deixar a lei seca vazia quando não tem certeza da
           redação literal, em vez de apresentar paráfrase como se fosse texto de lei.</li>
         <li><b>Questão com comentário e fundamento.</b> Toda alternativa vem explicada, e o Persi responde citando o
@@ -8845,6 +8876,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   limparVerbosTela();   // guarda como os selos vêm do HTML
   function enterLoading(){
     limparVerbosTela();
+    limparNormaLocal();
     RESP = {};
     CONT_TOKEN = '';      // blocos do assunto anterior param de valer
     Q_INICIO = 0;
@@ -8895,7 +8927,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         .then(function(r){ return r.json(); })
         .then(function(d){
           if(CONT_TOKEN !== cracha || e.completo) return;   // outro assunto, ou já veio tudo pronto
-          if(!d || d.erro) return;
+          if(!d || d.erro || d.precisa_texto) return;
           if(CONT && CONT_DONO === cracha) juntarBloco(b, d);
           else e.guardados[b] = d;                          // a teoria ainda não chegou
         })
@@ -9132,9 +9164,11 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           if(minha !== CARGA) return;           // a aluna já está em outro assunto
           REFAZER = false;
           if(!c) return;
+          if(c.precisa_texto){ mostrarNormaLocal(it); REFAZER = false; return; }
           if(c && c.resumo){
             CONT = c; CONT_DONO = cracha;
             aplicarConteudoReal(c);
+            notaDaNorma(c);
             // quanto a aluna esperou a aula aparecer (o painel da gestora mostra)
             medirEspera(Date.now() - t0, !c.parcial);
             if(refazendo){ if(c.parcial) buscarRestante(it); }
@@ -9221,6 +9255,89 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       seguirPara(prox);
     }).catch(function(){ toast('Não consegui concluir agora — tente de novo'); });
   }
+  /* ---------- norma local ----------
+     Lei municipal, estadual ou regimento: a IA não tem o texto. A aula só sai do
+     texto oficial enviado pela aluna, ou como conceitos gerais assumidos. */
+  var NL_ITEM = null;
+  function limparNormaLocal(){
+    NL_ITEM = null;
+    $('scr-hoje').classList.remove('norma-local');
+    $('nlCard').style.display = 'none';
+    $('nlNota').style.display = 'none';
+    $('nlStatus').textContent = '';
+    $('nlColar').style.display = 'none';
+  }
+  function mostrarNormaLocal(it){
+    NL_ITEM = it;
+    $('scr-hoje').classList.add('norma-local');
+    $('nlCard').style.display = 'block';
+    $('nlTit').textContent = it.topico;
+    $('nlBuscar').href = 'https://www.google.com/search?q=' + encodeURIComponent(it.topico + ' texto integral lei');
+    // sem aula, o fecho do dia só oferece seguir adiante
+    $('fechoTit').textContent = 'Prefere deixar esta lei para depois?';
+    $('fechoTxt').textContent = 'Siga para o próximo assunto. Esta lei fica disponível no Plano: é só abrir o assunto e enviar o texto.';
+    if($('btnConcluir')) $('btnConcluir').textContent = 'Seguir para o próximo assunto →';
+  }
+  function notaDaNorma(c){
+    var box = $('nlNota');
+    if(c.norma_local === 'texto'){
+      box.textContent = 'Aula escrita somente a partir do texto da lei que você enviou. A lei seca foi conferida palavra por palavra nesse texto.';
+    } else if(c.norma_local === 'geral'){
+      box.innerHTML = '<b>Só conceitos gerais.</b> Esta aula não traz os artigos da sua lei local e não substitui a leitura dela. ' +
+        '<button class="linkbtn" style="font-size:.8rem" onclick="nlReabrir()">Enviar a lei agora</button>';
+    } else { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+  }
+  function nlReabrir(){
+    var it = itemAtivo(); if(!it) return;
+    $('nlNota').style.display = 'none';
+    mostrarNormaLocal(it);
+    $('nlCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function nlMostrarColar(){ $('nlColar').style.display = 'block'; $('nlTexto').focus(); }
+  function nlPost(corpo, msg){
+    var it = NL_ITEM || itemAtivo(); if(!it) return;
+    $('nlStatus').textContent = msg;
+    apiFetch('/api/norma', Object.assign({ topico_id: it.topico_id }, corpo))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(!d || !d.ok){ $('nlStatus').textContent = (d && d.erro) || 'Não consegui salvar agora. Tente de novo.'; return; }
+        evento('norma_local', null, { modo: d.modo });
+        FEITOS = {}; CONT = null; enterLoading(); carregarReal();
+      })
+      .catch(function(){ $('nlStatus').textContent = 'Sem conexão. Tente de novo.'; });
+  }
+  function nlEscolher(modo){
+    if(modo === 'federal' && !confirm('Confirma que esta lei é federal? A aula será escrita normalmente, sem o texto enviado.')) return;
+    nlPost({ modo: modo }, 'Salvando…');
+  }
+  function nlEnviarColado(){
+    nlPost({ modo: 'texto', texto: $('nlTexto').value, origem: 'colado' }, 'Lendo o texto…');
+  }
+  function nlArquivo(inp){
+    var f = inp.files && inp.files[0]; inp.value = '';
+    if(!f) return;
+    $('nlStatus').textContent = 'Lendo o arquivo…';
+    var eTxt = /\.txt$/i.test(f.name) || f.type === 'text/plain';
+    var leitura = eTxt ? f.text() : carregarPdfJs().then(function(lib){
+      return f.arrayBuffer().then(function(buf){ return lib.getDocument({ data: buf }).promise; });
+    }).then(function(doc){
+      var partes = [], n = Math.min(doc.numPages, 600);
+      return (function pag(i){
+        if(i > n) return partes.join('\n');
+        return doc.getPage(i).then(function(p){ return p.getTextContent(); }).then(function(tc){
+          partes.push(tc.items.map(function(x){ return x.str; }).join(' '));
+          return pag(i + 1);
+        });
+      })(1);
+    });
+    leitura.then(function(texto){
+      nlPost({ modo: 'texto', texto: texto, origem: f.name }, 'Enviando a lei…');
+    }).catch(function(){
+      $('nlStatus').textContent = 'Não consegui ler este arquivo. Tente colar o texto da lei.';
+    });
+  }
+
   /* ---------- nota da sessão e caderno de erros ----------
      Cada questão conta só na primeira resposta. A nota do assunto vai junto
      ao concluir: abaixo de 70%, ele volta amanhã na revisão como reforço.
@@ -9598,7 +9715,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     bloco.innerHTML = '<div class="lei-h">Lei seca · texto integral</div>' +
       disp.map(function(x){
         var sel = '';
-        if(x.conferido) sel = '<span class="selo ok" title="A citação e a redação foram conferidas por uma segunda leitura independente">conferido</span>';
+        if(x.fonte && x.fonte.tipo === 'enviado') sel = '<span class="selo ok" title="Encontrado, palavra por palavra, no texto que você enviou">no texto enviado</span>';
+        else if(x.conferido) sel = '<span class="selo ok" title="Fonte oficial localizada; a redação passou por uma segunda leitura feita por outra IA">conferido</span>';
         else if(x.alerta === 'nao_confere') sel = '<span class="selo no" title="' + esc(x.motivo || '') + '">confira na fonte</span>';
         else if(x.alerta === 'duvida') sel = '<span class="selo duv" title="' + esc(x.motivo || '') + '">redação a conferir</span>';
 

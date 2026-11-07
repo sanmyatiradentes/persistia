@@ -3,6 +3,7 @@
 // GET                                       → lista os devidos (até 20)
 // POST {revisar: id, nota: 0|1|2}           → 0 errei · 1 quase · 2 fácil
 const { getDb, ensureSchema, agora, id, alunoDoToken, cors } = require('./_lib');
+const { topicosSuspensos } = require('./_normas');
 
 function proxima(intervaloAtual, nota) {
   // dias: errei → 10 min; quase → 1 dia; fácil → dobra (mín. 4 dias)
@@ -34,7 +35,9 @@ module.exports = async (req, res) => {
           args: [aluno.id]
         });
         const hoje = agora();
-        const todos = r.rows.map(x => Object.assign({}, x, { devido: String(x.proxima_revisao) <= hoje }));
+        const suspensos = await topicosSuspensos(db, aluno.id);
+        const todos = r.rows.filter(x => !suspensos.has(String(x.origem || '').replace('topico:', '')))
+          .map(x => Object.assign({}, x, { devido: String(x.proxima_revisao) <= hoje }));
         return res.status(200).json({ todos, devidos: todos.filter(x => x.devido) });
       }
       const r = await db.execute({
@@ -42,7 +45,8 @@ module.exports = async (req, res) => {
               WHERE aluno_id = ? AND proxima_revisao <= ? ORDER BY proxima_revisao LIMIT 20`,
         args: [aluno.id, agora()]
       });
-      return res.status(200).json({ devidos: r.rows });
+      const suspensos = await topicosSuspensos(db, aluno.id);
+      return res.status(200).json({ devidos: r.rows.filter(x => !suspensos.has(String(x.origem || '').replace('topico:', ''))) });
     }
 
     if (req.method === 'POST') {

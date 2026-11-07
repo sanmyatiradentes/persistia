@@ -7,6 +7,7 @@
 // As gravações de voz ficam no aparelho onde foram feitas; aqui vem só a ficha
 // (assunto, data, duração, fluência), para o aluno saber o que gravou e onde.
 const { getDb, ensureSchema, alunoDoToken, cors, acessoDoAluno } = require('./_lib');
+const { topicosSuspensos } = require('./_normas');
 
 module.exports = async (req, res) => {
   cors(res);
@@ -32,7 +33,9 @@ module.exports = async (req, res) => {
 
     // quais desses já têm pacote gerado (e áudio de estúdio pronto)
     const assuntos = [];
+    const suspensos = await topicosSuspensos(db, aluno.id);
     for (const r of linhas.rows) {
+      if (suspensos.has(r.topico_id)) continue;
       const chave = Number(r.partes) > 1 ? r.topico_id + ':' + r.parte + '/' + r.partes : r.topico_id;
       const c = await db.execute({ sql: 'SELECT json, criado_em FROM conteudos WHERE topico_id = ?', args: [chave] });
       if (!c.rows.length) continue;

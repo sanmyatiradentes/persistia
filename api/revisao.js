@@ -6,6 +6,7 @@
 // POST {resultado: {topicos: [{topico_id, parte, acertos, total}], erros: [{id, acertou}]}}
 const { getDb, ensureSchema, alunoDoToken, cors, editalAtivo } = require('./_lib');
 const R = require('./_revisao');
+const { topicosSuspensos } = require('./_normas');
 
 const MAX_ASSUNTOS = 4;      // assuntos por revisão (os outros ficam para amanhã)
 const POR_ASSUNTO = 3;       // questões de cada assunto
@@ -35,6 +36,8 @@ module.exports = async (req, res) => {
   const edital = await editalAtivo(db, aluno.id);
   const editalId = edital ? edital.id : null;
   const hoje = R.hojeISO();
+  // norma local sem texto oficial: nem revisão, nem caderno, porque veio de memória
+  const suspensos = await topicosSuspensos(db, aluno.id);
 
   try {
     if (req.method === 'POST') {
@@ -58,7 +61,7 @@ module.exports = async (req, res) => {
     const url = new URL(req.url, 'http://x');
     if (url.searchParams.get('caderno')) {
       const r = await db.execute({
-        sql: `SELECT e.id, e.questao, e.acertos_seguidos, e.vezes_errada, e.dominado, e.proxima, e.criado_em,
+        sql: `SELECT e.id, e.topico_id, e.questao, e.acertos_seguidos, e.vezes_errada, e.dominado, e.proxima, e.criado_em,
                      e.parte, e.partes, t.nome AS topico, d.nome AS disciplina
               FROM erros e LEFT JOIN topicos t ON t.id = e.topico_id LEFT JOIN disciplinas d ON d.id = t.disciplina_id
               WHERE e.aluno_id = ? AND (e.edital_id = ? OR e.edital_id IS NULL OR ? IS NULL)
@@ -66,7 +69,7 @@ module.exports = async (req, res) => {
         args: [aluno.id, editalId, editalId]
       });
       return res.status(200).json({
-        erros: r.rows.map(x => ({
+        erros: r.rows.filter(x => !suspensos.has(x.topico_id)).map(x => ({
           id: x.id, questao: JSON.parse(x.questao), topico: x.topico, disciplina: x.disciplina,
           parte: x.parte, partes: x.partes, vezes_errada: x.vezes_errada,
           dominado: !!x.dominado, acertos_seguidos: x.acertos_seguidos, devido: !x.dominado && x.proxima <= hoje
@@ -105,6 +108,7 @@ module.exports = async (req, res) => {
     const assuntos = [], questoes = [];
     for (const v of venc.rows) {
       if (assuntos.length >= MAX_ASSUNTOS) break;
+      if (suspensos.has(v.topico_id)) continue;
       const p = await pacoteDe(db, v.topico_id, v.parte, v.partes);
       if (!p) continue;
       const ce = embaralhar((p.questoes || []).filter(q => q && q.enunciado && !usadas.has(R.chaveDaQuestao(q))));
@@ -130,6 +134,7 @@ module.exports = async (req, res) => {
       }
     }
     for (const e of errosVenc.rows) {
+      if (suspensos.has(e.topico_id)) continue;
       let q; try { q = JSON.parse(e.questao); } catch (_) { continue; }
       questoes.push(Object.assign({ origem: 'erro', erro_id: e.id, topico_id: e.topico_id, parte: e.parte,
         topico: e.topico, disciplina: e.disciplina }, q));

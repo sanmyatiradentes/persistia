@@ -15,6 +15,7 @@
 // Nada do aluno aparece aqui: nem nome, nem edital, nem cargo. Só o conteúdo
 // do assunto, que é o mesmo para qualquer pessoa que o estude.
 const { getDb, ensureSchema, agora, alunoDoToken, cors, ehAdmin } = require('./_lib');
+const { normaLocal } = require('./_normas');
 const { fonteOficial } = require('./_fontes');
 
 const SITE = (process.env.SITE_URL || 'https://www.persisteia.com.br').replace(/\/$/, '');
@@ -51,7 +52,7 @@ function titulo(t) {
 async function catalogo() {
   const db = getDb();
   const r = await db.execute(`
-    SELECT c.topico_id, c.criado_em,
+    SELECT c.topico_id, c.criado_em, e.titulo AS edital,
            COALESCE(json_extract(c.json, '$.topico'), t.nome) AS topico,
            COALESCE(json_extract(c.json, '$.disciplina'), d.nome) AS disciplina,
            COALESCE(json_extract(c.json, '$.partes'), 1) AS partes,
@@ -63,12 +64,15 @@ async function catalogo() {
                                          THEN substr(c.topico_id, 1, instr(c.topico_id, ':') - 1)
                                          ELSE c.topico_id END
       LEFT JOIN disciplinas d ON d.id = t.disciplina_id
+      LEFT JOIN editais e ON e.id = d.edital_id
      WHERE c.topico_id NOT LIKE '%::%'`);
   const ocultas = new Set((await db.execute('SELECT slug FROM paginas_ocultas')).rows.map(x => x.slug));
 
   const porSlug = new Map();
   for (const x of r.rows) {
     if (!x.topico || Number(x.incompleto) === 1 || (Number(x.tam) || 0) < MIN_RESUMO) continue;
+    // norma local nunca vai para página pública: pode ter sido escrita de memória
+    if (normaLocal({ topico: x.topico, disciplina: x.disciplina, edital: x.edital })) continue;
     // de um assunto dividido em partes, a página mostra a primeira
     if (Number(x.partes) > 1 && Number(x.parte) !== 1) continue;
     const slug = slugDe(x.topico);

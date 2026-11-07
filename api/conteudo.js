@@ -5,6 +5,7 @@
 // GET ?topico_id=...&parte=2  → {subtitulo, resumo, acronimo, trecho_chave, questoes, ...}
 const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA, MODELO_LEVE } = require('./_lib');
 const { fonteOficial } = require('./_fontes');
+const { normaLocal, registroDaNorma, regrasDaNorma, conferirPeloTexto, sanearSelos } = require('./_normas');
 
 function tamanhos(h) {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
@@ -275,7 +276,7 @@ module.exports = async (req, res) => {
   const db = getDb();
   try {
     const t = await db.execute({
-      sql: `SELECT t.nome AS topico, t.peso AS peso, d.nome AS disciplina, e.banca AS banca FROM topicos t
+      sql: `SELECT t.nome AS topico, t.peso AS peso, d.nome AS disciplina, e.banca AS banca, e.titulo AS edital FROM topicos t
             JOIN disciplinas d ON d.id = t.disciplina_id
             JOIN editais e ON e.id = d.edital_id WHERE t.id = ?`,
       args: [topicoId]
@@ -296,6 +297,17 @@ module.exports = async (req, res) => {
     const peso = Math.min(12, Math.max(0.5, Number(t.rows[0].peso) || 1.5));
     const horas = Number(linha && linha.horas) || Math.min(2, peso);
 
+    // Norma local não sai de memória: sem a escolha da aluna, nem o que já estava
+    // guardado aparece. A tela pede o texto oficial.
+    const ehLocal = normaLocal(t.rows[0]);
+    const norma = ehLocal ? await registroDaNorma(db, topicoId) : null;
+    if (ehLocal && !norma) {
+      return res.status(200).json({
+        norma_local: true, precisa_texto: true, topico: t.rows[0].topico, disciplina: t.rows[0].disciplina, parte, partes
+      });
+    }
+    const regraNorma = norma && norma.modo !== 'federal' ? regrasDaNorma(norma, parte, partes) : null;
+
     const chave = partes > 1 ? topicoId + ':' + parte + '/' + partes : topicoId;
     // ?refazer=1 joga fora o conteúdo guardado e gera outro do zero
     if (url.searchParams.get('refazer')) {
@@ -305,7 +317,7 @@ module.exports = async (req, res) => {
       if (cache.rows.length) {
         const guardado = JSON.parse(cache.rows[0].json);
         // conteúdo antigo que ficou truncado no cache: refaz em vez de repetir o defeito
-        if (pacoteCompleto(guardado, 3)) return res.status(200).json(guardado);
+        if (pacoteCompleto(guardado, 3)) return res.status(200).json(sanearSelos(guardado));
         await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id = ?', args: [chave] });
       }
     }
@@ -315,10 +327,10 @@ module.exports = async (req, res) => {
       : 'Este tópico cabe em uma única sessão de estudo. Cubra-o por inteiro, sem inflar: se o assunto é curto, o pacote é curto e completo.';
 
     const alvo = tamanhos(horas);
-    const sis = sistema(t.rows[0].banca || null, alvo, recorte);
+    const sis = sistema(t.rows[0].banca || null, alvo, regraNorma ? regraNorma.recorte + '\n\n' + recorte : recorte);
     const cabecalho = `Disciplina: ${t.rows[0].disciplina}\nTópico: ${t.rows[0].topico}\n` +
       (partes > 1 ? `Sessão: parte ${parte} de ${partes}\n` : '') +
-      `Duração prevista da sessão: ${horas} h\n\n`;
+      `Duração prevista da sessão: ${horas} h\n\n` + (regraNorma ? regraNorma.anexo : '');
 
     // ============ GERAÇÃO EM BLOCOS ============
     // Antes as quatro chamadas à IA saíam juntas e o aluno só via alguma coisa
@@ -360,7 +372,8 @@ module.exports = async (req, res) => {
       p.partes = partes;
       p.horas = horas;
       p.lei_seca = p.trecho_chave; // compatibilidade com pacotes antigos
-      return p;
+      if (norma && norma.modo !== 'federal') p.norma_local = norma.modo;
+      return sanearSelos(p);
     };
 
     // Gera um bloco (ou devolve o que já está guardado dele).
@@ -381,7 +394,9 @@ module.exports = async (req, res) => {
       }
       // A lei seca é conferida aqui, junto com o bloco que a produz: assim o
       // aluno já lê o dispositivo com o selo, sem uma segunda espera depois.
-      if (b === 'apoio') {
+      if (b === 'apoio' && regraNorma) {
+        dados.dispositivos = norma.modo === 'texto' ? conferirPeloTexto(dados.dispositivos, norma.texto) : [];
+      } else if (b === 'apoio') {
         try {
           dados.dispositivos = await conferirDispositivos(dados.dispositivos, t.rows[0].topico);
         } catch (_) { /* a conferência é melhor-esforço */ }
