@@ -11,6 +11,7 @@
 const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, hashSenha, PRECO, TRIAL_DIAS, fimTesteLimite } = require('./_lib');
 const { enviarEmail, remetente, remetenteProprio } = require('./_email');
 const crypto = require('crypto');
+const { conferirMercadoPago } = require('./_mp');
 
 function siteUrl(req) {
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '');
@@ -290,9 +291,22 @@ module.exports = async (req, res) => {
       return res.status(200).json({ pacote, criado_em: r.rows[0].criado_em });
     }
 
+    // Abrir o Painel já acerta as contas com o Mercado Pago: o que foi pago e
+    // não chegou por aviso entra aqui, sem botão nenhum. Se o MP demorar ou
+    // falhar, o Painel abre do mesmo jeito.
+    let conferencia = null;
+    if (process.env.MP_ACCESS_TOKEN) {
+      try {
+        conferencia = await Promise.race([
+          conferirMercadoPago(db),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('demorou')), 8000))
+        ]);
+      } catch (e) { console.warn('admin: conferência do MP', String(e).slice(0, 200)); }
+    }
+
     const alunos = await db.execute(`
       SELECT a.id, a.nome, a.email, a.criado_em,
-             s.estado, s.fim_teste, s.cortesia_ate, s.proxima_cobranca,
+             s.estado, s.fim_teste, s.cortesia_ate, s.proxima_cobranca, s.acesso_ate,
              (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id) AS eventos,
              (SELECT MAX(criado_em) FROM eventos e WHERE e.aluno_id = a.id) AS ultimo_evento,
              (SELECT tipo FROM eventos e WHERE e.aluno_id = a.id ORDER BY criado_em DESC LIMIT 1) AS ultimo_tipo,
@@ -319,7 +333,7 @@ module.exports = async (req, res) => {
         (naoIniciado ? fimNaoIniciado > hoje : (r.fim_teste && r.fim_teste > hoje));
       let situacao = 'expirado';
       if (r.estado === 'bloqueada') situacao = 'bloqueado';
-      else if (r.estado === 'ativa') situacao = 'assinante';
+      else if (r.estado === 'ativa' || (r.acesso_ate && r.acesso_ate > hoje)) situacao = 'assinante';
       else if (cortesia) situacao = 'cortesia';
       else if (emTeste) situacao = 'teste';
       else if (!r.estado) situacao = 'novo';
@@ -330,6 +344,9 @@ module.exports = async (req, res) => {
         teste_nao_iniciado: situacao === 'teste' && naoIniciado,
         dias_restantes: fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null,
         proxima_cobranca: r.proxima_cobranca || null,
+        // pagou por período (Pix, boleto, cartão à vista), sem renovação
+        plano: r.estado === 'ativa' ? 'mensal' : (situacao === 'assinante' ? 'avulso' : null),
+        acesso_ate: r.acesso_ate || null,
         edital: r.edital || null,
         sessoes: Number(r.sessoes) || 0,
         concluidas: Number(r.concluidas) || 0,
@@ -379,11 +396,17 @@ module.exports = async (req, res) => {
     const espera_mediana_s = esperas.length ? esperas[Math.floor(esperas.length / 2)] : null;
     const sairam_esperando = lista.filter(a => a.saidas_esperando > 0).length;
     const ativos7 = lista.filter(a => a.ultimo_evento && (Date.now() - new Date(a.ultimo_evento)) < 7 * 86400000).length;
+    const pagos = await db.execute(`
+      SELECT p.id, p.meses, p.valor, p.meio, p.criado_em, a.nome, a.email
+      FROM pagamentos p LEFT JOIN alunos a ON a.id = p.aluno_id
+      ORDER BY p.criado_em DESC LIMIT 100`);
     const conteudos = await db.execute('SELECT COUNT(*) AS n FROM conteudos');
     let audios = 0;
     try { audios = Number((await db.execute('SELECT COUNT(*) AS n FROM audios')).rows[0].n); } catch (_) {}
 
     return res.status(200).json({
+      pagamentos: pagos.rows,
+      conferencia,
       metricas: {
         alunos: lista.length,
         assinantes: cont('assinante'),
@@ -392,7 +415,8 @@ module.exports = async (req, res) => {
         expirados: cont('expirado'),
         bloqueados: cont('bloqueado'),
         ativos_7d: ativos7,
-        receita_mensal: Math.round(cont('assinante') * PRECO * 100) / 100,
+        receita_mensal: Math.round(lista.filter(a => a.plano === 'mensal').length * PRECO * 100) / 100,
+        recebido_total: Math.round(pagos.rows.reduce((n, p) => n + (Number(p.valor) || 0), 0) * 100) / 100,
         preco: PRECO,
         catalogo_conteudos: Number(conteudos.rows[0].n) || 0,
         catalogo_audios: audios,

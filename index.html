@@ -3083,6 +3083,11 @@
     <p class="muted" id="admEmailMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></p>
     <div id="admVozMsg" style="font-size:.76rem; margin:-6px 0 12px; line-height:1.55"></div>
 
+    <div class="card" id="admPagCard" style="margin:0 0 16px; display:none">
+      <h2 style="font-size:1rem; margin-bottom:8px">Pagamentos recebidos</h2>
+      <div id="admPagLista"></div>
+    </div>
+
     <div class="card" id="admFunilCard" style="margin:0 0 16px; display:none">
       <h2 style="font-size:.98rem">Onde as pessoas param</h2>
       <p class="muted" style="font-size:.74rem; margin-bottom:10px">
@@ -4678,10 +4683,12 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     apiFetch('/api/admin').then(function(r){ return r.json(); }).then(function(d){
       if(d.erro){ $('admLista').innerHTML = '<p class="muted">' + esc(d.erro) + '</p>'; return; }
       FUNIL = d.funil || null; admFunilRender();
+      admPagamentosRender(d);
       var m = d.metricas;
       $('admMetricas').innerHTML =
         '<div><b class="num">' + m.alunos + '</b><span>alunos</span></div>' +
-        '<div><b class="num">' + m.assinantes + '</b><span>assinantes</span></div>' +
+        '<div><b class="num">' + m.assinantes + '</b><span>pagantes</span></div>' +
+        '<div><b class="num">R$ ' + Number(m.recebido_total || 0).toFixed(2).replace('.', ',') + '</b><span>recebido</span></div>' +
         '<div><b class="num">' + m.em_teste + '</b><span>em teste</span></div>' +
         '<div><b class="num">' + m.ativos_7d + '</b><span>ativos em 7 dias</span></div>' +
         '<div><b class="num">' + m.expirados + '</b><span>teste expirado</span></div>' +
@@ -4716,7 +4723,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       return '<div class="adm-a">' +
         '<div class="lin"><b>' + esc(a.nome) + '</b><span class="sit ' + a.situacao + '">' + a.situacao +
           (a.teste_nao_iniciado ? ' · não começou' :
-           (a.dias_restantes !== null && (a.situacao === 'teste' || a.situacao === 'cortesia') ? ' · ' + a.dias_restantes + 'd' : '')) + '</span></div>' +
+           (a.dias_restantes !== null && (a.situacao === 'teste' || a.situacao === 'cortesia') ? ' · ' + a.dias_restantes + 'd' : '')) +
+          (a.plano === 'avulso' ? ' · até ' + fmtData(a.acesso_ate) : '') + '</span></div>' +
         '<div class="lin"><small>' + esc(a.email) + '</small></div>' +
         '<div class="lin"><small>' + (a.edital ? esc(a.edital) : 'sem edital') + ' · ' + a.concluidas + '/' + a.sessoes + ' sessões · ' + a.eventos + ' ações' +
           (a.ultimo_evento ? ' · último acesso ' + fmtData(String(a.ultimo_evento).slice(0,10)) : '') +
@@ -4749,6 +4757,26 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   function admVersaoMostrar(){
     var el = $('admVersao');
     if(el) el.textContent = VERSAO;
+  }
+
+  /* ---------- pagamentos recebidos ---------- */
+  function admPagamentosRender(d){
+    var pags = d.pagamentos || [], conf = d.conferencia || {}, soltos = conf.sem_aluno || [];
+    $('admPagCard').style.display = (pags.length || soltos.length) ? 'block' : 'none';
+    var dinheiro = function(v){ return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ','); };
+    var html = pags.map(function(p){
+      return '<div style="padding:8px 0; border-bottom:1px solid var(--line); font-size:.85rem">' +
+        '<b>' + esc(p.nome || 'Aluno') + '</b> · ' + dinheiro(p.valor) + '<br>' +
+        '<span class="muted" style="font-size:.76rem; overflow-wrap:anywhere">' + esc(p.email || '') + ' · ' + fmtData(p.criado_em) +
+        (p.meses ? ' · ' + p.meses + (Number(p.meses) === 1 ? ' mês' : ' meses') : ' · mensalidade') +
+        (p.meio ? ' · ' + esc(p.meio) : '') + '</span></div>';
+    }).join('');
+    if(soltos.length){
+      html += '<p style="font-size:.8rem; margin-top:10px; color:var(--warm)"><b>' + soltos.length + ' pagamento(s) no Mercado Pago sem aluno ligado:</b> ' +
+        soltos.map(function(x){ return dinheiro(x.valor) + ' em ' + fmtData(x.data) + ' (nº ' + esc(x.id) + ')'; }).join('; ') + '</p>';
+    }
+    $('admPagLista').innerHTML = html;
+    if(conf.creditados && conf.creditados.length) toast(conf.creditados.length + ' pagamento(s) acertado(s) com o Mercado Pago ✓');
   }
 
   /* ---------- funil da gestora ---------- */
