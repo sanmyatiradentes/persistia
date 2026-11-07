@@ -1735,6 +1735,7 @@
             <li><b>Explicação como se você tivesse 12 anos</b>, traduzindo cada termo técnico</li>
             <li><b>Cinema Mental</b>: a metáfora do assunto desenhada, para a memória visual</li>
             <li><b>Macete do assunto</b> com o significado de cada letra à mostra</li>
+            <li><b>Seu próprio material</b>: envie a apostila ou o PDF do assunto e a aula é refeita a partir dele</li>
             <li><b>Mapa mental</b> do conceito central e seus ramos</li>
             <li><b>Resumo visual</b> para salvar, imprimir e revisar</li>
           </ul>
@@ -2258,6 +2259,11 @@
             <button class="btn small" style="margin:0" onclick="openLeitor()">Abrir a teoria completa no Leitor</button>
           </div>
           <p class="muted" style="font-size:.72rem; margin-top:6px">Leitura silenciosa ou em voz alta com teleprompter — a teoria vem antes da prática.</p>
+          <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line)">
+            <label class="linkbtn" style="font-size:.8rem">Quer melhorar esta aula? Envie sua apostila ou PDF deste assunto
+              <input type="file" accept=".pdf,.txt,application/pdf,text/plain" style="display:none" onchange="mtArquivo(this)"></label>
+            <p class="muted" id="mtStatus" style="font-size:.76rem; margin:6px 0 0"></p>
+          </div>
         </div></div>
       </div>
 
@@ -4742,6 +4748,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     externo_confirmado: 'marcou atividade externa', resumo_visual: 'abriu o resumo visual', video_assunto: 'viu o vídeo',
     teoria_ouvida: 'ouviu a teoria', voz_alta: 'leu em voz alta', recap: 'fez a revisão rápida', eco: 'usou o eco',
     viu_8_verbos: 'abriu os 8 verbos antes da hora',
+    material_proprio: 'enviou material próprio', norma_local: 'decidiu sobre uma lei local',
     assunto_concluido_auto: 'concluiu um assunto', flashcards_concluidos: 'treinou os cartões do assunto',
     revisao_aberta: 'abriu a revisão do dia', revisao_concluida: 'terminou a revisão do dia',
     questao_revisao: 'respondeu questão na revisão'
@@ -9280,7 +9287,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
   function notaDaNorma(c){
     var box = $('nlNota');
-    if(c.norma_local === 'texto'){
+    if(c.norma_local === 'material'){
+      box.innerHTML = '<b>Aula feita a partir do seu material.</b> Só você vê este conteúdo, e o que ele não trazia foi completado pela IA. ' +
+        '<button class="linkbtn" style="font-size:.8rem" onclick="mtVoltar()">Voltar para a aula da IA</button>';
+    } else if(c.norma_local === 'texto'){
       box.textContent = 'Aula escrita somente a partir do texto da lei que você enviou. A lei seca foi conferida palavra por palavra nesse texto.';
     } else if(c.norma_local === 'geral'){
       box.innerHTML = '<b>Só conceitos gerais.</b> Esta aula não traz os artigos da sua lei local e não substitui a leitura dela. ' +
@@ -9318,8 +9328,40 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     var f = inp.files && inp.files[0]; inp.value = '';
     if(!f) return;
     $('nlStatus').textContent = 'Lendo o arquivo…';
+    nlLer(f).then(function(texto){
+      nlPost({ modo: 'texto', texto: texto, origem: f.name }, 'Enviando a lei…');
+    }).catch(function(){
+      $('nlStatus').textContent = 'Não consegui ler este arquivo. Tente colar o texto da lei.';
+    });
+  }
+  // Material próprio em qualquer assunto: a aula passa a sair do arquivo da aluna.
+  function mtArquivo(inp){
+    var f = inp.files && inp.files[0], it = itemAtivo(); inp.value = '';
+    if(!f || !it) return;
+    if(!confirm('Melhorar a aula de "' + it.topico + '" com ' + f.name + '?\n\nA aula, as questões e o áudio deste assunto serão refeitos a partir do seu arquivo. Seus cartões e seu progresso ficam.')) return;
+    var st = $('mtStatus');
+    st.textContent = 'Lendo o arquivo…';
+    nlLer(f).then(function(texto){
+      st.textContent = 'Enviando…';
+      return apiFetch('/api/norma', { topico_id: it.topico_id, modo: 'material', texto: texto, origem: f.name });
+    }).then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.ok){ st.textContent = (d && d.erro) || 'Não consegui usar este arquivo.'; return; }
+      st.textContent = '';
+      evento('material_proprio');
+      FEITOS = {}; CONT = null; enterLoading(); carregarReal();
+    }).catch(function(){ st.textContent = 'Não consegui ler este arquivo. Se for digitalizado (uma foto), envie um PDF com texto selecionável.'; });
+  }
+  function mtVoltar(){
+    var it = itemAtivo(); if(!it) return;
+    if(!confirm('Voltar para a aula escrita pela IA? A aula feita do seu material será apagada.')) return;
+    apiFetch('/api/norma', { topico_id: it.topico_id, modo: 'ia' }).then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.ok){ toast((d && d.erro) || 'Não consegui agora'); return; }
+      FEITOS = {}; CONT = null; enterLoading(); carregarReal();
+    }).catch(function(){ toast('Sem conexão. Tente de novo.'); });
+  }
+  function nlLer(f){
     var eTxt = /\.txt$/i.test(f.name) || f.type === 'text/plain';
-    var leitura = eTxt ? f.text() : carregarPdfJs().then(function(lib){
+    return eTxt ? f.text() : carregarPdfJs().then(function(lib){
       return f.arrayBuffer().then(function(buf){ return lib.getDocument({ data: buf }).promise; });
     }).then(function(doc){
       var partes = [], n = Math.min(doc.numPages, 600);
@@ -9330,11 +9372,6 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           return pag(i + 1);
         });
       })(1);
-    });
-    leitura.then(function(texto){
-      nlPost({ modo: 'texto', texto: texto, origem: f.name }, 'Enviando a lei…');
-    }).catch(function(){
-      $('nlStatus').textContent = 'Não consegui ler este arquivo. Tente colar o texto da lei.';
     });
   }
 

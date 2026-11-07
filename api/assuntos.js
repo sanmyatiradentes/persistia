@@ -52,7 +52,7 @@ function titulo(t) {
 async function catalogo() {
   const db = getDb();
   const r = await db.execute(`
-    SELECT c.topico_id, c.criado_em, e.titulo AS edital,
+    SELECT c.topico_id, c.criado_em, e.titulo AS edital, n.modo AS modo_norma,
            COALESCE(json_extract(c.json, '$.topico'), t.nome) AS topico,
            COALESCE(json_extract(c.json, '$.disciplina'), d.nome) AS disciplina,
            COALESCE(json_extract(c.json, '$.partes'), 1) AS partes,
@@ -65,6 +65,7 @@ async function catalogo() {
                                          ELSE c.topico_id END
       LEFT JOIN disciplinas d ON d.id = t.disciplina_id
       LEFT JOIN editais e ON e.id = d.edital_id
+      LEFT JOIN normas_locais n ON n.topico_id = t.id
      WHERE c.topico_id NOT LIKE '%::%'`);
   const ocultas = new Set((await db.execute('SELECT slug FROM paginas_ocultas')).rows.map(x => x.slug));
 
@@ -73,6 +74,8 @@ async function catalogo() {
     if (!x.topico || Number(x.incompleto) === 1 || (Number(x.tam) || 0) < MIN_RESUMO) continue;
     // norma local nunca vai para página pública: pode ter sido escrita de memória
     if (normaLocal({ topico: x.topico, disciplina: x.disciplina, edital: x.edital })) continue;
+    // aula feita do material de uma aluna é só dela (pode ser apostila com direito autoral)
+    if (x.modo_norma && x.modo_norma !== 'federal') continue;
     // de um assunto dividido em partes, a página mostra a primeira
     if (Number(x.partes) > 1 && Number(x.parte) !== 1) continue;
     const slug = slugDe(x.topico);

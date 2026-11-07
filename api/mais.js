@@ -113,9 +113,9 @@ module.exports = async (req, res) => {
     const banca = info.banca || pacote.banca || null;
 
     // norma local: mais questões só do texto enviado, ou só de conceitos gerais
-    const norma = normaLocal(info) ? await registroDaNorma(db, topico_id) : null;
+    const norma = await registroDaNorma(db, topico_id);
     if (normaLocal(info) && !norma) return res.status(409).json({ erro: 'Envie o texto oficial desta lei primeiro.' });
-    const regraNorma = norma && norma.modo !== 'federal' ? regrasDaNorma(norma, parte, partes) : null;
+    const regraNorma = norma && norma.modo !== 'federal' ? regrasDaNorma(norma, parte, partes, info.topico, normaLocal(info)) : null;
 
     const jaTem = (pacote[tipo] || []).slice(-14)
       .map(x => x.enunciado || x.frente || '')

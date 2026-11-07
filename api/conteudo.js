@@ -300,13 +300,14 @@ module.exports = async (req, res) => {
     // Norma local não sai de memória: sem a escolha da aluna, nem o que já estava
     // guardado aparece. A tela pede o texto oficial.
     const ehLocal = normaLocal(t.rows[0]);
-    const norma = ehLocal ? await registroDaNorma(db, topicoId) : null;
+    // qualquer assunto pode ter material próprio da aluna; norma local exige escolha
+    const norma = await registroDaNorma(db, topicoId);
     if (ehLocal && !norma) {
       return res.status(200).json({
         norma_local: true, precisa_texto: true, topico: t.rows[0].topico, disciplina: t.rows[0].disciplina, parte, partes
       });
     }
-    const regraNorma = norma && norma.modo !== 'federal' ? regrasDaNorma(norma, parte, partes) : null;
+    const regraNorma = norma && norma.modo !== 'federal' ? regrasDaNorma(norma, parte, partes, t.rows[0].topico, ehLocal) : null;
 
     const chave = partes > 1 ? topicoId + ':' + parte + '/' + partes : topicoId;
     // ?refazer=1 joga fora o conteúdo guardado e gera outro do zero
@@ -395,7 +396,7 @@ module.exports = async (req, res) => {
       // A lei seca é conferida aqui, junto com o bloco que a produz: assim o
       // aluno já lê o dispositivo com o selo, sem uma segunda espera depois.
       if (b === 'apoio' && regraNorma) {
-        dados.dispositivos = norma.modo === 'texto' ? conferirPeloTexto(dados.dispositivos, norma.texto) : [];
+        dados.dispositivos = norma.modo === 'geral' ? [] : conferirPeloTexto(dados.dispositivos, norma.texto);
       } else if (b === 'apoio') {
         try {
           dados.dispositivos = await conferirDispositivos(dados.dispositivos, t.rows[0].topico);
