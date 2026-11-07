@@ -309,7 +309,9 @@ module.exports = async (req, res) => {
     try { confirmacoes = await confirmarPendentes(); } catch (e) { console.warn('admin: confirmações', String(e).slice(0, 200)); }
 
     const alunos = await db.execute(`
-      SELECT a.id, a.nome, a.email, a.criado_em,
+      SELECT a.id, a.nome, a.email, a.criado_em, a.origem,
+             (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id AND e.tipo = 'viu_preco') AS viu_preco,
+             (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id AND e.tipo = 'clicou_pagar') AS clicou_pagar,
              s.estado, s.fim_teste, s.cortesia_ate, s.proxima_cobranca, s.acesso_ate,
              (SELECT COUNT(*) FROM eventos e WHERE e.aluno_id = a.id) AS eventos,
              (SELECT MAX(criado_em) FROM eventos e WHERE e.aluno_id = a.id) AS ultimo_evento,
@@ -344,6 +346,7 @@ module.exports = async (req, res) => {
       const fim = cortesia ? r.cortesia_ate : r.fim_teste;
       return {
         id: r.id, nome: r.nome, email: r.email, criado_em: r.criado_em,
+        origem: r.origem || null, viu_preco: Number(r.viu_preco) || 0, clicou_pagar: Number(r.clicou_pagar) || 0,
         situacao,
         teste_nao_iniciado: situacao === 'teste' && naoIniciado,
         dias_restantes: fim ? Math.max(0, Math.ceil((new Date(fim) - new Date()) / 86400000)) : null,
@@ -382,17 +385,37 @@ module.exports = async (req, res) => {
       const dia2 = base.filter(a => a.dias_ativos >= 2).length;
       const revisou = base.filter(a => a.revisoes > 0).length;
       const assinou = base.filter(a => a.situacao === 'assinante').length;
+      const usou = base.filter(a => a.eventos > 0).length;
+      const viuPreco = base.filter(a => a.viu_preco > 0).length;
+      const clicou = base.filter(a => a.clicou_pagar > 0).length;
       const pct = x => n ? Math.round((x / n) * 100) : 0;
       return {
         cadastraram: n,
         enviaram_edital: comEdital, pct_edital: pct(comEdital),
         montaram_plano: comPlano, pct_plano: pct(comPlano),
         estudaram_1: estudou, pct_estudou: pct(estudou),
+        usaram: usou, pct_usou: pct(usou),
+        viram_preco: viuPreco, pct_viu_preco: pct(viuPreco),
+        clicaram_pagar: clicou, pct_clicou: pct(clicou),
         voltaram_dia2: dia2, pct_dia2: pct(dia2),
         fizeram_revisao: revisou, pct_revisao: pct(revisou),
         estudaram_3: voltou, pct_voltou: pct(voltou),
         assinaram: assinou, pct_assinou: pct(assinou)
       };
+    }
+
+    // de onde vêm e até onde chegam (contas antigas não têm origem registrada)
+    function porOrigem(base) {
+      const mapa = {};
+      for (const a of base) {
+        const k = a.origem || 'sem registro';
+        const o = mapa[k] = mapa[k] || { origem: k, cadastros: 0, dia2: 0, viu_preco: 0, pagaram: 0 };
+        o.cadastros++;
+        if (a.dias_ativos >= 2) o.dia2++;
+        if (a.viu_preco > 0) o.viu_preco++;
+        if (a.situacao === 'assinante') o.pagaram++;
+      }
+      return Object.values(mapa).sort((x, y) => y.cadastros - x.cadastros);
     }
 
     const cont = k => lista.filter(a => a.situacao === k).length;
@@ -430,6 +453,7 @@ module.exports = async (req, res) => {
         medidos_espera: esperas.length
       },
       funil: { sempre: degraus(lista), ultimos_30: degraus(novos30) },
+      origens: { sempre: porOrigem(lista), ultimos_30: porOrigem(novos30) },
       alunos: lista
     });
   } catch (e) {

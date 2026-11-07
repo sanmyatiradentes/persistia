@@ -3246,6 +3246,23 @@
   }
 
   /* ---------- modo real: API + login + eventos ---------- */
+  // De onde a pessoa veio na primeira visita. Fica no aparelho e vai junto no cadastro.
+  (function(){
+    try {
+      if(localStorage.getItem('persis_origem')) return;
+      var q = new URLSearchParams(location.search), o = '';
+      if(q.get('utm_source')) o = q.get('utm_source') + (q.get('utm_campaign') ? ':' + q.get('utm_campaign') : '');
+      else if(q.get('gclid')) o = 'google-ads';
+      else if(q.get('origem')) o = 'site:' + q.get('origem');
+      else {
+        var ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : '';
+        o = !ref ? 'direto' : (/persisteia/.test(ref) ? 'site' : ref);
+      }
+      localStorage.setItem('persis_origem', o.slice(0, 80));
+    } catch(e){}
+  })();
+  function origemDaVisita(){ try { return localStorage.getItem('persis_origem') || ''; } catch(e){ return ''; } }
+
   var API = false, TOKEN = '', NOME = '', ASSUNTO = '';
   var lastQA = null, lgModo = 'cadastro', PROVA_ISO = null;
   try { TOKEN = localStorage.getItem('persisteia_token') || ''; } catch(e){}
@@ -3330,7 +3347,7 @@
   function lgEnviar(){
     $('lgErr').textContent = '';
     $('lgBtn').disabled = true;
-    apiFetch('/api/auth', { acao: lgModo, nome: $('lgNome').value, email: $('lgEmail').value, senha: $('lgSenha').value })
+    apiFetch('/api/auth', { acao: lgModo, nome: $('lgNome').value, email: $('lgEmail').value, senha: $('lgSenha').value, origem: origemDaVisita() })
       .then(function(r){ return r.json().then(function(d){ return { s: r.status, d: d }; }); })
       .then(function(x){
         $('lgBtn').disabled = false;
@@ -4221,6 +4238,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       return;
     }
     rastrear('assinatura_iniciada', { value: (typeof PRECO !== 'undefined' ? PRECO : 59.9), currency: 'BRL' });
+    evento('clicou_pagar', null, { plano: 'mensal' });
     var b = $('pwBtn'); if(b){ b.disabled = true; b.textContent = 'Abrindo o pagamento…'; }
     apiFetch('/api/assinatura', { assinar: true })
       .then(function(r){ return r.json(); })
@@ -4254,7 +4272,10 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('paywall').classList.remove('show', 'sopix');
   }
 
+  var PRECO_VISTO = false;
   function carregarPacotes(){
+    // uma vez por visita: é o que separa "não quis pagar" de "nem chegou ao preço"
+    if(!PRECO_VISTO){ PRECO_VISTO = true; evento('viu_preco'); }
     if(PIX_PACOTES){ renderPacotes(); return; }
     apiFetch('/api/avulso').then(function(r){ return r.json(); }).then(function(d){
       if(d && d.pacotes){ PIX_PACOTES = d.pacotes; renderPacotes(); }
@@ -4288,6 +4309,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         '<br><button class="btn small" style="margin-top:8px" onclick="copiarEndereco()">Copiar o endereço do site</button>';
       return;
     }
+    evento('clicou_pagar', null, { plano: 'avulso', meses: meses });
     // pacote avulso também é início de compra: o Google Ads precisa saber
     var pacote = (PIX_PACOTES || []).filter(function(p){ return Number(p.meses) === Number(meses); })[0];
     rastrear('assinatura_iniciada', {
@@ -4720,7 +4742,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('admLista').innerHTML = '<p class="muted" style="font-size:.85rem">Carregando…</p>';
     apiFetch('/api/admin').then(function(r){ return r.json(); }).then(function(d){
       if(d.erro){ $('admLista').innerHTML = '<p class="muted">' + esc(d.erro) + '</p>'; return; }
-      FUNIL = d.funil || null; admFunilRender();
+      FUNIL = d.funil || null; ORIGENS = d.origens || null; admFunilRender();
       admPagamentosRender(d);
       var m = d.metricas;
       $('admMetricas').innerHTML =
@@ -4749,6 +4771,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     externo_confirmado: 'marcou atividade externa', resumo_visual: 'abriu o resumo visual', video_assunto: 'viu o vídeo',
     teoria_ouvida: 'ouviu a teoria', voz_alta: 'leu em voz alta', recap: 'fez a revisão rápida', eco: 'usou o eco',
     viu_8_verbos: 'abriu os 8 verbos antes da hora',
+    viu_preco: 'viu a tela de preço', clicou_pagar: 'clicou para pagar',
     material_proprio: 'enviou material próprio', norma_local: 'decidiu sobre uma lei local',
     assunto_concluido_auto: 'concluiu um assunto', flashcards_concluidos: 'treinou os cartões do assunto',
     revisao_aberta: 'abriu a revisão do dia', revisao_concluida: 'terminou a revisão do dia',
@@ -4821,7 +4844,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
 
   /* ---------- funil da gestora ---------- */
-  var FUNIL = null, FUNIL_P = 'ultimos_30';
+  var FUNIL = null, FUNIL_P = 'ultimos_30', ORIGENS = null;
 
   function admFunilPeriodo(btn){
     btn.parentNode.querySelectorAll('.optchip').forEach(function(c){ c.classList.remove('sel'); });
@@ -4830,6 +4853,15 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     admFunilRender();
   }
 
+  function admOrigensHtml(){
+    var lista = (ORIGENS || {})[FUNIL_P] || [];
+    if(!lista.length) return '';
+    return '<h3 style="font-size:.9rem; margin:14px 0 6px">De onde vieram</h3>' + lista.map(function(o){
+      return '<div style="padding:7px 0; border-top:1px solid var(--line); font-size:.82rem">' +
+        '<b style="overflow-wrap:anywhere">' + esc(o.origem) + '</b><br>' +
+        '<span class="muted" style="font-size:.76rem">' + o.cadastros + ' cadastro(s) · ' + o.dia2 + ' voltaram · ' + o.viu_preco + ' viram o preço · ' + o.pagaram + ' pagaram</span></div>';
+    }).join('');
+  }
   function admFunilRender(){
     var box = $('admFunil'); if(!box || !FUNIL) return;
     var f = FUNIL[FUNIL_P] || {};
@@ -4838,10 +4870,13 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       { rot: 'Criaram conta',            n: f.cadastraram,     pct: 100 },
       { rot: 'Enviaram um edital',       n: f.enviaram_edital, pct: f.pct_edital },
       { rot: 'Receberam o cronograma',   n: f.montaram_plano,  pct: f.pct_plano },
+      { rot: 'Usaram o app', n: f.usaram, pct: f.pct_usou },
       { rot: 'Voltaram em outro dia (2+ dias de uso)', n: f.voltaram_dia2, pct: f.pct_dia2 },
       { rot: 'Concluíram pelo menos 1 assunto', n: f.estudaram_1, pct: f.pct_estudou },
       { rot: 'Estudaram 3 ou mais assuntos',  n: f.estudaram_3, pct: f.pct_voltou },
       { rot: 'Fizeram uma revisão do dia', n: f.fizeram_revisao, pct: f.pct_revisao },
+      { rot: 'Viram a tela de preço', n: f.viram_preco, pct: f.pct_viu_preco },
+      { rot: 'Clicaram para pagar', n: f.clicaram_pagar, pct: f.pct_clicou },
       { rot: 'Assinaram',                n: f.assinaram,       pct: f.pct_assinou }
     ];
     // a maior queda entre dois degraus é o que interessa
@@ -4859,7 +4894,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         (alerta ? '<div class="fn-nota">maior queda: ' + piorQueda + ' pontos perdidos aqui</div>' : '') +
       '</div>';
     }).join('') +
-    (!f.cadastraram ? '<p class="muted" style="font-size:.8rem">Ninguém se cadastrou neste período.</p>' : '');
+    (!f.cadastraram ? '<p class="muted" style="font-size:.8rem">Ninguém se cadastrou neste período.</p>' : '') +
+    '<p class="muted" style="font-size:.72rem; margin-top:8px">A tela de preço, o clique e a origem só são medidos a partir de novembro de 2026; contas antigas aparecem sem registro.</p>' +
+    admOrigensHtml();
   }
 
   // Responde em segundos a pergunta "a voz de estúdio está funcionando?".

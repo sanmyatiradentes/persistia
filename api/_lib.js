@@ -103,6 +103,8 @@ const MIGRACOES = [
   'ALTER TABLE cronograma ADD COLUMN horas REAL',
   // acesso comprado avulso (Pix, boleto, cartão à vista): vale até esta data
   'ALTER TABLE assinaturas ADD COLUMN acesso_ate TEXT',
+  // de onde a pessoa veio na primeira visita (site, Google, anúncio, página de assunto)
+  'ALTER TABLE alunos ADD COLUMN origem TEXT',
   // quando a confirmação da compra saiu por e-mail (vazio = ainda falta enviar)
   'ALTER TABLE pagamentos ADD COLUMN confirmacao_em TEXT',
   // ----- vários editais na mesma conta -----

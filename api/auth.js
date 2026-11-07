@@ -112,8 +112,9 @@ module.exports = async (req, res) => {
       const sal = crypto.randomBytes(16).toString('hex');
       const alunoId = id();
       await db.execute({
-        sql: 'INSERT INTO alunos (id, nome, email, senha_hash, sal, criado_em) VALUES (?,?,?,?,?,?)',
-        args: [alunoId, String(nome).trim(), mail, hashSenha(senha, sal), sal, agora()]
+        sql: 'INSERT INTO alunos (id, nome, email, senha_hash, sal, criado_em, origem) VALUES (?,?,?,?,?,?,?)',
+        args: [alunoId, String(nome).trim(), mail, hashSenha(senha, sal), sal, agora(),
+               String((req.body || {}).origem || '').replace(/[^\w .:\/-]/g, '').slice(0, 80) || null]
       });
       const tk = await novaSessao(db, alunoId);
 
