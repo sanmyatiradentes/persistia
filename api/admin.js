@@ -8,7 +8,7 @@
 // POST {aluno_id, acao:'senha_provisoria'}      → define uma senha na hora e devolve para repassar
 // POST {acao:'avisar', assunto, mensagem, para} → aviso por e-mail (todos ou um grupo)
 // POST {acao:'testar_email', para?}             → confere se o Resend está ligado
-const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, hashSenha, PRECO, TRIAL_DIAS, fimTesteLimite } = require('./_lib');
+const { getDb, ensureSchema, agora, emDias, alunoDoToken, cors, ehAdmin, hashSenha, PRECO, TRIAL_DIAS, fimTesteLimite, confirmarPendentes } = require('./_lib');
 const { enviarEmail, remetente, remetenteProprio } = require('./_email');
 const crypto = require('crypto');
 const { conferirMercadoPago } = require('./_mp');
@@ -304,6 +304,10 @@ module.exports = async (req, res) => {
       } catch (e) { console.warn('admin: conferência do MP', String(e).slice(0, 200)); }
     }
 
+    // confirmação por e-mail de compra que ainda não recebeu: nunca segura o Painel
+    let confirmacoes = 0;
+    try { confirmacoes = await confirmarPendentes(); } catch (e) { console.warn('admin: confirmações', String(e).slice(0, 200)); }
+
     const alunos = await db.execute(`
       SELECT a.id, a.nome, a.email, a.criado_em,
              s.estado, s.fim_teste, s.cortesia_ate, s.proxima_cobranca, s.acesso_ate,
@@ -397,7 +401,7 @@ module.exports = async (req, res) => {
     const sairam_esperando = lista.filter(a => a.saidas_esperando > 0).length;
     const ativos7 = lista.filter(a => a.ultimo_evento && (Date.now() - new Date(a.ultimo_evento)) < 7 * 86400000).length;
     const pagos = await db.execute(`
-      SELECT p.id, p.meses, p.valor, p.meio, p.criado_em, a.nome, a.email
+      SELECT p.id, p.meses, p.valor, p.meio, p.criado_em, p.confirmacao_em, a.nome, a.email
       FROM pagamentos p LEFT JOIN alunos a ON a.id = p.aluno_id
       ORDER BY p.criado_em DESC LIMIT 100`);
     const conteudos = await db.execute('SELECT COUNT(*) AS n FROM conteudos');
@@ -407,6 +411,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       pagamentos: pagos.rows,
       conferencia,
+      confirmacoes,
       metricas: {
         alunos: lista.length,
         assinantes: cont('assinante'),

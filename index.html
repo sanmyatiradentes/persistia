@@ -4807,7 +4807,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         '<b>' + esc(p.nome || 'Aluno') + '</b> · ' + dinheiro(p.valor) + '<br>' +
         '<span class="muted" style="font-size:.76rem; overflow-wrap:anywhere">' + esc(p.email || '') + ' · ' + fmtData(p.criado_em) +
         (p.meses ? ' · ' + p.meses + (Number(p.meses) === 1 ? ' mês' : ' meses') : ' · mensalidade') +
-        (p.meio ? ' · ' + esc(p.meio) : '') + '</span></div>';
+        (p.meio ? ' · ' + esc(p.meio) : '') +
+        (p.meses ? (p.confirmacao_em ? ' · confirmação enviada por e-mail' : ' · confirmação por e-mail ainda não saiu') : '') + '</span></div>';
     }).join('');
     if(soltos.length){
       html += '<p style="font-size:.8rem; margin-top:10px; color:var(--warm)"><b>' + soltos.length + ' pagamento(s) no Mercado Pago sem aluno ligado:</b> ' +
@@ -4815,6 +4816,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     }
     $('admPagLista').innerHTML = html;
     if(conf.creditados && conf.creditados.length) toast(conf.creditados.length + ' pagamento(s) acertado(s) com o Mercado Pago ✓');
+    else if(d.confirmacoes) toast(d.confirmacoes + ' confirmação(ões) de compra enviada(s) por e-mail ✓');
   }
 
   /* ---------- funil da gestora ---------- */

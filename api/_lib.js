@@ -103,6 +103,8 @@ const MIGRACOES = [
   'ALTER TABLE cronograma ADD COLUMN horas REAL',
   // acesso comprado avulso (Pix, boleto, cartão à vista): vale até esta data
   'ALTER TABLE assinaturas ADD COLUMN acesso_ate TEXT',
+  // quando a confirmação da compra saiu por e-mail (vazio = ainda falta enviar)
+  'ALTER TABLE pagamentos ADD COLUMN confirmacao_em TEXT',
   // ----- vários editais na mesma conta -----
   // Antes, cadastrar um edital novo APAGAVA o anterior e todo o cronograma
   // dele. Agora cada edital vive por conta própria: o aluno escolhe qual está
@@ -353,6 +355,39 @@ async function emailDeCompra(alunoId, { titulo, assunto, detalhe }) {
   }
 }
 
+// Manda a confirmação de um pagamento uma única vez: quem marca primeiro envia.
+// Se o envio falhar, a marca sai e a próxima conferência tenta de novo.
+async function confirmarPagamento(pagamentoId) {
+  const d = getDb(), pid = String(pagamentoId);
+  const marca = await d.execute({
+    sql: 'UPDATE pagamentos SET confirmacao_em = ? WHERE id = ? AND confirmacao_em IS NULL',
+    args: [agora(), pid]
+  });
+  if (!marca.rowsAffected) return { enviado: false, motivo: 'ja_confirmado' };
+  const r = await d.execute({
+    sql: `SELECT p.aluno_id, p.meses, p.valor, s.acesso_ate FROM pagamentos p
+          LEFT JOIN assinaturas s ON s.aluno_id = p.aluno_id WHERE p.id = ?`,
+    args: [pid]
+  });
+  const p = r.rows[0];
+  const reais = Number(p.valor) ? ' de R$ ' + Number(p.valor).toFixed(2).replace('.', ',') : '';
+  const envio = await emailDeCompra(p.aluno_id, {
+    assunto: 'Pagamento confirmado: seu acesso à PersisteIA está liberado',
+    titulo: 'Pagamento confirmado',
+    detalhe: `O pagamento${reais} foi aprovado e o seu acesso está liberado por <b>${Number(p.meses)} ${Number(p.meses) === 1 ? 'mês' : 'meses'}</b>, até <b>${dataBr(p.acesso_ate)}</b>. Não há renovação automática.`
+  });
+  if (!envio.enviado) await d.execute({ sql: 'UPDATE pagamentos SET confirmacao_em = NULL WHERE id = ?', args: [pid] });
+  return envio;
+}
+
+// compras por período que ainda não receberam a confirmação
+async function confirmarPendentes() {
+  const r = await getDb().execute("SELECT id FROM pagamentos WHERE meses IS NOT NULL AND confirmacao_em IS NULL AND status = 'aprovado'");
+  let enviados = 0;
+  for (const x of r.rows) if ((await confirmarPagamento(x.id)).enviado) enviados++;
+  return enviados;
+}
+
 async function creditarAcesso(pagamentoId, alunoId, meses, valor, meio) {
   const d = getDb();
   const ja = await d.execute({ sql: 'SELECT id FROM pagamentos WHERE id = ?', args: [String(pagamentoId)] });
@@ -373,12 +408,7 @@ async function creditarAcesso(pagamentoId, alunoId, meses, valor, meio) {
     sql: 'UPDATE assinaturas SET acesso_ate = ?, atualizado_em = ? WHERE aluno_id = ?',
     args: [ate, agora(), alunoId]
   });
-  const reais = Number(valor) ? ' de R$ ' + Number(valor).toFixed(2).replace('.', ',') : '';
-  await emailDeCompra(alunoId, {
-    assunto: 'Pagamento confirmado: seu acesso à PersisteIA está liberado',
-    titulo: 'Pagamento confirmado',
-    detalhe: `O pagamento${reais} foi aprovado e o seu acesso está liberado por <b>${Number(meses)} ${Number(meses) === 1 ? 'mês' : 'meses'}</b>, até <b>${dataBr(ate)}</b>. Não há renovação automática.`
-  });
+  await confirmarPagamento(pagamentoId);
   return { creditado: true, acesso_ate: ate };
 }
 
@@ -546,4 +576,4 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   return geminiComPaciencia(systemText, [{ text: userText }], jsonSchema, modelo);
 }
 
-module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, iniciarTeste, fimTesteLimite, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, emailDeCompra, dataBr, editalAtivo, marcarEditalAtivo };
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, iniciarTeste, fimTesteLimite, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, emailDeCompra, confirmarPendentes, dataBr, editalAtivo, marcarEditalAtivo };
