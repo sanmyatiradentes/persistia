@@ -1,7 +1,7 @@
 // Mercado Pago — regras compartilhadas entre o aviso (mp-webhook) e o Painel.
 // Toda decisão sai do que a API do Mercado Pago responde com o nosso token,
 // nunca do que veio escrito no aviso.
-const { agora, creditarAcesso } = require('./_lib');
+const { agora, creditarAcesso, emailDeCompra, dataBr } = require('./_lib');
 
 const MP = 'https://api.mercadopago.com';
 
@@ -19,6 +19,7 @@ async function aplicarAssinatura(db, preapprovalId, infoPronta) {
   if (!alunoId) return;
   const ativa = info.status === 'authorized';
   const estado = ativa ? 'ativa' : (info.status === 'paused' ? 'pausada' : (info.status === 'pending' ? 'pendente' : 'cancelada'));
+  const antes = (await db.execute({ sql: 'SELECT estado FROM assinaturas WHERE aluno_id = ?', args: [alunoId] })).rows[0];
   // Ao cancelar, o MP devolve next_payment_date vazio. Guardamos a data que já
   // tínhamos para o aluno seguir até o fim do mês que ele pagou.
   await db.execute({
@@ -26,6 +27,17 @@ async function aplicarAssinatura(db, preapprovalId, infoPronta) {
                  proxima_cobranca = COALESCE(?, proxima_cobranca), atualizado_em = ?
           WHERE aluno_id = ?`,
     args: [estado, String(preapprovalId), info.next_payment_date || null, agora(), alunoId]
+  });
+  // só na passagem para ativa: os avisos e a conferência do Painel se repetem
+  if (antes && ativa && antes.estado !== 'ativa') await emailDeAssinatura(alunoId, info);
+}
+
+function emailDeAssinatura(alunoId, info) {
+  const prox = dataBr(info.next_payment_date);
+  return emailDeCompra(alunoId, {
+    assunto: 'Assinatura confirmada: seu acesso à PersisteIA está liberado',
+    titulo: 'Assinatura confirmada',
+    detalhe: 'A sua assinatura mensal está ativa e o acesso está liberado.' + (prox ? ` A próxima cobrança será em <b>${prox}</b>.` : '') + ' Você pode cancelar quando quiser em Plano › Minha conta.'
   });
 }
 
@@ -80,4 +92,4 @@ async function conferirMercadoPago(db) {
   return { creditados, sem_aluno: semAluno };
 }
 
-module.exports = { mpGet, aplicarAssinatura, creditarPagamento, conferirMercadoPago };
+module.exports = { mpGet, emailDeAssinatura, aplicarAssinatura, creditarPagamento, conferirMercadoPago };

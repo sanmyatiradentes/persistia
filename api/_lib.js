@@ -323,6 +323,36 @@ function pacotePorMeses(meses) {
  * Se o aluno ainda tem acesso, os dias somam ao fim do período atual — quem
  * paga adiantado não perde o que já tinha.
  */
+function dataBr(iso) {
+  const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
+}
+
+// Confirmação de compra por e-mail. É aviso da própria compra, não propaganda, e
+// falhar aqui nunca desfaz o pagamento: quem pagou continua com o acesso.
+async function emailDeCompra(alunoId, { titulo, assunto, detalhe }) {
+  try {
+    const r = await getDb().execute({ sql: 'SELECT nome, email FROM alunos WHERE id = ?', args: [alunoId] });
+    const a = r.rows[0];
+    if (!a || !a.email) return { enviado: false, motivo: 'sem_destinatario' };
+    const nome = String(a.nome || '').trim().split(' ')[0].replace(/[<>&"]/g, '');
+    const envio = await require('./_email').enviarEmail({
+      para: a.email, assunto, titulo,
+      texto: `Oi${nome ? ', ' + nome : ''}! Recebemos o seu pagamento, obrigada pela confiança. ${String(detalhe).replace(/<\/?b>/g, '')} Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp.`,
+      corpo: `<p style="margin:0 0 14px">Oi${nome ? ', ' + nome : ''}! Recebemos o seu pagamento, obrigada pela confiança.</p>
+              <p style="margin:0 0 14px">${detalhe}</p>
+              <p style="margin:0">Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp.</p>`,
+      botao: { texto: 'Continuar estudando', url: (process.env.SITE_URL || 'https://www.persisteia.com.br').replace(/\/$/, '') },
+      rodape: 'Este e-mail confirma a sua compra na PersisteIA. O comprovante do pagamento fica no Mercado Pago.'
+    });
+    if (!envio.enviado) console.warn('email de compra não saiu', envio.motivo);
+    return envio;
+  } catch (e) {
+    console.warn('email de compra falhou', String(e).slice(0, 200));
+    return { enviado: false, motivo: 'erro' };
+  }
+}
+
 async function creditarAcesso(pagamentoId, alunoId, meses, valor, meio) {
   const d = getDb();
   const ja = await d.execute({ sql: 'SELECT id FROM pagamentos WHERE id = ?', args: [String(pagamentoId)] });
@@ -342,6 +372,12 @@ async function creditarAcesso(pagamentoId, alunoId, meses, valor, meio) {
   await d.execute({
     sql: 'UPDATE assinaturas SET acesso_ate = ?, atualizado_em = ? WHERE aluno_id = ?',
     args: [ate, agora(), alunoId]
+  });
+  const reais = Number(valor) ? ' de R$ ' + Number(valor).toFixed(2).replace('.', ',') : '';
+  await emailDeCompra(alunoId, {
+    assunto: 'Pagamento confirmado: seu acesso à PersisteIA está liberado',
+    titulo: 'Pagamento confirmado',
+    detalhe: `O pagamento${reais} foi aprovado e o seu acesso está liberado por <b>${Number(meses)} ${Number(meses) === 1 ? 'mês' : 'meses'}</b>, até <b>${dataBr(ate)}</b>. Não há renovação automática.`
   });
   return { creditado: true, acesso_ate: ate };
 }
@@ -510,4 +546,4 @@ async function chamarGemini(systemText, userText, jsonSchema, modelo) {
   return geminiComPaciencia(systemText, [{ text: userText }], jsonSchema, modelo);
 }
 
-module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, iniciarTeste, fimTesteLimite, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, editalAtivo, marcarEditalAtivo };
+module.exports = { getDb, ensureSchema, agora, emDias, id, hashSenha, alunoDoToken, cors, chamarGemini, chamarGeminiPartes, falhaIA, MODELO_PADRAO, MODELO_LEVE, acessoDoAluno, iniciarTeste, fimTesteLimite, ehAdmin, TRIAL_DIAS, PRECO, pacotesAvulsos, pacotePorMeses, creditarAcesso, emailDeCompra, dataBr, editalAtivo, marcarEditalAtivo };

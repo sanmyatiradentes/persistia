@@ -4,6 +4,7 @@
 // POST {assinar:true}    → cria a assinatura e devolve o link de checkout
 // POST {cancelar:true}   → cancela a assinatura no Mercado Pago
 const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, PRECO, TRIAL_DIAS } = require('./_lib');
+const { emailDeAssinatura } = require('./_mp');
 
 const MP = 'https://api.mercadopago.com';
 
@@ -101,10 +102,12 @@ module.exports = async (req, res) => {
       if (!pid) return res.status(200).json({ ...(await acessoDoAluno(aluno)), preco: PRECO, dias_teste: TRIAL_DIAS });
       const info = await mp('/preapproval/' + pid);
       const mapa = { authorized: 'ativa', paused: 'pausada', cancelled: 'cancelada', pending: 'pendente' };
+      const antes = (await db.execute({ sql: 'SELECT estado FROM assinaturas WHERE aluno_id = ?', args: [aluno.id] })).rows[0] || {};
       await db.execute({
         sql: `UPDATE assinaturas SET estado = ?, proxima_cobranca = ?, atualizado_em = ? WHERE aluno_id = ?`,
         args: [mapa[info.status] || 'pendente', info.next_payment_date || null, agora(), aluno.id]
       });
+      if (info.status === 'authorized' && antes.estado !== 'ativa') await emailDeAssinatura(aluno.id, info);
       return res.status(200).json({ ...(await acessoDoAluno(aluno)), status_mp: info.status, preco: PRECO, dias_teste: TRIAL_DIAS });
     }
 
