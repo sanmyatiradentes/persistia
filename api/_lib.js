@@ -345,7 +345,7 @@ async function emailDeCompra(alunoId, { titulo, assunto, detalhe }) {
               <p style="margin:0 0 14px">${detalhe}</p>
               <p style="margin:0">Qualquer dúvida, é só responder este e-mail ou chamar no WhatsApp.</p>`,
       botao: { texto: 'Continuar estudando', url: (process.env.SITE_URL || 'https://www.persisteia.com.br').replace(/\/$/, '') },
-      rodape: 'Este e-mail confirma a sua compra na PersisteIA. O comprovante do pagamento fica no Mercado Pago.'
+      rodape: 'Este e-mail confirma a sua compra na PersisteIA. O comprovante do pagamento fica no Mercado Pago. Garantia de 7 dias: se pedir em até 7 dias da compra, respondendo este e-mail, devolvemos todo o valor.'
     });
     if (!envio.enviado) console.warn('email de compra não saiu', envio.motivo);
     return envio;
