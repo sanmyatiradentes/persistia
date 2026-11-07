@@ -69,3 +69,18 @@
 /* no site, a seção segue o espaçamento das outras */
 #leitura .ld-raiz{max-width:1180px; margin:0 auto}
 #ldTeaser:empty{display:none}
+
+/* site no celular: cartões recolhidos, com a pessoa escolhendo o que abrir */
+.ld-mais{display:none}
+@media(max-width:640px){
+  .ld-raiz[data-modo="site"] .ld-card.ld-rec:not(.aberto) .ld-corpo{max-height:9.5rem; overflow:hidden;
+    -webkit-mask-image:linear-gradient(#000 45%,transparent); mask-image:linear-gradient(#000 45%,transparent)}
+  .ld-raiz[data-modo="site"] .ld-card.ld-rec:not(.principal):not(.aberto) .ld-corpo{max-height:4.6rem}
+  .ld-raiz[data-modo="site"] .ld-card.ld-rec:not(.aberto) .ld-botoes{display:none}
+  .ld-raiz[data-modo="site"] .ld-card.ld-rec:not(.aberto) .ld-mais{display:block; width:100%; margin-top:6px; padding:9px 14px;
+    border:1px solid var(--accent); border-radius:999px; background:transparent; color:var(--accent); font:inherit; font-size:.82rem; font-weight:600; cursor:pointer}
+  .ld-cta{text-align:left}
+  .ld-cta .btn{width:100%; margin:0}
+  .ld-topo{flex-direction:column; align-items:flex-start}
+  .ld-nav{width:100%; justify-content:space-between}
+}

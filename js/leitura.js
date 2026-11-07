@@ -14,6 +14,7 @@
   var SITE = 'https://www.persisteia.com.br/#leitura';
   var desloc = 0;            // dias de distância de hoje (setas ‹ ›)
   var trilhaAberta = null;   // id da trilha com o detalhe aberto
+  var abertos = {};          // cartões abertos pela pessoa (site, no celular)
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -59,6 +60,16 @@
     '</div>';
   }
 
+  // No site, no celular, os cartões vêm recolhidos (css/leitura.css): abertos, os
+  // três somavam 4 mil px no meio da página de apresentação. No app, tudo aberto.
+  function cartao(qual, extra, cabeca, corpo, raiz, rotulo) {
+    var rec = !noApp(raiz);
+    return '<article class="ld-card' + (extra ? ' ' + extra : '') + (rec ? ' ld-rec' : '') + (abertos[qual] ? ' aberto' : '') + '">' +
+      cabeca + '<div class="ld-corpo">' + corpo + '</div>' +
+      (rec ? '<button class="ld-mais" data-ld="abrir-card" data-qual="' + qual + '">' + rotulo + '</button>' : '') +
+      botoes(qual, raiz) + '</article>';
+  }
+
   function rotuloDia() {
     return desloc === 0 ? 'Hoje' : (desloc === -1 ? 'Ontem' : (desloc === 1 ? 'Amanhã'
       : (desloc < 0 ? 'Há ' + (-desloc) + ' dias' : 'Daqui a ' + desloc + ' dias')));
@@ -79,36 +90,33 @@
           '<span class="ld-seq">' + (SEQ > 1 ? SEQ + ' dias seguidos' : 'Comece sua sequência hoje') + '</span></div>' +
       '</div>' +
       '<div class="ld-grade">' +
-        '<article class="ld-card principal">' +
+        cartao('leitura', 'principal',
           '<div class="ld-tag">Leitura do dia · ' + esc(lt.eixo) + '</div>' +
           '<h3 class="ld-tit">' + esc(lt.tema) + '</h3>' +
-          '<div class="ld-autor">' + esc(lt.fonte) + '</div>' +
+          '<div class="ld-autor">' + esc(lt.fonte) + '</div>',
           '<p class="ld-texto">' + esc(lt.ideia) + '</p>' +
           '<div class="ld-acao"><strong>Na prática, hoje</strong><p>' + esc(lt.pratica) + '</p></div>' +
           '<p class="ld-pergunta">' + esc(lt.pergunta) + '</p>' +
-          '<p class="ld-frase">' + esc(lt.frase) + '</p>' +
-          botoes('leitura', raiz) +
-        '</article>' +
+          '<p class="ld-frase">' + esc(lt.frase) + '</p>',
+          raiz, 'Ler a leitura inteira') +
         '<div class="ld-lado">' +
-          '<article class="ld-card">' +
+          cartao('tecnica', '',
             '<div class="ld-tag">Técnica do dia</div>' +
             '<h3 class="ld-tit">' + esc(t.nome) + '</h3>' +
-            '<div class="ld-autor">' + esc(t.origem) + '</div>' +
+            '<div class="ld-autor">' + esc(t.origem) + '</div>',
             '<p class="ld-ideia">' + esc(t.em_uma_frase) + '</p>' +
             '<ol class="ld-passos">' + t.como_usar.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ol>' +
             '<p class="ld-ex">' + esc(t.exemplo) + '</p>' +
-            '<div class="ld-alerta"><strong>Cuidado</strong><p>' + esc(t.armadilha) + '</p></div>' +
-            botoes('tecnica', raiz) +
-          '</article>' +
-          '<article class="ld-card">' +
+            '<div class="ld-alerta"><strong>Cuidado</strong><p>' + esc(t.armadilha) + '</p></div>',
+            raiz, 'Ver como usar') +
+          cartao('cf', '',
             '<div class="ld-tag">Constituição do dia</div>' +
             '<h3 class="ld-tit">' + esc(cf.tema) + '</h3>' +
-            '<a class="ld-ref" href="' + esc(cf.link) + '" target="_blank" rel="noopener">' + esc(cf.dispositivo) + ' <span>· ler no Planalto ↗</span></a>' +
+            '<a class="ld-ref" href="' + esc(cf.link) + '" target="_blank" rel="noopener">' + esc(cf.dispositivo) + ' <span>· ler no Planalto ↗</span></a>',
             '<p class="ld-ideia">' + esc(cf.o_que_diz) + '</p>' +
             '<div class="ld-acao"><strong>Como cai na prova</strong><p>' + esc(cf.como_cai) + '</p></div>' +
-            '<div class="ld-alerta"><strong>Pegadinha</strong><p>' + esc(cf.pegadinha) + '</p></div>' +
-            botoes('cf', raiz) +
-          '</article>' +
+            '<div class="ld-alerta"><strong>Pegadinha</strong><p>' + esc(cf.pegadinha) + '</p></div>',
+            raiz, 'Ver como cai na prova') +
         '</div>' +
       '</div>' +
       (noApp(raiz) ? '' :
@@ -265,9 +273,10 @@
     var b = e.target.closest('[data-ld]');
     if (!b) return;
     var acao = b.getAttribute('data-ld'), raiz = b.closest('.ld-raiz');
-    if (acao === 'ant') { desloc--; pararFala(); render(); }
-    else if (acao === 'prox') { desloc++; pararFala(); render(); }
-    else if (acao === 'hoje') { desloc = 0; pararFala(); render(); }
+    if (acao === 'ant') { desloc--; abertos = {}; pararFala(); render(); }
+    else if (acao === 'prox') { desloc++; abertos = {}; pararFala(); render(); }
+    else if (acao === 'hoje') { desloc = 0; abertos = {}; pararFala(); render(); }
+    else if (acao === 'abrir-card') { abertos[b.dataset.qual] = true; b.closest('.ld-card').classList.add('aberto'); }
     else if (acao === 'ouvir') falar(roteiro(b.dataset.qual), b);
     else if (acao === 'perguntar') perguntar(b.dataset.qual);
     else if (acao === 'compartilhar') compartilhar(b.dataset.qual);
