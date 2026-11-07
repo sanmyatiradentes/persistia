@@ -480,6 +480,8 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         ok: true, itens: ordem, sessoes: ordem, dias: plano.length,
         horas_totais: Math.round(totalHoras * 10) / 10,
+        // a primeira sessão: o site já pede a aula dela enquanto a pessoa espera o plano
+        primeira: plano[0] && plano[0][0] ? { topico_id: plano[0][0].topico_id, parte: plano[0][0].parte } : null,
         horas_dia: horasDia, dias_semana: dias,
         ordem_estudo: ordemEscolhida,
         // quanto o dia realmente ficou cheio — é isto que a aluna quer conferir

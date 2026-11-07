@@ -2555,6 +2555,7 @@
         </button>
 
         <div id="slotConcluir"></div>
+        <div id="fechoAmanha" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); font-size:.82rem; line-height:1.5"></div>
       </div>
 
       <!-- convite para a leitura do dia (js/leitura.js), depois do estudo -->
@@ -3881,6 +3882,13 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           rastrear('plano_pronto', { dias: x.dias, horas_dia: x.horas_dia });
           toast('Cronograma montado: ' + fmtHoras(x.horas_dia) + ' por dia, ' +
                 x.sessoes_por_dia + ' assunto' + (x.sessoes_por_dia > 1 ? 's' : '') + ' por dia em média.');
+          if(x.primeira){
+            if(btn){ btn.disabled = true; btn.textContent = 'Escrevendo a sua primeira aula…'; }
+            return escreverPrimeiraAula(x.primeira).then(function(){
+              if(btn){ btn.disabled = false; btn.textContent = 'Gerar meu cronograma'; }
+              enterApp();
+            });
+          }
         }
         enterApp();
       })
@@ -3888,6 +3896,15 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         if(btn){ btn.disabled = false; btn.textContent = 'Gerar meu cronograma'; }
         enterApp();
       });
+  }
+
+  // A espera acontece aqui, com o plano sendo montado, e não na primeira tela do
+  // estudo: quem chega à tela Hoje já encontra a aula pronta. Nunca segura mais que 30 s.
+  function escreverPrimeiraAula(it){
+    var pedidos = Promise.all(['texto', 'apoio', 'midia', 'pratica'].map(function(b){
+      return apiFetch(urlConteudo(it, b)).catch(function(){});
+    })).then(function(){ return apiFetch(urlConteudo(it) + '&finalizar=1'); }).catch(function(){});
+    return Promise.race([pedidos, new Promise(function(ok){ setTimeout(ok, 30000); })]);
   }
 
   /* ---------- navigation ---------- */
@@ -9259,6 +9276,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
           (nt < 0.7 ? 'Ficou abaixo de 70%: este assunto volta amanhã na revisão como reforço, e os erros já estão no caderno. ' : 'Ele volta para revisão amanhã, depois em 7 e em 30 dias. ') + txt.textContent;
       }
     }
+    desenharAmanha(it, feito);
     if($('nextT')) $('nextT').textContent = (feito ? 'Rever a teoria: ' : 'Continuar: ') + it.topico +
       (Number(it.partes) > 1 ? ' · parte ' + it.parte + ' de ' + it.partes : '');
     if(feito){
@@ -9270,6 +9288,22 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
       b.textContent = temProx ? 'Concluir e seguir para a parte ' + (Number(it.parte) + 1) + ' →'
                               : 'Concluir assunto ✓';
     }
+  }
+  // Depois de concluir: o que vem na próxima sessão e um lembrete na agenda do aluno.
+  function desenharAmanha(it, feito){
+    var box = $('fechoAmanha'); if(!box) return;
+    var prox = feito && REAL ? proximaSessao(it) : null;
+    if(!feito){ box.style.display = 'none'; return; }
+    var a = new Date(Date.now() + 86400000);
+    var d = a.getFullYear() + ('0' + (a.getMonth() + 1)).slice(-2) + ('0' + a.getDate()).slice(-2);
+    var link = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('Estudar na PersisteIA') +
+      '&dates=' + d + 'T190000/' + d + 'T193000&recur=' + encodeURIComponent('RRULE:FREQ=DAILY') +
+      '&details=' + encodeURIComponent('https://www.persisteia.com.br');
+    box.style.display = 'block';
+    box.innerHTML = (prox ? '<b>Na próxima sessão:</b> ' + esc(prox.topico) +
+        (Number(prox.partes) > 1 ? ' · parte ' + prox.parte + ' de ' + prox.partes : '') +
+        (prox.horas ? ' · ' + fmtHoras(prox.horas) : '') + '. A aula já vai estar pronta.<br>' : '') +
+      '<a class="linkbtn" href="' + link + '" target="_blank" rel="noopener">Colocar um lembrete diário na minha agenda ↗</a>';
   }
   function concluirNoServidor(it){
     return apiFetch('/api/cronograma', { concluir: it.cron_id, nota: notaSessao() })

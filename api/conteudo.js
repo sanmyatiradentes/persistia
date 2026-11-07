@@ -321,6 +321,32 @@ module.exports = async (req, res) => {
         if (pacoteCompleto(guardado, 3)) return res.status(200).json(sanearSelos(guardado));
         await db.execute({ sql: 'DELETE FROM conteudos WHERE topico_id = ?', args: [chave] });
       }
+      // O mesmo assunto, na mesma disciplina e banca, já escrito para outro edital:
+      // reaproveita e abre na hora. Fica de fora o que veio de material próprio ou
+      // de norma local.
+      if (!ehLocal && !norma) {
+        const sufixo = partes > 1 ? ':' + parte + '/' + partes : '';
+        const igual = await db.execute({
+          sql: `SELECT c.json FROM topicos t2
+                JOIN disciplinas d2 ON d2.id = t2.disciplina_id
+                JOIN editais e2 ON e2.id = d2.edital_id
+                JOIN conteudos c ON c.topico_id = t2.id || ?
+                LEFT JOIN normas_locais n ON n.topico_id = t2.id
+                WHERE t2.id <> ? AND lower(t2.nome) = lower(?) AND lower(d2.nome) = lower(?)
+                  AND COALESCE(e2.banca, '') = COALESCE(?, '') AND n.topico_id IS NULL LIMIT 1`,
+          args: [sufixo, topicoId, t.rows[0].topico, t.rows[0].disciplina, t.rows[0].banca || null]
+        });
+        if (igual.rows.length) {
+          const copia = JSON.parse(igual.rows[0].json);
+          if (pacoteCompleto(copia, 3)) {
+            await db.execute({
+              sql: 'INSERT OR REPLACE INTO conteudos (topico_id, json, criado_em) VALUES (?,?,?)',
+              args: [chave, igual.rows[0].json, agora()]
+            });
+            return res.status(200).json(sanearSelos(copia));
+          }
+        }
+      }
     }
 
     const recorte = partes > 1
