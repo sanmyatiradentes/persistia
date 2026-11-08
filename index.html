@@ -23,6 +23,9 @@
 <meta name="twitter:image" content="https://www.persisteia.com.br/og-persisteia.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
 <link rel="apple-touch-icon" href="icone-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PersisteIA">
 
 <!-- ===================== MEDIÇÃO =====================
      Preencha os três códigos abaixo com os SEUS identificadores. Enquanto um
@@ -2210,6 +2213,21 @@
       <button class="btn small" onclick="assinar()">Assinar</button>
     </div>
 
+    <!-- INSTALAR: abre como app e o estudo aberto funciona sem internet -->
+    <div class="card" id="faixaInstalar" style="display:none; margin:0 0 14px">
+      <b style="font-size:.92rem">Instale a PersisteIA no seu celular</b>
+      <p class="muted" style="font-size:.8rem; line-height:1.5; margin:4px 0 10px">Abre direto, sem navegador, e a aula que você já abriu continua funcionando sem internet. O progresso sobe quando a conexão voltar.</p>
+      <div class="nl-acoes">
+        <button class="btn small" onclick="instalarApp()">Instalar</button>
+        <button class="linkbtn" style="font-size:.8rem" onclick="dispensarInstalar()">Agora não</button>
+      </div>
+    </div>
+    <div class="card" id="ajudaInstalar" style="display:none; margin:0 0 14px; font-size:.84rem; line-height:1.6">
+      <b>No iPhone (Safari):</b> toque no botão de compartilhar, o quadrado com a seta para cima, e escolha <b>Adicionar à Tela de Início</b>.<br>
+      <b>No Android (Chrome):</b> toque nos três pontinhos e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.
+      <br><button class="linkbtn" style="font-size:.8rem; margin-top:6px" onclick="this.parentNode.style.display='none'">Fechar</button>
+    </div>
+
     <!-- NORMA LOCAL: lei municipal ou estadual só com o texto oficial -->
     <div class="card nl-card" id="nlCard" style="display:none">
       <p class="eyebrow" style="margin-bottom:4px">Lei do seu município ou estado</p>
@@ -2643,6 +2661,7 @@
     <div class="card" style="margin-top:16px">
       <h2>Minha conta</h2>
       <p class="muted" style="font-size:.8rem" id="planoConta">—</p>
+      <button class="btn ghost small btn-instalar" hidden onclick="instalarApp()" style="margin-top:8px">📲 Instalar o app no celular</button>
       <p class="muted" style="font-size:.8rem; margin-top:4px" id="planoEdital">—</p>
 
       <div id="bancaBox" style="margin-top:14px">
@@ -3316,8 +3335,53 @@
   function evento(tipo, verbo, detalhe, status){
     if(verbo && (status || 'concluido') === 'concluido' && typeof marcaVerbo === 'function') marcaVerbo(verbo);
     if(!API || !TOKEN) return;
-    apiFetch('/api/evento', { tipo: tipo, assunto: ASSUNTO, verbo: verbo || null, detalhe: detalhe || null, status: status || 'concluido' }).catch(function(){});
+    var corpo = { tipo: tipo, assunto: ASSUNTO, verbo: verbo || null, detalhe: detalhe || null, status: status || 'concluido' };
+    // sem internet, o que a aluna fez fica numa fila no aparelho e sobe quando a conexão volta
+    apiFetch('/api/evento', corpo).then(function(r){ if(!r.ok && r.status >= 500) throw 0; }).catch(function(){ guardarNaFila(corpo); });
   }
+  function guardarNaFila(corpo){
+    try {
+      var f = JSON.parse(localStorage.getItem('persis_fila') || '[]');
+      if(f.length < 500) f.push(corpo);
+      localStorage.setItem('persis_fila', JSON.stringify(f));
+    } catch(e){}
+  }
+  function enviarFila(){
+    if(!API || !TOKEN || !navigator.onLine) return;
+    var f; try { f = JSON.parse(localStorage.getItem('persis_fila') || '[]'); } catch(e){ return; }
+    if(!f.length) return;
+    try { localStorage.setItem('persis_fila', '[]'); } catch(e){}
+    f.forEach(function(corpo){ apiFetch('/api/evento', corpo).catch(function(){ guardarNaFila(corpo); }); });
+  }
+  window.addEventListener('online', function(){ enviarFila(); toast('Conexão de volta: seu progresso foi enviado'); });
+  window.addEventListener('offline', function(){ toast('Sem internet: o que já estava aberto continua funcionando'); });
+  setTimeout(enviarFila, 4000);
+
+  /* ---------- app instalável ---------- */
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
+  }
+  var PEDIDO_INSTALAR = null;
+  var JA_INSTALADO = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  var EH_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function mostrarInstalar(sim){
+    var dispensado = false; try { dispensado = localStorage.getItem('persis_instalar_nao') === '1'; } catch(e){}
+    document.querySelectorAll('.btn-instalar').forEach(function(b){ b.hidden = !sim; });
+    var faixa = $('faixaInstalar'); if(faixa) faixa.style.display = (sim && !dispensado) ? 'block' : 'none';
+  }
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); PEDIDO_INSTALAR = e; mostrarInstalar(true); });
+  window.addEventListener('appinstalled', function(){ PEDIDO_INSTALAR = null; mostrarInstalar(false); evento('app_instalado'); });
+  function instalarApp(){
+    if(PEDIDO_INSTALAR){
+      PEDIDO_INSTALAR.prompt();
+      PEDIDO_INSTALAR.userChoice.then(function(){ PEDIDO_INSTALAR = null; mostrarInstalar(false); });
+    } else { $('ajudaInstalar').style.display = 'block'; }
+  }
+  function dispensarInstalar(){
+    try { localStorage.setItem('persis_instalar_nao', '1'); } catch(e){}
+    $('faixaInstalar').style.display = 'none';
+  }
+  document.addEventListener('DOMContentLoaded', function(){ if(!JA_INSTALADO && EH_IOS) mostrarInstalar(true); });
   function initReal(){
     // O link de nova senha vale mesmo sem estar logado: ele vem antes de tudo.
     if(typeof verificarLinkDeSenha === 'function' && !TOKEN_NOVA_SENHA && verificarLinkDeSenha()) return;
@@ -4137,7 +4201,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   }
   function sair(){
     if(!confirm('Sair da conta e voltar para a página do PersisteIA? Seu progresso continua salvo.')) return;
-    try { localStorage.removeItem('persisteia_token'); localStorage.removeItem('persisteia_topico'); } catch(e){}
+    try { localStorage.removeItem('persisteia_token'); localStorage.removeItem('persisteia_topico'); localStorage.removeItem('persis_fila'); } catch(e){}
+    // o estudo guardado para usar sem internet é desta conta: sai junto
+    try { if(navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage('limpar'); } catch(e){}
     TOKEN = ''; location.href = location.pathname;
   }
 
@@ -4830,7 +4896,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     teoria_ouvida: 'ouviu a teoria', voz_alta: 'leu em voz alta', recap: 'fez a revisão rápida', eco: 'usou o eco',
     viu_8_verbos: 'abriu os 8 verbos antes da hora',
     simulado_iniciado: 'começou um simulado', simulado_concluido: 'terminou um simulado',
-    viu_preco: 'viu a tela de preço', clicou_pagar: 'clicou para pagar',
+    app_instalado: 'instalou o app', viu_preco: 'viu a tela de preço', clicou_pagar: 'clicou para pagar',
     material_proprio: 'enviou material próprio', norma_local: 'decidiu sobre uma lei local',
     assunto_concluido_auto: 'concluiu um assunto', flashcards_concluidos: 'treinou os cartões do assunto',
     revisao_aberta: 'abriu a revisão do dia', revisao_concluida: 'terminou a revisão do dia',

@@ -1,0 +1,20 @@
+{
+  "name": "PersisteIA — estudo para concursos",
+  "short_name": "PersisteIA",
+  "description": "Do edital ao estudo do dia: cronograma, aula, questões, revisão e simulado.",
+  "lang": "pt-BR",
+  "start_url": "/?app=1#hoje",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#EFF5F0",
+  "theme_color": "#0E8F6E",
+  "icons": [
+    { "src": "/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Hoje", "url": "/?app=1#hoje" },
+    { "name": "Plano", "url": "/?app=1#plano" },
+    { "name": "Evolução", "url": "/?app=1#evolucao" }
+  ]
+}
