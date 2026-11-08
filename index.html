@@ -9965,8 +9965,47 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
      o resto enquanto o aluno já está lendo. */
 
   // Trecho-chave para completar de memória (vem no bloco "apoio")
+  // A IA às vezes devolve o trecho sem marcar as lacunas com [[ ]]. Sem marca não
+  // havia campo nenhum para digitar; agora o sistema escolhe as palavras sozinho:
+  // primeiro as palavras-chave da aula, depois números e termos longos, espalhados
+  // pelo trecho.
+  var PALAVRAS_COMUNS = /^(?:para|pelos?|pelas?|como|quando|sobre|entre|desde|ainda|tamb[eé]m|mesmo|todos?|todas?|cada|outros?|outras?|qualquer|quaisquer|seus?|suas?|esses?|essas?|estes?|estas?|aquele|aquela|forma|termos|caso|casos|deste|desta|desses|dessas|nesta|neste|pela|pelo|ser[aã]o?|poder[aá]|dever[aá]|mediante|conforme)$/i;
+  function marcarLacunas(texto, chaves){
+    var t = String(texto || '');
+    if(!t || /\[\[.+?\]\]/.test(t)) return t;
+    var alvo = Math.max(4, Math.min(10, Math.round(t.split(/\s+/).length / 9)));
+    var escolhidas = [];
+    (chaves || []).forEach(function(k){
+      var termo = String((k && k.termo) || k || '').trim();
+      if(termo.length >= 4 && escolhidas.length < alvo && t.indexOf(termo) >= 0 &&
+         escolhidas.indexOf(termo) < 0) escolhidas.push(termo);
+    });
+    var cand = (t.match(/[A-Za-zÀ-ÿ]{7,}|\d+(?:[.,]\d+)?(?:\s?%)?/g) || []).filter(function(w, i, l){
+      return l.indexOf(w) === i && !PALAVRAS_COMUNS.test(w) && escolhidas.indexOf(w) < 0;
+    });
+    // espalhadas pelo trecho primeiro; as que sobrarem ficam de reserva
+    var passo = Math.max(1, Math.floor(cand.length / Math.max(1, alvo - escolhidas.length)));
+    var espalhadas = cand.filter(function(_, i){ return i % passo === 0; });
+    var fila = escolhidas.concat(espalhadas, cand.filter(function(w){ return espalhadas.indexOf(w) < 0; }));
+    // cada lacuna numa posição própria, sem uma cair dentro da outra
+    var faixas = [];
+    fila.forEach(function(w){
+      if(faixas.length >= alvo) return;
+      var de = 0, pos;
+      while((pos = t.indexOf(w, de)) >= 0){
+        var fim = pos + w.length;
+        var livre = faixas.every(function(f){ return fim <= f[0] || pos >= f[1]; });
+        if(livre){ faixas.push([pos, fim]); break; }
+        de = pos + 1;
+      }
+    });
+    faixas.sort(function(a, b){ return b[0] - a[0]; }).forEach(function(f){
+      t = t.slice(0, f[0]) + '[[' + t.slice(f[0], f[1]) + ']]' + t.slice(f[1]);
+    });
+    return t;
+  }
   function montarLacunas(c){
-    var lei = esc(c.trecho_chave || c.lei_seca || ''), n = 0;
+    var lei = esc(marcarLacunas(c.trecho_chave || c.lei_seca || '', c.palavras_chave)), n = 0;
     lei = lei.replace(/\[\[(.+?)\]\]/g, function(_, w){
       n++;
       // a caixa nasce do tamanho da resposta: cabe inteira, e o aluno enxerga
