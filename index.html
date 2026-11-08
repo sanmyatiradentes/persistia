@@ -860,6 +860,23 @@
   #revModal, #cadModal{position:fixed; inset:0; z-index:96; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
   #revModal.open, #cadModal.open{display:flex}
   @media(min-width:520px){#revModal, #cadModal{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  /* simulado */
+  #simModal{position:fixed; inset:0; z-index:96; background:var(--bg); display:none; flex-direction:column; max-width:640px; margin:0 auto}
+  #simModal.open{display:flex}
+  @media(min-width:520px){#simModal{top:24px; bottom:24px; border-radius:28px; overflow:hidden; border:1px solid var(--line)}}
+  .sim-rel{font-variant-numeric:tabular-nums; font-weight:800; font-size:.95rem; flex:none}
+  .sim-rel.fim{color:var(--crit)}
+  .sim-op{display:block; width:100%; text-align:left; padding:10px 12px; margin-bottom:8px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink); font:inherit; font-size:.88rem; cursor:pointer}
+  .sim-op.sel{border:2px solid var(--accent); background:var(--accent-soft)}
+  .sim-nav{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center}
+  .sim-mapa{display:flex; flex-wrap:wrap; gap:5px; margin-top:12px}
+  .sim-mapa button{width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--muted); font:inherit; font-size:.72rem; cursor:pointer}
+  .sim-mapa button.ok{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
+  .sim-mapa button.agora{border:2px solid var(--accent)}
+  .ac-linha{margin-bottom:10px; font-size:.84rem}
+  .ac-topo{display:flex; justify-content:space-between; gap:10px; margin-bottom:3px}
+  .ac-barra{height:7px; border-radius:999px; background:var(--line); overflow:hidden}
+  .ac-barra i{display:block; height:100%}
   /* norma local: sem o texto oficial, a aula não aparece */
   #scr-hoje.norma-local .sess > .task, #scr-hoje.norma-local #guiaPrimeiro, #scr-hoje.norma-local .nextcard{display:none}
   .nl-card{border:2px solid var(--warm); margin:0 0 14px}
@@ -1813,8 +1830,9 @@
         </ul></div>
         <div class="st-eixo" style="--tc:#2E7DBE"><b>Estratégia de prova</b><ul>
           <li>Questões inéditas escritas pela IA no estilo da sua banca</li>
+          <li>Simulados cronometrados, no peso de cada disciplina, com comentário em cada questão</li>
           <li>Prioridade para o que tende a pesar mais, com a incidência estimada pela IA e o peso de cada disciplina no edital</li>
-                    <li>Painel de evolução: cobertura do edital, acerto em questões e constância</li>
+                    <li>Acerto por disciplina e por assunto, para corrigir a rota</li>
         </ul></div>
       </div>
       <p class="muted" style="font-size:.76rem; text-align:center; margin-top:18px; max-width:640px; margin-left:auto; margin-right:auto">
@@ -1875,7 +1893,7 @@
           <li>Todo o material de estudo, sem limite de assuntos</li>
           <li>Os oito verbos em todos os tópicos</li>
           <li>Podcast, música, vídeo, mapa mental e Cinema Mental</li>
-          <li>Flashcards, revisão espaçada, caderno de erros e Persi tira-dúvidas</li>
+          <li>Flashcards, revisão espaçada, caderno de erros, simulados e Persi tira-dúvidas</li>
           <li>Painel de evolução e suporte no WhatsApp</li>
           <li>Garantia de 7 dias depois da compra: pediu, devolvemos todo o valor</li>
         </ul>
@@ -2718,6 +2736,13 @@
       <button class="btn ghost small" onclick="sair()" style="flex:none">Sair</button>
     </div>
 
+    <div class="card" style="margin-bottom:14px">
+      <h2 style="font-size:1rem">Simulado</h2>
+      <p class="muted" style="font-size:.8rem; line-height:1.5; margin:4px 0 10px" id="simInfo">Prova com tempo, no peso de cada disciplina. Questões inéditas escritas pela IA, dos assuntos que já têm aula; não são questões de provas anteriores.</p>
+      <div class="nl-acoes" id="simBotoes"></div>
+      <div id="simHist" style="margin-top:10px"></div>
+    </div>
+
     <div class="tiles">
       <div class="tile" style="--tc:var(--d1)"><b class="num" id="tCobV">38%</b><span>cobertura do edital</span> <span class="d up" id="tCobD">▲ 6 pp na semana</span></div>
       <div class="tile" style="--tc:var(--d5)"><b class="num" id="tAcertoV">71%</b><span>acerto em questões</span> <span class="d up" id="tAcertoD">▲ 4 pp na semana</span></div>
@@ -2780,6 +2805,13 @@
         <div class="vrow"><span class="vn">Escrever</span><span class="db"><i style="width:38%; background:var(--warm)"></i></span><span class="dp num" style="color:var(--warm)">38%</span></div>
         </div><p style="font-size:.78rem; margin-top:10px; color:var(--warm)" id="dvVerboNota"><b>Escrever é seu verbo mais atrasado</b> — 4 atividades externas aguardam o seu "Feito". Se já fez no caderno, confirme; se não, o plano de amanhã reserva 10 min.</p>
       </div>
+    </div>
+
+    <div class="card chart-card" id="acertoCard" style="display:none">
+      <h2>Acerto por disciplina</h2>
+      <p class="sub">Das questões da aula, da revisão e dos simulados · a mais fraca primeiro</p>
+      <div id="acertoLista"></div>
+      <div id="temasFracos"></div>
     </div>
 
     <div class="card chart-card">
@@ -3001,6 +3033,15 @@
       <div class="ttl"><b>Revisão de hoje</b><small id="rvmSub">—</small></div>
     </div>
     <div class="bk-body" id="rvmBody"></div>
+  </div>
+
+  <div id="simModal" role="dialog" aria-label="Simulado">
+    <div class="bk-top">
+      <button class="iconbtn" onclick="simFechar()" aria-label="Fechar">←</button>
+      <div class="ttl"><b>Simulado</b><small id="simSub">—</small></div>
+      <span class="sim-rel" id="simRel"></span>
+    </div>
+    <div class="bk-body" id="simBody"></div>
   </div>
 
   <div id="cadModal" role="dialog" aria-label="Caderno de erros">
@@ -4788,6 +4829,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     externo_confirmado: 'marcou atividade externa', resumo_visual: 'abriu o resumo visual', video_assunto: 'viu o vídeo',
     teoria_ouvida: 'ouviu a teoria', voz_alta: 'leu em voz alta', recap: 'fez a revisão rápida', eco: 'usou o eco',
     viu_8_verbos: 'abriu os 8 verbos antes da hora',
+    simulado_iniciado: 'começou um simulado', simulado_concluido: 'terminou um simulado',
     viu_preco: 'viu a tela de preço', clicou_pagar: 'clicou para pagar',
     material_proprio: 'enviou material próprio', norma_local: 'decidiu sobre uma lei local',
     assunto_concluido_auto: 'concluiu um assunto', flashcards_concluidos: 'treinou os cartões do assunto',
@@ -9550,7 +9592,7 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     if(!acertou && q.origem === 'revisao'){
       apiFetch('/api/revisao', { erro: { topico_id: q.topico_id, parte: q.parte, partes: q.partes, questao: q } }).catch(function(){});
     }
-    evento('questao_revisao', null, { origem: q.origem, respondeu_certo: acertou });
+    evento('questao_revisao', null, { origem: q.origem, respondeu_certo: acertou, disciplina: q.disciplina, topico: q.topico });
     var fb = $('rvFb');
     fb.className = 'fb ' + (acertou ? 'ok' : 'no');
     fb.innerHTML = '<b>' + (acertou ? 'Você acertou!' : gab) + '</b>' + md(q.comentario || '') +
@@ -9607,6 +9649,128 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
         (fc ? '<button class="btn small" onclick="fecharRevisao(); irRevisar()">Revisar os cartões vencidos</button>' : '') +
         '<button class="btn ' + (fc ? 'ghost ' : '') + 'small" onclick="fecharRevisao(); window.scrollTo(0,0)">Ir para o assunto de hoje</button></div>');
     }).catch(function(){ $('rvResLista').innerHTML = '<p class="muted">Não consegui salvar agora — tente de novo em instantes.</p>'; });
+  }
+
+  /* ---------- acerto por disciplina e por assunto ---------- */
+  function desenharAcerto(dd){
+    var ds = (dd.acerto_disciplinas || []).filter(function(a){ return a.total >= 5; });
+    var temas = dd.temas_fracos || [];
+    $('acertoCard').style.display = (ds.length || temas.length) ? 'block' : 'none';
+    $('acertoLista').innerHTML = ds.map(function(a){
+      var cor = a.pct < 60 ? 'var(--crit)' : (a.pct < 75 ? 'var(--warm)' : 'var(--accent)');
+      return '<div class="ac-linha"><div class="ac-topo"><span style="overflow-wrap:anywhere">' + esc(a.nome) + '</span>' +
+        '<b class="num" style="flex:none">' + a.pct + '% <small class="muted" style="font-weight:500">· ' + a.total + '</small></b></div>' +
+        '<div class="ac-barra"><i style="width:' + a.pct + '%; background:' + cor + '"></i></div></div>';
+    }).join('');
+    $('temasFracos').innerHTML = temas.length ? '<h3 style="font-size:.88rem; margin:14px 0 8px">Assuntos para reforçar</h3>' + temas.map(function(t){
+      var it = ((REAL && REAL.itens) || []).filter(function(x){ return x.topico === t.topico; })[0];
+      return '<div style="padding:8px 0; border-top:1px solid var(--line); font-size:.82rem">' + esc(t.topico) +
+        ' <span class="muted">· ' + t.pct + '% em ' + t.total + '</span>' +
+        (it ? '<br><button class="linkbtn" style="font-size:.78rem" onclick="estudarTopico(\'' + it.cron_id + '\')">Estudar de novo</button>' : '') + '</div>';
+    }).join('') : '';
+  }
+
+  /* ---------- simulado ---------- */
+  var SIM = null, SIM_RELOGIO = null;
+  function simInfo(){
+    if(!API || !TOKEN) return;
+    apiFetch('/api/simulado?info=1').then(function(r){ return r.json(); }).then(function(d){
+      if(!d || d.erro) return;
+      var n = d.disponiveis || 0;
+      if(n < (d.minimo || 5)){
+        $('simBotoes').innerHTML = '<p class="muted" style="font-size:.8rem">O simulado usa as questões das aulas já abertas. Estude mais um assunto para liberar.</p>';
+      } else {
+        $('simBotoes').innerHTML = [10, 20, 40].filter(function(k, i, l){ return k <= n || (i && l[i - 1] < n); }).map(function(k, i){
+          var q = Math.min(k, n);
+          return '<button class="btn ' + (i ? 'ghost ' : '') + 'small" onclick="simIniciar(' + q + ')">' + q + ' questões</button>';
+        }).join('');
+      }
+      $('simHist').innerHTML = (d.historico || []).map(function(h){
+        var pct = h.respondidas ? Math.round(100 * h.acertos / h.respondidas) : 0;
+        return '<div class="muted" style="font-size:.76rem; padding:4px 0">' + fmtData(String(h.criado_em).slice(0, 10)) + ': ' + h.acertos + ' de ' + h.respondidas + ' respondidas (' + pct + '%) · ' + Math.round((h.segundos || 0) / 60) + ' min</div>';
+      }).join('');
+    }).catch(function(){});
+  }
+  function simIniciar(n){
+    apiFetch('/api/simulado?n=' + n + '&formato=misto').then(function(r){ return r.json(); }).then(function(d){
+      if(!d || !d.questoes){ toast((d && d.erro) || 'Ainda não há questões suficientes'); return; }
+      SIM = { qs: d.questoes, i: 0, resp: {}, inicio: Date.now(), limite: d.minutos * 60, fim: false };
+      $('simModal').classList.add('open');
+      evento('simulado_iniciado', null, { questoes: d.questoes.length });
+      clearInterval(SIM_RELOGIO); SIM_RELOGIO = setInterval(simTique, 1000); simTique();
+      simMostrar();
+    }).catch(function(){ toast('Sem conexão. Tente de novo.'); });
+  }
+  function simTique(){
+    if(!SIM || SIM.fim) return;
+    var resta = SIM.limite - Math.floor((Date.now() - SIM.inicio) / 1000);
+    if(resta <= 0){ simFinalizar(true); return; }
+    $('simRel').textContent = Math.floor(resta / 60) + ':' + ('0' + (resta % 60)).slice(-2);
+    $('simRel').classList.toggle('fim', resta < 120);
+  }
+  function simMostrar(){
+    var q = SIM.qs[SIM.i], n = SIM.qs.length, r = SIM.resp[SIM.i];
+    $('simSub').textContent = 'Questão ' + (SIM.i + 1) + ' de ' + n + ' · ' + Object.keys(SIM.resp).length + ' respondidas';
+    var ops = q.tipo === 'me' ? (q.alternativas || []).map(function(a, k){
+        return '<button class="sim-op' + (r === k ? ' sel' : '') + '" onclick="simResponder(' + k + ')">' + String.fromCharCode(65 + k) + ') ' + esc(a) + '</button>';
+      }).join('') : ['Certo', 'Errado'].map(function(t, k){
+        var v = k === 0;
+        return '<button class="sim-op' + (r === v ? ' sel' : '') + '" onclick="simResponder(' + v + ')">' + t + '</button>';
+      }).join('');
+    $('simBody').innerHTML = '<span class="rv-tag">' + esc(q.disciplina || '') + '</span>' +
+      '<p class="q-enun">' + esc(q.enunciado) + '</p>' + ops +
+      '<div class="sim-nav">' +
+        '<button class="btn ghost small" ' + (SIM.i ? '' : 'disabled') + ' onclick="simIr(' + (SIM.i - 1) + ')">← Anterior</button>' +
+        (SIM.i + 1 < n ? '<button class="btn small" onclick="simIr(' + (SIM.i + 1) + ')">Próxima →</button>' : '') +
+        '<button class="btn ghost small" onclick="simFinalizar()">Entregar</button>' +
+      '</div>' +
+      '<div class="sim-mapa">' + SIM.qs.map(function(_, k){
+        return '<button class="' + (k in SIM.resp ? 'ok' : '') + (k === SIM.i ? ' agora' : '') + '" onclick="simIr(' + k + ')">' + (k + 1) + '</button>';
+      }).join('') + '</div>';
+    $('simBody').scrollTop = 0;
+  }
+  function simResponder(v){ SIM.resp[SIM.i] = v; simMostrar(); }
+  function simIr(k){ SIM.i = k; simMostrar(); }
+  function simFechar(){
+    if(SIM && !SIM.fim && !confirm('Sair agora? Este simulado será descartado.')) return;
+    clearInterval(SIM_RELOGIO); SIM = null;
+    $('simModal').classList.remove('open');
+  }
+  function simFinalizar(tempo){
+    if(!tempo){
+      var faltam = SIM.qs.length - Object.keys(SIM.resp).length;
+      if(faltam && !confirm('Faltam ' + faltam + ' questões sem resposta. Entregar assim mesmo?')) return;
+    }
+    clearInterval(SIM_RELOGIO); SIM.fim = true;
+    var seg = Math.min(SIM.limite, Math.floor((Date.now() - SIM.inicio) / 1000));
+    var itens = SIM.qs.map(function(q, k){
+      var r = (k in SIM.resp) ? SIM.resp[k] : null;
+      var certa = r !== null && (q.tipo === 'me' ? r === Number(q.correta) : r === !!q.gabarito);
+      return Object.assign({}, q, { resposta: r, certa: certa });
+    });
+    var resp = itens.filter(function(i){ return i.resposta !== null; }), certas = resp.filter(function(i){ return i.certa; }).length;
+    apiFetch('/api/simulado', { resultado: { itens: itens, segundos: seg } }).then(function(){
+      apiFetch('/api/dashboard').then(function(r){ return r.json(); }).then(function(dd){ if(dd && dd.cobertura) aplicarDashReal(dd); }).catch(function(){});
+    }).catch(function(){ toast('Não consegui salvar a nota. Sua correção segue abaixo.'); });
+    evento('simulado_concluido', null, { questoes: itens.length, respondidas: resp.length, acertos: certas });
+    var porD = {};
+    resp.forEach(function(i){ var d = porD[i.disciplina] = porD[i.disciplina] || { t: 0, c: 0 }; d.t++; if(i.certa) d.c++; });
+    $('simRel').textContent = ''; $('simSub').textContent = tempo ? 'Tempo esgotado' : 'Resultado';
+    $('simBody').innerHTML = '<h2 style="font-size:1.2rem; margin-bottom:4px">' + certas + ' de ' + itens.length + ' certas</h2>' +
+      '<p class="muted" style="font-size:.8rem; margin-bottom:12px">' + resp.length + ' respondidas · ' + Math.round(seg / 60) + ' min. O que você errou foi para o caderno de erros. Questões inéditas por IA, não de provas anteriores.</p>' +
+      Object.keys(porD).sort(function(a, b){ return porD[a].c / porD[a].t - porD[b].c / porD[b].t; }).map(function(k){
+        var p = Math.round(100 * porD[k].c / porD[k].t);
+        return '<div class="ac-linha"><div class="ac-topo"><span style="overflow-wrap:anywhere">' + esc(k) + '</span><b class="num" style="flex:none">' + p + '%</b></div>' +
+          '<div class="ac-barra"><i style="width:' + p + '%; background:' + (p < 60 ? 'var(--crit)' : (p < 75 ? 'var(--warm)' : 'var(--accent)')) + '"></i></div></div>';
+      }).join('') +
+      '<h3 style="font-size:.9rem; margin:16px 0 8px">Correção</h3>' + itens.map(function(i, k){
+        var gab = i.tipo === 'me' ? String.fromCharCode(65 + Number(i.correta)) + ') ' + esc((i.alternativas || [])[i.correta] || '') : (i.gabarito ? 'Certo' : 'Errado');
+        return '<div class="rv-res"><b>' + (k + 1) + '. ' + esc(i.enunciado) + '</b>' +
+          '<small style="display:block; margin-top:4px; color:' + (i.resposta === null ? 'var(--muted)' : (i.certa ? 'var(--good)' : 'var(--crit)')) + '">' +
+          (i.resposta === null ? 'Sem resposta' : (i.certa ? 'Acertou' : 'Errou')) + ' · Gabarito: ' + gab + '</small>' +
+          (i.comentario ? '<small style="display:block; margin-top:4px">' + esc(i.comentario) + '</small>' : '') + '</div>';
+      }).join('') + '<button class="btn small" style="margin-top:8px" onclick="simFechar()">Fechar</button>';
+    $('simBody').scrollTop = 0;
   }
 
   /* ---------- caderno de erros ---------- */
@@ -10334,6 +10498,8 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
     $('streakN').textContent = dd.constancia_dias + (dd.constancia_dias === 1 ? ' dia' : ' dias');
     // as revisões (assuntos, erros e cartões) ficam no cartão "Revisão de hoje", no topo
     carregarRevisao();
+    desenharAcerto(dd);
+    simInfo();
     drawLine(dd.semanas);
     drawHeat(dd.dias_ativos);
 

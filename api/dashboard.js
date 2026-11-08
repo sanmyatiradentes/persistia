@@ -43,6 +43,37 @@ module.exports = async (req, res) => {
       } catch (_) {}
     }
 
+    // Acerto por disciplina e por assunto: questões da aula, da revisão e dos simulados.
+    const acertoDisc = {}, acertoTema = {};
+    const somar = (disciplina, topico, certa) => {
+      if (!disciplina) return;
+      const a = acertoDisc[disciplina] = acertoDisc[disciplina] || { nome: disciplina, total: 0, certas: 0 };
+      a.total++; if (certa) a.certas++;
+      if (topico) {
+        const t = acertoTema[topico] = acertoTema[topico] || { topico, disciplina, total: 0, certas: 0 };
+        t.total++; if (certa) t.certas++;
+      }
+    };
+    const respostas = await db.execute({
+      sql: `SELECT tipo, assunto, detalhe FROM eventos WHERE aluno_id = ? AND tipo IN ('questao', 'questao_revisao') ORDER BY criado_em DESC LIMIT 3000`,
+      args: [aluno.id]
+    });
+    for (const r of respostas.rows) {
+      try {
+        const d = JSON.parse(r.detalhe || '{}');
+        if (typeof d.respondeu_certo !== 'boolean') continue;
+        if (r.tipo === 'questao_revisao') { somar(d.disciplina, d.topico, d.respondeu_certo); continue; }
+        // o assunto vem como "Nome do tópico (parte 2) — Disciplina"
+        const a = String(r.assunto || ''), corte = a.lastIndexOf(' — ');
+        if (corte > 0) somar(a.slice(corte + 3), a.slice(0, corte).replace(/ \(parte \d+\)$/, ''), d.respondeu_certo);
+      } catch (_) {}
+    }
+    const sims = await db.execute({ sql: 'SELECT detalhe FROM simulados WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 50', args: [aluno.id] });
+    for (const s of sims.rows) {
+      try { for (const i of JSON.parse(s.detalhe || '[]')) if (i.respondeu) somar(i.disciplina, i.topico, i.certa); } catch (_) {}
+    }
+    const comPct = o => Object.assign({}, o, { pct: Math.round(100 * o.certas / o.total) });
+
     const dias = await db.execute({
       sql: `SELECT DISTINCT substr(criado_em, 1, 10) AS dia FROM eventos WHERE aluno_id = ? ORDER BY dia DESC LIMIT 60`,
       args: [aluno.id]
@@ -135,6 +166,8 @@ module.exports = async (req, res) => {
       })),
       por_verbo: verbos.rows.map(r => ({ verbo: r.verbo, eventos: Number(r.n) })),
       questoes: { total: qTotal, certas: qCertas, pct: qTotal ? Math.round(100 * qCertas / qTotal) : null },
+      acerto_disciplinas: Object.values(acertoDisc).map(comPct).sort((a, b) => a.pct - b.pct),
+      temas_fracos: Object.values(acertoTema).filter(t => t.total >= 3).map(comPct).filter(t => t.pct < 70).sort((a, b) => a.pct - b.pct).slice(0, 5),
       constancia_dias: streak,
       flashcards_devidos: Number(fc.rows[0].n),
       dias_ativos: dias.rows.map(r => r.dia),
