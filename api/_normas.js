@@ -118,12 +118,10 @@ function conferirPeloTexto(lista, texto) {
   }));
 }
 
-// Selo só com fonte de verdade: sem endereço oficial, nada de "conferido".
+// Lei seca só com conferência mecânica no Planalto (ver _leis.js). Vale também
+// para as aulas já guardadas, que foram conferidas por IA.
 function sanearSelos(p) {
-  if (p && Array.isArray(p.dispositivos)) {
-    p.dispositivos = p.dispositivos.map(d => (d && d.conferido && (!d.fonte || d.fonte.tipo === 'busca'))
-      ? Object.assign({}, d, { conferido: false }) : d);
-  }
+  if (p && Array.isArray(p.dispositivos)) p.dispositivos = require('./_leis').conferirNoPlanalto(p.dispositivos);
   return p;
 }
 

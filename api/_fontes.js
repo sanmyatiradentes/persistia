@@ -32,7 +32,7 @@ const DIRETO = {
   '8069':  PLANALTO + 'leis/l8069.htm',                             // ECA
   '10741': PLANALTO + 'leis/2003/l10.741.htm',                      // Estatuto do Idoso
   '11340': PLANALTO + '_ato2004-2006/2006/lei/l11340.htm',          // Maria da Penha
-  '11343': PLANALTO + '_ato2007-2010/2006/lei/l11343.htm',          // drogas
+  '11343': PLANALTO + '_ato2004-2006/2006/lei/l11343.htm',          // drogas (endereço antigo dava 404)
   '12527': PLANALTO + '_ato2011-2014/2011/lei/l12527.htm',          // acesso à informação
   '12850': PLANALTO + '_ato2011-2014/2013/lei/l12850.htm',          // organização criminosa
   '13709': PLANALTO + '_ato2015-2018/2018/lei/L13709.htm',          // LGPD
@@ -117,15 +117,15 @@ function fonteOficial(rotulo) {
   if (sum) return { rotulo: t, url: sum.url, tipo: sum.tipo, fonte: sum.fonte };
 
   const num = numeroDaLei(t);
-  if (num && DIRETO[num]) return { rotulo: t, url: DIRETO[num], tipo: 'direto', fonte: 'Planalto' };
+  if (num && DIRETO[num]) return { rotulo: t, url: DIRETO[num], tipo: 'direto', fonte: 'Planalto', chave: num };
 
   for (const [re, chave] of APELIDOS) {
     if (re.test(t) && DIRETO[chave]) {
-      return { rotulo: t, url: DIRETO[chave], tipo: 'direto', fonte: 'Planalto' };
+      return { rotulo: t, url: DIRETO[chave], tipo: 'direto', fonte: 'Planalto', chave };
     }
   }
 
   return { rotulo: t, url: buscaOficial(t), tipo: 'busca', fonte: 'LexML' };
 }
 
-module.exports = { fonteOficial, buscaOficial };
+module.exports = { fonteOficial, buscaOficial, DIRETO };

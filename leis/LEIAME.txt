@@ -1,0 +1,35 @@
+Textos oficiais do Planalto, normalizados, para a conferência da lei seca.
+Atualizado em 2026-11-08 por scripts/atualizar-leis.js.
+
+101: ok, 86 KB
+4717: ok, 16 KB
+5172: ok, 114 KB
+7210: ok, 92 KB
+8069: ok, 188 KB
+8078: ok, 74 KB
+8080: ok, 52 KB
+8112: ok, 105 KB
+8429: ok, 45 KB
+8666: ok, 10 KB
+9099: ok, 36 KB
+9455: ok, 3 KB
+9503: ok, 256 KB
+9605: ok, 39 KB
+9784: ok, 29 KB
+10406: ok, 574 KB
+10741: ok, 52 KB
+11340: ok, 38 KB
+11343: ok, 66 KB
+12527: ok, 39 KB
+12850: ok, 31 KB
+13105: ok, 539 KB
+13709: ok, 80 KB
+13869: ok, 22 KB
+14133: ok, 252 KB
+14230: ok, 38 KB
+cf: ok, 549 KB
+dl2848: ok, 205 KB
+dl3689: ok, 317 KB
+dl5452: ok, 515 KB
+dl4657: ok, 14 KB
+dl201: ok, 14 KB

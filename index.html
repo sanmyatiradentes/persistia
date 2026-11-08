@@ -1856,8 +1856,8 @@
             <span class="st-fonte">Quando não há endereço exato, o link vai para a busca oficial do LexML, do Senado Federal.</span>
           </div>
           <div class="st-card" style="--tc:#7A4FD6">
-            <b>Quem escreve não é quem confere</b>
-            <p>Depois de pronta, a lei seca passa por uma segunda leitura independente, que recebe só as transcrições — sem ver a aula — e responde se a citação existe e se a redação bate. O que passa aparece marcado como <b>conferido</b>; o que não passa aparece marcado como <b>a conferir</b>, com o motivo à vista.</p>
+            <b>A lei seca é comparada com o Planalto</b>
+            <p>Cada trecho de lei que a IA transcreve é comparado, palavra por palavra e sem IA, com o texto oficial do Planalto. Só aparece o que bate, com o selo <b>idêntico ao Planalto</b>; o que não bate, ou é de lei fora da nossa base, vira apenas o link para você ler na fonte. Medimos antes de mudar: em 08/11/2026, das 212 transcrições conferíveis, só 48% batiam exatamente.</p>
             <span class="st-fonte">Lei municipal ou estadual não sai de memória: a aula só é feita a partir do texto oficial que você envia.</span>
           </div>
           <div class="st-card" style="--tc:#B97A0F">
@@ -2886,9 +2886,7 @@
       <ul class="st-cred" style="margin:0 0 14px">
         <li><b>Link da fonte oficial em cada dispositivo.</b> A citação vira endereço no Planalto ou no site do tribunal —
           montado por tabela, não por IA. Se não dá para montar o endereço exato, o link vai para a busca oficial do LexML, do Senado.</li>
-        <li><b>Segunda leitura independente.</b> Quem escreve não é quem confere: outra passada recebe só as transcrições,
-          sem ver a aula, e responde se a citação existe e se a redação bate. O que passa vem marcado como <b>conferido</b>;
-          o que não passa vem marcado como <b>a conferir</b>, com o motivo — nunca some da tela sem você saber.</li>
+        <li><b>Conferência mecânica no Planalto.</b> A lei seca é comparada palavra por palavra com o texto oficial, guardado em cópia normalizada, sem o texto revogado. Só o que bate aparece, marcado como <b>idêntico ao Planalto</b>; o resto vira link para a fonte.</li>
         <li><b>Lei local só com o texto oficial.</b> Lei municipal, estadual ou regimento de órgão não é escrita de memória:
           você envia a lei e a aula usa somente o que está nela, ou escolhe estudar só os conceitos gerais, sem artigos.</li>
         <li><b>Regra de silêncio na dúvida.</b> O gerador é instruído a deixar a lei seca vazia quando não tem certeza da
@@ -10088,15 +10086,18 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
   // redesenhada, para não apagar as marcações que o aluno já fez no texto.
   function aplicarLeiSeca(c){
     var disp = (c.dispositivos || []).filter(function(x){ return x && x.rotulo && x.texto; });
-    if(!disp.length) return;
+    // o que não bateu com o texto oficial não é mostrado como lei: fica só o caminho até a fonte
+    var soLink = (c.dispositivos || []).filter(function(x){ return x && x.rotulo && !x.texto && x.fonte && x.fonte.url; });
+    if(!disp.length && !soLink.length) return;
     var body = $('lBody');
     if(!body || body.querySelector('.lei-h')) return;   // já está lá
     var bloco = document.createElement('div');
     bloco.innerHTML = '<div class="lei-h">Lei seca · texto integral</div>' +
+      (disp.length ? '' : '<p class="muted" style="font-size:.82rem">Nenhuma transcrição bateu, palavra por palavra, com o texto oficial. Leia direto na fonte:</p>') +
       disp.map(function(x){
         var sel = '';
         if(x.fonte && x.fonte.tipo === 'enviado') sel = '<span class="selo ok" title="Encontrado, palavra por palavra, no texto que você enviou">no texto enviado</span>';
-        else if(x.conferido) sel = '<span class="selo ok" title="Fonte oficial localizada; a redação passou por uma segunda leitura feita por outra IA">conferido</span>';
+        else if(x.conferencia === 'planalto') sel = '<span class="selo ok" title="Comparado palavra por palavra com o texto do Planalto, sem IA">idêntico ao Planalto</span>';
         else if(x.alerta === 'nao_confere') sel = '<span class="selo no" title="' + esc(x.motivo || '') + '">confira na fonte</span>';
         else if(x.alerta === 'duvida') sel = '<span class="selo duv" title="' + esc(x.motivo || '') + '">redação a conferir</span>';
 
@@ -10116,7 +10117,9 @@ if($('podTx')) $('podTx').innerHTML = '<p class="muted" style="font-size:.85rem"
                '<p>' + md(x.texto) + '</p>' + aviso +
                '<div class="disp-fonte">' + link + '</div></div>';
       }).join('') +
-      '<div class="lei-nota">Transcrição para estudo, com o link do texto oficial em cada dispositivo. ' +
+      (soLink.length ? '<div class="lei-nota" style="margin-top:10px"><b>Leia também na fonte oficial.</b> A transcrição destes não bateu com o texto oficial, ou a lei não está na nossa base de conferência, então ela não aparece aqui:<br>' +
+        soLink.map(function(x){ return '<a class="fonte-link" href="' + esc(x.fonte.url) + '" target="_blank" rel="noopener">' + esc(x.rotulo) + ' ↗</a>'; }).join(' · ') + '</div>' : '') +
+      '<div class="lei-nota">Só aparece aqui o que bateu, palavra por palavra, com o texto oficial do Planalto. ' +
       'Leis mudam: antes da prova, confira a redação vigente na fonte. ' +
       '<button class="lg-alt" style="margin:6px 0 0; padding:0; font-size:.72rem" onclick="abrirComoConferir()">Como este conteúdo é conferido</button></div>';
     while(bloco.firstChild) body.appendChild(bloco.firstChild);

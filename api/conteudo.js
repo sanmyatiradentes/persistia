@@ -6,6 +6,7 @@
 const { getDb, ensureSchema, agora, alunoDoToken, cors, acessoDoAluno, chamarGemini, falhaIA, MODELO_LEVE } = require('./_lib');
 const { fonteOficial } = require('./_fontes');
 const { normaLocal, registroDaNorma, regrasDaNorma, conferirPeloTexto, sanearSelos } = require('./_normas');
+const { conferirNoPlanalto } = require('./_leis');
 
 function tamanhos(h) {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
@@ -424,9 +425,8 @@ module.exports = async (req, res) => {
       if (b === 'apoio' && regraNorma) {
         dados.dispositivos = norma.modo === 'geral' ? [] : conferirPeloTexto(dados.dispositivos, norma.texto);
       } else if (b === 'apoio') {
-        try {
-          dados.dispositivos = await conferirDispositivos(dados.dispositivos, t.rows[0].topico);
-        } catch (_) { /* a conferência é melhor-esforço */ }
+        // conferência mecânica no Planalto, sem segunda IA (ver _leis.js)
+        dados.dispositivos = conferirNoPlanalto(dados.dispositivos);
       }
       await salvarBloco(b, dados);
       return dados;
