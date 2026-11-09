@@ -16,6 +16,7 @@
 // do assunto, que é o mesmo para qualquer pessoa que o estude.
 const { getDb, ensureSchema, agora, alunoDoToken, cors, ehAdmin } = require('./_lib');
 const { normaLocal } = require('./_normas');
+const { conferirNoPlanalto } = require('./_leis');
 const { fonteOficial } = require('./_fontes');
 
 const SITE = (process.env.SITE_URL || 'https://www.persisteia.com.br').replace(/\/$/, '');
@@ -237,8 +238,8 @@ ${paragrafos(simples)}</section>`);
 <ul class="lista">${p.acronimo.itens.map(i => `<li>${esc(i)}</li>`).join('')}</ul></section>`);
   }
 
-  // só a lei seca que passou pela conferência independente vai para a vitrine
-  const leis = (Array.isArray(p.dispositivos) ? p.dispositivos : []).filter(d => d && d.conferido && d.texto);
+  // página pública só mostra lei que bate, palavra por palavra, com o Planalto (ver _leis.js)
+  const leis = conferirNoPlanalto(Array.isArray(p.dispositivos) ? p.dispositivos : []).filter(d => d && d.conferencia === 'planalto' && d.texto);
   if (leis.length) {
     sec.push(`<section class="card"><span class="rotulo">Lei seca</span>
 <h2>O que diz a lei</h2>
@@ -457,6 +458,13 @@ module.exports = async (req, res) => {
     // a CDN da Vercel guarda a página por 1 hora; o banco quase não é tocado
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
+    // diagnóstico: quantos textos oficiais o servidor enxerga para conferir a lei seca
+    if (url.searchParams.get('leis')) {
+      const { DIRETO } = require('./_fontes');
+      const { textoOficial } = require('./_leis');
+      const prontas = Object.keys(DIRETO).filter(k => textoOficial(k));
+      return res.status(200).json({ leis_na_base: prontas.length, leis_na_tabela: Object.keys(DIRETO).length });
+    }
     if (url.searchParams.get('sitemap')) {
       res.setHeader('Content-Type', 'application/xml; charset=utf-8');
       return res.status(200).send(sitemap(itens));

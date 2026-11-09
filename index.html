@@ -2223,8 +2223,10 @@
       </div>
     </div>
     <div class="card" id="ajudaInstalar" style="display:none; margin:0 0 14px; font-size:.84rem; line-height:1.6">
+      <p id="ajudaSamsung" style="display:none; margin:0 0 8px; padding:8px 10px; border-radius:10px; background:var(--warm-soft)"><b>Você está no Navegador Samsung.</b> Por ele, o Android costuma bloquear a instalação com o aviso "app de risco": é o jeito antigo como esse navegador empacota o app, não um problema da PersisteIA. Abra <b>www.persisteia.com.br</b> no <b>Chrome</b> e instale por lá. <button class="linkbtn" style="font-size:.8rem" onclick="copiarEndereco()">Copiar o endereço</button></p>
       <b>No iPhone (Safari):</b> toque no botão de compartilhar, o quadrado com a seta para cima, e escolha <b>Adicionar à Tela de Início</b>.<br>
-      <b>No Android (Chrome):</b> toque nos três pontinhos e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.
+      <b>No Android, use o Chrome:</b> toque nos três pontinhos e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.<br>
+      <b>No computador (Chrome ou Edge):</b> clique no ícone de instalar na barra de endereço, ou no menu ⋮ › Transmitir, salvar e compartilhar › Instalar.
       <br><button class="linkbtn" style="font-size:.8rem; margin-top:6px" onclick="this.parentNode.style.display='none'">Fechar</button>
     </div>
 
@@ -3362,6 +3364,9 @@
   var PEDIDO_INSTALAR = null;
   var JA_INSTALADO = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   var EH_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  // O Navegador Samsung empacota o app num formato antigo, que o Play Protect bloqueia
+  // como "app de risco". Pelo Chrome o empacotamento é do Google e passa.
+  var EH_SAMSUNG = /SamsungBrowser/i.test(navigator.userAgent);
   function mostrarInstalar(sim){
     var dispensado = false; try { dispensado = localStorage.getItem('persis_instalar_nao') === '1'; } catch(e){}
     document.querySelectorAll('.btn-instalar').forEach(function(b){ b.hidden = !sim; });
@@ -3370,6 +3375,7 @@
   window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); PEDIDO_INSTALAR = e; mostrarInstalar(true); });
   window.addEventListener('appinstalled', function(){ PEDIDO_INSTALAR = null; mostrarInstalar(false); evento('app_instalado'); });
   function instalarApp(){
+    if(EH_SAMSUNG){ $('ajudaInstalar').style.display = 'block'; $('ajudaSamsung').style.display = 'block'; return; }
     if(PEDIDO_INSTALAR){
       PEDIDO_INSTALAR.prompt();
       PEDIDO_INSTALAR.userChoice.then(function(){ PEDIDO_INSTALAR = null; mostrarInstalar(false); });
@@ -3379,7 +3385,7 @@
     try { localStorage.setItem('persis_instalar_nao', '1'); } catch(e){}
     $('faixaInstalar').style.display = 'none';
   }
-  document.addEventListener('DOMContentLoaded', function(){ if(!JA_INSTALADO && EH_IOS) mostrarInstalar(true); });
+  document.addEventListener('DOMContentLoaded', function(){ if(!JA_INSTALADO && (EH_IOS || EH_SAMSUNG)) mostrarInstalar(true); });
   function initReal(){
     // O link de nova senha vale mesmo sem estar logado: ele vem antes de tudo.
     if(typeof verificarLinkDeSenha === 'function' && !TOKEN_NOVA_SENHA && verificarLinkDeSenha()) return;
